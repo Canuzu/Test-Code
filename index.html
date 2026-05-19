@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="RoyalCards – Dein Online-Shop für Pokémon-Karten: Booster Packs, Singles, Displays & ETBs sowie Zubehör. Geprüfte Qualität, schneller und sicherer Versand aus Köln.">
+<meta name="theme-color" content="#0d0d1a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f5f0e8" media="(prefers-color-scheme: light)">
+<meta name="format-detection" content="telephone=no">
+<meta property="og:title" content="RoyalCards · Pokémon-Karten Shop">
+<meta property="og:description" content="Booster Packs, Singles, Displays & Zubehör – kuratiert für Sammler.">
+<meta property="og:type" content="website">
+<title>RoyalCards · Pokémon-Karten Shop · Booster, Singles &amp; mehr</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 92'><rect x='19' y='13' width='38' height='54' rx='5' fill='%236d28d9'/><text x='38' y='52' font-family='Georgia' font-size='14' font-weight='600' fill='%230d0d1a' text-anchor='middle'>RC</text></svg>">
+<style>
+@font-face{font-family:'WS';src:url('https://cdn.jsdelivr.net/npm/@fontsource/great-vibes@4.5.4/files/great-vibes-latin-400-normal.woff2') format('woff2');font-display:swap;}
+*{box-sizing:border-box;margin:0;padding:0;}
+:root,[data-theme="dark"]{--a:#6d28d9;--al:#8b5cf6;--bg:#0d0d1a;--bg2:#0a0a15;--cd:#13102a;--br:#3a2a5e;--t:#f0eaff;--t2:#c4b5fd;--t3:#9d77e8;--t4:#6d5a8a;--dot:#3a2a5e;--hl1:#1a1040;--dh:#1a1040;--cb:#1a1030;--shad:rgba(109,40,217,.18);--pi1:#2a1a4e;--pi2:#1a0a2e;--ftbg:#060610;--cshadow:none;--obg:rgba(13,13,26,.92);--err:#f87171;--ok:#4ade80;--warn:#fb923c;}
+[data-theme="light"]{--a:#5b21b6;--al:#7c3aed;--bg:#f5f0e8;--bg2:#ede8dc;--cd:#e8e2d4;--br:#c5b5a0;--t:#1a1228;--t2:#3b1f6e;--t3:#5b21b6;--t4:#7a6450;--dot:#9d77e8;--hl1:#ddd5f0;--dh:#e0d8f5;--cb:#d0c4b8;--shad:rgba(109,40,217,.13);--pi1:#2a1a4e;--pi2:#1a0a2e;--ftbg:#e0d8cc;--cshadow:0 2px 14px rgba(91,33,182,.1);--obg:rgba(26,18,40,.9);--err:#dc2626;--ok:#15803d;--warn:#c2410c;}
+html,body{background:var(--bg);}
+html{scroll-behavior:smooth;}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}*,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
+.wrap{font-family:Georgia,'Times New Roman',serif;background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s;}
+.page{display:none;}.page.on{display:block;animation:pgIn .3s ease both;}
+@keyframes pgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.sr{position:absolute !important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+.skip{position:absolute;left:-9999px;top:8px;background:var(--a);color:#f0eaff;padding:8px 14px;font-size:11px;letter-spacing:2px;border-radius:2px;z-index:1000;text-decoration:none;}
+.skip:focus{left:8px;}
+button,a,input,select,textarea{font-family:inherit;}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[role="button"]:focus-visible{outline:2px solid var(--al);outline-offset:2px;border-radius:2px;}
+
+/* ── NAV ── */
+.nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:10px 28px 12px;border-bottom:.5px solid var(--br);background:var(--bg);position:sticky;top:0;z-index:40;transition:background .3s;}
+.nl,.nc,.nr{display:flex;align-items:center;}
+.nr{justify-content:flex-end;gap:12px;}.nc{justify-content:center;}
+.logo{cursor:pointer;background:none;border:none;padding:0;display:flex;}
+.ibtn{background:transparent;border:none;cursor:pointer;padding:6px;display:flex;align-items:center;transition:opacity .2s;}
+.ibtn:hover{opacity:.6;}
+.hw{position:relative;}
+.hbtn{display:flex;flex-direction:column;gap:5px;background:transparent;border:none;cursor:pointer;padding:6px;}
+.hbtn span{display:block;width:22px;height:1.5px;background:var(--t2);border-radius:2px;transition:background .15s;}
+.hbtn:hover span,.hbtn:focus-visible span{background:var(--t);}
+.drop{position:absolute;top:100%;left:0;background:var(--bg);border:.5px solid var(--br);border-top:none;border-radius:0 0 6px 6px;min-width:185px;padding:8px 0;opacity:0;pointer-events:none;transform:translateY(-8px);transition:opacity .25s,transform .25s;z-index:50;}
+.hw:hover .drop,.hw:focus-within .drop{opacity:1;pointer-events:all;transform:translateY(0);}
+.drop a{display:block;padding:10px 22px;font-size:10px;color:var(--t2);letter-spacing:3px;cursor:pointer;transition:color .15s,background .15s;text-decoration:none;}
+.drop a:hover,.drop a:focus-visible,.drop a.act{color:var(--t);background:var(--dh);}
+.drop a.act{border-left:2px solid var(--a);}
+.dv{height:.5px;background:var(--br);margin:6px 16px;}
+
+/* ── NAV SEARCH ── */
+.ns-wrap{position:relative;}
+.ns-box{display:flex;align-items:center;gap:6px;background:var(--cd);border:.5px solid var(--br);border-radius:2px;padding:5px 10px;transition:border-color .2s;cursor:text;}
+.ns-box:focus-within{border-color:var(--a);}
+.ns-inp{background:transparent;border:none;outline:none;font-size:11px;color:var(--t);width:160px;font-family:Georgia,serif;}
+.ns-inp::placeholder{color:var(--t4);}
+.ns-x{background:none;border:none;color:var(--t4);cursor:pointer;font-size:16px;line-height:1;display:none;padding:0 2px;}
+.ns-box:focus-within .ns-x{display:block;}
+.ns-drop{position:absolute;top:calc(100% + 8px);right:0;width:360px;background:var(--cd);border:.5px solid var(--br);border-radius:4px;max-height:360px;overflow-y:auto;display:none;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,.3);}
+.ns-drop.on{display:block;}
+.ns-hist{padding:10px 16px 4px;font-size:9px;color:var(--t4);letter-spacing:3px;display:flex;justify-content:space-between;align-items:center;}
+.ns-hist-clr{background:none;border:none;color:var(--t4);cursor:pointer;font-size:9px;letter-spacing:1px;text-decoration:underline;}
+.ns-hist-clr:hover{color:var(--t2);}
+.ns-hist-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;font-size:11px;color:var(--t3);transition:background .15s;}
+.ns-hist-item:hover{background:var(--dh);}
+.ns-pf{display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:.5px solid var(--br);}
+.ns-pf-lbl{font-size:9px;color:var(--t4);letter-spacing:2px;}
+.ns-pf-inp{background:var(--bg);border:.5px solid var(--br);color:var(--t);font-size:10px;padding:3px 6px;border-radius:2px;width:60px;outline:none;font-family:Georgia,serif;}
+.ns-pf-inp:focus{border-color:var(--a);}
+.ns-cat-lbl{padding:10px 16px 4px;font-size:9px;color:var(--t3);letter-spacing:3px;}
+.ns-item{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;cursor:pointer;transition:background .15s;gap:10px;}
+.ns-item:hover,.ns-item:focus-visible{background:var(--dh);outline:none;}
+.ns-item-nm{font-size:11px;color:var(--t);}
+.ns-item-sub{font-size:9px;color:var(--t4);}
+.ns-item-pr{font-size:11px;color:var(--t2);font-weight:600;flex-shrink:0;}
+.ns-empty{padding:24px;text-align:center;font-size:11px;color:var(--t4);}
+
+/* ── CART BTN ── */
+.cbtn{background:var(--a);padding:8px 12px;border-radius:2px;cursor:pointer;border:none;position:relative;display:flex;align-items:center;transition:background .2s;}
+.cbtn:hover{background:var(--al);}
+@keyframes cartFlash{0%{transform:scale(1)}40%{transform:scale(1.28)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+.cbtn.flash{animation:cartFlash .4s ease;}
+.bdg{position:absolute;top:-6px;right:-6px;background:#a78bfa;color:#1a0a2e;font-size:9px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.wlbtn-nav{background:transparent;border:none;cursor:pointer;padding:6px;display:flex;align-items:center;position:relative;transition:opacity .2s;}
+.wlbtn-nav:hover{opacity:.7;}
+.wl-bdg{position:absolute;top:-4px;right:-4px;background:#a78bfa;color:#1a0a2e;font-size:9px;min-width:14px;height:14px;padding:0 3px;border-radius:7px;align-items:center;justify-content:center;font-weight:700;display:none;}
+.wl-bdg.on{display:flex;}
+.theme-btn{background:transparent;border:.5px solid var(--br);border-radius:20px;cursor:pointer;padding:5px 10px;display:flex;align-items:center;transition:border-color .2s,background .2s;}
+.theme-btn:hover{border-color:var(--a);background:var(--cd);}
+
+/* ── CATEGORY QUICK BAR ── */
+.catqbar{display:none;background:var(--bg2);border-bottom:.5px solid var(--br);padding:0 28px;position:sticky;top:60px;z-index:35;transition:background .3s;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.catqbar::-webkit-scrollbar{display:none;}
+.catqbar.on{display:flex;gap:0;}
+.cqb-item{display:flex;align-items:center;gap:7px;padding:10px 18px;font-size:9px;color:var(--t4);letter-spacing:3px;cursor:pointer;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;font-family:inherit;}
+.cqb-item:hover{color:var(--t2);}
+.cqb-item.act{color:var(--a);border-bottom-color:var(--a);}
+
+/* ── HEROES ── */
+.mhero{position:relative;height:320px;overflow:hidden;cursor:default;background:var(--bg);display:flex;align-items:center;justify-content:center;border-bottom:.5px solid var(--br);transition:background .3s;}
+.mhero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);background-size:36px 36px;opacity:.14;pointer-events:none;}
+.mhero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 20%,var(--bg) 85%);pointer-events:none;transition:background .3s;}
+.hww{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:14px;padding:0 16px;text-align:center;}
+.hl{width:120px;height:.5px;background:var(--a);}
+.hsub{font-family:'Cinzel',Georgia,serif;font-size:9px;color:var(--a);letter-spacing:9px;}
+.hgem{font-size:10px;color:var(--a);}
+.hwm{display:flex;align-items:baseline;justify-content:center;font-family:'WS','Brush Script MT',cursive;font-size:110px;color:var(--t2);line-height:1;flex-wrap:wrap;}
+@keyframes lIn{from{opacity:0;transform:scale(.3) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.hwm .l{display:inline-block;animation:lIn .55s cubic-bezier(.34,1.56,.64,1) both;}
+.l0{animation-delay:.05s}.l1{animation-delay:.11s}.l2{animation-delay:.17s}.l3{animation-delay:.23s}.l4{animation-delay:.29s}.l5{animation-delay:.35s}.l6{animation-delay:.41s}.l7{animation-delay:.47s}.l8{animation-delay:.53s}.l9{animation-delay:.59s}
+.hcta{margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.hcta-btn{background:var(--a);color:#f0eaff;border:none;padding:11px 22px;font-size:10px;letter-spacing:3px;border-radius:2px;cursor:pointer;transition:background .2s;font-family:inherit;}
+.hcta-btn:hover{background:var(--al);}
+.hcta-btn.alt{background:transparent;border:.5px solid var(--br);color:var(--t2);}
+.hcta-btn.alt:hover{background:var(--cd);border-color:var(--a);color:var(--t);}
+.shero{position:relative;height:230px;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;border-bottom:.5px solid var(--br);transition:background .3s;}
+.shero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);background-size:36px 36px;opacity:.18;pointer-events:none;}
+.shero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 5%,var(--bg) 88%);pointer-events:none;transition:background .3s;}
+.shi{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:0 16px;}
+.sh-art{animation:shScale .7s cubic-bezier(.34,1.4,.64,1) both;}
+.sh-eye{font-family:'Cinzel',Georgia,serif;font-size:9px;color:var(--a);letter-spacing:7px;animation:shUp .6s .1s both;}
+.sh-ttl{font-family:'Cinzel',Georgia,serif;font-size:28px;color:var(--t);letter-spacing:5px;font-weight:400;animation:shUp .7s .2s both;}
+.sh-tag{font-size:10px;color:var(--t4);letter-spacing:4px;animation:shUp .6s .35s both;}
+.sh-ln{height:.5px;background:linear-gradient(90deg,transparent,var(--a),transparent);animation:shLine .9s .05s both;}
+@keyframes shUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shLine{from{width:0}to{width:90px}}
+@keyframes shScale{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+
+/* ── LAYOUT ── */
+.bc{padding:9px 28px;font-size:9px;color:var(--t4);letter-spacing:2px;border-bottom:.5px solid var(--cb);display:flex;align-items:center;gap:6px;background:var(--bg2);transition:background .3s;flex-wrap:wrap;}
+.bc-lnk{cursor:pointer;transition:color .2s;background:none;border:none;color:inherit;font-size:inherit;letter-spacing:inherit;font-family:inherit;padding:0;}
+.bc-lnk:hover{color:var(--t2);}
+.bc-sep{opacity:.3;}.bc-cur{color:var(--t3);}
+.slbl{font-size:9px;color:var(--t3);letter-spacing:5px;text-align:center;margin-bottom:6px;}
+.sttl{font-size:20px;color:var(--t);letter-spacing:2px;text-align:center;margin-bottom:28px;font-weight:400;font-family:'Cinzel',Georgia,serif;}
+.sec{padding:36px 28px;}.sec2{background:var(--bg2);transition:background .3s;}
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.cat{border:.5px solid var(--br);padding:20px 12px;text-align:center;border-radius:4px;cursor:pointer;background:var(--cd);transition:all .2s;font-family:inherit;color:inherit;}
+.cat:hover,.cat:focus-visible{border-color:var(--a);background:var(--dh);transform:translateY(-2px);}
+.cat-ico{font-size:20px;margin-bottom:10px;}.cat-nm{font-size:10px;color:var(--t2);letter-spacing:3px;}.cat-pr{font-size:10px;color:var(--t4);margin-top:4px;}
+
+/* ── CATEGORY PAGE LAYOUT ── */
+.cat-layout{display:grid;grid-template-columns:210px 1fr;min-height:60vh;}
+.sb{padding:24px 16px;border-right:.5px solid var(--br);background:var(--bg2);transition:background .3s;}
+.sb-sticky{position:sticky;top:106px;}
+.sb-mtoggle{display:none;width:100%;background:var(--cd);border:.5px solid var(--br);color:var(--t2);font-size:10px;padding:10px;letter-spacing:3px;border-radius:2px;cursor:pointer;margin:0 0 14px;font-family:inherit;}
+.sb-grp{margin-bottom:22px;}
+.sb-ttl{font-size:9px;color:var(--t3);letter-spacing:4px;margin-bottom:10px;padding-bottom:6px;border-bottom:.5px solid var(--br);}
+.sb-inp{background:var(--bg);border:.5px solid var(--br);color:var(--t);font-size:11px;padding:5px 8px;border-radius:2px;width:70px;outline:none;font-family:Georgia,serif;}
+.sb-inp:focus{border-color:var(--a);}
+.sb-price{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.sb-sep{font-size:11px;color:var(--t4);}
+.sb-cb-row{display:flex;align-items:center;gap:7px;margin-bottom:7px;cursor:pointer;font-size:10px;color:var(--t3);}
+.sb-cb-row input{accent-color:var(--a);cursor:pointer;}
+.sb-apply{width:100%;background:var(--a);color:#f0eaff;font-size:9px;padding:7px;letter-spacing:2px;border:none;border-radius:2px;cursor:pointer;transition:background .2s;margin-bottom:8px;font-family:inherit;}
+.sb-apply:hover{background:var(--al);}
+.sb-rst{width:100%;background:transparent;border:.5px solid var(--br);color:var(--t4);font-size:9px;padding:6px;letter-spacing:2px;border-radius:2px;cursor:pointer;transition:all .2s;font-family:inherit;}
+.sb-rst:hover{border-color:var(--a);color:var(--t3);}
+.cat-main{padding:24px 28px;min-width:0;}
+
+/* ── GRID + CARDS ── */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.prod{background:var(--cd);border:.5px solid var(--br);border-radius:6px;overflow:hidden;transition:border-color .25s,transform .25s,box-shadow .25s;cursor:pointer;box-shadow:var(--cshadow);display:flex;flex-direction:column;}
+.prod:hover,.prod:focus-within{border-color:var(--a);transform:translateY(-3px);box-shadow:0 10px 36px var(--shad);}
+.prod.feat{border:1px solid var(--a);}
+.pimg{height:120px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--pi1),var(--pi2));}
+.p-ov{position:absolute;inset:0;background:linear-gradient(to top,var(--obg) 55%,transparent);display:flex;align-items:flex-end;padding:8px 10px;opacity:0;transition:opacity .25s;pointer-events:none;}
+.prod:hover .p-ov{opacity:1;}
+.p-ov p{font-size:9px;color:#e0d8ff;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.wl-card-btn{position:absolute;top:7px;left:7px;background:rgba(13,13,26,.6);border:.5px solid var(--br);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;z-index:3;}
+.wl-card-btn:hover,.wl-card-btn.act{background:var(--a);border-color:var(--a);}
+.pbdg{position:absolute;top:8px;right:8px;font-size:8px;padding:3px 8px;letter-spacing:2px;border-radius:2px;z-index:2;color:#f0eaff;}
+.pbdg.hot{background:var(--a);}
+.pbdg.new{background:#1a5c32;animation:pulse 2s infinite;}
+.pbdg.rare{background:#5c4a1a;}.pbdg.ex{background:#7c2020;}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(26,92,50,.5)}50%{opacity:.85;box-shadow:0 0 6px 2px rgba(26,92,50,.3)}}
+.pinfo{padding:14px;display:flex;flex-direction:column;flex:1;}
+.ptyp{font-size:9px;color:var(--t3);letter-spacing:3px;margin-bottom:4px;}
+.pnm{font-size:13px;color:var(--t);margin-bottom:2px;}
+.psub{font-size:11px;color:var(--t4);margin-bottom:5px;}
+.pstars{display:flex;align-items:center;gap:5px;margin-bottom:4px;}
+.pstars-ct{font-size:9px;color:var(--t4);}
+.pstock{font-size:9px;margin-bottom:9px;}
+.pstock.ok{color:var(--ok);}.pstock.low{color:var(--warn);}.pstock.out{color:var(--err);}
+.qty-row{display:flex;align-items:center;margin-bottom:9px;}
+.qbtn{background:var(--bg2);border:.5px solid var(--br);color:var(--t2);width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;line-height:1;transition:background .2s;font-family:inherit;}
+.qbtn:hover{background:var(--a);border-color:var(--a);color:#fff;}
+.qbtn:first-child{border-radius:2px 0 0 2px;}.qbtn:last-child{border-radius:0 2px 2px 0;}
+.qty-val{width:34px;height:28px;border-top:.5px solid var(--br);border-bottom:.5px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t);background:var(--bg);}
+.pft{display:flex;justify-content:space-between;align-items:center;margin-top:auto;gap:8px;}
+.prc{font-size:16px;color:var(--t2);font-weight:700;}
+.abtn{background:var(--a);color:#f0eaff;font-size:9px;padding:7px 12px;letter-spacing:2px;border-radius:2px;cursor:pointer;border:none;transition:background .2s;font-family:inherit;}
+.abtn:hover{background:var(--al);}
+.abtn:disabled,.abtn.dis{background:var(--t4);cursor:not-allowed;}
+@keyframes addP{0%{transform:translateY(-3px)}50%{transform:translateY(-7px)}100%{transform:translateY(-3px)}}
+.prod.added{animation:addP .4s ease;}
+
+/* ── PAGINATION ── */
+.pag{display:flex;align-items:center;justify-content:center;gap:10px;padding:24px 0 0;flex-wrap:wrap;}
+.pag-btn{background:transparent;border:.5px solid var(--br);color:var(--t3);font-size:9px;padding:7px 16px;letter-spacing:2px;border-radius:2px;cursor:pointer;transition:all .2s;font-family:inherit;}
+.pag-btn:hover:not(:disabled){background:var(--a);border-color:var(--a);color:#f0eaff;}
+.pag-btn:disabled{opacity:.3;cursor:not-allowed;}
+.pag-info{font-size:10px;color:var(--t4);letter-spacing:2px;}
+
+/* ── CATBAR + FILTER ── */
+.catbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:.5px solid var(--cb);gap:10px;flex-wrap:wrap;}
+.catbar-ct{font-size:9px;color:var(--t4);letter-spacing:2px;}
+.catbar-sel{background:var(--bg);border:.5px solid var(--br);color:var(--t3);font-size:9px;padding:5px 10px;border-radius:2px;cursor:pointer;outline:none;letter-spacing:1px;font-family:inherit;}
+.frow{display:flex;gap:8px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;}
+.fbtn{background:transparent;border:.5px solid var(--br);color:var(--t3);font-size:9px;padding:5px 14px;letter-spacing:2px;border-radius:2px;cursor:pointer;transition:all .2s;font-family:inherit;}
+.fbtn:hover,.fbtn.act{background:var(--a);border-color:var(--a);color:#f0eaff;}
+.hl-box{background:linear-gradient(135deg,var(--hl1),var(--cd));border:.5px solid var(--br);border-radius:6px;padding:16px 20px;margin-bottom:20px;display:flex;gap:14px;align-items:flex-start;}
+.hl-ico{font-size:20px;flex-shrink:0;margin-top:2px;}
+.hl-ttl{font-size:10px;color:var(--t2);letter-spacing:2px;margin-bottom:5px;}
+.hl-txt{font-size:11px;color:var(--t3);line-height:1.75;}
+.trust{background:var(--bg);border-top:.5px solid var(--br);padding:20px 28px;display:flex;justify-content:space-around;text-align:center;transition:background .3s;flex-wrap:wrap;gap:12px;}
+.ti{font-size:14px;color:var(--a);margin-bottom:4px;}.tl{font-size:9px;color:var(--t2);letter-spacing:2px;}
+.empty-grid{padding:50px 20px;text-align:center;color:var(--t4);font-size:12px;grid-column:1/-1;}
+.empty-grid button{background:transparent;border:.5px solid var(--br);color:var(--t3);font-size:9px;padding:7px 16px;letter-spacing:2px;border-radius:2px;cursor:pointer;margin-top:12px;font-family:inherit;}
+.empty-grid button:hover{border-color:var(--a);color:var(--a);}
+
+/* ── PRODUCT DETAIL ── */
+.pd-bc{padding:9px 28px;font-size:9px;color:var(--t4);letter-spacing:2px;border-bottom:.5px solid var(--cb);display:flex;align-items:center;gap:6px;background:var(--bg2);flex-wrap:wrap;}
+.pd-layout{display:grid;grid-template-columns:420px 1fr;}
+.pd-art-col{background:linear-gradient(135deg,var(--pi1),var(--pi2));display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 40px;position:relative;border-right:.5px solid var(--br);}
+.pd-main-img{min-height:220px;display:flex;align-items:center;justify-content:center;}
+.pd-thumbs{display:flex;gap:10px;margin-top:18px;}
+.pd-thumb{border:.5px solid var(--br);border-radius:4px;padding:6px;cursor:pointer;background:rgba(0,0,0,.3);transition:border-color .2s;}
+.pd-thumb:hover,.pd-thumb.act{border-color:var(--a);}
+.pd-art-bdg{position:absolute;top:16px;right:16px;font-size:9px;padding:4px 10px;letter-spacing:2px;border-radius:2px;color:#f0eaff;}
+.pd-info-col{padding:36px 40px;}
+.pd-type{font-size:9px;color:var(--t3);letter-spacing:4px;margin-bottom:10px;}
+.pd-name{font-family:'Cinzel',Georgia,serif;font-size:24px;color:var(--t);font-weight:400;margin-bottom:4px;line-height:1.3;}
+.pd-series{font-size:12px;color:var(--t4);margin-bottom:12px;}
+.pd-rating-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.pd-rval{font-size:12px;color:var(--t2);font-weight:600;}.pd-rct{font-size:10px;color:var(--t4);}
+.pd-div{height:.5px;background:var(--br);margin:16px 0;}
+.pd-price{font-size:36px;color:var(--t2);font-weight:700;margin-bottom:8px;}
+.pd-stock-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.pd-sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.pd-sdot.ok{background:var(--ok);}.pd-sdot.low{background:var(--warn);}.pd-sdot.out{background:var(--err);}
+.pd-stxt{font-size:11px;}.pd-stxt.ok{color:var(--ok);}.pd-stxt.low{color:var(--warn);}.pd-stxt.out{color:var(--err);}
+.pd-delivery{font-size:11px;color:var(--t3);margin-bottom:14px;}
+.pd-delivery span{color:var(--ok);font-weight:600;}
+.pd-desc-s{font-size:12px;color:var(--t3);line-height:1.8;margin-bottom:16px;}
+.pd-qrow{display:flex;align-items:center;margin-bottom:12px;}
+.pd-qbtn{background:var(--bg2);border:.5px solid var(--br);color:var(--t2);width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;transition:background .2s;font-family:inherit;}
+.pd-qbtn:hover{background:var(--a);border-color:var(--a);color:#fff;}
+.pd-qbtn:first-child{border-radius:2px 0 0 2px;}.pd-qbtn:last-child{border-radius:0 2px 2px 0;}
+.pd-qval{width:44px;height:34px;border-top:.5px solid var(--br);border-bottom:.5px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--t);background:var(--bg);}
+.pd-abtn{width:100%;background:var(--a);color:#f0eaff;font-size:10px;padding:14px;letter-spacing:3px;border:none;border-radius:2px;cursor:pointer;transition:background .2s;margin-bottom:10px;font-family:inherit;}
+.pd-abtn:hover{background:var(--al);}
+.pd-abtn.dis{background:var(--t4);cursor:not-allowed;}
+.pd-actions{display:flex;gap:8px;margin-bottom:14px;}
+.pd-wl-btn,.pd-share-btn{flex:1;background:transparent;border:.5px solid var(--br);color:var(--t3);font-size:9px;padding:10px;letter-spacing:2px;border-radius:2px;cursor:pointer;transition:all .2s;font-family:inherit;}
+.pd-wl-btn:hover,.pd-share-btn:hover{border-color:var(--a);color:var(--a);}
+.pd-wl-btn.act{background:var(--a);border-color:var(--a);color:#f0eaff;}
+.share-drop{position:absolute;background:var(--cd);border:.5px solid var(--br);border-radius:4px;padding:6px 0;width:170px;display:none;z-index:10;box-shadow:0 6px 18px rgba(0,0,0,.3);right:0;top:100%;margin-top:4px;}
+.share-drop.on{display:block;}
+.share-drop a{display:block;padding:9px 16px;font-size:10px;color:var(--t2);letter-spacing:2px;cursor:pointer;transition:background .15s;text-decoration:none;}
+.share-drop a:hover{background:var(--dh);}
+.pd-sec-strip{display:flex;gap:12px;font-size:10px;color:var(--t4);align-items:center;flex-wrap:wrap;}
+.pd-sec-item{display:flex;align-items:center;gap:4px;}
+
+/* ── STICKY ATC ── */
+.satc{position:fixed;top:0;left:0;right:0;background:var(--cd);border-bottom:.5px solid var(--br);padding:10px 36px;display:flex;align-items:center;justify-content:space-between;z-index:38;transform:translateY(-100%);transition:transform .3s;box-shadow:0 4px 16px rgba(0,0,0,.2);gap:12px;}
+.satc.vis{transform:translateY(0);}
+.satc-name{font-size:13px;color:var(--t);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.satc-price{font-size:18px;color:var(--t2);font-weight:700;}
+.satc-btn{background:var(--a);color:#f0eaff;font-size:9px;padding:9px 20px;letter-spacing:3px;border:none;border-radius:2px;cursor:pointer;transition:background .2s;white-space:nowrap;font-family:inherit;}
+.satc-btn:hover{background:var(--al);}
+
+/* ── TABS ── */
+.pd-tabs-wrap{border-top:.5px solid var(--br);}
+.pd-tab-bar{display:flex;padding:0 28px;background:var(--bg2);border-bottom:.5px solid var(--br);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.pd-tab-bar::-webkit-scrollbar{display:none;}
+.pd-tab{background:transparent;border:none;border-bottom:2px solid transparent;padding:14px 20px;font-size:10px;color:var(--t4);letter-spacing:3px;cursor:pointer;transition:color .2s,border-color .2s;margin-bottom:-.5px;white-space:nowrap;font-family:inherit;}
+.pd-tab.act{color:var(--a);border-bottom-color:var(--a);}
+.pd-tc{padding:32px 28px;display:none;}
+.pd-tc.on{display:block;}
+.pd-tc-txt{font-size:12px;color:var(--t3);line-height:1.9;max-width:700px;}
+.pd-dtbl{width:100%;max-width:480px;border-collapse:collapse;}
+.pd-dtbl tr{border-bottom:.5px solid var(--br);}
+.pd-dtbl td{padding:10px 6px;font-size:11px;}
+.pd-dtbl td:first-child{color:var(--t4);letter-spacing:2px;font-size:9px;width:150px;}
+.pd-dtbl td:last-child{color:var(--t2);}
+.review{display:flex;gap:14px;padding:16px 0;border-bottom:.5px solid var(--br);}
+.review:last-child{border-bottom:none;}
+.rev-av{width:36px;height:36px;border-radius:50%;background:var(--a);display:flex;align-items:center;justify-content:center;font-size:13px;color:#f0eaff;flex-shrink:0;font-family:'Cinzel',Georgia,serif;}
+.rev-nm{font-size:11px;color:var(--t2);margin-bottom:2px;}.rev-dt{font-size:9px;color:var(--t4);}
+.rev-txt{font-size:11px;color:var(--t3);line-height:1.7;margin-top:6px;}
+.rev-form{margin-top:22px;padding:20px;background:var(--cd);border:.5px solid var(--br);border-radius:6px;}
+.rev-form-ttl{font-size:10px;color:var(--t2);letter-spacing:3px;margin-bottom:14px;}
+.rev-stars-wrap{display:flex;gap:4px;margin-bottom:12px;}
+.rev-star{cursor:pointer;transition:transform .15s,color .15s;font-size:20px;color:var(--br);background:none;border:none;padding:0 2px;line-height:1;}
+.rev-star:hover,.rev-star.act{color:#a78bfa;transform:scale(1.1);}
+.rev-ta{width:100%;background:var(--bg);border:.5px solid var(--br);color:var(--t);font-size:12px;padding:10px 12px;border-radius:2px;outline:none;font-family:Georgia,serif;resize:vertical;min-height:80px;margin-bottom:10px;}
+.rev-ta:focus{border-color:var(--a);}
+.rev-inp{width:100%;background:var(--bg);border:.5px solid var(--br);color:var(--t);font-size:12px;padding:9px 12px;border-radius:2px;outline:none;font-family:Georgia,serif;margin-bottom:10px;}
+.rev-inp:focus{border-color:var(--a);}
+.rev-submit{background:var(--a);color:#f0eaff;font-size:9px;padding:9px 20px;letter-spacing:2px;border:none;border-radius:2px;cursor:pointer;transition:background .2s;font-family:inherit;}
+.rev-submit:hover{background:var(--al);}
+.pd-sim{padding:28px;border-top:.5px solid var(--br);background:var(--bg2);}
+.pd-sim-ttl{font-size:9px;color:var(--t4);letter-spacing:4px;margin-bottom:18px;}
+.sim-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+
+/* ── CART ── */
+.cart-bd{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;display:none;}
+.cart-bd.on{display:block;}
+.cart-p{position:fixed;top:0;right:-340px;width:330px;max-width:90vw;height:100vh;background:var(--cd);border-left:.5px solid var(--br);z-index:70;transition:right .35s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column;}
+.cart-p.on{right:0;}
+.cart-hdr{padding:18px 20px 14px;border-bottom:.5px solid var(--br);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.cart-ttl{font-size:11px;color:var(--t2);letter-spacing:4px;}
+.cart-x{cursor:pointer;color:var(--t4);font-size:22px;background:none;border:none;line-height:1;padding:4px 8px;}
+.cart-x:hover{color:var(--t2);}
+.cart-body{flex:1;overflow-y:auto;padding:0 18px;}
+.ci{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cb);gap:8px;}
+.ci-l{flex:1;min-width:0;}
+.ci-nm{color:var(--t2);font-size:11px;line-height:1.4;}
+.ci-meta{font-size:9px;color:var(--t4);margin-top:2px;}
+.ci-r{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ci-pr{color:var(--t3);font-size:11px;font-weight:600;min-width:52px;text-align:right;}
+.ci-rm{color:var(--t4);cursor:pointer;font-size:16px;background:none;border:none;line-height:1;padding:4px 6px;}
+.ci-rm:hover{color:var(--err);}
+.ci-qrow{display:flex;align-items:center;margin-top:5px;}
+.ci-qbtn{background:var(--bg);border:.5px solid var(--br);color:var(--t3);width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;line-height:1;transition:background .15s;font-family:inherit;}
+.ci-qbtn:hover{background:var(--a);border-color:var(--a);color:#fff;}
+.ci-qbtn:first-child{border-radius:2px 0 0 2px;}.ci-qbtn:last-child{border-radius:0 2px 2px 0;}
+.ci-qval{width:26px;height:22px;border-top:.5px solid var(--br);border-bottom:.5px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t);background:var(--bg2);}
+.cart-empty{font-size:12px;color:var(--t4);text-align:center;padding:30px 0 14px;}
+.cart-empty-ico{font-size:36px;margin-bottom:10px;opacity:.5;}
+.cart-cont{display:block;text-align:center;font-size:9px;color:var(--t3);letter-spacing:2px;cursor:pointer;padding:10px;border:.5px solid var(--br);border-radius:2px;margin-top:10px;transition:all .2s;background:none;width:100%;font-family:inherit;}
+.cart-cont:hover{border-color:var(--a);color:var(--a);}
+.cart-ftr{padding:14px 18px 20px;border-top:.5px solid var(--br);flex-shrink:0;}
+.cart-sub{display:flex;justify-content:space-between;font-size:10px;color:var(--t4);margin-bottom:4px;}
+.cart-tot{display:flex;justify-content:space-between;font-size:14px;color:var(--t);font-weight:700;margin-bottom:12px;}
+.cobtn{width:100%;background:var(--a);color:#f0eaff;font-size:10px;padding:13px;letter-spacing:3px;border:none;border-radius:2px;cursor:pointer;transition:background .2s;font-family:inherit;}
+.cobtn:hover{background:var(--al);}
+.cobtn:disabled{background:var(--t4);cursor:not-allowed;}
+
+/* ── WISHLIST PANEL ── */
+.wl-p{position:fixed;top:0;right:-340px;width:330px;max-width:90vw;height:100vh;background:var(--cd);border-left:.5px solid var(--br);z-index:70;transition:right .35s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column;}
+.wl-p.on{right:0;}
+.wl-hdr{padding:18px 20px 14px;border-bottom:.5px solid var(--br);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.wl-ttl{font-size:11px;color:var(--t2);letter-spacing:4px;}
+.wl-x{cursor:pointer;color:var(--t4);font-size:22px;background:none;border:none;padding:4px 8px;}
+.wl-body{flex:1;overflow-y:auto;padding:0 18px;}
+.wl-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:.5px solid var(--cb);gap:8px;}
+.wl-item-l{flex:1;min-width:0;}
+.wl-item-nm{font-size:12px;color:var(--t2);}
+.wl-item-pr{font-size:11px;color:var(--t4);margin-top:2px;}
+.wl-item-r{display:flex;gap:6px;flex-shrink:0;}
+.wl-atc{background:var(--a);color:#f0eaff;font-size:8px;padding:6px 9px;letter-spacing:1px;border:none;border-radius:2px;cursor:pointer;font-family:inherit;}
+.wl-atc:hover{background:var(--al);}
+.wl-rm{background:none;border:.5px solid var(--br);color:var(--t4);font-size:12px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer;font-family:inherit;}
+.wl-rm:hover{color:var(--err);border-color:var(--err);}
+
+/* ── CHECKOUT ── */
+.co-bd{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:80;display:none;align-items:center;justify-content:center;padding:14px;}
+.co-bd.on{display:flex;}
+.co-modal{background:var(--cd);border:.5px solid var(--br);border-radius:8px;width:540px;max-width:100%;max-height:92vh;overflow-y:auto;animation:popIn .22s cubic-bezier(.16,1,.3,1);}
+@keyframes popIn{from{opacity:0;transform:scale(.96) translateY(-10px)}to{opacity:1;transform:none}}
+.co-hdr{padding:20px 24px 16px;border-bottom:.5px solid var(--br);display:flex;justify-content:space-between;align-items:center;}
+.co-ttl{font-family:'Cinzel',Georgia,serif;font-size:14px;color:var(--t);letter-spacing:3px;}
+.co-x{cursor:pointer;color:var(--t4);font-size:24px;background:none;border:none;padding:4px 8px;}
+.co-prog{display:flex;padding:16px 24px;border-bottom:.5px solid var(--br);}
+.co-ps{flex:1;text-align:center;font-size:9px;letter-spacing:2px;padding-bottom:10px;border-bottom:2px solid var(--br);color:var(--t4);transition:all .3s;}
+.co-ps.act{color:var(--a);border-bottom-color:var(--a);}
+.co-ps.done{color:var(--t3);border-bottom-color:var(--t3);}
+.co-step{padding:24px;display:none;}
+.co-step.on{display:block;}
+.co-fld{margin-bottom:14px;}
+.co-lbl{font-size:9px;color:var(--t4);letter-spacing:2px;display:block;margin-bottom:6px;}
+.co-lbl .req{color:var(--err);}
+.co-inp{width:100%;background:var(--bg);border:.5px solid var(--br);color:var(--t);font-size:12px;padding:10px 12px;border-radius:2px;outline:none;font-family:Georgia,serif;transition:border-color .2s;}
+.co-inp:focus{border-color:var(--a);}
+.co-inp.err{border-color:var(--err);}
+.co-err{font-size:10px;color:var(--err);margin-top:4px;display:none;}
+.co-err.on{display:block;}
+.co-r2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.co-disc-row{display:flex;gap:8px;}
+.co-disc-apply{background:var(--bg2);border:.5px solid var(--br);color:var(--t3);font-size:9px;padding:10px 14px;letter-spacing:2px;border-radius:2px;cursor:pointer;transition:all .2s;white-space:nowrap;font-family:inherit;}
+.co-disc-apply:hover{border-color:var(--a);color:var(--a);}
+.co-disc-msg{font-size:10px;margin-top:5px;}
+.co-pays{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px;}
+.co-pay{border:.5px solid var(--br);border-radius:4px;padding:14px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);font-family:inherit;color:inherit;}
+.co-pay:hover,.co-pay.sel{border-color:var(--a);background:var(--dh);}
+.co-pay-ico{font-size:22px;margin-bottom:6px;}
+.co-pay-nm{font-size:10px;color:var(--t2);letter-spacing:1px;}
+.co-pay-info{font-size:11px;color:var(--t3);padding:10px 14px;background:var(--hl1);border-radius:4px;margin-bottom:16px;min-height:36px;line-height:1.6;}
+.co-ri{display:flex;justify-content:space-between;padding:8px 0;border-bottom:.5px solid var(--cb);font-size:11px;gap:8px;}
+.co-ri span:first-child{color:var(--t3);}.co-ri span:last-child{color:var(--t2);font-weight:600;white-space:nowrap;}
+.co-disc-row2{display:flex;justify-content:space-between;padding:8px 0;font-size:11px;color:var(--ok);}
+.co-tot-row{display:flex;justify-content:space-between;padding-top:12px;font-size:14px;color:var(--t);font-weight:700;margin-bottom:16px;}
+.co-btn{width:100%;background:var(--a);color:#f0eaff;font-size:10px;padding:13px;letter-spacing:3px;border:none;border-radius:2px;cursor:pointer;transition:background .2s;font-family:inherit;}
+.co-btn:hover{background:var(--al);}
+.co-btn:disabled{background:var(--t4);cursor:not-allowed;}
+.co-back{background:transparent;border:none;color:var(--t4);font-size:10px;letter-spacing:2px;cursor:pointer;margin-top:10px;display:block;text-align:center;width:100%;font-family:inherit;}
+.co-back:hover{color:var(--t3);}
+.co-sec{display:flex;justify-content:center;gap:16px;padding:12px 0 0;border-top:.5px solid var(--br);margin-top:12px;flex-wrap:wrap;}
+.co-sec-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t4);}
+.co-succ{display:none;flex-direction:column;align-items:center;padding:48px 24px;text-align:center;gap:12px;}
+.co-succ.on{display:flex;}
+.co-succ-ico{font-size:48px;}
+.co-succ-ttl{font-family:'Cinzel',Georgia,serif;font-size:18px;color:var(--t);letter-spacing:2px;}
+.co-succ-sub{font-size:12px;color:var(--t3);line-height:1.8;}
+.co-succ-items{width:100%;background:var(--hl1);border-radius:4px;padding:14px;text-align:left;font-size:11px;color:var(--t3);}
+.co-succ-item{display:flex;justify-content:space-between;padding:4px 0;gap:8px;}
+
+/* ── STOCK ALERT ── */
+.sa-bd{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:90;display:none;align-items:center;justify-content:center;padding:14px;}
+.sa-bd.on{display:flex;}
+.sa-modal{background:var(--cd);border:.5px solid var(--br);border-radius:8px;width:380px;max-width:100%;padding:28px;animation:popIn .2s cubic-bezier(.16,1,.3,1);}
+.sa-ttl{font-family:'Cinzel',Georgia,serif;font-size:13px;color:var(--t);letter-spacing:2px;margin-bottom:8px;}
+.sa-sub{font-size:11px;color:var(--t3);line-height:1.7;margin-bottom:16px;}
+.sa-inp{width:100%;background:var(--bg);border:.5px solid var(--br);color:var(--t);font-size:12px;padding:10px 12px;border-radius:2px;outline:none;font-family:Georgia,serif;margin-bottom:10px;transition:border-color .2s;}
+.sa-inp:focus{border-color:var(--a);}
+.sa-inp.err{border-color:var(--err);}
+.sa-btn{width:100%;background:var(--a);color:#f0eaff;font-size:10px;padding:12px;letter-spacing:3px;border:none;border-radius:2px;cursor:pointer;transition:background .2s;margin-bottom:8px;font-family:inherit;}
+.sa-btn:hover{background:var(--al);}
+.sa-close{width:100%;background:none;border:.5px solid var(--br);color:var(--t4);font-size:10px;padding:9px;letter-spacing:2px;border-radius:2px;cursor:pointer;font-family:inherit;}
+.sa-close:hover{border-color:var(--a);color:var(--t3);}
+
+/* ── LEGAL ── */
+.lg-bd{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:90;display:none;align-items:center;justify-content:center;padding:14px;}
+.lg-bd.on{display:flex;}
+.lg-modal{background:var(--cd);border:.5px solid var(--br);border-radius:8px;width:560px;max-width:100%;max-height:88vh;display:flex;flex-direction:column;animation:popIn .22s cubic-bezier(.16,1,.3,1);}
+.lg-hdr{padding:20px 24px 16px;border-bottom:.5px solid var(--br);display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.lg-ttl{font-family:'Cinzel',Georgia,serif;font-size:14px;color:var(--t);letter-spacing:3px;}
+.lg-x{cursor:pointer;color:var(--t4);font-size:24px;background:none;border:none;padding:4px 8px;}
+.lg-body{padding:24px;overflow-y:auto;font-size:12px;color:var(--t3);line-height:1.9;}
+.lg-body h3{font-family:'Cinzel',Georgia,serif;font-size:11px;color:var(--t2);letter-spacing:2px;margin:16px 0 8px;}
+.lg-body h3:first-child{margin-top:0;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--a);color:#f0eaff;font-size:11px;padding:11px 22px;border-radius:4px;letter-spacing:2px;opacity:0;transition:opacity .3s,transform .3s;z-index:100;pointer-events:none;max-width:90vw;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.err{background:var(--err);}
+
+/* ── FOOTER ── */
+footer{background:var(--ftbg);border-top:.5px solid var(--br);padding:44px 28px 22px;transition:background .3s;}
+.ft-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:32px;margin-bottom:32px;}
+.ft-brand-txt{font-size:11px;color:var(--t4);line-height:1.8;margin-top:10px;max-width:240px;}
+.ft-col-ttl{font-size:9px;color:var(--t2);letter-spacing:4px;margin-bottom:14px;}
+.ft-col a{display:block;font-size:11px;color:var(--t4);margin-bottom:9px;cursor:pointer;transition:color .2s;text-decoration:none;}
+.ft-col a:hover{color:var(--t2);}
+.ft-nl{display:flex;gap:6px;margin-top:6px;}
+.ft-nl-inp{flex:1;background:var(--bg);border:.5px solid var(--br);color:var(--t);font-size:10px;padding:8px 10px;border-radius:2px;outline:none;font-family:Georgia,serif;min-width:0;}
+.ft-nl-inp:focus{border-color:var(--a);}
+.ft-nl-btn{background:var(--a);color:#f0eaff;border:none;font-size:9px;padding:8px 14px;letter-spacing:1px;border-radius:2px;cursor:pointer;transition:background .2s;font-family:inherit;}
+.ft-nl-btn:hover{background:var(--al);}
+.ft-sec{display:flex;gap:14px;margin-top:14px;flex-wrap:wrap;}
+.ft-sec-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--t4);}
+.ft-bot{border-top:.5px solid var(--br);padding-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.ft-copy{font-size:10px;color:var(--t4);}
+.ft-pay{display:flex;gap:10px;font-size:18px;}
+
+/* ── RESPONSIVE ── */
+@media (max-width:980px){
+  .pd-layout{grid-template-columns:1fr;}
+  .pd-art-col{border-right:none;border-bottom:.5px solid var(--br);padding:24px 20px;}
+  .pd-info-col{padding:24px 20px;}
+  .sim-grid{grid-template-columns:repeat(2,1fr);}
+  .ft-grid{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:800px){
+  .nav{padding:10px 14px;}
+  .ns-inp{width:120px;}
+  .sec{padding:28px 14px;}
+  .grid{grid-template-columns:repeat(2,1fr);gap:12px;}
+  .cats{grid-template-columns:repeat(2,1fr);}
+  .cat-layout{grid-template-columns:1fr;}
+  .sb{position:static;border-right:none;border-bottom:.5px solid var(--br);padding:14px;background:var(--bg2);}
+  .sb-sticky{position:static;}
+  .sb-mtoggle{display:block;}
+  .sb-content{display:none;}
+  .sb-content.on{display:block;}
+  .cat-main{padding:18px 14px;}
+  .pd-bc,.bc{padding:9px 14px;}
+  .pd-tab-bar{padding:0 14px;}
+  .pd-tc{padding:24px 14px;}
+  .pd-sim{padding:24px 14px;}
+  .trust{padding:18px 14px;justify-content:space-between;}
+  footer{padding:32px 14px 20px;}
+  .hwm{font-size:78px;}
+  .mhero{height:260px;}
+  .shero{height:200px;}
+  .sh-ttl{font-size:22px;letter-spacing:3px;}
+  .satc{padding:10px 14px;}
+  .satc-name{font-size:11px;}
+  .satc-price{font-size:15px;}
+  .satc-btn{padding:8px 12px;font-size:8px;letter-spacing:2px;}
+  .pd-name{font-size:20px;}
+  .pd-price{font-size:30px;}
+}
+@media (max-width:520px){
+  .nav{grid-template-columns:auto 1fr auto;gap:6px;}
+  .nc{order:0;}
+  .ns-wrap{display:none;}
+  .grid{grid-template-columns:1fr;}
+  .cats{grid-template-columns:1fr 1fr;}
+  .sim-grid{grid-template-columns:1fr;}
+  .ft-grid{grid-template-columns:1fr;gap:24px;}
+  .hwm{font-size:62px;}
+  .mhero{height:220px;}
+  .hsub{letter-spacing:5px;font-size:8px;}
+  .sh-ttl{font-size:18px;letter-spacing:2px;}
+  .sh-eye{letter-spacing:4px;font-size:8px;}
+  .co-r2{grid-template-columns:1fr;}
+  .co-pays{grid-template-columns:1fr 1fr;}
+  .co-prog{padding:14px;}
+  .co-ps{font-size:8px;letter-spacing:1px;}
+  .co-step{padding:18px;}
+  .cart-p,.wl-p{width:100%;max-width:100%;}
+  .pimg{height:140px;}
+  .theme-btn{padding:5px 8px;}
+  .cbtn{padding:7px 10px;}
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip">Zum Hauptinhalt springen</a>
+<div class="wrap">
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Sticky ATC Bar -->
+<div class="satc" id="satc" aria-hidden="true">
+  <div><div class="satc-name" id="satcName"></div></div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div class="satc-price" id="satcPrice"></div>
+    <button class="satc-btn" id="satcBtn" type="button">IN DEN WARENKORB</button>
+  </div>
+</div>
+
+<!-- Stock Alert -->
+<div class="sa-bd" id="saBd" onclick="if(event.target===this)closeSA()" role="dialog" aria-modal="true" aria-labelledby="saTtl">
+  <div class="sa-modal">
+    <div class="sa-ttl" id="saTtl">LAGERBESTAND-ALARM</div>
+    <div class="sa-sub">Wir benachrichtigen dich, sobald <strong id="saName"></strong> wieder verfügbar ist.</div>
+    <label class="sr" for="saEmail">E-Mail-Adresse</label>
+    <input class="sa-inp" id="saEmail" placeholder="deine@email.de" type="email" autocomplete="email">
+    <button class="sa-btn" onclick="submitSA()" type="button">BENACHRICHTIGEN</button>
+    <button class="sa-close" onclick="closeSA()" type="button">Abbrechen</button>
+  </div>
+</div>
+
+<!-- Legal Modal -->
+<div class="lg-bd" id="lgBd" onclick="if(event.target===this)closeLg()" role="dialog" aria-modal="true" aria-labelledby="lgTtl">
+  <div class="lg-modal">
+    <div class="lg-hdr"><div class="lg-ttl" id="lgTtl"></div><button class="lg-x" onclick="closeLg()" type="button" aria-label="Schließen">×</button></div>
+    <div class="lg-body" id="lgBody"></div>
+  </div>
+</div>
+
+<!-- Cart Backdrop + Panel -->
+<div class="cart-bd" id="cBd" onclick="toggleCart()"></div>
+<aside class="cart-p" id="cPanel" aria-label="Warenkorb" aria-hidden="true">
+  <div class="cart-hdr"><div class="cart-ttl">WARENKORB</div><button class="cart-x" onclick="toggleCart()" type="button" aria-label="Warenkorb schließen">×</button></div>
+  <div class="cart-body" id="cItems"></div>
+  <div class="cart-ftr" id="cFtr">
+    <div class="cart-sub"><span>Versand</span><span id="cShip">3,99 €</span></div>
+    <div class="cart-tot"><span>GESAMT</span><span id="cTot">0,00 €</span></div>
+    <button class="cobtn" id="cCoBtn" onclick="openCo()" type="button">ZUR KASSE →</button>
+  </div>
+</aside>
+
+<!-- Wishlist Panel -->
+<div class="cart-bd" id="wlBd" onclick="toggleWLPanel()"></div>
+<aside class="wl-p" id="wlPanel" aria-label="Merkliste" aria-hidden="true">
+  <div class="wl-hdr"><div class="wl-ttl">MERKLISTE</div><button class="wl-x" onclick="toggleWLPanel()" type="button" aria-label="Merkliste schließen">×</button></div>
+  <div class="wl-body" id="wlItems"></div>
+</aside>
+
+<!-- Checkout -->
+<div class="co-bd" id="coBd" onclick="if(event.target===this)closeCo()" role="dialog" aria-modal="true" aria-labelledby="coTtl">
+  <div class="co-modal">
+    <div class="co-hdr"><div class="co-ttl" id="coTtl">KASSE</div><button class="co-x" onclick="closeCo()" type="button" aria-label="Schließen">×</button></div>
+    <div class="co-prog" id="coProg">
+      <div class="co-ps act" id="cps1">1 · ADRESSE</div>
+      <div class="co-ps" id="cps2">2 · ZAHLUNG</div>
+      <div class="co-ps" id="cps3">3 · ÜBERSICHT</div>
+    </div>
+    <form class="co-step on" id="cos1" onsubmit="event.preventDefault();coGo(2);" novalidate>
+      <div class="co-r2">
+        <div class="co-fld"><label class="co-lbl" for="coFn">VORNAME <span class="req">*</span></label><input class="co-inp" id="coFn" placeholder="Max" autocomplete="given-name" required><div class="co-err" id="errFn">Bitte Vornamen angeben.</div></div>
+        <div class="co-fld"><label class="co-lbl" for="coLn">NACHNAME <span class="req">*</span></label><input class="co-inp" id="coLn" placeholder="Mustermann" autocomplete="family-name" required><div class="co-err" id="errLn">Bitte Nachnamen angeben.</div></div>
+      </div>
+      <div class="co-fld"><label class="co-lbl" for="coEm">E-MAIL <span class="req">*</span></label><input class="co-inp" id="coEm" type="email" placeholder="max@example.de" autocomplete="email" required><div class="co-err" id="errEm">Bitte gültige E-Mail-Adresse angeben.</div></div>
+      <div class="co-fld"><label class="co-lbl" for="coSt">STRASSE &amp; HAUSNUMMER <span class="req">*</span></label><input class="co-inp" id="coSt" placeholder="Musterstraße 12" autocomplete="street-address" required><div class="co-err" id="errSt">Bitte Straße und Hausnummer angeben.</div></div>
+      <div class="co-r2">
+        <div class="co-fld"><label class="co-lbl" for="coZip">PLZ <span class="req">*</span></label><input class="co-inp" id="coZip" placeholder="50667" inputmode="numeric" autocomplete="postal-code" pattern="\d{4,5}" required><div class="co-err" id="errZip">Bitte gültige PLZ angeben.</div></div>
+        <div class="co-fld"><label class="co-lbl" for="coCt">ORT <span class="req">*</span></label><input class="co-inp" id="coCt" placeholder="Köln" autocomplete="address-level2" required><div class="co-err" id="errCt">Bitte Ort angeben.</div></div>
+      </div>
+      <button class="co-btn" type="submit">WEITER ZUR ZAHLUNG →</button>
+    </form>
+    <div class="co-step" id="cos2">
+      <div class="co-pays" role="radiogroup" aria-label="Zahlungsmethode">
+        <button type="button" class="co-pay" onclick="selPay(this,'PayPal','Du wirst nach dem Bestellen sicher zu PayPal weitergeleitet.')" role="radio" aria-checked="false"><div class="co-pay-ico" aria-hidden="true">🅿️</div><div class="co-pay-nm">PAYPAL</div></button>
+        <button type="button" class="co-pay" onclick="selPay(this,'Kreditkarte','Deine Kartendaten werden SSL-verschlüsselt übertragen.')" role="radio" aria-checked="false"><div class="co-pay-ico" aria-hidden="true">💳</div><div class="co-pay-nm">KREDITKARTE</div></button>
+        <button type="button" class="co-pay" onclick="selPay(this,'Überweisung','Du erhältst die Bankdaten per E-Mail nach Bestellabschluss.')" role="radio" aria-checked="false"><div class="co-pay-ico" aria-hidden="true">🏦</div><div class="co-pay-nm">ÜBERWEISUNG</div></button>
+        <button type="button" class="co-pay" onclick="selPay(this,'Klarna','Kauf auf Rechnung – bezahle bis zu 30 Tage später.')" role="radio" aria-checked="false"><div class="co-pay-ico" aria-hidden="true">🛒</div><div class="co-pay-nm">KLARNA</div></button>
+      </div>
+      <div class="co-pay-info" id="coPayInfo">Wähle eine Zahlungsmethode.</div>
+      <button class="co-btn" id="coPayNext" onclick="coGo(3)" type="button" disabled>WEITER ZUR ÜBERSICHT →</button>
+      <button class="co-back" onclick="coGo(1)" type="button">← Zurück</button>
+      <div class="co-sec"><div class="co-sec-item">🔒 SSL-verschlüsselt</div><div class="co-sec-item">🛡️ Käuferschutz</div><div class="co-sec-item">✓ Trusted Shop</div></div>
+    </div>
+    <div class="co-step" id="cos3">
+      <div class="co-fld"><label class="co-lbl" for="discCode">RABATTCODE (optional)</label><div class="co-disc-row"><input class="co-inp" id="discCode" placeholder="z.B. ROYALCARDS10" autocapitalize="characters"><button class="co-disc-apply" onclick="applyDisc()" type="button">EINLÖSEN</button></div><div class="co-disc-msg" id="discMsg"></div></div>
+      <div id="coRevItems"></div>
+      <div id="coDiscRow"></div>
+      <div class="co-tot-row"><span>GESAMT</span><span id="coTot"></span></div>
+      <button class="co-btn" id="coPlace" onclick="placeOrder()" type="button">🔒 JETZT BESTELLEN</button>
+      <button class="co-back" onclick="coGo(2)" type="button">← Zurück</button>
+      <div class="co-sec"><div class="co-sec-item">🔒 SSL-verschlüsselt</div><div class="co-sec-item">🛡️ Käuferschutz</div><div class="co-sec-item">✓ Trusted Shop</div></div>
+    </div>
+    <div class="co-succ" id="coSucc">
+      <div class="co-succ-ico" aria-hidden="true">✨</div>
+      <div class="co-succ-ttl">Vielen Dank!</div>
+      <div class="co-succ-sub">Deine Bestellung wurde erfolgreich aufgegeben.<br>Eine Bestätigung erhältst du per E-Mail.</div>
+      <div class="co-succ-items" id="coSuccItems"></div>
+      <button class="co-btn" onclick="closeCo()" type="button">ZURÜCK ZUM SHOP</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav" aria-label="Hauptnavigation">
+  <div class="nl">
+    <div class="hw">
+      <button class="hbtn" type="button" aria-label="Menü öffnen" aria-haspopup="true"><span></span><span></span><span></span></button>
+      <div class="drop" id="navDrop" role="menu">
+        <a onclick="nav('main')" data-page="main" role="menuitem" tabindex="0">STARTSEITE</a>
+        <div class="dv"></div>
+        <a onclick="nav('booster')" data-page="booster" role="menuitem" tabindex="0">BOOSTER PACKS</a>
+        <a onclick="nav('single')" data-page="single" role="menuitem" tabindex="0">SINGLES</a>
+        <a onclick="nav('set')" data-page="set" role="menuitem" tabindex="0">DISPLAYS &amp; ETBs</a>
+        <a onclick="nav('zubehoer')" data-page="zubehoer" role="menuitem" tabindex="0">ZUBEHÖR</a>
+        <div class="dv"></div>
+        <a onclick="openLg('ueber')" role="menuitem" tabindex="0">ÜBER UNS</a>
+        <a onclick="openLg('kontakt')" role="menuitem" tabindex="0">KONTAKT</a>
+      </div>
+    </div>
+  </div>
+  <div class="nc">
+    <button class="logo" onclick="nav('main')" type="button" aria-label="RoyalCards · Startseite">
+      <svg width="62" height="82" viewBox="0 0 70 92" fill="none" aria-hidden="true">
+        <g transform="rotate(-10,22,46)"><rect x="3" y="19" width="38" height="54" rx="5" fill="#1a1228" stroke="#4a3472" stroke-width="0.8"/></g>
+        <g transform="rotate(6,38,40)"><rect x="19" y="13" width="38" height="54" rx="5" fill="#6d28d9" stroke="#9d77e8" stroke-width="0.7"/><rect x="22.5" y="16.5" width="31" height="47" rx="3" fill="none" stroke="#a78bfa" stroke-width="0.45" opacity="0.5"/><text x="38" y="52" font-family="'Cinzel',Georgia,serif" font-size="13" font-weight="600" fill="#0d0d1a" text-anchor="middle">RC</text><g transform="translate(48,22)"><rect x="-6" y="8" width="12" height="2.2" rx="0.7" fill="#0d0d1a"/><path d="M-6,8 L-6,3 L-2.5,5.5 L0,0 L2.5,5.5 L6,3 L6,8 Z" fill="#0d0d1a"/><circle cx="0" cy="2.2" r="0.9" fill="#6d28d9"/><circle cx="-4.2" cy="5.5" r="0.6" fill="#6d28d9"/><circle cx="4.2" cy="5.5" r="0.6" fill="#6d28d9"/></g></g>
+      </svg>
+    </button>
+  </div>
+  <div class="nr">
+    <div class="ns-wrap" role="search">
+      <div class="ns-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="var(--t4)" stroke-width="1.5"/><line x1="15.5" y1="15.5" x2="21" y2="21" stroke="var(--t4)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <label class="sr" for="nsInp">Produkte suchen</label>
+        <input class="ns-inp" id="nsInp" placeholder="Suchen..." oninput="nsSearch(this.value)" onfocus="nsOpen()" autocomplete="off" type="search">
+        <button class="ns-x" onclick="nsClose()" type="button" aria-label="Suche leeren">×</button>
+      </div>
+      <div class="ns-drop" id="nsDrop" role="listbox"></div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()" type="button" aria-label="Design wechseln (Hell/Dunkel)" id="themeBtn">
+      <svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="5" stroke="var(--t2)" stroke-width="1.5"/><line x1="12" y1="2" x2="12" y2="4" stroke="var(--t2)" stroke-width="1.5" stroke-linecap="round"/><line x1="12" y1="20" x2="12" y2="22" stroke="var(--t2)" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="12" x2="4" y2="12" stroke="var(--t2)" stroke-width="1.5" stroke-linecap="round"/><line x1="20" y1="12" x2="22" y2="12" stroke="var(--t2)" stroke-width="1.5" stroke-linecap="round"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34" stroke="var(--t2)" stroke-width="1.5" stroke-linecap="round"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07" stroke="var(--t2)" stroke-width="1.5" stroke-linecap="round"/><line x1="4.93" y1="19.07" x2="6.34" y2="17.66" stroke="var(--t2)" stroke-width="1.5" stroke-linecap="round"/><line x1="17.66" y1="6.34" x2="19.07" y2="4.93" stroke="var(--t2)" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+    <button class="wlbtn-nav" onclick="toggleWLPanel()" type="button" aria-label="Merkliste anzeigen">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="var(--t2)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="wl-bdg" id="wlBdg" aria-hidden="true">0</span>
+    </button>
+    <button class="cbtn" id="cartBtn" onclick="toggleCart()" type="button" aria-label="Warenkorb anzeigen">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="#f0eaff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="3" y1="6" x2="21" y2="6" stroke="#f0eaff" stroke-width="1.5" stroke-linecap="round"/><path d="M16 10a4 4 0 01-8 0" stroke="#f0eaff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="bdg" id="cCnt" aria-hidden="true">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- Category Quick Bar -->
+<div class="catqbar" id="catqbar" role="tablist" aria-label="Kategorien">
+  <button class="cqb-item" type="button" data-page="booster" onclick="nav('booster')">📦 BOOSTER PACKS</button>
+  <button class="cqb-item" type="button" data-page="single" onclick="nav('single')">🃏 SINGLES</button>
+  <button class="cqb-item" type="button" data-page="set" onclick="nav('set')">🏆 DISPLAYS &amp; ETBs</button>
+  <button class="cqb-item" type="button" data-page="zubehoer" onclick="nav('zubehoer')">✨ ZUBEHÖR</button>
+</div>
+
+<main id="main">
+<!-- MAIN PAGE -->
+<div class="page on" id="page-main">
+  <section class="mhero" aria-label="Willkommen">
+    <div class="hww">
+      <div class="hl"></div><div class="hgem">◆</div>
+      <h1 class="hwm"><span class="l l0">R</span><span class="l l1">o</span><span class="l l2">y</span><span class="l l3">a</span><span class="l l4">l</span><span class="l l5">C</span><span class="l l6">a</span><span class="l l7">r</span><span class="l l8">d</span><span class="l l9">s</span></h1>
+      <div class="hsub">◆ &nbsp; Curated for Collectors &nbsp; ◆</div>
+      <div class="hl"></div>
+      <div class="hcta">
+        <button class="hcta-btn" type="button" onclick="nav('booster')">JETZT STÖBERN</button>
+        <button class="hcta-btn alt" type="button" onclick="nav('single')">SINGLES ENTDECKEN</button>
+      </div>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="slbl">KATEGORIEN</div><h2 class="sttl">Was suchst du?</h2>
+    <div class="cats">
+      <button class="cat" type="button" onclick="nav('booster')"><div class="cat-ico" aria-hidden="true">📦</div><div class="cat-nm">BOOSTER</div><div class="cat-pr">ab 4,99 €</div></button>
+      <button class="cat" type="button" onclick="nav('single')"><div class="cat-ico" aria-hidden="true">🃏</div><div class="cat-nm">SINGLES</div><div class="cat-pr">ab 0,50 €</div></button>
+      <button class="cat" type="button" onclick="nav('set')"><div class="cat-ico" aria-hidden="true">🏆</div><div class="cat-nm">DISPLAYS</div><div class="cat-pr">ab 89,99 €</div></button>
+      <button class="cat" type="button" onclick="nav('zubehoer')"><div class="cat-ico" aria-hidden="true">✨</div><div class="cat-nm">ZUBEHÖR</div><div class="cat-pr">Sleeves &amp; mehr</div></button>
+    </div>
+  </section>
+  <section class="sec sec2">
+    <div class="slbl">HIGHLIGHTS</div><h2 class="sttl">Bestseller</h2>
+    <div class="frow" role="tablist">
+      <button class="fbtn act" type="button" onclick="fAll(this)">ALLE</button>
+      <button class="fbtn" type="button" onclick="fTag('booster',this)">BOOSTER</button>
+      <button class="fbtn" type="button" onclick="fTag('single',this)">SINGLES</button>
+      <button class="fbtn" type="button" onclick="fTag('set',this)">DISPLAYS</button>
+      <button class="fbtn" type="button" onclick="fTag('zubehoer',this)">ZUBEHÖR</button>
+    </div>
+    <div class="grid" id="mainGrid"></div>
+  </section>
+  <div class="trust"><div><div class="ti">✓</div><div class="tl">SICHER BEZAHLEN</div></div><div><div class="ti">📦</div><div class="tl">SCHNELLER VERSAND</div></div><div><div class="ti">★</div><div class="tl">GEPRÜFTE QUALITÄT</div></div><div><div class="ti">↩</div><div class="tl">14 TAGE RÜCKGABE</div></div></div>
+</div>
+
+<!-- BOOSTER PAGE -->
+<div class="page" id="page-booster">
+  <nav class="bc" aria-label="Brotkrumen"><button class="bc-lnk" type="button" onclick="nav('main')">HOME</button><span class="bc-sep">›</span><span class="bc-cur">BOOSTER PACKS</span></nav>
+  <section class="shero"><div class="shi"><div class="sh-art" aria-hidden="true"><svg width="130" height="75" viewBox="0 0 130 75" fill="none"><g transform="rotate(-14,30,37)"><rect x="0" y="5" width="38" height="55" rx="4" fill="#3b0764" stroke="#6d28d9" stroke-width="0.7"/></g><g transform="rotate(-4,65,37)"><rect x="46" y="1" width="38" height="55" rx="4" fill="#5b21b6" stroke="#8b5cf6" stroke-width="0.7"/><text x="65" y="32" font-family="'Cinzel',Georgia,serif" font-size="10" fill="#0d0d1a" text-anchor="middle" font-weight="600">RC</text></g><g transform="rotate(10,95,37)"><rect x="82" y="5" width="38" height="55" rx="4" fill="#6d28d9" stroke="#a78bfa" stroke-width="0.7"/></g></svg></div><div class="sh-eye">SCARLET &amp; VIOLET · XY · SUN &amp; MOON</div><div class="sh-ln"></div><h1 class="sh-ttl">BOOSTER PACKS</h1><div class="sh-tag">◆ &nbsp; Jedes Pack eine Überraschung &nbsp; ◆</div></div></section>
+  <div class="cat-layout">
+    <aside class="sb" aria-label="Filter">
+      <button class="sb-mtoggle" type="button" onclick="toggleSb(this)">⚙ FILTER ANZEIGEN</button>
+      <div class="sb-content" id="sb-booster">
+        <div class="sb-grp"><div class="sb-ttl">PREIS</div><div class="sb-price"><label class="sr" for="bMin">Min-Preis</label><input class="sb-inp" id="bMin" type="number" placeholder="Min €" min="0" inputmode="decimal"><span class="sb-sep">–</span><label class="sr" for="bMax">Max-Preis</label><input class="sb-inp" id="bMax" type="number" placeholder="Max €" min="0" inputmode="decimal"></div></div>
+        <div class="sb-grp"><div class="sb-ttl">SET</div><div id="bSets"></div></div>
+        <button class="sb-apply" type="button" onclick="sbFilter('booster','bGrid')">FILTER ANWENDEN</button>
+        <button class="sb-rst" type="button" onclick="sbReset('booster','bGrid')">ZURÜCKSETZEN</button>
+      </div>
+    </aside>
+    <div class="cat-main">
+      <div class="hl-box"><div class="hl-ico" aria-hidden="true">📦</div><div><div class="hl-ttl">WARUM BOOSTER PACKS?</div><div class="hl-txt">Booster Packs sind das Herzstück jeder Pokémon-Sammlung – der klassische Einstieg ins Hobby und immer wieder aufregend. Ob für Sammler, Spieler oder als Geschenk: Mit einem Booster Pack beginnt jede große Kollektion.</div></div></div>
+      <div class="catbar"><div class="catbar-ct" id="bCnt"></div><label class="sr" for="bSort">Sortierung</label><select class="catbar-sel" id="bSort" onchange="sortG('booster','bGrid',this.value)"><option value="">SORTIEREN</option><option value="asc">PREIS AUFSTEIGEND</option><option value="desc">PREIS ABSTEIGEND</option><option value="az">NAME A–Z</option><option value="rate">BEWERTUNG</option></select></div>
+      <div class="grid" id="bGrid"></div>
+      <div class="pag" id="pag-bGrid"></div>
+    </div>
+  </div>
+  <div class="trust"><div><div class="ti">✓</div><div class="tl">SICHER BEZAHLEN</div></div><div><div class="ti">📦</div><div class="tl">SCHNELLER VERSAND</div></div><div><div class="ti">★</div><div class="tl">GEPRÜFTE QUALITÄT</div></div><div><div class="ti">↩</div><div class="tl">14 TAGE RÜCKGABE</div></div></div>
+</div>
+
+<!-- SINGLES PAGE -->
+<div class="page" id="page-single">
+  <nav class="bc" aria-label="Brotkrumen"><button class="bc-lnk" type="button" onclick="nav('main')">HOME</button><span class="bc-sep">›</span><span class="bc-cur">SINGLES</span></nav>
+  <section class="shero"><div class="shi"><div class="sh-art" aria-hidden="true"><svg width="100" height="75" viewBox="0 0 100 75" fill="none"><rect x="5" y="3" width="90" height="65" rx="5" fill="#0d0d1a" stroke="#3a2a5e" stroke-width="1"/><rect x="8" y="6" width="84" height="59" rx="4" fill="#1a1228" stroke="#6d28d9" stroke-width="0.8"/><circle cx="50" cy="35" r="16" fill="none" stroke="#6d28d9" stroke-width="0.5" opacity="0.5"/><circle cx="50" cy="35" r="10" fill="#4c1d95" opacity="0.7"/><text x="50" y="39" font-family="'Cinzel',Georgia,serif" font-size="10" fill="#c4b5fd" text-anchor="middle" font-weight="600">SAR</text></svg></div><div class="sh-eye">HOLOFOIL · RAINBOW RARE · FULL ART</div><div class="sh-ln"></div><h1 class="sh-ttl">SINGLES &amp; RARITÄTEN</h1><div class="sh-tag">◆ &nbsp; Die Karten, die du suchst &nbsp; ◆</div></div></section>
+  <div class="cat-layout">
+    <aside class="sb" aria-label="Filter">
+      <button class="sb-mtoggle" type="button" onclick="toggleSb(this)">⚙ FILTER ANZEIGEN</button>
+      <div class="sb-content" id="sb-single">
+        <div class="sb-grp"><div class="sb-ttl">PREIS</div><div class="sb-price"><label class="sr" for="sMin">Min-Preis</label><input class="sb-inp" id="sMin" type="number" placeholder="Min €" min="0" inputmode="decimal"><span class="sb-sep">–</span><label class="sr" for="sMax">Max-Preis</label><input class="sb-inp" id="sMax" type="number" placeholder="Max €" min="0" inputmode="decimal"></div></div>
+        <div class="sb-grp"><div class="sb-ttl">SET</div><div id="sSets"></div></div>
+        <div class="sb-grp"><div class="sb-ttl">LAGERBESTAND</div><label class="sb-cb-row"><input type="checkbox" class="sb-avail" id="sAvail"> Nur verfügbare</label></div>
+        <button class="sb-apply" type="button" onclick="sbFilter('single','sGrid')">FILTER ANWENDEN</button>
+        <button class="sb-rst" type="button" onclick="sbReset('single','sGrid')">ZURÜCKSETZEN</button>
+      </div>
+    </aside>
+    <div class="cat-main">
+      <div class="hl-box"><div class="hl-ico" aria-hidden="true">🃏</div><div><div class="hl-ttl">GEPRÜFTE SINGLES</div><div class="hl-txt">Alle Einzelkarten werden von uns sorgfältig geprüft und in Mint bis Near-Mint Zustand angeboten. Von begehrten Special Art Rares bis hin zu seltenen Alt Arts – hier findest du die Highlights jeder Ära.</div></div></div>
+      <div class="catbar"><div class="catbar-ct" id="sCnt"></div><label class="sr" for="sSort">Sortierung</label><select class="catbar-sel" id="sSort" onchange="sortG('single','sGrid',this.value)"><option value="">SORTIEREN</option><option value="asc">PREIS AUFSTEIGEND</option><option value="desc">PREIS ABSTEIGEND</option><option value="az">NAME A–Z</option><option value="rate">BEWERTUNG</option></select></div>
+      <div class="grid" id="sGrid"></div>
+      <div class="pag" id="pag-sGrid"></div>
+    </div>
+  </div>
+  <div class="trust"><div><div class="ti">✓</div><div class="tl">SICHER BEZAHLEN</div></div><div><div class="ti">📦</div><div class="tl">SCHNELLER VERSAND</div></div><div><div class="ti">★</div><div class="tl">GEPRÜFTE QUALITÄT</div></div><div><div class="ti">↩</div><div class="tl">14 TAGE RÜCKGABE</div></div></div>
+</div>
+
+<!-- DISPLAYS PAGE -->
+<div class="page" id="page-set">
+  <nav class="bc" aria-label="Brotkrumen"><button class="bc-lnk" type="button" onclick="nav('main')">HOME</button><span class="bc-sep">›</span><span class="bc-cur">DISPLAYS &amp; ETBs</span></nav>
+  <section class="shero"><div class="shi"><div class="sh-art" aria-hidden="true"><svg width="130" height="75" viewBox="0 0 130 75" fill="none"><rect x="8" y="30" width="114" height="40" rx="4" fill="#1a0a2e" stroke="#4a3472" stroke-width="0.8"/><rect x="8" y="30" width="114" height="12" rx="4" fill="#3b0764" stroke="#6d28d9" stroke-width="0.7"/><rect x="20" y="16" width="90" height="36" rx="4" fill="#13102a" stroke="#5b21b6" stroke-width="0.8"/><rect x="20" y="16" width="90" height="10" rx="4" fill="#4c1d95" stroke="#6d28d9" stroke-width="0.7"/><rect x="33" y="4" width="64" height="28" rx="4" fill="#1a1228" stroke="#6d28d9" stroke-width="0.8"/><rect x="33" y="4" width="64" height="9" rx="4" fill="#6d28d9" stroke="#9d77e8" stroke-width="0.7"/><text x="65" y="22" font-family="'Cinzel',Georgia,serif" font-size="7" fill="#c4b5fd" text-anchor="middle" letter-spacing="2">DISPLAY</text></svg></div><div class="sh-eye">36 PACKS · ELITE TRAINER BOX · PREMIUM</div><div class="sh-ln"></div><h1 class="sh-ttl">DISPLAYS &amp; ETBs</h1><div class="sh-tag">◆ &nbsp; Das komplette Sammel-Erlebnis &nbsp; ◆</div></div></section>
+  <div class="cat-layout">
+    <aside class="sb" aria-label="Filter">
+      <button class="sb-mtoggle" type="button" onclick="toggleSb(this)">⚙ FILTER ANZEIGEN</button>
+      <div class="sb-content" id="sb-set">
+        <div class="sb-grp"><div class="sb-ttl">PREIS</div><div class="sb-price"><label class="sr" for="dMin">Min-Preis</label><input class="sb-inp" id="dMin" type="number" placeholder="Min €" min="0" inputmode="decimal"><span class="sb-sep">–</span><label class="sr" for="dMax">Max-Preis</label><input class="sb-inp" id="dMax" type="number" placeholder="Max €" min="0" inputmode="decimal"></div></div>
+        <div class="sb-grp"><div class="sb-ttl">TYP</div><div id="dSets"></div></div>
+        <button class="sb-apply" type="button" onclick="sbFilter('set','dGrid')">FILTER ANWENDEN</button>
+        <button class="sb-rst" type="button" onclick="sbReset('set','dGrid')">ZURÜCKSETZEN</button>
+      </div>
+    </aside>
+    <div class="cat-main">
+      <div class="hl-box"><div class="hl-ico" aria-hidden="true">🏆</div><div><div class="hl-ttl">DISPLAYS &amp; ELITE TRAINER BOXES</div><div class="hl-txt">Ein Display enthält 36 Booster Packs für das maximale Öffner-Erlebnis. Elite Trainer Boxes bieten zusätzlich Sleeves, Würfel, Münzen und Energie-Karten – ideal für Spieler und Sammler gleichermaßen.</div></div></div>
+      <div class="catbar"><div class="catbar-ct" id="dCnt"></div><label class="sr" for="dSort">Sortierung</label><select class="catbar-sel" id="dSort" onchange="sortG('set','dGrid',this.value)"><option value="">SORTIEREN</option><option value="asc">PREIS AUFSTEIGEND</option><option value="desc">PREIS ABSTEIGEND</option><option value="az">NAME A–Z</option><option value="rate">BEWERTUNG</option></select></div>
+      <div class="grid" id="dGrid"></div>
+      <div class="pag" id="pag-dGrid"></div>
+    </div>
+  </div>
+  <div class="trust"><div><div class="ti">✓</div><div class="tl">SICHER BEZAHLEN</div></div><div><div class="ti">📦</div><div class="tl">SCHNELLER VERSAND</div></div><div><div class="ti">★</div><div class="tl">GEPRÜFTE QUALITÄT</div></div><div><div class="ti">↩</div><div class="tl">14 TAGE RÜCKGABE</div></div></div>
+</div>
+
+<!-- ZUBEHÖR PAGE -->
+<div class="page" id="page-zubehoer">
+  <nav class="bc" aria-label="Brotkrumen"><button class="bc-lnk" type="button" onclick="nav('main')">HOME</button><span class="bc-sep">›</span><span class="bc-cur">ZUBEHÖR</span></nav>
+  <section class="shero"><div class="shi"><div class="sh-art" aria-hidden="true"><svg width="130" height="70" viewBox="0 0 130 70" fill="none"><g transform="translate(0,8) rotate(-6,25,30)"><rect x="5" y="5" width="40" height="55" rx="4" fill="#2a1a4e" stroke="#6d28d9" stroke-width="0.7"/></g><g transform="translate(10,8)"><rect x="36" y="5" width="40" height="55" rx="4" fill="#3b0764" stroke="#8b5cf6" stroke-width="0.7"/></g><g transform="translate(20,8) rotate(7,85,30)"><rect x="68" y="5" width="40" height="55" rx="4" fill="#4c1d95" stroke="#a78bfa" stroke-width="0.7"/></g><rect x="42" y="0" width="46" height="5" rx="2" fill="#6d28d9" opacity="0.9"/></svg></div><div class="sh-eye">SLEEVES · BINDER · PLAYMATS · TOPLOADERS</div><div class="sh-ln"></div><h1 class="sh-ttl">ZUBEHÖR &amp; SCHUTZ</h1><div class="sh-tag">◆ &nbsp; Protect. Store. Display. &nbsp; ◆</div></div></section>
+  <div class="cat-layout">
+    <aside class="sb" aria-label="Filter">
+      <button class="sb-mtoggle" type="button" onclick="toggleSb(this)">⚙ FILTER ANZEIGEN</button>
+      <div class="sb-content" id="sb-zubehoer">
+        <div class="sb-grp"><div class="sb-ttl">PREIS</div><div class="sb-price"><label class="sr" for="zMin">Min-Preis</label><input class="sb-inp" id="zMin" type="number" placeholder="Min €" min="0" inputmode="decimal"><span class="sb-sep">–</span><label class="sr" for="zMax">Max-Preis</label><input class="sb-inp" id="zMax" type="number" placeholder="Max €" min="0" inputmode="decimal"></div></div>
+        <div class="sb-grp"><div class="sb-ttl">TYP</div><div id="zSets"></div></div>
+        <button class="sb-apply" type="button" onclick="sbFilter('zubehoer','zGrid')">FILTER ANWENDEN</button>
+        <button class="sb-rst" type="button" onclick="sbReset('zubehoer','zGrid')">ZURÜCKSETZEN</button>
+      </div>
+    </aside>
+    <div class="cat-main">
+      <div class="hl-box"><div class="hl-ico" aria-hidden="true">✨</div><div><div class="hl-ttl">SCHÜTZE DEINE SAMMLUNG</div><div class="hl-txt">Von hochwertigen Dragon Shield Sleeves bis hin zu stabilen Toploadern und Sammlerbindern – bei RoyalCards findest du alles, was du brauchst, um deine wertvollsten Karten optimal zu schützen.</div></div></div>
+      <div class="catbar"><div class="catbar-ct" id="zCnt"></div><label class="sr" for="zSort">Sortierung</label><select class="catbar-sel" id="zSort" onchange="sortG('zubehoer','zGrid',this.value)"><option value="">SORTIEREN</option><option value="asc">PREIS AUFSTEIGEND</option><option value="desc">PREIS ABSTEIGEND</option><option value="az">NAME A–Z</option><option value="rate">BEWERTUNG</option></select></div>
+      <div class="grid" id="zGrid"></div>
+      <div class="pag" id="pag-zGrid"></div>
+    </div>
+  </div>
+  <div class="trust"><div><div class="ti">✓</div><div class="tl">SICHER BEZAHLEN</div></div><div><div class="ti">📦</div><div class="tl">SCHNELLER VERSAND</div></div><div><div class="ti">★</div><div class="tl">GEPRÜFTE QUALITÄT</div></div><div><div class="ti">↩</div><div class="tl">14 TAGE RÜCKGABE</div></div></div>
+</div>
+
+<!-- DETAIL PAGE -->
+<div class="page" id="page-detail"><div id="pdContent"></div></div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-grid">
+    <div>
+      <svg width="52" height="68" viewBox="0 0 70 92" fill="none" aria-hidden="true"><g transform="rotate(-10,22,46)"><rect x="3" y="19" width="38" height="54" rx="5" fill="#1a1228" stroke="#4a3472" stroke-width="0.8"/></g><g transform="rotate(6,38,40)"><rect x="19" y="13" width="38" height="54" rx="5" fill="#6d28d9" stroke="#9d77e8" stroke-width="0.7"/><text x="38" y="52" font-family="'Cinzel',Georgia,serif" font-size="13" font-weight="600" fill="#0d0d1a" text-anchor="middle">RC</text></g></svg>
+      <p class="ft-brand-txt">Dein Shop für Pokémon-Karten. Kuratierte Auswahl, geprüfte Qualität, schneller Versand aus Köln.</p>
+      <div class="ft-sec" style="margin-top:12px;"><div class="ft-sec-item">🔒 SSL</div><div class="ft-sec-item">🛡️ Käuferschutz</div><div class="ft-sec-item">✓ Trusted Shop</div></div>
+      <div style="font-size:9px;color:var(--t4);letter-spacing:2px;margin-top:14px;margin-bottom:6px;">NEWSLETTER</div>
+      <form class="ft-nl" onsubmit="event.preventDefault();subNL();">
+        <label class="sr" for="nlEmail">E-Mail für Newsletter</label>
+        <input class="ft-nl-inp" placeholder="deine@email.de" id="nlEmail" type="email" autocomplete="email">
+        <button class="ft-nl-btn" type="submit">OK</button>
+      </form>
+    </div>
+    <div class="ft-col"><div class="ft-col-ttl">SHOP</div><a onclick="nav('booster')" tabindex="0">Booster Packs</a><a onclick="nav('single')" tabindex="0">Singles</a><a onclick="nav('set')" tabindex="0">Displays &amp; ETBs</a><a onclick="nav('zubehoer')" tabindex="0">Zubehör</a></div>
+    <div class="ft-col"><div class="ft-col-ttl">SERVICE</div><a onclick="openLg('versand')" tabindex="0">Versand &amp; Rückgabe</a><a onclick="openLg('kontakt')" tabindex="0">Kontakt</a><a onclick="openLg('faq')" tabindex="0">FAQ</a><a onclick="openLg('ueber')" tabindex="0">Über uns</a></div>
+    <div class="ft-col"><div class="ft-col-ttl">RECHTLICHES</div><a onclick="openLg('impressum')" tabindex="0">Impressum</a><a onclick="openLg('datenschutz')" tabindex="0">Datenschutz</a><a onclick="openLg('agb')" tabindex="0">AGB</a><a onclick="openLg('widerruf')" tabindex="0">Widerruf</a></div>
+  </div>
+  <div class="ft-bot"><div class="ft-copy">© 2025 RoyalCards · Alle Rechte vorbehalten</div><div class="ft-pay" aria-label="Akzeptierte Zahlungsmethoden">🅿️ 💳 🏦 🛒</div></div>
+</footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
