@@ -1,4 +1,4 @@
-# Auswanderungs-Vergleich: Türkei vs. Zypern vs. Japan
+# Auswanderungs-Vergleich: Türkei vs. Nordzypern vs. Japan
 
 Interaktiver HTML-Guide für ein muslimisches Ehepaar aus Deutschland, das eine
 Auswanderungsentscheidung trifft.
@@ -10,8 +10,9 @@ Auswanderungsentscheidung trifft.
   Jobs und muslimspezifischen Hinweisen
 - **Direktvergleich** aller Kriterien in einer Tabelle
 - **Entscheidungshilfe** mit Empfehlung je nach Priorität
-- **Geheim-Tipps** wie die japanischen Akiya-Häuser, das zypriotische
-  Non-Dom-Regime oder die liberale türkische Studentenstadt Eskişehir
+- **Geheim-Tipps** wie die japanischen Akiya-Häuser, Property-Schnäppchen
+  in Nordzypern (Studio ab €60.000) oder die liberale türkische
+  Studentenstadt Eskişehir
 
 ## Starten
 
