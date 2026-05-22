@@ -41,6 +41,7 @@
 
     --font-serif: 'Cormorant Garamond', 'Times New Roman', serif;
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-display: 'UnifrakturMaguntia', 'Old English Text MT', 'Cormorant Garamond', serif;
 }
 
 /* ============================================
@@ -238,35 +239,42 @@ ul {
 }
 
 .logo {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    font-family: var(--font-serif);
-    font-size: 1.75rem;
-    font-weight: 600;
+    gap: 12px;
+    font-family: var(--font-display);
+    font-size: 2.1rem;
+    font-weight: 400;
     color: var(--violet-deep);
     text-decoration: none;
     transition: var(--transition);
+    line-height: 1;
 }
 
 .logo:hover {
     color: var(--violet);
 }
 
-.logo-crown {
-    font-size: 1.8rem;
-    color: var(--gold);
-    line-height: 1;
-    filter: drop-shadow(0 2px 4px rgba(201, 169, 97, 0.3));
+.logo:hover .logo-icon {
+    transform: rotate(-5deg) scale(1.05);
+}
+
+.logo-icon {
+    width: 38px;
+    height: 46px;
+    flex-shrink: 0;
+    transition: var(--transition);
+    filter: drop-shadow(0 2px 6px rgba(201, 169, 97, 0.35));
 }
 
 .logo-text {
-    letter-spacing: -0.02em;
+    letter-spacing: 0.01em;
+    padding-top: 4px;
 }
 
 .logo-accent {
     color: var(--gold);
-    font-style: italic;
+    font-style: normal;
 }
 
 .main-nav ul {
