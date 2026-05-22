@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Royalcards - Premium TCG Sammelkarten Shop. Pokemon, Magic, Yu-Gi-Oh! und mehr.">
+    <title>Royalcards - Premium TCG Sammelkarten</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Top Banner -->
+    <div class="top-banner">
+        <p>Kostenloser Versand ab 50€ &nbsp;•&nbsp; 100% Authentizitätsgarantie &nbsp;•&nbsp; Sicherer Versand</p>
+    </div>
+
+    <!-- Header / Navigation -->
+    <header class="header">
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <span class="logo-crown">♛</span>
+                <span class="logo-text">Royal<span class="logo-accent">cards</span></span>
+            </a>
+
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.html" class="active">Startseite</a></li>
+                    <li><a href="shop.html">Shop</a></li>
+                    <li class="has-dropdown">
+                        <a href="#">Kategorien</a>
+                        <ul class="dropdown">
+                            <li><a href="shop.html?cat=pokemon">Pokémon</a></li>
+                            <li><a href="shop.html?cat=magic">Magic: The Gathering</a></li>
+                            <li><a href="shop.html?cat=yugioh">Yu-Gi-Oh!</a></li>
+                            <li><a href="shop.html?cat=onepiece">One Piece TCG</a></li>
+                            <li><a href="shop.html?cat=lorcana">Disney Lorcana</a></li>
+                            <li><a href="shop.html?cat=digimon">Digimon</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="grading.html">Grading</a></li>
+                    <li><a href="about.html">Über uns</a></li>
+                    <li><a href="contact.html">Kontakt</a></li>
+                </ul>
+            </nav>
+
+            <div class="header-actions">
+                <button class="icon-btn" aria-label="Suchen" id="searchToggle">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+                </button>
+                <a href="account.html" class="icon-btn" aria-label="Mein Konto">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </a>
+                <a href="wishlist.html" class="icon-btn" aria-label="Wunschliste">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                </a>
+                <a href="cart.html" class="icon-btn cart-btn" aria-label="Warenkorb">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    <span class="cart-count">3</span>
+                </a>
+                <button class="mobile-toggle" id="mobileToggle" aria-label="Menü">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar" id="searchBar">
+            <div class="container">
+                <input type="text" placeholder="Suche nach Karten, Sets, Sealed Produkten...">
+                <button class="btn-primary">Suchen</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="container hero-content">
+            <div class="hero-text">
+                <span class="hero-eyebrow">— Premium TCG Boutique</span>
+                <h1>Königliche Schätze<br>für wahre <em>Sammler</em></h1>
+                <p>Entdecken Sie eine exklusive Auswahl an seltenen Sammelkarten – kuratiert, authentifiziert und mit Stil präsentiert. Vom ersten Booster bis zur graded Vintage-Karte.</p>
+                <div class="hero-buttons">
+                    <a href="shop.html" class="btn-primary">Kollektion entdecken</a>
+                    <a href="grading.html" class="btn-outline">Grading Service</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <strong>15.000+</strong>
+                        <span>Karten im Sortiment</span>
+                    </div>
+                    <div class="stat">
+                        <strong>4.9 ★</strong>
+                        <span>Kundenbewertung</span>
+                    </div>
+                    <div class="stat">
+                        <strong>10+</strong>
+                        <span>Jahre Erfahrung</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-card-stack">
+                <div class="floating-card card-1">
+                    <div class="card-shine"></div>
+                    <div class="card-content">
+                        <span class="card-rarity">★ ULTRA RARE</span>
+                        <h3>Charizard</h3>
+                        <p>Base Set · 1999</p>
+                        <span class="card-price">2.499 €</span>
+                    </div>
+                </div>
+                <div class="floating-card card-2">
+                    <div class="card-shine"></div>
+                    <div class="card-content">
+                        <span class="card-rarity">◆ HOLO</span>
+                        <h3>Black Lotus</h3>
+                        <p>Alpha · MTG</p>
+                        <span class="card-price">25.000 €</span>
+                    </div>
+                </div>
+                <div class="floating-card card-3">
+                    <div class="card-shine"></div>
+                    <div class="card-content">
+                        <span class="card-rarity">✦ SECRET RARE</span>
+                        <h3>Blue-Eyes</h3>
+                        <p>LOB · Yu-Gi-Oh!</p>
+                        <span class="card-price">1.299 €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-eyebrow">— Unsere Welten</span>
+                <h2>TCG Universen entdecken</h2>
+                <p>Wählen Sie Ihre Lieblingsserie und durchstöbern Sie unsere kuratierte Auswahl</p>
+            </div>
+            <div class="category-grid">
+                <a href="shop.html?cat=pokemon" class="category-card">
+                    <div class="category-icon">⚡</div>
+                    <h3>Pokémon</h3>
+                    <p>Von Base Set bis Scarlet & Violet</p>
+                    <span class="category-count">4.200+ Karten</span>
+                </a>
+                <a href="shop.html?cat=magic" class="category-card">
+                    <div class="category-icon">✦</div>
+                    <h3>Magic: The Gathering</h3>
+                    <p>Vintage, Modern & Commander</p>
+                    <span class="category-count">3.800+ Karten</span>
+                </a>
+                <a href="shop.html?cat=yugioh" class="category-card">
+                    <div class="category-icon">◈</div>
+                    <h3>Yu-Gi-Oh!</h3>
+                    <p>Klassiker & aktuelle Sets</p>
+                    <span class="category-count">2.900+ Karten</span>
+                </a>
+                <a href="shop.html?cat=onepiece" class="category-card">
+                    <div class="category-icon">⚓</div>
+                    <h3>One Piece TCG</h3>
+                    <p>Neue Serie, große Beliebtheit</p>
+                    <span class="category-count">1.500+ Karten</span>
+                </a>
+                <a href="shop.html?cat=lorcana" class="category-card">
+                    <div class="category-icon">♛</div>
+                    <h3>Disney Lorcana</h3>
+                    <p>Magische Disney-Welten</p>
+                    <span class="category-count">1.100+ Karten</span>
+                </a>
+                <a href="shop.html?cat=digimon" class="category-card">
+                    <div class="category-icon">◉</div>
+                    <h3>Digimon</h3>
+                    <p>Digitale Monster sammeln</p>
+                    <span class="category-count">900+ Karten</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="featured">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-eyebrow">— Highlights</span>
+                <h2>Besonders begehrt</h2>
+                <p>Die wertvollsten und gefragtesten Karten unserer Kollektion</p>
+            </div>
+            <div class="product-grid">
+                <div class="product-card">
+                    <div class="product-badge badge-rare">Ultra Rare</div>
+                    <button class="product-wishlist" aria-label="Zur Wunschliste">♡</button>
+                    <div class="product-image">
+                        <div class="card-mockup card-mockup-1">
+                            <div class="mockup-inner">
+                                <span class="mockup-symbol">⚡</span>
+                                <span class="mockup-name">Charizard</span>
+                                <span class="mockup-set">Base Set</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Pokémon · Base Set</span>
+                        <h3>Charizard Holo 4/102</h3>
+                        <div class="product-meta">
+                            <span class="product-condition">PSA 9 Mint</span>
+                            <span class="product-stock">Auf Lager</span>
+                        </div>
+                        <div class="product-footer">
+                            <span class="product-price">2.499,00 €</span>
+                            <button class="btn-add-cart">In den Warenkorb</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-badge badge-mythic">Mythic</div>
+                    <button class="product-wishlist" aria-label="Zur Wunschliste">♡</button>
+                    <div class="product-image">
+                        <div class="card-mockup card-mockup-2">
+                            <div class="mockup-inner">
+                                <span class="mockup-symbol">✦</span>
+                                <span class="mockup-name">Black Lotus</span>
+                                <span class="mockup-set">Alpha</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">MTG · Alpha</span>
+                        <h3>Black Lotus</h3>
+                        <div class="product-meta">
+                            <span class="product-condition">BGS 8.5</span>
+                            <span class="product-stock">1 verfügbar</span>
+                        </div>
+                        <div class="product-footer">
+                            <span class="product-price">25.000,00 €</span>
+                            <button class="btn-add-cart">In den Warenkorb</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-badge badge-secret">Secret Rare</div>
+                    <button class="product-wishlist" aria-label="Zur Wunschliste">♡</button>
+                    <div class="product-image">
+                        <div class="card-mockup card-mockup-3">
+                            <div class="mockup-inner">
+                                <span class="mockup-symbol">◈</span>
+                                <span class="mockup-name">Blue-Eyes White Dragon</span>
+                                <span class="mockup-set">LOB</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">Yu-Gi-Oh! · LOB</span>
+                        <h3>Blue-Eyes White Dragon 1st Ed.</h3>
+                        <div class="product-meta">
+                            <span class="product-condition">Near Mint</span>
+                            <span class="product-stock">Auf Lager</span>
+                        </div>
+                        <div class="product-footer">
+                            <span class="product-price">1.299,00 €</span>
+                            <button class="btn-add-cart">In den Warenkorb</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <div class="product-badge badge-special">Sealed</div>
+                    <button class="product-wishlist" aria-label="Zur Wunschliste">♡</button>
+                    <div class="product-image">
+                        <div class="card-mockup card-mockup-4">
+                            <div class="mockup-inner">
+                                <span class="mockup-symbol">⚓</span>
+                                <span class="mockup-name">Booster Box</span>
+                                <span class="mockup-set">OP-01</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">One Piece · Sealed</span>
+                        <h3>OP-01 Romance Dawn Booster Box</h3>
+                        <div class="product-meta">
+                            <span class="product-condition">Versiegelt</span>
+                            <span class="product-stock">12 verfügbar</span>
+                        </div>
+                        <div class="product-footer">
+                            <span class="product-price">189,00 €</span>
+                            <button class="btn-add-cart">In den Warenkorb</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="section-cta">
+                <a href="shop.html" class="btn-outline">Alle Produkte ansehen →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust / Features Section -->
+    <section class="features">
+        <div class="container">
+            <div class="features-grid">
+                <div class="feature">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2 4 7v5c0 5 3.5 9.5 8 10 4.5-.5 8-5 8-10V7l-8-5z"/><path d="m9 12 2 2 4-4"/></svg>
+                    </div>
+                    <h3>100% Authentisch</h3>
+                    <p>Jede Karte wird von unseren Experten geprüft. Authentizitätsgarantie bei jedem Kauf.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                    </div>
+                    <h3>Sicherer Versand</h3>
+                    <p>Versicherter Versand mit Sendungsverfolgung. Professionelle Verpackung für jede Karte.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                    </div>
+                    <h3>Grading Service</h3>
+                    <p>Wir bieten professionellen PSA, BGS und CGC Submission-Service direkt aus Deutschland an.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
+                    <h3>Experten Support</h3>
+                    <p>Persönliche Beratung durch echte TCG-Enthusiasten. Wir helfen Ihnen, das Richtige zu finden.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Arrivals -->
+    <section class="new-arrivals">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-eyebrow">— Frisch eingetroffen</span>
+                <h2>Neuheiten</h2>
+                <p>Die neuesten Sets und seltensten Funde – jede Woche aktualisiert</p>
+            </div>
+            <div class="arrivals-grid">
+                <div class="arrival-item">
+                    <div class="arrival-image">
+                        <div class="card-mockup card-mockup-5">
+                            <div class="mockup-inner">
+                                <span class="mockup-symbol">♛</span>
+                                <span class="mockup-name">Elsa</span>
+                                <span class="mockup-set">Lorcana</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arrival-info">
+                        <span class="arrival-tag">Neu</span>
+                        <h4>Elsa - Spirit of Winter</h4>
+                        <span class="arrival-price">89,00 €</span>
+                    </div>
+                </div>
+                <div class="arrival-item">
+                    <div class="arrival-image">
+                        <div class="card-mockup card-mockup-6">
+                            <div class="mockup-inner">
+                                <span class="mockup-symbol">⚡</span>
+                                <span class="mockup-name">Pikachu VMAX</span>
+                                <span class="mockup-set">SWSH</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arrival-info">
+                        <span class="arrival-tag">Neu</span>
+                        <h4>Pikachu VMAX Rainbow Rare</h4>
+                        <span class="arrival-price">149,00 €</span>
+                    </div>
+                </div>
+                <div class="arrival-item">
+                    <div class="arrival-image">
+                        <div class="card-mockup card-mockup-7">
+                            <div class="mockup-inner">
+                                <span class="mockup-symbol">✦</span>
+                                <span class="mockup-name">Liliana</span>
+                                <span class="mockup-set">MOM</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arrival-info">
+                        <span class="arrival-tag">Neu</span>
+                        <h4>Liliana of the Veil - Foil</h4>
+                        <span class="arrival-price">220,00 €</span>
+                    </div>
+                </div>
+                <div class="arrival-item">
+                    <div class="arrival-image">
+                        <div class="card-mockup card-mockup-8">
+                            <div class="mockup-inner">
+                                <span class="mockup-symbol">◉</span>
+                                <span class="mockup-name">Agumon</span>
+                                <span class="mockup-set">BT-15</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arrival-info">
+                        <span class="arrival-tag">Neu</span>
+                        <h4>Agumon Bond of Bravery</h4>
+                        <span class="arrival-price">45,00 €</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-eyebrow">— Stimmen unserer Sammler</span>
+                <h2>Was unsere Kunden sagen</h2>
+            </div>
+            <div class="testimonial-grid">
+                <div class="testimonial">
+                    <div class="stars">★★★★★</div>
+                    <blockquote>"Die Verpackung war fürstlich, die Karte makellos. Royalcards ist meine erste Adresse für seltene Vintage-Karten geworden."</blockquote>
+                    <div class="testimonial-author">
+                        <strong>Maximilian K.</strong>
+                        <span>Verifizierter Sammler</span>
+                    </div>
+                </div>
+                <div class="testimonial">
+                    <div class="stars">★★★★★</div>
+                    <blockquote>"Der Grading-Service ist exzellent. Schnelle Abwicklung, faire Preise und absolute Transparenz während des gesamten Prozesses."</blockquote>
+                    <div class="testimonial-author">
+                        <strong>Sophia L.</strong>
+                        <span>Pokémon Sammlerin</span>
+                    </div>
+                </div>
+                <div class="testimonial">
+                    <div class="stars">★★★★★</div>
+                    <blockquote>"Endlich ein Shop, der TCG nicht nur als Geschäft, sondern als Leidenschaft versteht. Beratung auf höchstem Niveau."</blockquote>
+                    <div class="testimonial-author">
+                        <strong>Daniel B.</strong>
+                        <span>MTG Spieler</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter">
+        <div class="container">
+            <div class="newsletter-card">
+                <div class="newsletter-content">
+                    <span class="section-eyebrow light">— Bleiben Sie informiert</span>
+                    <h2>Exklusive Drops in Ihr Postfach</h2>
+                    <p>Erhalten Sie Vorabzugang zu seltenen Karten, exklusive Rabatte und News aus der TCG-Welt.</p>
+                    <form class="newsletter-form" onsubmit="event.preventDefault(); this.querySelector('button').textContent = 'Vielen Dank ♛'; this.querySelector('button').disabled = true;">
+                        <input type="email" placeholder="Ihre E-Mail-Adresse" required>
+                        <button type="submit" class="btn-primary">Abonnieren</button>
+                    </form>
+                    <small>Wir respektieren Ihre Privatsphäre. Jederzeit abbestellbar.</small>
+                </div>
+                <div class="newsletter-decor">♛</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col footer-brand">
+                    <a href="index.html" class="logo">
+                        <span class="logo-crown">♛</span>
+                        <span class="logo-text">Royal<span class="logo-accent">cards</span></span>
+                    </a>
+                    <p>Premium TCG Sammelkarten Shop mit Sitz in Deutschland. Eleganz trifft Leidenschaft seit 2014.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Instagram">IG</a>
+                        <a href="#" aria-label="Facebook">FB</a>
+                        <a href="#" aria-label="YouTube">YT</a>
+                        <a href="#" aria-label="Discord">DC</a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html?cat=pokemon">Pokémon</a></li>
+                        <li><a href="shop.html?cat=magic">Magic: The Gathering</a></li>
+                        <li><a href="shop.html?cat=yugioh">Yu-Gi-Oh!</a></li>
+                        <li><a href="shop.html?cat=onepiece">One Piece</a></li>
+                        <li><a href="shop.html?cat=lorcana">Disney Lorcana</a></li>
+                        <li><a href="shop.html?cat=sealed">Sealed Produkte</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Service</h4>
+                    <ul>
+                        <li><a href="grading.html">Grading Service</a></li>
+                        <li><a href="#">Karten verkaufen</a></li>
+                        <li><a href="#">Versand & Lieferung</a></li>
+                        <li><a href="#">Rückgabe & Garantie</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="contact.html">Kontakt</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Unternehmen</h4>
+                    <ul>
+                        <li><a href="about.html">Über uns</a></li>
+                        <li><a href="#">Karriere</a></li>
+                        <li><a href="#">Blog & News</a></li>
+                        <li><a href="#">Partnerprogramm</a></li>
+                        <li><a href="#">Presse</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Kontakt</h4>
+                    <ul class="contact-list">
+                        <li>Königsallee 42<br>40212 Düsseldorf</li>
+                        <li>support@royalcards.de</li>
+                        <li>+49 (0)211 1234567</li>
+                        <li>Mo-Fr 9-18 Uhr</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Royalcards GmbH. Alle Rechte vorbehalten.</p>
+                <ul class="footer-legal">
+                    <li><a href="#">Impressum</a></li>
+                    <li><a href="#">Datenschutz</a></li>
+                    <li><a href="#">AGB</a></li>
+                    <li><a href="#">Widerruf</a></li>
+                </ul>
+                <div class="payment-methods">
+                    <span>VISA</span>
+                    <span>MC</span>
+                    <span>PayPal</span>
+                    <span>Klarna</span>
+                    <span>SEPA</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
