@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Royalcards - Premium TCG Sammelkarten</title>
+<title>RoyalCards - Premium TCG Sammelkarten</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Great+Vibes&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -164,8 +164,8 @@ ul { list-style: none; }
 .side-menu-icon.suit-spade,
 .side-menu-icon.suit-club { color: var(--violet); }
 .category-icon.svg-icon { font-size: 0; }
-.category-icon.svg-icon svg { width: 56px; height: 56px; display: block; margin: 0 auto; }
-.category-card:hover .category-icon.svg-icon svg { transform: scale(1.1) rotate(5deg); }
+.category-icon.svg-icon svg { width: 56px; height: 56px; display: block; margin: 0 auto; transition: filter 0.3s ease; }
+.category-card:hover .category-icon.svg-icon svg { filter: drop-shadow(0 4px 12px rgba(201, 169, 97, 0.4)); }
 .icon-btn { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; color: var(--text); transition: var(--transition); position: relative; background: transparent; border: none; cursor: pointer; }
 .icon-btn svg { width: 20px; height: 20px; }
 .icon-btn:hover { background: var(--violet-mist); color: var(--violet); }
@@ -670,7 +670,7 @@ ul { list-style: none; }
                     </g>
                 </g>
             </svg>
-            <span class="logo-text"><span class="l l0">R</span><span class="l l1">o</span><span class="l l2">y</span><span class="l l3">a</span><span class="l l4">l</span><span class="l l5">c</span><span class="l l6">a</span><span class="l l7">r</span><span class="l l8">d</span><span class="l l9">s</span></span>
+            <span class="logo-text"><span class="l l0">R</span><span class="l l1">o</span><span class="l l2">y</span><span class="l l3">a</span><span class="l l4">l</span><span class="l l5">C</span><span class="l l6">a</span><span class="l l7">r</span><span class="l l8">d</span><span class="l l9">s</span></span>
         </a>
 
         <div class="header-actions">
@@ -711,7 +711,7 @@ ul { list-style: none; }
                 <div class="brand-showcase">
                     <div class="bs-line"></div>
                     <div class="bs-gem">◆</div>
-                    <div class="bs-name"><span class="l l0">R</span><span class="l l1">o</span><span class="l l2">y</span><span class="l l3">a</span><span class="l l4">l</span><span class="l l5">c</span><span class="l l6">a</span><span class="l l7">r</span><span class="l l8">d</span><span class="l l9">s</span></div>
+                    <div class="bs-name"><span class="l l0">R</span><span class="l l1">o</span><span class="l l2">y</span><span class="l l3">a</span><span class="l l4">l</span><span class="l l5">C</span><span class="l l6">a</span><span class="l l7">r</span><span class="l l8">d</span><span class="l l9">s</span></div>
                     <div class="bs-sub">◆ &nbsp; Curated for Collectors &nbsp; ◆</div>
                     <div class="bs-line"></div>
                 </div>
@@ -750,10 +750,10 @@ ul { list-style: none; }
                 <p>Wählen Sie Ihre Lieblingsserie und durchstöbern Sie unsere kuratierte Auswahl</p>
             </div>
             <div class="category-grid">
-                <a class="category-card" onclick="filterShop('Pokémon')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#FAF6EF" stroke="#3a1b5c" stroke-width="1.2"/><path d="M1.5 12 A 10.5 10.5 0 0 1 22.5 12 Z" fill="#5b2c91"/><line x1="1.5" y1="12" x2="22.5" y2="12" stroke="#3a1b5c" stroke-width="1.4"/><circle cx="12" cy="12" r="3" fill="#FAF6EF" stroke="#3a1b5c" stroke-width="1.4"/><circle cx="12" cy="12" r="1.3" fill="#3a1b5c"/></svg></div><h3>Pokémon</h3><p>Von Base Set bis Scarlet & Violet</p><span class="category-count">4.200+ Karten</span></a>
+                <a class="category-card" onclick="filterShop('Pokémon')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#FAF6EF" stroke="currentColor" stroke-width="1.2" opacity="1"/><path d="M1.5 12 A 10.5 10.5 0 0 1 22.5 12 Z" fill="currentColor"/><line x1="1.5" y1="12" x2="22.5" y2="12" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="3" fill="#FAF6EF" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/></svg></div><h3>Pokémon</h3><p>Von Base Set bis Scarlet & Violet</p><span class="category-count">4.200+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('MTG')"><div class="category-icon">✦</div><h3>Magic: The Gathering</h3><p>Vintage, Modern & Commander</p><span class="category-count">3.800+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('Yu-Gi-Oh!')"><div class="category-icon">◈</div><h3>Yu-Gi-Oh!</h3><p>Klassiker & aktuelle Sets</p><span class="category-count">2.900+ Karten</span></a>
-                <a class="category-card" onclick="filterShop('One Piece')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16" rx="10.5" ry="2" fill="#7B3FBF" stroke="#3a1b5c" stroke-width="0.5"/><path d="M6 13.5 C 6 8.5, 8.5 6, 12 6 C 15.5 6, 18 8.5, 18 13.5 Z" fill="#7B3FBF" stroke="#3a1b5c" stroke-width="0.5"/><path d="M5.5 13 C 8.5 14, 15.5 14, 18.5 13 L 18.5 14.5 C 15.5 15.5, 8.5 15.5, 5.5 14.5 Z" fill="#3a1b5c"/></svg></div><h3>One Piece TCG</h3><p>Neue Serie, große Beliebtheit</p><span class="category-count">1.500+ Karten</span></a>
+                <a class="category-card" onclick="filterShop('One Piece')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16" rx="10.5" ry="2" fill="currentColor" opacity="0.85"/><path d="M6 13.5 C 6 8.5, 8.5 6, 12 6 C 15.5 6, 18 8.5, 18 13.5 Z" fill="currentColor"/><path d="M5.5 13 C 8.5 14, 15.5 14, 18.5 13 L 18.5 14.5 C 15.5 15.5, 8.5 15.5, 5.5 14.5 Z" fill="currentColor" opacity="0.6"/></svg></div><h3>One Piece TCG</h3><p>Neue Serie, große Beliebtheit</p><span class="category-count">1.500+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('Lorcana')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="14.5" r="6.5"/><circle cx="5.5" cy="6.5" r="4"/><circle cx="18.5" cy="6.5" r="4"/></svg></div><h3>Disney Lorcana</h3><p>Magische Disney-Welten</p><span class="category-count">1.100+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('Digimon')"><div class="category-icon">⬢</div><h3>Digimon</h3><p>Digitale Monster sammeln</p><span class="category-count">900+ Karten</span></a>
             </div>
@@ -830,10 +830,10 @@ ul { list-style: none; }
             <div class="section-header">
                 <span class="section-eyebrow">— Stimmen unserer Sammler</span>
                 <h2>Was unsere Kunden sagen</h2>
-                <p>Über 5.000 zufriedene Sammler vertrauen Royalcards</p>
+                <p>Über 5.000 zufriedene Sammler vertrauen RoyalCards</p>
             </div>
             <div class="testimonial-grid">
-                <div class="testimonial"><div class="stars">★★★★★</div><blockquote>"Die Verpackung war fürstlich, die Karte makellos. Royalcards ist meine erste Adresse für seltene Vintage-Karten geworden."</blockquote><div class="testimonial-author"><strong>Maximilian K.</strong><span>Verifizierter Sammler</span></div></div>
+                <div class="testimonial"><div class="stars">★★★★★</div><blockquote>"Die Verpackung war fürstlich, die Karte makellos. RoyalCards ist meine erste Adresse für seltene Vintage-Karten geworden."</blockquote><div class="testimonial-author"><strong>Maximilian K.</strong><span>Verifizierter Sammler</span></div></div>
                 <div class="testimonial"><div class="stars">★★★★★</div><blockquote>"Der Grading-Service ist exzellent. Schnelle Abwicklung, faire Preise und absolute Transparenz während des gesamten Prozesses."</blockquote><div class="testimonial-author"><strong>Sophia L.</strong><span>Pokémon Sammlerin</span></div></div>
                 <div class="testimonial"><div class="stars">★★★★★</div><blockquote>"Endlich ein Shop, der TCG nicht nur als Geschäft, sondern als Leidenschaft versteht. Beratung auf höchstem Niveau."</blockquote><div class="testimonial-author"><strong>Daniel B.</strong><span>MTG Spieler</span></div></div>
             </div>
@@ -857,7 +857,7 @@ ul { list-style: none; }
             <div class="section-header">
                 <span class="section-eyebrow">— Häufige Fragen</span>
                 <h2>FAQ</h2>
-                <p>Antworten auf die wichtigsten Fragen rund um Royalcards</p>
+                <p>Antworten auf die wichtigsten Fragen rund um RoyalCards</p>
             </div>
             <div class="faq-list">
                 <div class="faq-item">
@@ -877,7 +877,7 @@ ul { list-style: none; }
                     <div class="faq-answer"><div class="faq-answer-inner">Sie senden uns Ihre Karten versichert zu. Wir prüfen den Zustand vorab, beraten Sie zur erwartbaren Bewertung und übernehmen die komplette Einreichung bei PSA, BGS oder CGC. Nach dem Grading erhalten Sie Ihre versiegelten Karten zurück. Versicherung bis 100.000€ pro Sendung ist inklusive.</div></div>
                 </div>
                 <div class="faq-item">
-                    <button class="faq-question" onclick="toggleFaq(this)"><span>Verkauft Royalcards auch meine Karten?</span><span class="faq-toggle">+</span></button>
+                    <button class="faq-question" onclick="toggleFaq(this)"><span>Verkauft RoyalCards auch meine Karten?</span><span class="faq-toggle">+</span></button>
                     <div class="faq-answer"><div class="faq-answer-inner">Ja. Wir kaufen einzelne Sammlerkarten und ganze Sammlungen direkt an oder verkaufen für Sie auf Kommission. Kontaktieren Sie uns mit einer Liste oder Fotos Ihrer Karten und wir erstellen ein faires Angebot innerhalb von 48 Stunden.</div></div>
                 </div>
                 <div class="faq-item">
@@ -885,7 +885,7 @@ ul { list-style: none; }
                     <div class="faq-answer"><div class="faq-answer-inner">Wir akzeptieren Visa, Mastercard, PayPal, Klarna (Rechnung & Ratenkauf), SEPA-Lastschrift sowie Vorkasse per Überweisung. Bei Käufen ab 1.000€ ist auch eine Ratenfinanzierung über unseren Partner möglich.</div></div>
                 </div>
                 <div class="faq-item">
-                    <button class="faq-question" onclick="toggleFaq(this)"><span>Bietet Royalcards ein Treueprogramm?</span><span class="faq-toggle">+</span></button>
+                    <button class="faq-question" onclick="toggleFaq(this)"><span>Bietet RoyalCards ein Treueprogramm?</span><span class="faq-toggle">+</span></button>
                     <div class="faq-answer"><div class="faq-answer-inner">Ja. Für jeden Kauf erhalten Sie Royal-Punkte, die Sie für Rabatte und exklusive Pre-Releases einlösen können. Premium-Mitglieder erhalten zudem priorisierte Beratung und Zugang zu unseren VIP-Events.</div></div>
                 </div>
             </div>
@@ -927,7 +927,7 @@ ul { list-style: none; }
                     </form>
                     <small>Wir respektieren Ihre Privatsphäre. Jederzeit abbestellbar.</small>
                 </div>
-                <div class="newsletter-decor">R</div>
+                <div class="newsletter-decor">RC</div>
             </div>
         </div>
     </section>
@@ -1001,10 +1001,10 @@ ul { list-style: none; }
         </ul>
         <div class="side-menu-section">TCG Kategorien</div>
         <ul>
-            <li><a onclick="filterShop('Pokémon'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#FAF6EF" stroke="#3a1b5c" stroke-width="1.2"/><path d="M1.5 12 A 10.5 10.5 0 0 1 22.5 12 Z" fill="#5b2c91"/><line x1="1.5" y1="12" x2="22.5" y2="12" stroke="#3a1b5c" stroke-width="1.4"/><circle cx="12" cy="12" r="3" fill="#FAF6EF" stroke="#3a1b5c" stroke-width="1.4"/><circle cx="12" cy="12" r="1.3" fill="#3a1b5c"/></svg></span>Pokémon</a></li>
+            <li><a onclick="filterShop('Pokémon'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#FAF6EF" stroke="currentColor" stroke-width="1.2" opacity="1"/><path d="M1.5 12 A 10.5 10.5 0 0 1 22.5 12 Z" fill="currentColor"/><line x1="1.5" y1="12" x2="22.5" y2="12" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="3" fill="#FAF6EF" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/></svg></span>Pokémon</a></li>
             <li><a onclick="filterShop('MTG'); closeSideMenu()"><span class="side-menu-icon">✦</span>Magic: The Gathering</a></li>
             <li><a onclick="filterShop('Yu-Gi-Oh!'); closeSideMenu()"><span class="side-menu-icon">◈</span>Yu-Gi-Oh!</a></li>
-            <li><a onclick="filterShop('One Piece'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16" rx="10.5" ry="2" fill="#7B3FBF" stroke="#3a1b5c" stroke-width="0.5"/><path d="M6 13.5 C 6 8.5, 8.5 6, 12 6 C 15.5 6, 18 8.5, 18 13.5 Z" fill="#7B3FBF" stroke="#3a1b5c" stroke-width="0.5"/><path d="M5.5 13 C 8.5 14, 15.5 14, 18.5 13 L 18.5 14.5 C 15.5 15.5, 8.5 15.5, 5.5 14.5 Z" fill="#3a1b5c"/></svg></span>One Piece TCG</a></li>
+            <li><a onclick="filterShop('One Piece'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16" rx="10.5" ry="2" fill="currentColor" opacity="0.85"/><path d="M6 13.5 C 6 8.5, 8.5 6, 12 6 C 15.5 6, 18 8.5, 18 13.5 Z" fill="currentColor"/><path d="M5.5 13 C 8.5 14, 15.5 14, 18.5 13 L 18.5 14.5 C 15.5 15.5, 8.5 15.5, 5.5 14.5 Z" fill="currentColor" opacity="0.6"/></svg></span>One Piece TCG</a></li>
             <li><a onclick="filterShop('Lorcana'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="14.5" r="6.5"/><circle cx="5.5" cy="6.5" r="4"/><circle cx="18.5" cy="6.5" r="4"/></svg></span>Disney Lorcana</a></li>
             <li><a onclick="filterShop('Digimon'); closeSideMenu()"><span class="side-menu-icon">⬢</span>Digimon</a></li>
         </ul>
@@ -1060,7 +1060,7 @@ ul { list-style: none; }
             <div class="footer-col footer-brand">
                 <a class="logo" onclick="navigateTo('home')">
                     <svg class="logo-icon" viewBox="0 0 70 92" fill="none"><g transform="rotate(-10,22,46)"><rect x="3" y="19" width="38" height="54" rx="5" fill="#3a1b5c" stroke="#C9A961" stroke-width="0.8" opacity="0.85"/></g><g transform="rotate(6,38,40)"><rect x="19" y="13" width="38" height="54" rx="5" fill="#5b2c91" stroke="#C9A961" stroke-width="0.8"/><rect x="22.5" y="16.5" width="31" height="47" rx="3" fill="none" stroke="#C9A961" stroke-width="0.45" opacity="0.5"/><text x="38" y="52" font-family="serif" font-size="14" font-weight="700" fill="#C9A961" text-anchor="middle">RC</text><g transform="translate(48,22)"><rect x="-6" y="8" width="12" height="2.2" rx="0.7" fill="#C9A961"/><path d="M-6,8 L-6,3 L-2.5,5.5 L0,0 L2.5,5.5 L6,3 L6,8 Z" fill="#C9A961"/><circle cx="0" cy="2.2" r="0.9" fill="#5b2c91"/><circle cx="-4.2" cy="5.5" r="0.6" fill="#5b2c91"/><circle cx="4.2" cy="5.5" r="0.6" fill="#5b2c91"/></g></g></svg>
-                    <span class="logo-text">Royalcards</span>
+                    <span class="logo-text">RoyalCards</span>
                 </a>
                 <p>Premium TCG Sammelkarten Shop mit Sitz in Deutschland. Eleganz trifft Leidenschaft seit 2014.</p>
                 <div class="social-links"><a>IG</a><a>FB</a><a>YT</a><a>DC</a></div>
@@ -1071,7 +1071,7 @@ ul { list-style: none; }
             <div class="footer-col"><h4>Kontakt</h4><ul class="contact-list"><li>Königsallee 42<br>40212 Düsseldorf</li><li>support@royalcards.de</li><li>+49 (0)211 1234567</li></ul></div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 Royalcards GmbH. Alle Rechte vorbehalten.</p>
+            <p>&copy; 2026 RoyalCards GmbH. Alle Rechte vorbehalten.</p>
             <ul class="footer-legal"><li><a>Impressum</a></li><li><a>Datenschutz</a></li><li><a>AGB</a></li></ul>
             <div class="payment-methods"><span>VISA</span><span>MC</span><span>PayPal</span><span>Klarna</span></div>
         </div>
@@ -1573,7 +1573,7 @@ function renderProductDetail() {
         '</div>' +
         '<div class="pd-tab-content" data-tab="reviews">' +
             '<div class="pd-review"><div class="pd-review-avatar">MK</div><div><div class="pd-review-name">Maximilian K.</div><div class="pd-review-date">vor 3 Tagen · <span class="stars" style="font-size:0.85rem;">★★★★★</span></div><div class="pd-review-text">Hervorragender Zustand, schnelle Lieferung, sorgfältige Verpackung. Genau wie beschrieben.</div></div></div>' +
-            '<div class="pd-review"><div class="pd-review-avatar">SL</div><div><div class="pd-review-name">Sophia L.</div><div class="pd-review-date">vor 1 Woche · <span class="stars" style="font-size:0.85rem;">★★★★★</span></div><div class="pd-review-text">Die Karte ist genau wie auf den Fotos. Royalcards bleibt mein Lieblings-Shop.</div></div></div>' +
+            '<div class="pd-review"><div class="pd-review-avatar">SL</div><div><div class="pd-review-name">Sophia L.</div><div class="pd-review-date">vor 1 Woche · <span class="stars" style="font-size:0.85rem;">★★★★★</span></div><div class="pd-review-text">Die Karte ist genau wie auf den Fotos. RoyalCards bleibt mein Lieblings-Shop.</div></div></div>' +
         '</div>' +
         '<div class="pd-tab-content" data-tab="shipping">' +
             '<p><strong>Versand:</strong> Versicherter Versand mit DHL oder UPS innerhalb von 1-2 Werktagen nach Bestelleingang.</p>' +
@@ -1613,7 +1613,7 @@ function switchTab(btn, tab) {
 
 function shareProduct() {
     if (navigator.share && currentProduct) {
-        navigator.share({ title: currentProduct.name, text: 'Schau dir ' + currentProduct.name + ' bei Royalcards an!', url: location.href }).catch(() => {});
+        navigator.share({ title: currentProduct.name, text: 'Schau dir ' + currentProduct.name + ' bei RoyalCards an!', url: location.href }).catch(() => {});
     } else {
         navigator.clipboard.writeText(location.href).then(() => showToast('Link kopiert ♛', 'success')).catch(() => showToast('Konnte Link nicht kopieren', 'error'));
     }
