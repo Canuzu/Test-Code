@@ -159,10 +159,10 @@ ul { list-style: none; }
 .side-menu-icon { font-family: 'Cormorant Garamond', 'Cambria Math', 'Segoe UI Symbol', serif; font-variant-emoji: text; font-size: 1.3rem; color: var(--violet); width: 28px; height: 28px; display: inline-flex; justify-content: center; align-items: center; line-height: 1; flex-shrink: 0; }
 .side-menu-icon.svg-icon { font-size: 0; }
 .side-menu-icon svg { width: 24px; height: 24px; display: block; }
-.side-menu-icon.suit { font-size: 1.5rem; }
-.side-menu-icon.suit-heart { color: #c92d2d; }
-[data-theme="dark"] .side-menu-icon.suit-heart { color: #f87171; }
-.side-menu-icon.suit-spade, .side-menu-icon.suit-club { color: var(--text); }
+.side-menu-icon.suit { font-size: 1.5rem; color: var(--violet); }
+.side-menu-icon.suit-heart,
+.side-menu-icon.suit-spade,
+.side-menu-icon.suit-club { color: var(--violet); }
 .category-icon.svg-icon { font-size: 0; }
 .category-icon.svg-icon svg { width: 56px; height: 56px; display: block; margin: 0 auto; }
 .category-card:hover .category-icon.svg-icon svg { transform: scale(1.1) rotate(5deg); }
@@ -205,7 +205,6 @@ ul { list-style: none; }
 .hero { position: relative; background: linear-gradient(135deg, var(--bg) 0%, var(--bg-soft) 50%, var(--cream-deep) 100%); padding: 80px 0 100px; overflow: hidden; transition: background 0.4s; }
 [data-theme="dark"] .hero { background: linear-gradient(135deg, #0d0a1a 0%, #14102a 50%, #1c1638 100%); }
 .hero-bg { position: absolute; inset: 0; background-image: radial-gradient(circle at 20% 30%, rgba(123, 63, 191, 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 70%, rgba(201, 169, 97, 0.1) 0%, transparent 50%); pointer-events: none; }
-.hero-bg::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(123, 63, 191, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(123, 63, 191, 0.05) 1px, transparent 1px); background-size: 60px 60px; mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%); -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%); }
 .hero-content { position: relative; display: grid; grid-template-columns: 1.2fr 1fr; gap: 80px; align-items: center; }
 
 .brand-showcase { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-bottom: 40px; padding-top: 10px; }
@@ -578,6 +577,26 @@ ul { list-style: none; }
 .payment-methods { display: flex; gap: 8px; }
 .payment-methods span { background: rgba(240, 234, 255, 0.1); color: rgba(240, 234, 255, 0.8); padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; }
 
+/* FAQ Section */
+.faq-section { padding: 100px 0; background: var(--bg-card); transition: background 0.4s; }
+.faq-list { max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.faq-item { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; transition: var(--transition); }
+.faq-item.open { border-color: var(--violet-soft); box-shadow: var(--shadow-sm); }
+.faq-question { width: 100%; padding: 22px 28px; display: flex; justify-content: space-between; align-items: center; gap: 16px; font-family: var(--font-serif); font-size: 1.15rem; font-weight: 600; color: var(--text); text-align: left; cursor: pointer; border: none; background: transparent; transition: background 0.2s; }
+.faq-question:hover { background: var(--violet-mist); }
+.faq-toggle { width: 32px; height: 32px; border-radius: 50%; background: var(--violet-mist); color: var(--violet); display: inline-flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 400; flex-shrink: 0; transition: transform 0.3s ease, background 0.3s ease; font-family: var(--font-sans); }
+.faq-item.open .faq-toggle { background: var(--violet); color: #fff; transform: rotate(45deg); }
+.faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+.faq-item.open .faq-answer { max-height: 400px; }
+.faq-answer-inner { padding: 0 28px 22px; color: var(--text-soft); line-height: 1.75; font-size: 0.98rem; }
+
+/* Recently viewed section */
+.recent-section { padding: 80px 0; background: var(--bg); transition: background 0.4s; display: none; }
+.recent-section.has-items { display: block; }
+.recent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; }
+.recent-clear { display: block; margin: 32px auto 0; padding: 8px 18px; background: transparent; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-muted); font-size: 0.8rem; letter-spacing: 0.05em; cursor: pointer; transition: var(--transition); }
+.recent-clear:hover { border-color: var(--violet); color: var(--violet); }
+
 .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 
@@ -731,10 +750,10 @@ ul { list-style: none; }
                 <p>Wählen Sie Ihre Lieblingsserie und durchstöbern Sie unsere kuratierte Auswahl</p>
             </div>
             <div class="category-grid">
-                <a class="category-card" onclick="filterShop('Pokémon')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#fdfbf7" stroke="#1a0a2e" stroke-width="1.2"/><path d="M1.5 12 A 10.5 10.5 0 0 1 22.5 12 Z" fill="#dc2626"/><line x1="1.5" y1="12" x2="22.5" y2="12" stroke="#1a0a2e" stroke-width="1.4"/><circle cx="12" cy="12" r="3" fill="#fdfbf7" stroke="#1a0a2e" stroke-width="1.4"/><circle cx="12" cy="12" r="1.3" fill="#1a0a2e"/></svg></div><h3>Pokémon</h3><p>Von Base Set bis Scarlet & Violet</p><span class="category-count">4.200+ Karten</span></a>
+                <a class="category-card" onclick="filterShop('Pokémon')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#FAF6EF" stroke="#3a1b5c" stroke-width="1.2"/><path d="M1.5 12 A 10.5 10.5 0 0 1 22.5 12 Z" fill="#5b2c91"/><line x1="1.5" y1="12" x2="22.5" y2="12" stroke="#3a1b5c" stroke-width="1.4"/><circle cx="12" cy="12" r="3" fill="#FAF6EF" stroke="#3a1b5c" stroke-width="1.4"/><circle cx="12" cy="12" r="1.3" fill="#3a1b5c"/></svg></div><h3>Pokémon</h3><p>Von Base Set bis Scarlet & Violet</p><span class="category-count">4.200+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('MTG')"><div class="category-icon">✦</div><h3>Magic: The Gathering</h3><p>Vintage, Modern & Commander</p><span class="category-count">3.800+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('Yu-Gi-Oh!')"><div class="category-icon">◈</div><h3>Yu-Gi-Oh!</h3><p>Klassiker & aktuelle Sets</p><span class="category-count">2.900+ Karten</span></a>
-                <a class="category-card" onclick="filterShop('One Piece')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16" rx="10.5" ry="2" fill="#e8c468" stroke="#7a5c1a" stroke-width="0.5"/><path d="M6 13.5 C 6 8.5, 8.5 6, 12 6 C 15.5 6, 18 8.5, 18 13.5 Z" fill="#e8c468" stroke="#7a5c1a" stroke-width="0.5"/><path d="M5.5 13 C 8.5 14, 15.5 14, 18.5 13 L 18.5 14.5 C 15.5 15.5, 8.5 15.5, 5.5 14.5 Z" fill="#c92d2d" stroke="#7a1a1a" stroke-width="0.3"/></svg></div><h3>One Piece TCG</h3><p>Neue Serie, große Beliebtheit</p><span class="category-count">1.500+ Karten</span></a>
+                <a class="category-card" onclick="filterShop('One Piece')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16" rx="10.5" ry="2" fill="#7B3FBF" stroke="#3a1b5c" stroke-width="0.5"/><path d="M6 13.5 C 6 8.5, 8.5 6, 12 6 C 15.5 6, 18 8.5, 18 13.5 Z" fill="#7B3FBF" stroke="#3a1b5c" stroke-width="0.5"/><path d="M5.5 13 C 8.5 14, 15.5 14, 18.5 13 L 18.5 14.5 C 15.5 15.5, 8.5 15.5, 5.5 14.5 Z" fill="#3a1b5c"/></svg></div><h3>One Piece TCG</h3><p>Neue Serie, große Beliebtheit</p><span class="category-count">1.500+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('Lorcana')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="14.5" r="6.5"/><circle cx="5.5" cy="6.5" r="4"/><circle cx="18.5" cy="6.5" r="4"/></svg></div><h3>Disney Lorcana</h3><p>Magische Disney-Welten</p><span class="category-count">1.100+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('Digimon')"><div class="category-icon">⬢</div><h3>Digimon</h3><p>Digitale Monster sammeln</p><span class="category-count">900+ Karten</span></a>
             </div>
@@ -817,6 +836,58 @@ ul { list-style: none; }
                 <div class="testimonial"><div class="stars">★★★★★</div><blockquote>"Die Verpackung war fürstlich, die Karte makellos. Royalcards ist meine erste Adresse für seltene Vintage-Karten geworden."</blockquote><div class="testimonial-author"><strong>Maximilian K.</strong><span>Verifizierter Sammler</span></div></div>
                 <div class="testimonial"><div class="stars">★★★★★</div><blockquote>"Der Grading-Service ist exzellent. Schnelle Abwicklung, faire Preise und absolute Transparenz während des gesamten Prozesses."</blockquote><div class="testimonial-author"><strong>Sophia L.</strong><span>Pokémon Sammlerin</span></div></div>
                 <div class="testimonial"><div class="stars">★★★★★</div><blockquote>"Endlich ein Shop, der TCG nicht nur als Geschäft, sondern als Leidenschaft versteht. Beratung auf höchstem Niveau."</blockquote><div class="testimonial-author"><strong>Daniel B.</strong><span>MTG Spieler</span></div></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="recent-section" id="recentSection">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-eyebrow">— Ihre Auswahl</span>
+                <h2>Zuletzt angesehen</h2>
+                <p>Karten, die Sie kürzlich erkundet haben</p>
+            </div>
+            <div class="recent-grid product-grid" id="recentGrid"></div>
+            <button class="recent-clear" onclick="clearRecent()">Verlauf leeren</button>
+        </div>
+    </section>
+
+    <section class="faq-section" id="faq">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-eyebrow">— Häufige Fragen</span>
+                <h2>FAQ</h2>
+                <p>Antworten auf die wichtigsten Fragen rund um Royalcards</p>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)"><span>Wie kann ich sicher sein, dass die Karten echt sind?</span><span class="faq-toggle">+</span></button>
+                    <div class="faq-answer"><div class="faq-answer-inner">Jede Karte durchläuft eine sorgfältige Prüfung durch unsere erfahrenen Experten. Wir arbeiten ausschließlich mit verifizierten Quellen und bieten eine 100% Authentizitätsgarantie auf jeden Kauf. Bei Zweifeln erstatten wir Ihnen den vollen Kaufpreis zurück.</div></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)"><span>Wie lange dauert der Versand?</span><span class="faq-toggle">+</span></button>
+                    <div class="faq-answer"><div class="faq-answer-inner">Innerhalb Deutschlands liefern wir versichert mit DHL oder UPS in 1-2 Werktagen. Internationaler Versand dauert je nach Land 3-7 Werktage. Ab 50€ Bestellwert ist der Versand innerhalb Deutschlands kostenlos.</div></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)"><span>Kann ich Karten auch zurückgeben?</span><span class="faq-toggle">+</span></button>
+                    <div class="faq-answer"><div class="faq-answer-inner">Selbstverständlich. Sie haben 30 Tage Widerrufsrecht. Sammlerkarten müssen in Originalzustand zurückgesendet werden. Den vollständigen Kaufpreis erstatten wir innerhalb von 5 Werktagen nach Erhalt der Retoure.</div></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)"><span>Wie funktioniert der Grading-Service?</span><span class="faq-toggle">+</span></button>
+                    <div class="faq-answer"><div class="faq-answer-inner">Sie senden uns Ihre Karten versichert zu. Wir prüfen den Zustand vorab, beraten Sie zur erwartbaren Bewertung und übernehmen die komplette Einreichung bei PSA, BGS oder CGC. Nach dem Grading erhalten Sie Ihre versiegelten Karten zurück. Versicherung bis 100.000€ pro Sendung ist inklusive.</div></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)"><span>Verkauft Royalcards auch meine Karten?</span><span class="faq-toggle">+</span></button>
+                    <div class="faq-answer"><div class="faq-answer-inner">Ja. Wir kaufen einzelne Sammlerkarten und ganze Sammlungen direkt an oder verkaufen für Sie auf Kommission. Kontaktieren Sie uns mit einer Liste oder Fotos Ihrer Karten und wir erstellen ein faires Angebot innerhalb von 48 Stunden.</div></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)"><span>Welche Zahlungsmethoden akzeptieren Sie?</span><span class="faq-toggle">+</span></button>
+                    <div class="faq-answer"><div class="faq-answer-inner">Wir akzeptieren Visa, Mastercard, PayPal, Klarna (Rechnung & Ratenkauf), SEPA-Lastschrift sowie Vorkasse per Überweisung. Bei Käufen ab 1.000€ ist auch eine Ratenfinanzierung über unseren Partner möglich.</div></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" onclick="toggleFaq(this)"><span>Bietet Royalcards ein Treueprogramm?</span><span class="faq-toggle">+</span></button>
+                    <div class="faq-answer"><div class="faq-answer-inner">Ja. Für jeden Kauf erhalten Sie Royal-Punkte, die Sie für Rabatte und exklusive Pre-Releases einlösen können. Premium-Mitglieder erhalten zudem priorisierte Beratung und Zugang zu unseren VIP-Events.</div></div>
+                </div>
             </div>
         </div>
     </section>
@@ -930,10 +1001,10 @@ ul { list-style: none; }
         </ul>
         <div class="side-menu-section">TCG Kategorien</div>
         <ul>
-            <li><a onclick="filterShop('Pokémon'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#fdfbf7" stroke="#1a0a2e" stroke-width="1.2"/><path d="M1.5 12 A 10.5 10.5 0 0 1 22.5 12 Z" fill="#dc2626"/><line x1="1.5" y1="12" x2="22.5" y2="12" stroke="#1a0a2e" stroke-width="1.4"/><circle cx="12" cy="12" r="3" fill="#fdfbf7" stroke="#1a0a2e" stroke-width="1.4"/><circle cx="12" cy="12" r="1.3" fill="#1a0a2e"/></svg></span>Pokémon</a></li>
+            <li><a onclick="filterShop('Pokémon'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#FAF6EF" stroke="#3a1b5c" stroke-width="1.2"/><path d="M1.5 12 A 10.5 10.5 0 0 1 22.5 12 Z" fill="#5b2c91"/><line x1="1.5" y1="12" x2="22.5" y2="12" stroke="#3a1b5c" stroke-width="1.4"/><circle cx="12" cy="12" r="3" fill="#FAF6EF" stroke="#3a1b5c" stroke-width="1.4"/><circle cx="12" cy="12" r="1.3" fill="#3a1b5c"/></svg></span>Pokémon</a></li>
             <li><a onclick="filterShop('MTG'); closeSideMenu()"><span class="side-menu-icon">✦</span>Magic: The Gathering</a></li>
             <li><a onclick="filterShop('Yu-Gi-Oh!'); closeSideMenu()"><span class="side-menu-icon">◈</span>Yu-Gi-Oh!</a></li>
-            <li><a onclick="filterShop('One Piece'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16" rx="10.5" ry="2" fill="#e8c468" stroke="#7a5c1a" stroke-width="0.5"/><path d="M6 13.5 C 6 8.5, 8.5 6, 12 6 C 15.5 6, 18 8.5, 18 13.5 Z" fill="#e8c468" stroke="#7a5c1a" stroke-width="0.5"/><path d="M5.5 13 C 8.5 14, 15.5 14, 18.5 13 L 18.5 14.5 C 15.5 15.5, 8.5 15.5, 5.5 14.5 Z" fill="#c92d2d" stroke="#7a1a1a" stroke-width="0.3"/></svg></span>One Piece TCG</a></li>
+            <li><a onclick="filterShop('One Piece'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16" rx="10.5" ry="2" fill="#7B3FBF" stroke="#3a1b5c" stroke-width="0.5"/><path d="M6 13.5 C 6 8.5, 8.5 6, 12 6 C 15.5 6, 18 8.5, 18 13.5 Z" fill="#7B3FBF" stroke="#3a1b5c" stroke-width="0.5"/><path d="M5.5 13 C 8.5 14, 15.5 14, 18.5 13 L 18.5 14.5 C 15.5 15.5, 8.5 15.5, 5.5 14.5 Z" fill="#3a1b5c"/></svg></span>One Piece TCG</a></li>
             <li><a onclick="filterShop('Lorcana'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="14.5" r="6.5"/><circle cx="5.5" cy="6.5" r="4"/><circle cx="18.5" cy="6.5" r="4"/></svg></span>Disney Lorcana</a></li>
             <li><a onclick="filterShop('Digimon'); closeSideMenu()"><span class="side-menu-icon">⬢</span>Digimon</a></li>
         </ul>
@@ -1027,6 +1098,7 @@ const PRODUCTS = [
 // ====== STATE ======
 let cart = JSON.parse(localStorage.getItem('rc_cart') || '[]');
 let wishlist = JSON.parse(localStorage.getItem('rc_wishlist') || '[]');
+let recentlyViewed = JSON.parse(localStorage.getItem('rc_recent') || '[]');
 let theme = localStorage.getItem('rc_theme') || 'light';
 let currentView = 'home';
 let currentProduct = null;
@@ -1389,8 +1461,45 @@ function openProduct(productId) {
     const p = PRODUCTS.find(p => p.id === productId);
     if (!p) return;
     currentProduct = p;
+    addRecent(productId);
     renderProductDetail();
     navigateTo('product');
+}
+
+function addRecent(productId) {
+    recentlyViewed = recentlyViewed.filter(id => id !== productId);
+    recentlyViewed.unshift(productId);
+    recentlyViewed = recentlyViewed.slice(0, 8);
+    localStorage.setItem('rc_recent', JSON.stringify(recentlyViewed));
+    renderRecent();
+}
+
+function renderRecent() {
+    const grid = document.getElementById('recentGrid');
+    const section = document.getElementById('recentSection');
+    if (!grid || !section) return;
+    const items = recentlyViewed.map(id => PRODUCTS.find(p => p.id === id)).filter(Boolean);
+    if (items.length === 0) {
+        section.classList.remove('has-items');
+        return;
+    }
+    section.classList.add('has-items');
+    grid.innerHTML = items.slice(0, 4).map(productCardHTML).join('');
+}
+
+function clearRecent() {
+    recentlyViewed = [];
+    localStorage.setItem('rc_recent', JSON.stringify(recentlyViewed));
+    renderRecent();
+    showToast('Verlauf geleert');
+}
+
+function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    if (!item) return;
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) item.classList.add('open');
 }
 
 function renderProductDetail() {
@@ -1707,6 +1816,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateThemeIcon();
     renderFeatured();
     renderArrivals();
+    renderRecent();
     updateCartUI();
     updateWishlistBadge();
 
