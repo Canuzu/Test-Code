@@ -156,7 +156,16 @@ ul { list-style: none; }
 .side-menu-nav a { display: flex; align-items: center; gap: 14px; padding: 14px 28px; font-size: 0.95rem; color: var(--text); transition: background 0.2s ease, color 0.2s ease, padding 0.2s ease, border-color 0.2s ease; cursor: pointer; border-left: 3px solid transparent; font-weight: 500; }
 .side-menu-nav a:hover { background: var(--violet-mist); color: var(--violet); border-left-color: var(--violet); padding-left: 36px; }
 .side-menu-nav a.active { color: var(--violet); border-left-color: var(--gold); font-weight: 600; }
-.side-menu-icon { font-family: 'Cormorant Garamond', 'Cambria Math', 'Segoe UI Symbol', serif; font-variant-emoji: text; font-size: 1.2rem; color: var(--violet); width: 24px; display: inline-flex; justify-content: center; line-height: 1; }
+.side-menu-icon { font-family: 'Cormorant Garamond', 'Cambria Math', 'Segoe UI Symbol', serif; font-variant-emoji: text; font-size: 1.3rem; color: var(--violet); width: 28px; height: 28px; display: inline-flex; justify-content: center; align-items: center; line-height: 1; flex-shrink: 0; }
+.side-menu-icon.svg-icon { font-size: 0; }
+.side-menu-icon svg { width: 24px; height: 24px; display: block; }
+.side-menu-icon.suit { font-size: 1.5rem; }
+.side-menu-icon.suit-heart { color: #c92d2d; }
+[data-theme="dark"] .side-menu-icon.suit-heart { color: #f87171; }
+.side-menu-icon.suit-spade, .side-menu-icon.suit-club { color: var(--text); }
+.category-icon.svg-icon { font-size: 0; }
+.category-icon.svg-icon svg { width: 56px; height: 56px; display: block; margin: 0 auto; }
+.category-card:hover .category-icon.svg-icon svg { transform: scale(1.1) rotate(5deg); }
 .icon-btn { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 50%; color: var(--text); transition: var(--transition); position: relative; background: transparent; border: none; cursor: pointer; }
 .icon-btn svg { width: 20px; height: 20px; }
 .icon-btn:hover { background: var(--violet-mist); color: var(--violet); }
@@ -166,7 +175,24 @@ ul { list-style: none; }
 @keyframes bump { 0% { transform: scale(1); } 50% { transform: scale(1.35); } 100% { transform: scale(1); } }
 .search-bar { display: none; background: var(--bg-soft); padding: 18px 0; border-top: 1px solid var(--border); animation: slideDown 0.3s ease; }
 .search-bar.active { display: block; }
-.search-bar .container { display: flex; gap: 12px; max-width: 720px; }
+.search-bar .container { display: flex; gap: 12px; max-width: 720px; position: relative; }
+.search-suggestions { position: absolute; top: calc(100% + 8px); left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); max-height: 440px; overflow-y: auto; z-index: 102; display: none; }
+.search-suggestions.active { display: block; }
+.search-suggestion-empty { padding: 28px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
+.search-suggestion-empty strong { color: var(--text); }
+.search-suggestion-header { padding: 14px 22px 8px; font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; }
+.search-suggestion { display: flex; align-items: center; gap: 14px; padding: 12px 22px; cursor: pointer; transition: background 0.2s; border-bottom: 1px solid var(--border); }
+.search-suggestion:last-child { border-bottom: none; }
+.search-suggestion:hover { background: var(--violet-mist); }
+.search-suggestion-img { width: 42px; aspect-ratio: 5/7; flex-shrink: 0; border-radius: 4px; overflow: hidden; }
+.search-suggestion-img .card-mockup { width: 100%; height: 100%; box-shadow: none; }
+.search-suggestion-info { flex: 1; min-width: 0; }
+.search-suggestion-name { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-suggestion-meta { font-size: 0.78rem; color: var(--text-muted); }
+.search-suggestion-price { font-family: var(--font-serif); font-size: 1.15rem; font-weight: 700; color: var(--violet); flex-shrink: 0; }
+[data-theme="dark"] .search-suggestion-price { color: var(--violet-light); }
+.search-suggestion-all { display: block; text-align: center; padding: 14px; font-size: 0.85rem; color: var(--violet); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; border-top: 1px solid var(--border); transition: background 0.2s; }
+.search-suggestion-all:hover { background: var(--violet-mist); }
 .search-bar input { flex: 1; padding: 14px 20px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); font-size: 0.95rem; color: var(--text); font-family: inherit; outline: none; transition: var(--transition); }
 .search-bar input:focus { border-color: var(--violet); box-shadow: 0 0 0 3px var(--violet-mist); }
 @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
@@ -647,9 +673,10 @@ ul { list-style: none; }
         </div>
     </div>
     <div class="search-bar" id="searchBar">
-        <div class="container">
-            <input type="text" id="searchInput" placeholder="Suche nach Karten, Sets, Sealed Produkten..." oninput="searchProducts(this.value)">
+        <div class="container search-bar-inner">
+            <input type="text" id="searchInput" placeholder="Suche nach Karten, Sets, Sealed Produkten..." oninput="searchProducts(this.value)" onkeydown="if(event.key==='Enter')executeSearch()" autocomplete="off">
             <button class="btn-primary" onclick="executeSearch()">Suchen</button>
+            <div class="search-suggestions" id="searchSuggestions"></div>
         </div>
     </div>
 </header>
@@ -684,13 +711,13 @@ ul { list-style: none; }
             </div>
             <div class="hero-card-stack">
                 <div class="floating-card-wrap wrap-1">
-                    <div class="floating-card card-1" onclick="openProduct('p001')"><div class="card-shine"></div><div class="card-content"><span class="card-rarity">★ ULTRA RARE</span><h3>Charizard</h3><p>Base Set · 1999</p><span class="card-price">2.499 €</span></div></div>
+                    <div class="floating-card card-1" onclick="openProduct('p001')"><div class="card-content"><span class="card-rarity">★ ULTRA RARE</span><h3>Charizard</h3><p>Base Set · 1999</p><span class="card-price">2.499 €</span></div></div>
                 </div>
                 <div class="floating-card-wrap wrap-2">
-                    <div class="floating-card card-2" onclick="openProduct('p002')"><div class="card-shine"></div><div class="card-content"><span class="card-rarity">◆ HOLO</span><h3>Black Lotus</h3><p>Alpha · MTG</p><span class="card-price">25.000 €</span></div></div>
+                    <div class="floating-card card-2" onclick="openProduct('p002')"><div class="card-content"><span class="card-rarity">◆ RARE</span><h3>Black Lotus</h3><p>Alpha · MTG</p><span class="card-price">25.000 €</span></div></div>
                 </div>
                 <div class="floating-card-wrap wrap-3">
-                    <div class="floating-card card-3" onclick="openProduct('p003')"><div class="card-shine"></div><div class="card-content"><span class="card-rarity">✦ SECRET RARE</span><h3>Blue-Eyes</h3><p>LOB · Yu-Gi-Oh!</p><span class="card-price">1.299 €</span></div></div>
+                    <div class="floating-card card-3" onclick="openProduct('p003')"><div class="card-content"><span class="card-rarity">✦ SECRET RARE</span><h3>Blue-Eyes</h3><p>LOB · Yu-Gi-Oh!</p><span class="card-price">1.299 €</span></div></div>
                 </div>
             </div>
         </div>
@@ -704,11 +731,11 @@ ul { list-style: none; }
                 <p>Wählen Sie Ihre Lieblingsserie und durchstöbern Sie unsere kuratierte Auswahl</p>
             </div>
             <div class="category-grid">
-                <a class="category-card" onclick="filterShop('Pokémon')"><div class="category-icon">⊙</div><h3>Pokémon</h3><p>Von Base Set bis Scarlet & Violet</p><span class="category-count">4.200+ Karten</span></a>
+                <a class="category-card" onclick="filterShop('Pokémon')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#fdfbf7" stroke="#1a0a2e" stroke-width="1.2"/><path d="M1.5 12 A 10.5 10.5 0 0 1 22.5 12 Z" fill="#dc2626"/><line x1="1.5" y1="12" x2="22.5" y2="12" stroke="#1a0a2e" stroke-width="1.4"/><circle cx="12" cy="12" r="3" fill="#fdfbf7" stroke="#1a0a2e" stroke-width="1.4"/><circle cx="12" cy="12" r="1.3" fill="#1a0a2e"/></svg></div><h3>Pokémon</h3><p>Von Base Set bis Scarlet & Violet</p><span class="category-count">4.200+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('MTG')"><div class="category-icon">✦</div><h3>Magic: The Gathering</h3><p>Vintage, Modern & Commander</p><span class="category-count">3.800+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('Yu-Gi-Oh!')"><div class="category-icon">◈</div><h3>Yu-Gi-Oh!</h3><p>Klassiker & aktuelle Sets</p><span class="category-count">2.900+ Karten</span></a>
-                <a class="category-card" onclick="filterShop('One Piece')"><div class="category-icon">✸</div><h3>One Piece TCG</h3><p>Neue Serie, große Beliebtheit</p><span class="category-count">1.500+ Karten</span></a>
-                <a class="category-card" onclick="filterShop('Lorcana')"><div class="category-icon">♛</div><h3>Disney Lorcana</h3><p>Magische Disney-Welten</p><span class="category-count">1.100+ Karten</span></a>
+                <a class="category-card" onclick="filterShop('One Piece')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16" rx="10.5" ry="2" fill="#e8c468" stroke="#7a5c1a" stroke-width="0.5"/><path d="M6 13.5 C 6 8.5, 8.5 6, 12 6 C 15.5 6, 18 8.5, 18 13.5 Z" fill="#e8c468" stroke="#7a5c1a" stroke-width="0.5"/><path d="M5.5 13 C 8.5 14, 15.5 14, 18.5 13 L 18.5 14.5 C 15.5 15.5, 8.5 15.5, 5.5 14.5 Z" fill="#c92d2d" stroke="#7a1a1a" stroke-width="0.3"/></svg></div><h3>One Piece TCG</h3><p>Neue Serie, große Beliebtheit</p><span class="category-count">1.500+ Karten</span></a>
+                <a class="category-card" onclick="filterShop('Lorcana')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="14.5" r="6.5"/><circle cx="5.5" cy="6.5" r="4"/><circle cx="18.5" cy="6.5" r="4"/></svg></div><h3>Disney Lorcana</h3><p>Magische Disney-Welten</p><span class="category-count">1.100+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('Digimon')"><div class="category-icon">⬢</div><h3>Digimon</h3><p>Digitale Monster sammeln</p><span class="category-count">900+ Karten</span></a>
             </div>
         </div>
@@ -897,17 +924,17 @@ ul { list-style: none; }
         <ul>
             <li><a class="nav-link" data-view="home" onclick="navigateTo('home'); closeSideMenu()"><span class="side-menu-icon">♛</span>Startseite</a></li>
             <li><a class="nav-link" data-view="shop" onclick="navigateTo('shop'); closeSideMenu()"><span class="side-menu-icon">◆</span>Shop</a></li>
-            <li><a onclick="scrollToSection('grading'); closeSideMenu()"><span class="side-menu-icon">✦</span>Grading</a></li>
-            <li><a onclick="scrollToSection('ueber-uns'); closeSideMenu()"><span class="side-menu-icon">◈</span>Über uns</a></li>
-            <li><a onclick="scrollToSection('kontakt'); closeSideMenu()"><span class="side-menu-icon">✉</span>Kontakt</a></li>
+            <li><a onclick="scrollToSection('grading'); closeSideMenu()"><span class="side-menu-icon suit suit-spade">♠</span>Grading</a></li>
+            <li><a onclick="scrollToSection('ueber-uns'); closeSideMenu()"><span class="side-menu-icon suit suit-heart">♥</span>Über uns</a></li>
+            <li><a onclick="scrollToSection('kontakt'); closeSideMenu()"><span class="side-menu-icon suit suit-club">♣</span>Kontakt</a></li>
         </ul>
         <div class="side-menu-section">TCG Kategorien</div>
         <ul>
-            <li><a onclick="filterShop('Pokémon'); closeSideMenu()"><span class="side-menu-icon">⊙</span>Pokémon</a></li>
+            <li><a onclick="filterShop('Pokémon'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#fdfbf7" stroke="#1a0a2e" stroke-width="1.2"/><path d="M1.5 12 A 10.5 10.5 0 0 1 22.5 12 Z" fill="#dc2626"/><line x1="1.5" y1="12" x2="22.5" y2="12" stroke="#1a0a2e" stroke-width="1.4"/><circle cx="12" cy="12" r="3" fill="#fdfbf7" stroke="#1a0a2e" stroke-width="1.4"/><circle cx="12" cy="12" r="1.3" fill="#1a0a2e"/></svg></span>Pokémon</a></li>
             <li><a onclick="filterShop('MTG'); closeSideMenu()"><span class="side-menu-icon">✦</span>Magic: The Gathering</a></li>
             <li><a onclick="filterShop('Yu-Gi-Oh!'); closeSideMenu()"><span class="side-menu-icon">◈</span>Yu-Gi-Oh!</a></li>
-            <li><a onclick="filterShop('One Piece'); closeSideMenu()"><span class="side-menu-icon">✸</span>One Piece TCG</a></li>
-            <li><a onclick="filterShop('Lorcana'); closeSideMenu()"><span class="side-menu-icon">♛</span>Disney Lorcana</a></li>
+            <li><a onclick="filterShop('One Piece'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16" rx="10.5" ry="2" fill="#e8c468" stroke="#7a5c1a" stroke-width="0.5"/><path d="M6 13.5 C 6 8.5, 8.5 6, 12 6 C 15.5 6, 18 8.5, 18 13.5 Z" fill="#e8c468" stroke="#7a5c1a" stroke-width="0.5"/><path d="M5.5 13 C 8.5 14, 15.5 14, 18.5 13 L 18.5 14.5 C 15.5 15.5, 8.5 15.5, 5.5 14.5 Z" fill="#c92d2d" stroke="#7a1a1a" stroke-width="0.3"/></svg></span>One Piece TCG</a></li>
+            <li><a onclick="filterShop('Lorcana'); closeSideMenu()"><span class="side-menu-icon svg-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="14.5" r="6.5"/><circle cx="5.5" cy="6.5" r="4"/><circle cx="18.5" cy="6.5" r="4"/></svg></span>Disney Lorcana</a></li>
             <li><a onclick="filterShop('Digimon'); closeSideMenu()"><span class="side-menu-icon">⬢</span>Digimon</a></li>
         </ul>
     </nav>
@@ -983,18 +1010,18 @@ ul { list-style: none; }
 <script>
 // ====== PRODUCT DATA ======
 const PRODUCTS = [
-    { id: 'p001', name: 'Charizard Holo 4/102', cardName: 'Charizard', set: 'Base Set', category: 'Pokémon', tcg: 'Pokémon', price: 2499, condition: 'PSA 9 Mint', stock: 5, badge: 'Ultra Rare', badgeType: 'rare', mockup: 1, symbol: '⊙', year: 1999, language: 'Englisch', rarity: 'Holo Rare', desc: 'Eine der ikonischsten Pokémon-Karten aller Zeiten. Diese Holographic Charizard aus dem Base Set von 1999 ist in PSA 9 Mint Zustand bewertet und stellt ein wahres Sammlerstück für jeden ernsthaften Sammler dar. Die Karte zeigt das markante Holographic Foil und ist absolut zentriert.', rating: 4.9, reviews: 142 },
+    { id: 'p001', name: 'Charizard Holo 4/102', cardName: 'Charizard', set: 'Base Set', category: 'Pokémon', tcg: 'Pokémon', price: 2499, condition: 'PSA 9 Mint', stock: 5, badge: 'Ultra Rare', badgeType: 'rare', mockup: 1, symbol: '◓', year: 1999, language: 'Englisch', rarity: 'Holo Rare', desc: 'Eine der ikonischsten Pokémon-Karten aller Zeiten. Diese Holographic Charizard aus dem Base Set von 1999 ist in PSA 9 Mint Zustand bewertet und stellt ein wahres Sammlerstück für jeden ernsthaften Sammler dar. Die Karte zeigt das markante Holographic Foil und ist absolut zentriert.', rating: 4.9, reviews: 142 },
     { id: 'p002', name: 'Black Lotus', cardName: 'Black Lotus', set: 'Alpha', category: 'MTG', tcg: 'Magic: The Gathering', price: 25000, condition: 'BGS 8.5', stock: 1, badge: 'Mythic', badgeType: 'mythic', mockup: 2, symbol: '✦', year: 1993, language: 'Englisch', rarity: 'Rare', desc: 'Der heilige Gral des Magic: The Gathering Sammelns. Black Lotus aus dem Alpha-Set von 1993 ist eine der wertvollsten Karten der TCG-Geschichte. BGS 8.5 Bewertung mit perfekter Authentifizierung.', rating: 5.0, reviews: 23 },
     { id: 'p003', name: 'Blue-Eyes White Dragon 1st Ed.', cardName: 'Blue-Eyes', set: 'LOB', category: 'Yu-Gi-Oh!', tcg: 'Yu-Gi-Oh!', price: 1299, condition: 'Near Mint', stock: 3, badge: 'Secret Rare', badgeType: 'secret', mockup: 3, symbol: '◈', year: 2002, language: 'Englisch', rarity: 'Ultra Rare', desc: 'Die legendäre Blue-Eyes White Dragon aus dem allerersten Yu-Gi-Oh! Booster Set "Legend of Blue Eyes White Dragon" (LOB). 1st Edition in Near Mint Zustand – ein Muss für jeden Yu-Gi-Oh! Sammler.', rating: 4.8, reviews: 87 },
     { id: 'p004', name: 'OP-01 Romance Dawn Booster Box', cardName: 'Booster Box', set: 'OP-01', category: 'One Piece', tcg: 'One Piece TCG', price: 189, condition: 'Versiegelt', stock: 12, badge: 'Sealed', badgeType: 'special', mockup: 4, symbol: '✸', year: 2022, language: 'Englisch', rarity: 'Booster Box', desc: 'Versiegelte Original Booster Box des ersten One Piece TCG Sets "Romance Dawn". Enthält 24 Booster Packs mit je 12 Karten. Perfekt zum Sammeln oder zum Aufreißen für seltene Funde.', rating: 4.9, reviews: 256 },
-    { id: 'p005', name: 'Elsa - Spirit of Winter Foil', cardName: 'Elsa', set: 'The First Chapter', category: 'Lorcana', tcg: 'Disney Lorcana', price: 89, condition: 'Mint', stock: 8, badge: 'Rare', badgeType: 'rare', mockup: 5, symbol: '♛', year: 2023, language: 'Englisch', rarity: 'Super Rare', desc: 'Elsa Spirit of Winter in der seltenen Foil-Version aus dem ersten Lorcana Set. Eine der gefragtesten Karten unter Disney-Sammlern und Lorcana-Spielern gleichermaßen.', rating: 4.7, reviews: 134 },
-    { id: 'p006', name: 'Pikachu VMAX Rainbow Rare', cardName: 'Pikachu VMAX', set: 'Vivid Voltage', category: 'Pokémon', tcg: 'Pokémon', price: 149, condition: 'Near Mint', stock: 6, badge: 'Ultra Rare', badgeType: 'rare', mockup: 6, symbol: '⊙', year: 2020, language: 'Englisch', rarity: 'Rainbow Rare', desc: 'Pikachu VMAX in der spektakulären Rainbow Rare Version. Diese Karte aus dem Vivid Voltage Set zeigt Pikachu in seiner kraftvollsten Form mit beeindruckendem Regenbogen-Foil.', rating: 4.9, reviews: 198 },
+    { id: 'p005', name: 'Elsa - Spirit of Winter Foil', cardName: 'Elsa', set: 'The First Chapter', category: 'Lorcana', tcg: 'Disney Lorcana', price: 89, condition: 'Mint', stock: 8, badge: 'Rare', badgeType: 'rare', mockup: 5, symbol: '✧', year: 2023, language: 'Englisch', rarity: 'Super Rare', desc: 'Elsa Spirit of Winter in der seltenen Foil-Version aus dem ersten Lorcana Set. Eine der gefragtesten Karten unter Disney-Sammlern und Lorcana-Spielern gleichermaßen.', rating: 4.7, reviews: 134 },
+    { id: 'p006', name: 'Pikachu VMAX Rainbow Rare', cardName: 'Pikachu VMAX', set: 'Vivid Voltage', category: 'Pokémon', tcg: 'Pokémon', price: 149, condition: 'Near Mint', stock: 6, badge: 'Ultra Rare', badgeType: 'rare', mockup: 6, symbol: '◓', year: 2020, language: 'Englisch', rarity: 'Rainbow Rare', desc: 'Pikachu VMAX in der spektakulären Rainbow Rare Version. Diese Karte aus dem Vivid Voltage Set zeigt Pikachu in seiner kraftvollsten Form mit beeindruckendem Regenbogen-Foil.', rating: 4.9, reviews: 198 },
     { id: 'p007', name: 'Liliana of the Veil - Foil', cardName: 'Liliana', set: 'March of the Machine', category: 'MTG', tcg: 'Magic: The Gathering', price: 220, condition: 'Near Mint', stock: 4, badge: 'Mythic', badgeType: 'mythic', mockup: 7, symbol: '✦', year: 2023, language: 'Englisch', rarity: 'Mythic Rare', desc: 'Liliana of the Veil in der begehrten Foil-Version aus March of the Machine. Eine der mächtigsten Planeswalker-Karten in Magic: The Gathering – Pflicht für jeden Schwarz-Spieler.', rating: 4.8, reviews: 67 },
     { id: 'p008', name: 'Agumon Bond of Bravery', cardName: 'Agumon', set: 'BT-15', category: 'Digimon', tcg: 'Digimon TCG', price: 45, condition: 'Mint', stock: 18, badge: 'Secret Rare', badgeType: 'secret', mockup: 8, symbol: '⬢', year: 2024, language: 'Englisch', rarity: 'Secret Rare', desc: 'Agumon Bond of Bravery Secret Rare aus dem BT-15 Set Exceed Apocalypse. Mit alternativem Artwork und besonderer Foil-Behandlung – ein Highlight jeder Digimon-Sammlung.', rating: 4.6, reviews: 45 },
-    { id: 'p009', name: 'Shining Mewtwo Gold Star', cardName: 'Mewtwo', set: 'Promo', category: 'Pokémon', tcg: 'Pokémon', price: 3499, condition: 'PSA 8', stock: 2, badge: 'Ultra Rare', badgeType: 'rare', mockup: 1, symbol: '⊙', year: 2005, language: 'Englisch', rarity: 'Gold Star', desc: 'Shining Mewtwo Gold Star aus der EX Holon Phantoms Promo-Reihe. Eine der seltensten und teuersten Pokémon-Karten der modernen Ära, PSA 8 zertifiziert.', rating: 5.0, reviews: 19 },
+    { id: 'p009', name: 'Shining Mewtwo Gold Star', cardName: 'Mewtwo', set: 'Promo', category: 'Pokémon', tcg: 'Pokémon', price: 3499, condition: 'PSA 8', stock: 2, badge: 'Ultra Rare', badgeType: 'rare', mockup: 1, symbol: '◓', year: 2005, language: 'Englisch', rarity: 'Gold Star', desc: 'Shining Mewtwo Gold Star aus der EX Holon Phantoms Promo-Reihe. Eine der seltensten und teuersten Pokémon-Karten der modernen Ära, PSA 8 zertifiziert.', rating: 5.0, reviews: 19 },
     { id: 'p010', name: 'MOM Collector Booster Box', cardName: 'Collector Booster', set: 'MOM', category: 'MTG', tcg: 'Magic: The Gathering', price: 329, condition: 'Versiegelt', stock: 7, badge: 'Sealed', badgeType: 'special', mockup: 2, symbol: '✦', year: 2023, language: 'Englisch', rarity: 'Collector Box', desc: 'Versiegelte March of the Machine Collector Booster Box. Enthält 12 Collector Boosters mit garantierten Foils und seltenen Sammelkarten der Premium-Edition.', rating: 4.8, reviews: 89 },
     { id: 'p011', name: 'Dark Magician 1st Edition', cardName: 'Dark Magician', set: 'LOB', category: 'Yu-Gi-Oh!', tcg: 'Yu-Gi-Oh!', price: 899, condition: 'Near Mint', stock: 5, badge: 'Ultra Rare', badgeType: 'rare', mockup: 3, symbol: '◈', year: 2002, language: 'Englisch', rarity: 'Ultra Rare', desc: 'Dark Magician 1st Edition aus dem ersten Yu-Gi-Oh! Set LOB. Die Lieblingskarte von Yugi Mutou und eine der ikonischsten Karten des TCGs in Near Mint Zustand.', rating: 4.9, reviews: 112 },
-    { id: 'p012', name: 'Pokémon 151 Elite Trainer Box', cardName: 'ETB', set: '151', category: 'Pokémon', tcg: 'Pokémon', price: 79, condition: 'Versiegelt', stock: 25, badge: 'Sealed', badgeType: 'special', mockup: 4, symbol: '⊙', year: 2023, language: 'Englisch', rarity: 'ETB', desc: 'Versiegelte Pokémon 151 Elite Trainer Box mit allen Original-151 Pokémon. Enthält 9 Booster Packs, Karten-Sleeves, Würfel und exklusives Zubehör – das ultimative Sammler-Set.', rating: 4.9, reviews: 423 }
+    { id: 'p012', name: 'Pokémon 151 Elite Trainer Box', cardName: 'ETB', set: '151', category: 'Pokémon', tcg: 'Pokémon', price: 79, condition: 'Versiegelt', stock: 25, badge: 'Sealed', badgeType: 'special', mockup: 4, symbol: '◓', year: 2023, language: 'Englisch', rarity: 'ETB', desc: 'Versiegelte Pokémon 151 Elite Trainer Box mit allen Original-151 Pokémon. Enthält 9 Booster Packs, Karten-Sleeves, Würfel und exklusives Zubehör – das ultimative Sammler-Set.', rating: 4.9, reviews: 423 }
 ];
 
 // ====== STATE ======
@@ -1531,7 +1558,52 @@ function toggleSearch() {
 }
 
 function searchProducts(term) {
-    if (!term || term.length < 2) return;
+    const sug = document.getElementById('searchSuggestions');
+    if (!sug) return;
+    const t = (term || '').toLowerCase().trim();
+    if (t.length < 1) {
+        sug.classList.remove('active');
+        sug.innerHTML = '';
+        return;
+    }
+    const matches = PRODUCTS.filter(p =>
+        p.name.toLowerCase().includes(t) ||
+        p.cardName.toLowerCase().includes(t) ||
+        p.set.toLowerCase().includes(t) ||
+        p.category.toLowerCase().includes(t) ||
+        p.tcg.toLowerCase().includes(t)
+    );
+    if (matches.length === 0) {
+        sug.innerHTML = '<div class="search-suggestion-empty">Keine Treffer für <strong>"' + escapeHtml(term) + '"</strong></div>';
+    } else {
+        const top = matches.slice(0, 5);
+        sug.innerHTML =
+            '<div class="search-suggestion-header">' + matches.length + ' ' + (matches.length === 1 ? 'Treffer' : 'Treffer') + '</div>' +
+            top.map(p =>
+                '<div class="search-suggestion" onclick="closeSearch(); openProduct(\'' + p.id + '\')">' +
+                    '<div class="search-suggestion-img"><div class="card-mockup card-mockup-' + p.mockup + '"><div class="mockup-inner"><span class="mockup-symbol" style="font-size:1.5rem;">' + p.symbol + '</span></div></div></div>' +
+                    '<div class="search-suggestion-info">' +
+                        '<div class="search-suggestion-name">' + escapeHtml(p.name) + '</div>' +
+                        '<div class="search-suggestion-meta">' + p.tcg + ' · ' + p.condition + '</div>' +
+                    '</div>' +
+                    '<div class="search-suggestion-price">' + fmtPrice(p.price) + '</div>' +
+                '</div>'
+            ).join('') +
+            (matches.length > 5 ? '<div class="search-suggestion-all" onclick="executeSearch()">Alle ' + matches.length + ' Treffer anzeigen →</div>' : '');
+    }
+    sug.classList.add('active');
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function closeSearch() {
+    document.getElementById('searchBar').classList.remove('active');
+    const sug = document.getElementById('searchSuggestions');
+    if (sug) sug.classList.remove('active');
+    const inp = document.getElementById('searchInput');
+    if (inp) inp.value = '';
 }
 
 function executeSearch() {
@@ -1668,7 +1740,16 @@ document.addEventListener('DOMContentLoaded', () => {
             closeWishlist();
             closeSideMenu();
             closeCheckout();
-            document.getElementById('searchBar').classList.remove('active');
+            closeSearch();
+        }
+    });
+
+    // Click outside search closes suggestions
+    document.addEventListener('click', (e) => {
+        const bar = document.getElementById('searchBar');
+        if (bar && bar.classList.contains('active') && !bar.contains(e.target) && !e.target.closest('#searchToggleBtn')) {
+            const sug = document.getElementById('searchSuggestions');
+            if (sug) sug.classList.remove('active');
         }
     });
 });
