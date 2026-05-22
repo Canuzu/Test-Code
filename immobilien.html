@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immobilien-Browser: Nordzypern & Japan Akiya</title>
+    <style>
+:root {
+    --primary: #1e3c72;
+    --primary-dark: #16213e;
+    --accent: #ffd700;
+    --cyprus: #D47600;
+    --japan: #BC002D;
+    --dark: #1a1a2e;
+    --light: #f7f8fa;
+    --gray: #e5e7eb;
+    --text: #2c3e50;
+    --text-light: #6b7280;
+    --success: #4caf50;
+    --warning: #ff9800;
+    --danger: #ef5350;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--light);
+    color: var(--text);
+    line-height: 1.6;
+}
+.container { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; }
+.hero {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #0f3460 100%);
+    color: white;
+    padding: 2.5rem 0 3rem;
+    text-align: center;
+}
+.hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; letter-spacing: -1px; margin-bottom: 0.5rem; }
+.hero p { opacity: 0.9; font-size: 1.05rem; }
+.hero .back-link {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+}
+.hero .back-link:hover { background: rgba(255,255,255,0.25); }
+
+/* FILTERS */
+.filter-bar {
+    background: white;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: end;
+}
+.filter-group { display: flex; flex-direction: column; gap: 0.25rem; }
+.filter-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.filter-group select,
+.filter-group input {
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--gray);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background: white;
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.filter-group select:focus,
+.filter-group input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(30,60,114,0.1);
+}
+.price-range { display: flex; gap: 0.5rem; }
+.price-range input { width: 50%; }
+.reset-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.65rem 1.25rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background 0.2s;
+}
+.reset-btn:hover { background: var(--primary-dark); }
+
+.feature-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0;
+}
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.85rem;
+    background: var(--light);
+    border: 1px solid var(--gray);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+.chip:hover { border-color: var(--primary); }
+.chip.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* RESULTS */
+.results-bar {
+    max-width: 1400px;
+    margin: 1.5rem auto 1rem;
+    padding: 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+.results-count { font-size: 1.05rem; color: var(--text-light); }
+.results-count strong { color: var(--text); }
+
+.results {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1.5rem 3rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+/* PROPERTY CARD */
+.property-card {
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    transition: transform 0.25s, box-shadow 0.25s;
+    display: flex;
+    flex-direction: column;
+}
+.property-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+}
+.thumbnail {
+    height: 200px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: #1e3c72;
+}
+.thumbnail-icon { font-size: 5rem; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); z-index: 1; opacity: 0.6; }
+.thumb-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 2;
+    background-color: transparent;
+    transition: opacity 0.3s;
+}
+.thumb-img.loaded ~ .thumbnail-icon { display: none; }
+.thumbnail::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.35) 100%);
+    z-index: 3;
+    pointer-events: none;
+}
+.thumb-beach { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.thumb-mountain { background: linear-gradient(135deg, #134e5e 0%, #71b280 100%); }
+.thumb-village { background: linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%); }
+.thumb-city { background: linear-gradient(135deg, #485563 0%, #29323c 100%); }
+.thumb-villa { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
+.thumb-akiya { background: linear-gradient(135deg, #8e7e64 0%, #c9a87c 100%); }
+.thumb-traditional { background: linear-gradient(135deg, #BC002D 0%, #8c001f 100%); }
+.thumb-forest { background: linear-gradient(135deg, #1d976c 0%, #93f9b9 100%); }
+.thumb-snow { background: linear-gradient(135deg, #e6dada 0%, #cfd8dc 100%); }
+.thumb-onsen { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+.flag-badge {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    background: rgba(255,255,255,0.95);
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    backdrop-filter: blur(8px);
+    z-index: 4;
+}
+.special-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: var(--accent);
+    color: var(--dark);
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 4;
+}
+.special-badge.free { background: var(--success); color: white; }
+.special-badge.muslim { background: #10b981; color: white; }
+.special-badge.bargain { background: var(--danger); color: white; }
+
+.card-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+.card-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.25rem; color: var(--dark); }
+.card-location { font-size: 0.9rem; color: var(--text-light); margin-bottom: 1rem; }
+
+.price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.price { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+.price-extra { font-size: 0.8rem; color: var(--text-light); }
+.price.free { color: var(--success); }
+
+.specs {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--light);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.88rem;
+    color: var(--text);
+}
+.spec { display: flex; align-items: center; gap: 0.25rem; }
+
+.description {
+    font-size: 0.9rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+    flex: 1;
+}
+
+.tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem; }
+.tag {
+    background: #eff6ff;
+    color: var(--primary);
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.tag.warning { background: #fff7ed; color: #c2410c; }
+.tag.success { background: #ecfdf5; color: #047857; }
+
+.details-btn {
+    background: var(--dark);
+    color: white;
+    border: none;
+    padding: 0.65rem;
+    border-radius: 8px;
+    width: 100%;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 0.92rem;
+}
+.details-btn:hover { background: var(--primary); }
+
+.no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-light);
+    grid-column: 1 / -1;
+}
+.no-results h3 { font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text); }
+
+/* MODAL */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+    animation: fadeIn 0.2s;
+}
+.modal-backdrop.active { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+    background: white;
+    border-radius: 16px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+}
+.modal-thumb { height: 280px; position: relative; overflow: hidden; }
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255,255,255,0.95);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 5;
+}
+.modal-body { padding: 1.75rem; }
+.modal-body h2 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+.modal-body h3 { margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.1rem; }
+.modal-body .price { font-size: 2rem; margin: 1rem 0; }
+.modal-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+.modal-info-item {
+    background: var(--light);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+.modal-info-item strong { display: block; color: var(--text-light); font-size: 0.8rem; text-transform: uppercase; }
+.country-info {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+.country-info strong { color: var(--accent); }
+
+footer { background: var(--dark); color: #aaa; text-align: center; padding: 1.5rem; font-size: 0.88rem; }
+
+@media (max-width: 768px) {
+    .filter-grid { grid-template-columns: 1fr 1fr; }
+    .results { grid-template-columns: 1fr; }
+    .price-range { flex-direction: column; }
+    .price-range input { width: 100%; }
+}
+    </style>
+</head>
+<body>
+    <header class="hero">
+        <div class="container">
+            <h1>🏠 Immobilien-Browser</h1>
+            <p>Günstige Wohnungen, Häuser &amp; Akiyas in Nordzypern und Japan</p>
+            <a href="Auswanderungs-Guide.html" class="back-link">← Zurück zum Auswanderungs-Guide</a>
+        </div>
+    </header>
+
+    <section class="filter-bar">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="f-country">Land</label>
+                <select id="f-country">
+                    <option value="all">Alle Länder</option>
+                    <option value="cyprus">🇨🇾 Nordzypern</option>
+                    <option value="japan">🇯🇵 Japan</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="f-type">Typ</label>
+                <select id="f-type">
+                    <option value="all">Alle Typen</option>
+                    <option value="studio">Studio</option>
+                    <option value="apartment">Apartment / Wohnung</option>
+                    <option value="house">Haus</option>
+                    <option value="villa">Villa</option>
+                    <option value="akiya">Akiya / Bauernhaus</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="f-bedrooms">Min. Schlafzimmer</label>
+                <select id="f-bedrooms">
+                    <option value="0">Alle</option>
+                    <option value="1">1+</option>
+                    <option value="2">2+</option>
+                    <option value="3">3+</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Preis (€)</label>
+                <div class="price-range">
+                    <input type="number" id="f-min-price" placeholder="Min" min="0" step="1000">
+                    <input type="number" id="f-max-price" placeholder="Max" min="0" step="1000">
+                </div>
+            </div>
+            <div class="filter-group">
+                <label for="f-sort">Sortierung</label>
+                <select id="f-sort">
+                    <option value="price-asc">Preis aufsteigend</option>
+                    <option value="price-desc">Preis absteigend</option>
+                    <option value="size-desc">Größe absteigend</option>
+                    <option value="bedrooms-desc">Schlafzimmer absteigend</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="f-search">Suche</label>
+                <input type="text" id="f-search" placeholder="Stadt, Region, Stichwort …">
+            </div>
+            <div class="filter-group" style="align-self: end;">
+                <button class="reset-btn" id="reset-btn">Filter zurücksetzen</button>
+            </div>
+        </div>
+        <div class="feature-chips" id="feature-chips">
+            <div class="chip" data-feature="sea-view">🌊 Meerblick</div>
+            <div class="chip" data-feature="garden">🌳 Garten</div>
+            <div class="chip" data-feature="pool">🏊 Pool</div>
+            <div class="chip" data-feature="renovated">✨ Renoviert</div>
+            <div class="chip" data-feature="needs-reno">🔨 Renovierungsbedarf</div>
+            <div class="chip" data-feature="muslim-friendly">🕌 Muslim-freundlich</div>
+            <div class="chip" data-feature="free">🎁 Gratis / Sehr günstig</div>
+            <div class="chip" data-feature="beach">🏖️ Strandnähe</div>
+        </div>
+    </section>
+
+    <div class="results-bar">
+        <div class="results-count"><strong id="result-num">0</strong> von <strong id="result-total">0</strong> Objekten</div>
+    </div>
+
+    <main class="results" id="results"></main>
+
+    <div class="modal-backdrop" id="modal">
+        <div class="modal" id="modal-content"></div>
+    </div>
+
+    <footer>
+        <p>Inserate dienen der Orientierung &middot; Preise basieren auf Marktbeobachtungen 2024/2025 &middot; Vor Kauf immer lokal beraten lassen</p>
+        <p style="margin-top: 0.5rem; opacity: 0.7;">Bilder via Unsplash &amp; Picsum (CC) &middot; falls Bilder nicht laden, zeigt sich ein farbiger Platzhalter mit Symbol</p>
+    </footer>
+
+    <script>
+// Image strategy: each property gets a primary Unsplash photo URL.
+// If it fails to load, fall back to a Picsum seeded photo (guaranteed real).
+// If that also fails, the CSS gradient + emoji icon shows through.
+const UNSPLASH = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&q=70`;
+const PICSUM = (seed) => `https://picsum.photos/seed/${seed}/600/400`;
+
+const properties = [
+    // ========== NORDZYPERN ==========
+    {
+        id: 1,
+        country: 'cyprus',
+        title: 'Iskele Long Beach Studio',
+        price: 68000,
+        size: 38,
+        bedrooms: 0,
+        bathrooms: 1,
+        location: 'İskele, Long Beach',
+        type: 'studio',
+        thumb: 'beach',
+        icon: '🏖️',
+        image: UNSPLASH('1507525428034-b723cf961d3e'),
+        fallback: PICSUM('iskele-beach'),
+        features: ['sea-view', 'pool', 'beach'],
+        tags: ['Off-Plan (2026)', 'TRNC Title'],
+        badge: 'Boom-Region',
+        badgeClass: '',
+        description: 'Modernes Studio in der Boom-Region direkt am 7 km langen Sandstrand. Ideal als Investment oder Erstwohnsitz, 6–10 % Mietrendite üblich.',
+        details: 'Iskele ist die schnellst wachsende Region Nordzyperns. Long Beach ist der längste Sandstrand der Insel. Komplex mit Pool, Gym und 24h-Sicherheit. Studio inkl. Möbeln, Klimaanlage und Küchenzeile. Bezugsfertig 2026, Anzahlung 35 %, Restzahlung in Raten möglich.'
+    },
+    {
+        id: 2,
+        country: 'cyprus',
+        title: 'Famagusta 2-Zi Studentenstadt',
+        price: 82000,
+        size: 72,
+        bedrooms: 2,
+        bathrooms: 1,
+        location: 'Gazimağusa (Famagusta)',
+        type: 'apartment',
+        thumb: 'city',
+        icon: '🏙️',
+        image: UNSPLASH('1545324418-cc1a3fa10c00'),
+        fallback: PICSUM('famagusta-apt'),
+        features: ['beach', 'renovated'],
+        tags: ['Strand 5 min', 'EMU-Nähe', 'TRNC Title'],
+        description: 'Helle 2-Zi-Wohnung im Studentenviertel mit ausgezeichneter Vermietungschance an EMU-Studenten (~20.000 Studenten).',
+        details: 'Die Eastern Mediterranean University (EMU) ist die größte Universität Nordzyperns. Studentennachfrage konstant hoch, Bruttorendite oft 8 %+. Strand der Famagusta-Bucht zu Fuß erreichbar. Wohnung 2018 komplett renoviert.'
+    },
+    {
+        id: 3,
+        country: 'cyprus',
+        title: 'Girne Sea-View Apartment',
+        price: 145000,
+        size: 95,
+        bedrooms: 2,
+        bathrooms: 2,
+        location: 'Girne (Kyrenia)',
+        type: 'apartment',
+        thumb: 'beach',
+        icon: '🌅',
+        image: UNSPLASH('1582268611958-ebfd161ef9cf'),
+        fallback: PICSUM('girne-seaview'),
+        features: ['sea-view', 'pool', 'renovated'],
+        tags: ['Balkon', 'Gym', 'TRNC Title'],
+        description: '2-Zi-Wohnung im Herzen von Kyrenia mit traumhaftem Blick aufs Mittelmeer und die Beşparmak-Berge.',
+        details: 'Kyrenia gilt als schönste Stadt Nordzyperns: alter Hafen, venezianisches Schloss, Restaurants und Cafés direkt am Wasser. Wohnung im 4. Stock mit großem Balkon. Komplex mit Infinity-Pool und Fitnessstudio.'
+    },
+    {
+        id: 4,
+        country: 'cyprus',
+        title: 'Esentepe Golf Villa',
+        price: 285000,
+        size: 180,
+        bedrooms: 3,
+        bathrooms: 3,
+        location: 'Esentepe',
+        type: 'villa',
+        thumb: 'villa',
+        icon: '🏛️',
+        image: UNSPLASH('1564013799919-ab600027ffc6'),
+        fallback: PICSUM('esentepe-villa'),
+        features: ['sea-view', 'pool', 'garden', 'renovated'],
+        tags: ['Golf Resort', 'Privater Pool', 'TRNC Title'],
+        description: 'Freistehende Villa mit 3 SZ, privatem Pool und direktem Zugang zum Korineum Golf Club. Britischer Expat-Hub.',
+        details: 'Esentepe ist als „Beverly Hills von Nordzypern" bekannt. Korineum Golf Club ist 18-Loch-Championship-Resort. Villa freistehend auf 600 m² Grundstück mit privatem Pool, Garten, Doppelgarage und Solar-Warmwasser.'
+    },
+    {
+        id: 5,
+        country: 'cyprus',
+        title: 'Karpaz Steinhaus',
+        price: 98000,
+        size: 110,
+        bedrooms: 3,
+        bathrooms: 1,
+        location: 'Karpaz-Halbinsel, Dipkarpaz',
+        type: 'house',
+        thumb: 'village',
+        icon: '🏡',
+        image: UNSPLASH('1502920917128-1aa500764cbd'),
+        fallback: PICSUM('karpaz-stone'),
+        features: ['garden', 'needs-reno'],
+        tags: ['800 m² Garten', 'Naturparadies'],
+        badge: 'Geheimtipp',
+        badgeClass: '',
+        description: 'Authentisches Steinhaus im unverbauten Naturparadies. Perfekt für Aussteiger und Selbstversorger.',
+        details: 'Die Karpaz-Halbinsel ist eines der letzten ursprünglichen Mittelmeer-Reviere: kilometerlange leere Strände, wilde Esel, Schildkröten-Brutplätze. Golden Beach gilt als einer der 10 schönsten Strände der Welt. Renovierung €30–50k einplanen.'
+    },
+    {
+        id: 6,
+        country: 'cyprus',
+        title: 'Lapta Haus mit Olivenhain',
+        price: 155000,
+        size: 130,
+        bedrooms: 3,
+        bathrooms: 2,
+        location: 'Lapta',
+        type: 'house',
+        thumb: 'mountain',
+        icon: '🌳',
+        image: UNSPLASH('1600596542815-ffad4c1539a9'),
+        fallback: PICSUM('lapta-olive'),
+        features: ['sea-view', 'garden', 'renovated'],
+        tags: ['400 m² Garten', 'Bergblick', 'Olivenbäume'],
+        description: 'Charmantes Haus zwischen Berg und Meer mit eigenem Olivenhain. Türkische Mehrheitsgegend, ruhig.',
+        details: 'Lapta liegt 13 km westlich von Kyrenia und ist eines der ältesten Dörfer der Insel. 12 alte Olivenbäume tragen jährlich für 30–50 Liter eigenes Olivenöl. Großes Wohnzimmer mit Kamin, Doppelverglasung, Klimaanlagen in allen Zimmern.'
+    },
+    {
+        id: 7,
+        country: 'cyprus',
+        title: 'Alsancak 1-Zi Wohnung',
+        price: 58000,
+        size: 45,
+        bedrooms: 1,
+        bathrooms: 1,
+        location: 'Alsancak (Karavas)',
+        type: 'apartment',
+        thumb: 'beach',
+        icon: '🏖️',
+        image: UNSPLASH('1493809842364-78817add7ffb'),
+        fallback: PICSUM('alsancak-coast'),
+        features: ['pool', 'renovated', 'beach'],
+        tags: ['Strand 5 min', 'TRNC Title'],
+        badge: 'Bargain',
+        badgeClass: 'bargain',
+        description: 'Kompakte 1-Zi-Wohnung in idyllischer Küstenstadt, perfekt als Ferienwohnung oder Erstkauf.',
+        details: 'Alsancak ist eine ruhige Küstengemeinde zwischen Lapta und Kyrenia. Beliebt bei britischen und skandinavischen Auswanderern. Wohnanlage mit Pool, 5 min zum kostenlosen öffentlichen Strand. Komplett möbliert.'
+    },
+    {
+        id: 8,
+        country: 'cyprus',
+        title: 'Yeni Boğaziçi Off-Plan',
+        price: 72000,
+        size: 42,
+        bedrooms: 0,
+        bathrooms: 1,
+        location: 'Yeni Boğaziçi',
+        type: 'studio',
+        thumb: 'beach',
+        icon: '🏗️',
+        image: UNSPLASH('1512917774080-9991f1c4c750'),
+        fallback: PICSUM('yeni-bogazici'),
+        features: ['sea-view', 'pool', 'beach'],
+        tags: ['Off-Plan (2025)', '0% Anzahlung möglich'],
+        badge: 'Bauphase',
+        badgeClass: '',
+        description: 'Off-Plan-Studio mit Meerblick. Aktuell mit 30 %-Bauphasen-Discount gegenüber Endpreis.',
+        details: 'Yeni Boğaziçi liegt zwischen Iskele und Famagusta. Komplex „Caesar Resort"-Niveau mit 6 Pools, Aquapark, Spa. Off-Plan-Käufer profitieren von Wertsteigerung bis Bezug. Anzahlung 35 %, Rest in Raten über 24 Monate.'
+    },
+    {
+        id: 9,
+        country: 'cyprus',
+        title: 'Lefkoşa Stadtwohnung',
+        price: 88000,
+        size: 85,
+        bedrooms: 2,
+        bathrooms: 1,
+        location: 'Lefkoşa (Nikosia Nord)',
+        type: 'apartment',
+        thumb: 'city',
+        icon: '🏙️',
+        image: UNSPLASH('1572120360610-d971b9d7767c'),
+        fallback: PICSUM('lefkosa-apt'),
+        features: ['renovated'],
+        tags: ['Stadtmitte', 'TRNC Title'],
+        description: '2-Zi-Wohnung mitten in der Hauptstadt — kurze Wege zu Botschaften, Banken und der Near East University.',
+        details: 'Lefkoşa (geteiltes Nikosia) ist die letzte geteilte Hauptstadt Europas. Wirtschaftliches und politisches Zentrum Nordzyperns. Wohnung im 3. Stock eines ruhigen Wohnviertels, 2021 modernisiert, fußläufig zu Restaurants und Märkten.'
+    },
+    {
+        id: 10,
+        country: 'cyprus',
+        title: 'Çatalköy Penthouse',
+        price: 195000,
+        size: 120,
+        bedrooms: 2,
+        bathrooms: 2,
+        location: 'Çatalköy',
+        type: 'apartment',
+        thumb: 'beach',
+        icon: '🌇',
+        image: UNSPLASH('1600585154340-be6161a56a0c'),
+        fallback: PICSUM('catalkoy-penthouse'),
+        features: ['sea-view', 'pool', 'renovated'],
+        tags: ['Penthouse', 'Dachterrasse', 'TRNC Title'],
+        description: 'Penthouse mit großer Dachterrasse und 270°-Meerblick. Premium-Lage zwischen Kyrenia und Esentepe.',
+        details: 'Çatalköy ist ein wachsendes Premium-Viertel mit britischer Schule und internationaler Community. Penthouse mit 40 m² Dachterrasse, eigenem Jacuzzi, Outdoor-Küche. 5 Min zum Strand und Carrefour-Supermarkt.'
+    },
+
+    // ========== JAPAN AKIYA ==========
+    {
+        id: 11,
+        country: 'japan',
+        title: 'Okutama Berg-Akiya',
+        price: 18000,
+        size: 120,
+        bedrooms: 3,
+        bathrooms: 1,
+        location: 'Okutama, Tokio-Präfektur',
+        type: 'akiya',
+        thumb: 'forest',
+        icon: '🏯',
+        image: UNSPLASH('1528360983277-13d401cdc186'),
+        fallback: PICSUM('okutama-akiya'),
+        features: ['needs-reno', 'garden'],
+        tags: ['¥3 Mio.', '1,5 h Tokio', 'Akiya Bank'],
+        badge: 'Akiya',
+        badgeClass: '',
+        description: 'Traditionelles Holzhaus im bergigen Westen Tokios. Bedingung: Hauptwohnsitz dort, Renovierung in 3 Jahren.',
+        details: 'Okutama gehört formal zu Tokio, ist aber von Wäldern und Bergen geprägt. Akiya Bank Okutama vermittelt leere Häuser. Renovierung €15–30k. Subventionen bis ¥2 Mio. (~€12.000) für Familien. Schnellzug nach Shinjuku in 1,5 h.'
+    },
+    {
+        id: 12,
+        country: 'japan',
+        title: 'Wakayama Country House',
+        price: 8500,
+        size: 95,
+        bedrooms: 4,
+        bathrooms: 1,
+        location: 'Tanabe, Wakayama',
+        type: 'akiya',
+        thumb: 'village',
+        icon: '🏡',
+        image: UNSPLASH('1545569341-9eb8b30979d9'),
+        fallback: PICSUM('wakayama-country'),
+        features: ['garden', 'needs-reno'],
+        tags: ['¥1,4 Mio.', '600 m² Land', 'Onsen-Region'],
+        badge: 'Bargain',
+        badgeClass: 'bargain',
+        description: 'Großes ländliches Haus mit Tatami-Zimmern, nahe der heißen Quellen von Kii.',
+        details: 'Wakayama liegt südlich von Osaka, bekannt für UNESCO-Pilgerpfade (Kumano Kodo). Haus mit traditionellem Engawa-Korridor und Shoji-Türen. Renovierung nötig, aber Bausubstanz solide. Lokale Akiya-Förderung bis ¥3 Mio.'
+    },
+    {
+        id: 13,
+        country: 'japan',
+        title: 'Tochigi Farmhouse – GRATIS',
+        price: 0,
+        size: 140,
+        bedrooms: 4,
+        bathrooms: 1,
+        location: 'Nikko-Region, Tochigi',
+        type: 'akiya',
+        thumb: 'village',
+        icon: '🎁',
+        image: UNSPLASH('1542640244-7e672d6cef4e'),
+        fallback: PICSUM('tochigi-free'),
+        features: ['free', 'garden', 'needs-reno'],
+        tags: ['Gratis!', '200 m² Land', '5 Jahre Wohnpflicht'],
+        badge: 'Gratis',
+        badgeClass: 'free',
+        description: 'Kostenloses 80 Jahre altes Bauernhaus über Akiya Bank. Bedingung: 5 Jahre wohnen + €30k Renovierung.',
+        details: 'Tochigi-Präfektur, 2 h nördlich von Tokio, berühmt für UNESCO-Welterbe Nikko (Tempel) und heiße Quellen. Gemeinde vergibt Häuser gratis an Familien, die zuziehen. Renovierungskosten teils subventioniert (bis €15.000 Zuschuss).'
+    },
+    {
+        id: 14,
+        country: 'japan',
+        title: 'Nagano Mountain House',
+        price: 22000,
+        size: 85,
+        bedrooms: 2,
+        bathrooms: 1,
+        location: 'Iiyama, Nagano',
+        type: 'akiya',
+        thumb: 'mountain',
+        icon: '🏔️',
+        image: UNSPLASH('1518780664697-55e3ad937233'),
+        fallback: PICSUM('nagano-mountain'),
+        features: ['renovated'],
+        tags: ['¥3,6 Mio.', 'Ski 20 min', 'Shinkansen 30 min'],
+        description: 'Bergidyll mit Holzofen, gut isoliert. 30 min vom Shinkansen, 20 min vom Ski-Resort Nozawa Onsen.',
+        details: 'Nagano-Präfektur war Olympiastadt 1998. Iiyama ist Tor zum Snow Country. Haus wurde 2019 renoviert (neue Küche, Bad, Isolation). Holzofen + Klimaanlage. Schnee-Region (4–5 m im Winter), perfekt für Wintersportler.'
+    },
+    {
+        id: 15,
+        country: 'japan',
+        title: 'Niigata Snow Country Farm',
+        price: 12000,
+        size: 110,
+        bedrooms: 3,
+        bathrooms: 1,
+        location: 'Tokamachi, Niigata',
+        type: 'akiya',
+        thumb: 'snow',
+        icon: '❄️',
+        image: UNSPLASH('1483728642387-6c3bdd6c93e5'),
+        fallback: PICSUM('niigata-snow'),
+        features: ['garden', 'needs-reno'],
+        tags: ['¥2 Mio.', 'Eigenes Reisfeld!', 'Onsen-Region'],
+        description: 'Traditionelles Haus im "Yukiguni" (Schneeland). Land kommt mit, kleiner Reisanbau möglich.',
+        details: 'Niigata ist berühmt für Schnee (bis 3 m im Winter), Sake und Reis. Tokamachi hat die Echigo-Tsumari Art-Triennale. Haus mit angeschlossenem 800 m² Reisfeld. Lokale Akiya-Bank und Förderprogramm für Zuwanderer.'
+    },
+    {
+        id: 16,
+        country: 'japan',
+        title: 'Beppu Halal-Friendly Apartment',
+        price: 38000,
+        size: 55,
+        bedrooms: 1,
+        bathrooms: 1,
+        location: 'Beppu, Oita',
+        type: 'apartment',
+        thumb: 'onsen',
+        icon: '♨️',
+        image: UNSPLASH('1480796927426-f609979314bd'),
+        fallback: PICSUM('beppu-apt'),
+        features: ['muslim-friendly', 'renovated'],
+        tags: ['¥6,3 Mio.', 'APU-Uni', 'Halal-Restaurants'],
+        badge: 'Muslim-Hub',
+        badgeClass: 'muslim',
+        description: 'Moderne Wohnung in Japans Muslim-freundlichster Stadt. Ritsumeikan-APU-Uni und Halal-Restaurants in Gehweite.',
+        details: 'Beppu hat dank Ritsumeikan Asia Pacific University ~3.000 muslimische Studenten und eine bewährte Halal-Infrastruktur (Moschee, Restaurants, Supermärkte). Berühmt für Onsen (heiße Quellen). Wohnung 2022 renoviert, vollmöbliert.'
+    },
+    {
+        id: 17,
+        country: 'japan',
+        title: 'Mino Traditional Machiya',
+        price: 25000,
+        size: 100,
+        bedrooms: 3,
+        bathrooms: 1,
+        location: 'Mino, Osaka',
+        type: 'akiya',
+        thumb: 'traditional',
+        icon: '⛩️',
+        image: UNSPLASH('1490375295127-7e7d3eb31a91'),
+        fallback: PICSUM('mino-machiya'),
+        features: ['garden', 'needs-reno'],
+        tags: ['¥4,1 Mio.', '1 h Osaka', 'Machiya'],
+        description: 'Traditionelles Stadthaus (Machiya) in malerischem Mino. Direkt nach Osaka in 1 h.',
+        details: 'Mino liegt nördlich von Osaka, bekannt für Wasserfall und Herbstlaub. Machiya ist ein traditionelles Holz-Stadthaus mit Innenhof. Renovierung empfohlen, aber Charakter erhalten. Lokale Förderprogramme für Akiya-Renovierung.'
+    },
+    {
+        id: 18,
+        country: 'japan',
+        title: 'Karuizawa-Nähe Holz-Cabin',
+        price: 45000,
+        size: 75,
+        bedrooms: 2,
+        bathrooms: 1,
+        location: 'Annaka, Gunma (nahe Karuizawa)',
+        type: 'house',
+        thumb: 'forest',
+        icon: '🌲',
+        image: UNSPLASH('1448375240586-882707db888b'),
+        fallback: PICSUM('karuizawa-cabin'),
+        features: ['renovated', 'garden'],
+        tags: ['¥7,4 Mio.', 'Karuizawa 20 min', 'Premium-Lage'],
+        description: 'Holz-Cabin nahe Premium-Resort Karuizawa, aber zu deutlich günstigeren Gunma-Preisen.',
+        details: 'Karuizawa ist Japans nobelster Sommer-Resort (John Lennon verbrachte hier Urlaube). Annaka in Gunma grenzt direkt an, ist aber 60 % günstiger. Cabin 2020 renoviert, große Fensterfront zum Wald.'
+    },
+    {
+        id: 19,
+        country: 'japan',
+        title: 'Hokkaido Big-Land Akiya',
+        price: 6500,
+        size: 130,
+        bedrooms: 4,
+        bathrooms: 1,
+        location: 'Ashibetsu, Hokkaido',
+        type: 'akiya',
+        thumb: 'snow',
+        icon: '🌾',
+        image: UNSPLASH('1493997181344-712f2f19d87a'),
+        fallback: PICSUM('hokkaido-akiya'),
+        features: ['free', 'garden', 'needs-reno'],
+        tags: ['¥1,1 Mio.', '2.000 m² Land', 'Selbstversorger'],
+        badge: 'Bargain',
+        badgeClass: 'bargain',
+        description: 'Riesiges Grundstück mit Haus in Hokkaido — Selbstversorger-Traum, aber harte Winter.',
+        details: 'Hokkaido ist Japans nördlichste Hauptinsel mit Schwerpunkt Landwirtschaft. Ashibetsu war früher Kohle-Region, heute schrumpfend → günstige Immobilien. 2.000 m² Land für Garten/Tierhaltung. Winter sehr schneereich.'
+    },
+    {
+        id: 20,
+        country: 'japan',
+        title: 'Fukuoka City Apartment',
+        price: 52000,
+        size: 50,
+        bedrooms: 1,
+        bathrooms: 1,
+        location: 'Fukuoka, Hakata',
+        type: 'apartment',
+        thumb: 'city',
+        icon: '🌆',
+        image: UNSPLASH('1542051841857-5f90071e7989'),
+        fallback: PICSUM('fukuoka-apt'),
+        features: ['muslim-friendly', 'renovated'],
+        tags: ['¥8,5 Mio.', 'Bahnhof 10 min', 'Halal wachsend'],
+        badge: 'Muslim-Hub',
+        badgeClass: 'muslim',
+        description: 'Studio in Fukuoka — wachsender Halal-Hub mit Tor nach Korea und sehr niedrigen Lebenskosten.',
+        details: 'Fukuoka ist Japans schnellst wachsende Stadt, gerade unter jungen Japanern und Ausländern beliebt. Wachsende muslimische Community, Fukuoka Masjid und mehrere Halal-Restaurants. Direkt-Fähre nach Busan/Südkorea.'
+    }
+];
+
+const activeFeatures = new Set();
+
+function formatPrice(price) {
+    if (price === 0) return 'GRATIS';
+    return '€' + price.toLocaleString('de-DE');
+}
+
+function imgFallback(p) {
+    // Cascading fallback: Unsplash → Picsum → hide (CSS gradient + emoji shows)
+    return `data-fallback="${p.fallback}" onload="this.classList.add('loaded')" onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.style.display='none';}"`;
+}
+
+function renderCard(p) {
+    const flag = p.country === 'cyprus' ? '🇨🇾' : '🇯🇵';
+    const badge = p.badge ? `<span class="special-badge ${p.badgeClass}">${p.badge}</span>` : '';
+    const tags = p.tags.map(t => `<span class="tag">${t}</span>`).join('');
+    return `
+        <article class="property-card" data-id="${p.id}">
+            <div class="thumbnail thumb-${p.thumb}">
+                <img class="thumb-img" src="${p.image}" alt="${p.title}" loading="lazy" ${imgFallback(p)}>
+                <span class="thumbnail-icon">${p.icon}</span>
+                <span class="flag-badge">${flag}</span>
+                ${badge}
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">${p.title}</h3>
+                <p class="card-location">📍 ${p.location}</p>
+                <div class="price-row">
+                    <span class="price ${p.price === 0 ? 'free' : ''}">${formatPrice(p.price)}</span>
+                </div>
+                <div class="specs">
+                    <span class="spec">🛏️ ${p.bedrooms || 'Studio'}</span>
+                    <span class="spec">🚿 ${p.bathrooms}</span>
+                    <span class="spec">📐 ${p.size} m²</span>
+                </div>
+                <p class="description">${p.description}</p>
+                <div class="tags">${tags}</div>
+                <button class="details-btn" data-id="${p.id}">Details ansehen →</button>
+            </div>
+        </article>
+    `;
+}
+
+function applyFilters() {
+    const country = document.getElementById('f-country').value;
+    const type = document.getElementById('f-type').value;
+    const minBeds = parseInt(document.getElementById('f-bedrooms').value, 10);
+    const minPrice = parseInt(document.getElementById('f-min-price').value, 10) || 0;
+    const maxPrice = parseInt(document.getElementById('f-max-price').value, 10) || Infinity;
+    const sort = document.getElementById('f-sort').value;
+    const search = document.getElementById('f-search').value.trim().toLowerCase();
+
+    let filtered = properties.filter(p => {
+        if (country !== 'all' && p.country !== country) return false;
+        if (type !== 'all' && p.type !== type) return false;
+        if (p.bedrooms < minBeds) return false;
+        if (p.price < minPrice) return false;
+        if (p.price > maxPrice) return false;
+        for (const feat of activeFeatures) {
+            if (!p.features.includes(feat)) return false;
+        }
+        if (search) {
+            const haystack = (p.title + ' ' + p.location + ' ' + p.description + ' ' + p.tags.join(' ')).toLowerCase();
+            if (!haystack.includes(search)) return false;
+        }
+        return true;
+    });
+
+    filtered.sort((a, b) => {
+        switch (sort) {
+            case 'price-asc': return a.price - b.price;
+            case 'price-desc': return b.price - a.price;
+            case 'size-desc': return b.size - a.size;
+            case 'bedrooms-desc': return b.bedrooms - a.bedrooms;
+            default: return 0;
+        }
+    });
+
+    const container = document.getElementById('results');
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="no-results"><h3>Keine Ergebnisse 😕</h3><p>Versuche andere Filter — viele Schnäppchen brauchen offene Kriterien.</p></div>';
+    } else {
+        container.innerHTML = filtered.map(renderCard).join('');
+    }
+
+    document.getElementById('result-num').textContent = filtered.length;
+    document.getElementById('result-total').textContent = properties.length;
+}
+
+function showModal(id) {
+    const p = properties.find(x => x.id === id);
+    if (!p) return;
+    const flag = p.country === 'cyprus' ? '🇨🇾 Nordzypern' : '🇯🇵 Japan';
+    const countryNote = p.country === 'cyprus'
+        ? '<strong>Hinweis Nordzypern:</strong> Achte beim Kauf auf "TRNC Title" oder "Pre-1974 Turkish Title". Banking ggf. über türkische Banken in TRNC. AE über Mietvertrag/Kauf sehr einfach.'
+        : '<strong>Hinweis Japan-Akiya:</strong> Akiya-Käufe oft an Bedingungen (Hauptwohnsitz, Renovierung in 3–5 Jahren) gebunden. Förderprogramme der Gemeinde vorab prüfen. Renovierungskosten realistisch kalkulieren.';
+
+    document.getElementById('modal-content').innerHTML = `
+        <div class="modal-thumb thumbnail thumb-${p.thumb}">
+            <img class="thumb-img" src="${p.image}" alt="${p.title}" ${imgFallback(p)}>
+            <span class="thumbnail-icon" style="font-size: 6rem;">${p.icon}</span>
+            <button class="modal-close" id="modal-close">×</button>
+            <span class="flag-badge">${flag}</span>
+            ${p.badge ? `<span class="special-badge ${p.badgeClass}">${p.badge}</span>` : ''}
+        </div>
+        <div class="modal-body">
+            <h2>${p.title}</h2>
+            <p class="card-location">📍 ${p.location}</p>
+            <div class="price-row">
+                <span class="price ${p.price === 0 ? 'free' : ''}">${formatPrice(p.price)}</span>
+            </div>
+            <div class="modal-info-grid">
+                <div class="modal-info-item"><strong>Typ</strong>${p.type}</div>
+                <div class="modal-info-item"><strong>Größe</strong>${p.size} m²</div>
+                <div class="modal-info-item"><strong>Schlafzimmer</strong>${p.bedrooms || 'Studio'}</div>
+                <div class="modal-info-item"><strong>Bäder</strong>${p.bathrooms}</div>
+            </div>
+            <h3>Beschreibung</h3>
+            <p>${p.description}</p>
+            <h3>Details</h3>
+            <p>${p.details}</p>
+            <h3>Highlights</h3>
+            <div class="tags">${p.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+            <div class="country-info">${countryNote}</div>
+        </div>
+    `;
+    document.getElementById('modal').classList.add('active');
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('result-total').textContent = properties.length;
+    applyFilters();
+
+    ['f-country', 'f-type', 'f-bedrooms', 'f-min-price', 'f-max-price', 'f-sort', 'f-search'].forEach(id => {
+        document.getElementById(id).addEventListener('input', applyFilters);
+    });
+
+    document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const feat = chip.dataset.feature;
+            if (activeFeatures.has(feat)) {
+                activeFeatures.delete(feat);
+                chip.classList.remove('active');
+            } else {
+                activeFeatures.add(feat);
+                chip.classList.add('active');
+            }
+            applyFilters();
+        });
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        document.getElementById('f-country').value = 'all';
+        document.getElementById('f-type').value = 'all';
+        document.getElementById('f-bedrooms').value = '0';
+        document.getElementById('f-min-price').value = '';
+        document.getElementById('f-max-price').value = '';
+        document.getElementById('f-sort').value = 'price-asc';
+        document.getElementById('f-search').value = '';
+        activeFeatures.clear();
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        applyFilters();
+    });
+
+    document.getElementById('results').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-id]');
+        if (btn) {
+            const id = parseInt(btn.dataset.id, 10);
+            showModal(id);
+        }
+    });
+
+    document.getElementById('modal').addEventListener('click', (e) => {
+        if (e.target.id === 'modal') closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+});
+    </script>
+</body>
+</html>
