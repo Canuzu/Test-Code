@@ -179,8 +179,28 @@ body {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    background-color: #1e3c72;
 }
-.thumbnail-icon { font-size: 5rem; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+.thumbnail-icon { font-size: 5rem; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); z-index: 1; opacity: 0.6; }
+.thumb-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 2;
+    background-color: transparent;
+    transition: opacity 0.3s;
+}
+.thumb-img.loaded ~ .thumbnail-icon { display: none; }
+.thumbnail::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.25) 0%, transparent 35%, transparent 65%, rgba(0,0,0,0.35) 100%);
+    z-index: 3;
+    pointer-events: none;
+}
 .thumb-beach { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
 .thumb-mountain { background: linear-gradient(135deg, #134e5e 0%, #71b280 100%); }
 .thumb-village { background: linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%); }
@@ -202,6 +222,7 @@ body {
     font-size: 0.85rem;
     font-weight: 600;
     backdrop-filter: blur(8px);
+    z-index: 4;
 }
 .special-badge {
     position: absolute;
@@ -216,6 +237,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 4;
 }
 .special-badge.free { background: var(--success); color: white; }
 .special-badge.muslim { background: #10b981; color: white; }
@@ -312,7 +334,7 @@ body {
     position: relative;
     box-shadow: 0 24px 64px rgba(0,0,0,0.3);
 }
-.modal-thumb { height: 280px; position: relative; }
+.modal-thumb { height: 280px; position: relative; overflow: hidden; }
 .modal-close {
     position: absolute;
     top: 1rem;
@@ -326,6 +348,7 @@ body {
     cursor: pointer;
     line-height: 1;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 5;
 }
 .modal-body { padding: 1.75rem; }
 .modal-body h2 { font-size: 1.6rem; margin-bottom: 0.25rem; }
@@ -450,9 +473,16 @@ footer { background: var(--dark); color: #aaa; text-align: center; padding: 1.5r
 
     <footer>
         <p>Inserate dienen der Orientierung &middot; Preise basieren auf Marktbeobachtungen 2024/2025 &middot; Vor Kauf immer lokal beraten lassen</p>
+        <p style="margin-top: 0.5rem; opacity: 0.7;">Bilder via Unsplash &amp; Picsum (CC) &middot; falls Bilder nicht laden, zeigt sich ein farbiger Platzhalter mit Symbol</p>
     </footer>
 
     <script>
+// Image strategy: each property gets a primary Unsplash photo URL.
+// If it fails to load, fall back to a Picsum seeded photo (guaranteed real).
+// If that also fails, the CSS gradient + emoji icon shows through.
+const UNSPLASH = (id) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=600&q=70`;
+const PICSUM = (seed) => `https://picsum.photos/seed/${seed}/600/400`;
+
 const properties = [
     // ========== NORDZYPERN ==========
     {
@@ -467,6 +497,8 @@ const properties = [
         type: 'studio',
         thumb: 'beach',
         icon: '🏖️',
+        image: UNSPLASH('1507525428034-b723cf961d3e'),
+        fallback: PICSUM('iskele-beach'),
         features: ['sea-view', 'pool', 'beach'],
         tags: ['Off-Plan (2026)', 'TRNC Title'],
         badge: 'Boom-Region',
@@ -486,6 +518,8 @@ const properties = [
         type: 'apartment',
         thumb: 'city',
         icon: '🏙️',
+        image: UNSPLASH('1545324418-cc1a3fa10c00'),
+        fallback: PICSUM('famagusta-apt'),
         features: ['beach', 'renovated'],
         tags: ['Strand 5 min', 'EMU-Nähe', 'TRNC Title'],
         description: 'Helle 2-Zi-Wohnung im Studentenviertel mit ausgezeichneter Vermietungschance an EMU-Studenten (~20.000 Studenten).',
@@ -503,6 +537,8 @@ const properties = [
         type: 'apartment',
         thumb: 'beach',
         icon: '🌅',
+        image: UNSPLASH('1582268611958-ebfd161ef9cf'),
+        fallback: PICSUM('girne-seaview'),
         features: ['sea-view', 'pool', 'renovated'],
         tags: ['Balkon', 'Gym', 'TRNC Title'],
         description: '2-Zi-Wohnung im Herzen von Kyrenia mit traumhaftem Blick aufs Mittelmeer und die Beşparmak-Berge.',
@@ -520,6 +556,8 @@ const properties = [
         type: 'villa',
         thumb: 'villa',
         icon: '🏛️',
+        image: UNSPLASH('1564013799919-ab600027ffc6'),
+        fallback: PICSUM('esentepe-villa'),
         features: ['sea-view', 'pool', 'garden', 'renovated'],
         tags: ['Golf Resort', 'Privater Pool', 'TRNC Title'],
         description: 'Freistehende Villa mit 3 SZ, privatem Pool und direktem Zugang zum Korineum Golf Club. Britischer Expat-Hub.',
@@ -537,6 +575,8 @@ const properties = [
         type: 'house',
         thumb: 'village',
         icon: '🏡',
+        image: UNSPLASH('1502920917128-1aa500764cbd'),
+        fallback: PICSUM('karpaz-stone'),
         features: ['garden', 'needs-reno'],
         tags: ['800 m² Garten', 'Naturparadies'],
         badge: 'Geheimtipp',
@@ -556,6 +596,8 @@ const properties = [
         type: 'house',
         thumb: 'mountain',
         icon: '🌳',
+        image: UNSPLASH('1600596542815-ffad4c1539a9'),
+        fallback: PICSUM('lapta-olive'),
         features: ['sea-view', 'garden', 'renovated'],
         tags: ['400 m² Garten', 'Bergblick', 'Olivenbäume'],
         description: 'Charmantes Haus zwischen Berg und Meer mit eigenem Olivenhain. Türkische Mehrheitsgegend, ruhig.',
@@ -573,6 +615,8 @@ const properties = [
         type: 'apartment',
         thumb: 'beach',
         icon: '🏖️',
+        image: UNSPLASH('1493809842364-78817add7ffb'),
+        fallback: PICSUM('alsancak-coast'),
         features: ['pool', 'renovated', 'beach'],
         tags: ['Strand 5 min', 'TRNC Title'],
         badge: 'Bargain',
@@ -592,6 +636,8 @@ const properties = [
         type: 'studio',
         thumb: 'beach',
         icon: '🏗️',
+        image: UNSPLASH('1512917774080-9991f1c4c750'),
+        fallback: PICSUM('yeni-bogazici'),
         features: ['sea-view', 'pool', 'beach'],
         tags: ['Off-Plan (2025)', '0% Anzahlung möglich'],
         badge: 'Bauphase',
@@ -611,6 +657,8 @@ const properties = [
         type: 'apartment',
         thumb: 'city',
         icon: '🏙️',
+        image: UNSPLASH('1572120360610-d971b9d7767c'),
+        fallback: PICSUM('lefkosa-apt'),
         features: ['renovated'],
         tags: ['Stadtmitte', 'TRNC Title'],
         description: '2-Zi-Wohnung mitten in der Hauptstadt — kurze Wege zu Botschaften, Banken und der Near East University.',
@@ -628,6 +676,8 @@ const properties = [
         type: 'apartment',
         thumb: 'beach',
         icon: '🌇',
+        image: UNSPLASH('1600585154340-be6161a56a0c'),
+        fallback: PICSUM('catalkoy-penthouse'),
         features: ['sea-view', 'pool', 'renovated'],
         tags: ['Penthouse', 'Dachterrasse', 'TRNC Title'],
         description: 'Penthouse mit großer Dachterrasse und 270°-Meerblick. Premium-Lage zwischen Kyrenia und Esentepe.',
@@ -647,6 +697,8 @@ const properties = [
         type: 'akiya',
         thumb: 'forest',
         icon: '🏯',
+        image: UNSPLASH('1528360983277-13d401cdc186'),
+        fallback: PICSUM('okutama-akiya'),
         features: ['needs-reno', 'garden'],
         tags: ['¥3 Mio.', '1,5 h Tokio', 'Akiya Bank'],
         badge: 'Akiya',
@@ -666,6 +718,8 @@ const properties = [
         type: 'akiya',
         thumb: 'village',
         icon: '🏡',
+        image: UNSPLASH('1545569341-9eb8b30979d9'),
+        fallback: PICSUM('wakayama-country'),
         features: ['garden', 'needs-reno'],
         tags: ['¥1,4 Mio.', '600 m² Land', 'Onsen-Region'],
         badge: 'Bargain',
@@ -685,6 +739,8 @@ const properties = [
         type: 'akiya',
         thumb: 'village',
         icon: '🎁',
+        image: UNSPLASH('1542640244-7e672d6cef4e'),
+        fallback: PICSUM('tochigi-free'),
         features: ['free', 'garden', 'needs-reno'],
         tags: ['Gratis!', '200 m² Land', '5 Jahre Wohnpflicht'],
         badge: 'Gratis',
@@ -704,6 +760,8 @@ const properties = [
         type: 'akiya',
         thumb: 'mountain',
         icon: '🏔️',
+        image: UNSPLASH('1518780664697-55e3ad937233'),
+        fallback: PICSUM('nagano-mountain'),
         features: ['renovated'],
         tags: ['¥3,6 Mio.', 'Ski 20 min', 'Shinkansen 30 min'],
         description: 'Bergidyll mit Holzofen, gut isoliert. 30 min vom Shinkansen, 20 min vom Ski-Resort Nozawa Onsen.',
@@ -721,6 +779,8 @@ const properties = [
         type: 'akiya',
         thumb: 'snow',
         icon: '❄️',
+        image: UNSPLASH('1483728642387-6c3bdd6c93e5'),
+        fallback: PICSUM('niigata-snow'),
         features: ['garden', 'needs-reno'],
         tags: ['¥2 Mio.', 'Eigenes Reisfeld!', 'Onsen-Region'],
         description: 'Traditionelles Haus im "Yukiguni" (Schneeland). Land kommt mit, kleiner Reisanbau möglich.',
@@ -738,6 +798,8 @@ const properties = [
         type: 'apartment',
         thumb: 'onsen',
         icon: '♨️',
+        image: UNSPLASH('1480796927426-f609979314bd'),
+        fallback: PICSUM('beppu-apt'),
         features: ['muslim-friendly', 'renovated'],
         tags: ['¥6,3 Mio.', 'APU-Uni', 'Halal-Restaurants'],
         badge: 'Muslim-Hub',
@@ -757,6 +819,8 @@ const properties = [
         type: 'akiya',
         thumb: 'traditional',
         icon: '⛩️',
+        image: UNSPLASH('1490375295127-7e7d3eb31a91'),
+        fallback: PICSUM('mino-machiya'),
         features: ['garden', 'needs-reno'],
         tags: ['¥4,1 Mio.', '1 h Osaka', 'Machiya'],
         description: 'Traditionelles Stadthaus (Machiya) in malerischem Mino. Direkt nach Osaka in 1 h.',
@@ -774,6 +838,8 @@ const properties = [
         type: 'house',
         thumb: 'forest',
         icon: '🌲',
+        image: UNSPLASH('1448375240586-882707db888b'),
+        fallback: PICSUM('karuizawa-cabin'),
         features: ['renovated', 'garden'],
         tags: ['¥7,4 Mio.', 'Karuizawa 20 min', 'Premium-Lage'],
         description: 'Holz-Cabin nahe Premium-Resort Karuizawa, aber zu deutlich günstigeren Gunma-Preisen.',
@@ -791,6 +857,8 @@ const properties = [
         type: 'akiya',
         thumb: 'snow',
         icon: '🌾',
+        image: UNSPLASH('1493997181344-712f2f19d87a'),
+        fallback: PICSUM('hokkaido-akiya'),
         features: ['free', 'garden', 'needs-reno'],
         tags: ['¥1,1 Mio.', '2.000 m² Land', 'Selbstversorger'],
         badge: 'Bargain',
@@ -810,6 +878,8 @@ const properties = [
         type: 'apartment',
         thumb: 'city',
         icon: '🌆',
+        image: UNSPLASH('1542051841857-5f90071e7989'),
+        fallback: PICSUM('fukuoka-apt'),
         features: ['muslim-friendly', 'renovated'],
         tags: ['¥8,5 Mio.', 'Bahnhof 10 min', 'Halal wachsend'],
         badge: 'Muslim-Hub',
@@ -826,6 +896,11 @@ function formatPrice(price) {
     return '€' + price.toLocaleString('de-DE');
 }
 
+function imgFallback(p) {
+    // Cascading fallback: Unsplash → Picsum → hide (CSS gradient + emoji shows)
+    return `data-fallback="${p.fallback}" onload="this.classList.add('loaded')" onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.style.display='none';}"`;
+}
+
 function renderCard(p) {
     const flag = p.country === 'cyprus' ? '🇨🇾' : '🇯🇵';
     const badge = p.badge ? `<span class="special-badge ${p.badgeClass}">${p.badge}</span>` : '';
@@ -833,9 +908,10 @@ function renderCard(p) {
     return `
         <article class="property-card" data-id="${p.id}">
             <div class="thumbnail thumb-${p.thumb}">
+                <img class="thumb-img" src="${p.image}" alt="${p.title}" loading="lazy" ${imgFallback(p)}>
+                <span class="thumbnail-icon">${p.icon}</span>
                 <span class="flag-badge">${flag}</span>
                 ${badge}
-                <span class="thumbnail-icon">${p.icon}</span>
             </div>
             <div class="card-body">
                 <h3 class="card-title">${p.title}</h3>
@@ -911,11 +987,12 @@ function showModal(id) {
         : '<strong>Hinweis Japan-Akiya:</strong> Akiya-Käufe oft an Bedingungen (Hauptwohnsitz, Renovierung in 3–5 Jahren) gebunden. Förderprogramme der Gemeinde vorab prüfen. Renovierungskosten realistisch kalkulieren.';
 
     document.getElementById('modal-content').innerHTML = `
-        <div class="modal-thumb thumb-${p.thumb}">
+        <div class="modal-thumb thumbnail thumb-${p.thumb}">
+            <img class="thumb-img" src="${p.image}" alt="${p.title}" ${imgFallback(p)}>
+            <span class="thumbnail-icon" style="font-size: 6rem;">${p.icon}</span>
             <button class="modal-close" id="modal-close">×</button>
             <span class="flag-badge">${flag}</span>
             ${p.badge ? `<span class="special-badge ${p.badgeClass}">${p.badge}</span>` : ''}
-            <span class="thumbnail-icon" style="font-size: 6rem;">${p.icon}</span>
         </div>
         <div class="modal-body">
             <h2>${p.title}</h2>
