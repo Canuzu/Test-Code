@@ -104,7 +104,7 @@ ul { list-style: none; }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); filter: brightness(1.1); }
 .btn-outline { background: transparent; color: var(--text); border: 1.5px solid var(--text); }
 .btn-outline:hover { background: var(--text); color: var(--bg); transform: translateY(-2px); }
-.btn-add-cart { padding: 10px 18px; background: var(--violet-deep); color: #fff; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.03em; border-radius: var(--radius-sm); transition: var(--transition); border: none; cursor: pointer; }
+.btn-add-cart { padding: 11px 18px; background: var(--violet-deep); color: #fff; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.03em; border-radius: var(--radius-sm); transition: var(--transition); border: none; cursor: pointer; }
 [data-theme="dark"] .btn-add-cart { background: var(--violet-royal); }
 .btn-add-cart:hover { background: var(--violet); transform: scale(1.03); }
 
@@ -192,18 +192,24 @@ ul { list-style: none; }
 .stat strong { display: block; font-family: var(--font-serif); font-size: 2rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
 .stat span { font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; }
 
-.hero-card-stack { position: relative; height: 520px; }
-.floating-card { position: absolute; width: 240px; height: 340px; border-radius: var(--radius-md); padding: 24px; color: #fff; box-shadow: var(--shadow-xl); overflow: hidden; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
-.floating-card::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 40%), radial-gradient(circle at 70% 80%, rgba(201, 169, 97, 0.2) 0%, transparent 50%); }
-.card-shine { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%); animation: shine 4s infinite; pointer-events: none; }
-@keyframes shine { 0% { transform: translateX(-100%) translateY(-100%); } 100% { transform: translateX(100%) translateY(100%); } }
-.card-1 { top: 0; right: 40px; background: linear-gradient(135deg, #f5a623 0%, #d4870f 50%, #8b5a0a 100%); transform: rotate(8deg); z-index: 3; animation: float1 6s ease-in-out infinite; }
-.card-2 { top: 60px; right: 200px; background: linear-gradient(135deg, #2c1a4d 0%, #5b2c91 50%, #1a0e2e 100%); transform: rotate(-12deg); z-index: 1; animation: float2 7s ease-in-out infinite; }
-.card-3 { top: 200px; right: 80px; background: linear-gradient(135deg, #4a90e2 0%, #2c5fa0 50%, #1a3d6b 100%); transform: rotate(-4deg); z-index: 2; animation: float3 8s ease-in-out infinite; }
-@keyframes float1 { 0%, 100% { transform: rotate(8deg) translateY(0); } 50% { transform: rotate(8deg) translateY(-15px); } }
-@keyframes float2 { 0%, 100% { transform: rotate(-12deg) translateY(0); } 50% { transform: rotate(-12deg) translateY(-20px); } }
-@keyframes float3 { 0%, 100% { transform: rotate(-4deg) translateY(0); } 50% { transform: rotate(-4deg) translateY(-10px); } }
-.floating-card:hover { transform: scale(1.05) rotate(0deg) !important; z-index: 10; }
+.hero-card-stack { position: relative; height: 520px; perspective: 1200px; }
+.floating-card-wrap { position: absolute; will-change: transform; transform: translate3d(0,0,0); }
+.wrap-1 { top: 0; right: 40px; z-index: 3; animation: floatY1 9s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.wrap-2 { top: 60px; right: 200px; z-index: 1; animation: floatY2 11s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.wrap-3 { top: 200px; right: 80px; z-index: 2; animation: floatY3 13s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+@keyframes floatY1 { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -18px, 0); } }
+@keyframes floatY2 { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -22px, 0); } }
+@keyframes floatY3 { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, -14px, 0); } }
+.floating-card { width: 240px; height: 340px; border-radius: var(--radius-md); padding: 24px; color: #fff; box-shadow: var(--shadow-xl); overflow: hidden; transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease, opacity 0.4s ease, filter 0.4s ease; cursor: pointer; will-change: transform; backface-visibility: hidden; transform-origin: center center; }
+.floating-card::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 40%), radial-gradient(circle at 70% 80%, rgba(201, 169, 97, 0.2) 0%, transparent 50%); pointer-events: none; }
+.card-shine { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%); animation: shine 5s linear infinite; pointer-events: none; will-change: transform; }
+@keyframes shine { 0% { transform: translate3d(-50%, -50%, 0); } 100% { transform: translate3d(50%, 50%, 0); } }
+.card-1 { background: linear-gradient(135deg, #f5a623 0%, #d4870f 50%, #8b5a0a 100%); transform: rotate(8deg); }
+.card-2 { background: linear-gradient(135deg, #2c1a4d 0%, #5b2c91 50%, #1a0e2e 100%); transform: rotate(-12deg); }
+.card-3 { background: linear-gradient(135deg, #4a90e2 0%, #2c5fa0 50%, #1a3d6b 100%); transform: rotate(-4deg); }
+.hero-card-stack:hover .floating-card-wrap { animation-play-state: paused; }
+.hero-card-stack:hover .floating-card:not(:hover) { opacity: 0.55; filter: blur(2px); }
+.floating-card:hover { transform: rotate(0deg) scale(1.06); z-index: 10; box-shadow: 0 32px 80px rgba(58, 27, 92, 0.4); }
 .card-content { position: relative; display: flex; flex-direction: column; height: 100%; z-index: 2; }
 .card-rarity { font-size: 0.7rem; letter-spacing: 0.15em; background: rgba(255, 255, 255, 0.2); padding: 4px 10px; border-radius: 4px; align-self: flex-start; backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); margin-bottom: auto; }
 .card-content h3 { color: #fff; font-size: 1.5rem; margin-bottom: 4px; }
@@ -221,7 +227,7 @@ ul { list-style: none; }
 .category-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--violet) 0%, var(--gold) 50%, var(--violet) 100%); transform: scaleX(0); transition: var(--transition); transform-origin: left; }
 .category-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); border-color: var(--violet-soft); }
 .category-card:hover::before { transform: scaleX(1); }
-.category-icon { font-size: 3rem; color: var(--violet); margin-bottom: 16px; transition: var(--transition); display: inline-block; }
+.category-icon { font-size: 3rem; color: var(--violet); margin-bottom: 16px; transition: var(--transition); display: inline-block; font-family: 'Cormorant Garamond', 'Cambria Math', 'Segoe UI Symbol', serif; font-variant-emoji: text; line-height: 1; }
 .category-card:hover .category-icon { transform: scale(1.1) rotate(5deg); color: var(--gold); }
 .category-card h3 { margin-bottom: 8px; color: var(--text); }
 .category-card p { color: var(--text-soft); font-size: 0.9rem; margin-bottom: 16px; }
@@ -254,15 +260,15 @@ ul { list-style: none; }
 .card-mockup::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.2) 0%, transparent 50%), linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%); }
 .card-mockup::after { content: ''; position: absolute; top: 8%; left: 8%; right: 8%; bottom: 8%; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 4px; }
 .mockup-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: white; text-align: center; padding: 12px; z-index: 1; }
-.mockup-symbol { font-size: 2.5rem; text-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-.mockup-name { font-family: var(--font-serif); font-size: 0.95rem; font-weight: 600; letter-spacing: 0.02em; }
-.mockup-set { font-size: 0.7rem; opacity: 0.9; letter-spacing: 0.1em; text-transform: uppercase; }
-.product-info { padding: 20px; display: flex; flex-direction: column; flex: 1; }
-.product-category { font-size: 0.75rem; color: var(--violet); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; display: block; margin-bottom: 8px; }
-.product-card h3 { font-size: 1.1rem; margin-bottom: 12px; color: var(--text); }
-.product-meta { display: flex; justify-content: space-between; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-.product-condition { font-size: 0.75rem; color: var(--violet-royal); background: var(--violet-mist); padding: 3px 10px; border-radius: 4px; font-weight: 500; }
-.product-stock { font-size: 0.75rem; color: #2c8a5c; font-weight: 500; }
+.mockup-symbol { font-size: 2.6rem; text-shadow: 0 2px 8px rgba(0,0,0,0.3); font-family: 'Cormorant Garamond', 'Cambria Math', 'Segoe UI Symbol', serif; font-variant-emoji: text; line-height: 1; }
+.mockup-name { font-family: var(--font-serif); font-size: 1.05rem; font-weight: 600; letter-spacing: 0.02em; }
+.mockup-set { font-size: 0.75rem; opacity: 0.9; letter-spacing: 0.1em; text-transform: uppercase; }
+.product-info { padding: 22px; display: flex; flex-direction: column; flex: 1; }
+.product-category { font-size: 0.8rem; color: var(--violet); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; display: block; margin-bottom: 10px; }
+.product-card h3 { font-size: 1.2rem; margin-bottom: 14px; color: var(--text); font-weight: 600; line-height: 1.35; }
+.product-meta { display: flex; justify-content: space-between; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.product-condition { font-size: 0.8rem; color: var(--violet-royal); background: var(--violet-mist); padding: 4px 11px; border-radius: 4px; font-weight: 600; }
+.product-stock { font-size: 0.8rem; color: #2c8a5c; font-weight: 600; }
 .product-stock.low { color: #fb923c; }
 .product-stock.out { color: #ef4444; }
 [data-theme="dark"] .product-stock { color: #4ade80; }
@@ -276,7 +282,7 @@ ul { list-style: none; }
 .qty-value { min-width: 32px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: var(--text); border-left: 1px solid var(--border); border-right: 1px solid var(--border); background: var(--bg-soft); padding: 0 4px; }
 .qty-label { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; }
 .product-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
-.product-price { font-family: var(--font-serif); font-size: 1.4rem; font-weight: 600; color: var(--text); }
+.product-price { font-family: var(--font-serif); font-size: 1.55rem; font-weight: 700; color: var(--text); }
 [data-theme="dark"] .product-price { color: var(--violet-light); }
 
 .features { padding: 80px 0; background: linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%); transition: background 0.4s; }
@@ -557,9 +563,9 @@ ul { list-style: none; }
     .hero-stats { flex-direction: column; gap: 20px; }
     .hero-card-stack { height: 400px; }
     .floating-card { width: 180px; height: 260px; padding: 18px; }
-    .card-1 { right: 20px; }
-    .card-2 { right: 140px; }
-    .card-3 { right: 50px; top: 160px; }
+    .wrap-1 { right: 20px; }
+    .wrap-2 { right: 140px; }
+    .wrap-3 { right: 50px; top: 160px; }
     .newsletter-card { padding: 40px 24px; }
     .form-row { grid-template-columns: 1fr; }
     .footer-grid { grid-template-columns: 1fr 1fr; }
@@ -625,8 +631,9 @@ ul { list-style: none; }
             <button class="icon-btn" onclick="toggleSearch()" aria-label="Suchen">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
             </button>
-            <button class="icon-btn" onclick="toggleWishlist()" aria-label="Wunschliste">
+            <button class="icon-btn cart-btn" onclick="openWishlist()" aria-label="Wunschliste">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                <span class="cart-count hidden" id="wishlistCount">0</span>
             </button>
             <button class="icon-btn cart-btn" onclick="openCart()" aria-label="Warenkorb">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
@@ -672,9 +679,15 @@ ul { list-style: none; }
                 </div>
             </div>
             <div class="hero-card-stack">
-                <div class="floating-card card-1" onclick="openProduct('p001')"><div class="card-shine"></div><div class="card-content"><span class="card-rarity">★ ULTRA RARE</span><h3>Charizard</h3><p>Base Set · 1999</p><span class="card-price">2.499 €</span></div></div>
-                <div class="floating-card card-2" onclick="openProduct('p002')"><div class="card-shine"></div><div class="card-content"><span class="card-rarity">◆ HOLO</span><h3>Black Lotus</h3><p>Alpha · MTG</p><span class="card-price">25.000 €</span></div></div>
-                <div class="floating-card card-3" onclick="openProduct('p003')"><div class="card-shine"></div><div class="card-content"><span class="card-rarity">✦ SECRET RARE</span><h3>Blue-Eyes</h3><p>LOB · Yu-Gi-Oh!</p><span class="card-price">1.299 €</span></div></div>
+                <div class="floating-card-wrap wrap-1">
+                    <div class="floating-card card-1" onclick="openProduct('p001')"><div class="card-shine"></div><div class="card-content"><span class="card-rarity">★ ULTRA RARE</span><h3>Charizard</h3><p>Base Set · 1999</p><span class="card-price">2.499 €</span></div></div>
+                </div>
+                <div class="floating-card-wrap wrap-2">
+                    <div class="floating-card card-2" onclick="openProduct('p002')"><div class="card-shine"></div><div class="card-content"><span class="card-rarity">◆ HOLO</span><h3>Black Lotus</h3><p>Alpha · MTG</p><span class="card-price">25.000 €</span></div></div>
+                </div>
+                <div class="floating-card-wrap wrap-3">
+                    <div class="floating-card card-3" onclick="openProduct('p003')"><div class="card-shine"></div><div class="card-content"><span class="card-rarity">✦ SECRET RARE</span><h3>Blue-Eyes</h3><p>LOB · Yu-Gi-Oh!</p><span class="card-price">1.299 €</span></div></div>
+                </div>
             </div>
         </div>
     </section>
@@ -687,12 +700,12 @@ ul { list-style: none; }
                 <p>Wählen Sie Ihre Lieblingsserie und durchstöbern Sie unsere kuratierte Auswahl</p>
             </div>
             <div class="category-grid">
-                <a class="category-card" onclick="filterShop('Pokémon')"><div class="category-icon">⚡</div><h3>Pokémon</h3><p>Von Base Set bis Scarlet & Violet</p><span class="category-count">4.200+ Karten</span></a>
+                <a class="category-card" onclick="filterShop('Pokémon')"><div class="category-icon">⊙</div><h3>Pokémon</h3><p>Von Base Set bis Scarlet & Violet</p><span class="category-count">4.200+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('MTG')"><div class="category-icon">✦</div><h3>Magic: The Gathering</h3><p>Vintage, Modern & Commander</p><span class="category-count">3.800+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('Yu-Gi-Oh!')"><div class="category-icon">◈</div><h3>Yu-Gi-Oh!</h3><p>Klassiker & aktuelle Sets</p><span class="category-count">2.900+ Karten</span></a>
-                <a class="category-card" onclick="filterShop('One Piece')"><div class="category-icon">⚓</div><h3>One Piece TCG</h3><p>Neue Serie, große Beliebtheit</p><span class="category-count">1.500+ Karten</span></a>
+                <a class="category-card" onclick="filterShop('One Piece')"><div class="category-icon">✸</div><h3>One Piece TCG</h3><p>Neue Serie, große Beliebtheit</p><span class="category-count">1.500+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('Lorcana')"><div class="category-icon">♛</div><h3>Disney Lorcana</h3><p>Magische Disney-Welten</p><span class="category-count">1.100+ Karten</span></a>
-                <a class="category-card" onclick="filterShop('Digimon')"><div class="category-icon">◉</div><h3>Digimon</h3><p>Digitale Monster sammeln</p><span class="category-count">900+ Karten</span></a>
+                <a class="category-card" onclick="filterShop('Digimon')"><div class="category-icon">⬢</div><h3>Digimon</h3><p>Digitale Monster sammeln</p><span class="category-count">900+ Karten</span></a>
             </div>
         </div>
     </section>
@@ -887,6 +900,16 @@ ul { list-style: none; }
     </div>
 </aside>
 
+<!-- Wishlist Panel -->
+<div class="cart-overlay" id="wishlistOverlay" onclick="closeWishlist()"></div>
+<aside class="cart-panel" id="wishlistPanel">
+    <div class="cart-header">
+        <h3>Wunschliste<span class="cart-header-count" id="wlHeaderCount"></span></h3>
+        <button class="cart-close" onclick="closeWishlist()" aria-label="Schließen">×</button>
+    </div>
+    <div class="cart-body" id="wishlistBody"></div>
+</aside>
+
 <!-- Checkout Modal -->
 <div class="modal-overlay" id="checkoutModal" onclick="if(event.target===this)closeCheckout()">
     <div class="modal">
@@ -928,18 +951,18 @@ ul { list-style: none; }
 <script>
 // ====== PRODUCT DATA ======
 const PRODUCTS = [
-    { id: 'p001', name: 'Charizard Holo 4/102', cardName: 'Charizard', set: 'Base Set', category: 'Pokémon', tcg: 'Pokémon', price: 2499, condition: 'PSA 9 Mint', stock: 5, badge: 'Ultra Rare', badgeType: 'rare', mockup: 1, symbol: '⚡', year: 1999, language: 'Englisch', rarity: 'Holo Rare', desc: 'Eine der ikonischsten Pokémon-Karten aller Zeiten. Diese Holographic Charizard aus dem Base Set von 1999 ist in PSA 9 Mint Zustand bewertet und stellt ein wahres Sammlerstück für jeden ernsthaften Sammler dar. Die Karte zeigt das markante Holographic Foil und ist absolut zentriert.', rating: 4.9, reviews: 142 },
+    { id: 'p001', name: 'Charizard Holo 4/102', cardName: 'Charizard', set: 'Base Set', category: 'Pokémon', tcg: 'Pokémon', price: 2499, condition: 'PSA 9 Mint', stock: 5, badge: 'Ultra Rare', badgeType: 'rare', mockup: 1, symbol: '⊙', year: 1999, language: 'Englisch', rarity: 'Holo Rare', desc: 'Eine der ikonischsten Pokémon-Karten aller Zeiten. Diese Holographic Charizard aus dem Base Set von 1999 ist in PSA 9 Mint Zustand bewertet und stellt ein wahres Sammlerstück für jeden ernsthaften Sammler dar. Die Karte zeigt das markante Holographic Foil und ist absolut zentriert.', rating: 4.9, reviews: 142 },
     { id: 'p002', name: 'Black Lotus', cardName: 'Black Lotus', set: 'Alpha', category: 'MTG', tcg: 'Magic: The Gathering', price: 25000, condition: 'BGS 8.5', stock: 1, badge: 'Mythic', badgeType: 'mythic', mockup: 2, symbol: '✦', year: 1993, language: 'Englisch', rarity: 'Rare', desc: 'Der heilige Gral des Magic: The Gathering Sammelns. Black Lotus aus dem Alpha-Set von 1993 ist eine der wertvollsten Karten der TCG-Geschichte. BGS 8.5 Bewertung mit perfekter Authentifizierung.', rating: 5.0, reviews: 23 },
     { id: 'p003', name: 'Blue-Eyes White Dragon 1st Ed.', cardName: 'Blue-Eyes', set: 'LOB', category: 'Yu-Gi-Oh!', tcg: 'Yu-Gi-Oh!', price: 1299, condition: 'Near Mint', stock: 3, badge: 'Secret Rare', badgeType: 'secret', mockup: 3, symbol: '◈', year: 2002, language: 'Englisch', rarity: 'Ultra Rare', desc: 'Die legendäre Blue-Eyes White Dragon aus dem allerersten Yu-Gi-Oh! Booster Set "Legend of Blue Eyes White Dragon" (LOB). 1st Edition in Near Mint Zustand – ein Muss für jeden Yu-Gi-Oh! Sammler.', rating: 4.8, reviews: 87 },
-    { id: 'p004', name: 'OP-01 Romance Dawn Booster Box', cardName: 'Booster Box', set: 'OP-01', category: 'One Piece', tcg: 'One Piece TCG', price: 189, condition: 'Versiegelt', stock: 12, badge: 'Sealed', badgeType: 'special', mockup: 4, symbol: '⚓', year: 2022, language: 'Englisch', rarity: 'Booster Box', desc: 'Versiegelte Original Booster Box des ersten One Piece TCG Sets "Romance Dawn". Enthält 24 Booster Packs mit je 12 Karten. Perfekt zum Sammeln oder zum Aufreißen für seltene Funde.', rating: 4.9, reviews: 256 },
+    { id: 'p004', name: 'OP-01 Romance Dawn Booster Box', cardName: 'Booster Box', set: 'OP-01', category: 'One Piece', tcg: 'One Piece TCG', price: 189, condition: 'Versiegelt', stock: 12, badge: 'Sealed', badgeType: 'special', mockup: 4, symbol: '✸', year: 2022, language: 'Englisch', rarity: 'Booster Box', desc: 'Versiegelte Original Booster Box des ersten One Piece TCG Sets "Romance Dawn". Enthält 24 Booster Packs mit je 12 Karten. Perfekt zum Sammeln oder zum Aufreißen für seltene Funde.', rating: 4.9, reviews: 256 },
     { id: 'p005', name: 'Elsa - Spirit of Winter Foil', cardName: 'Elsa', set: 'The First Chapter', category: 'Lorcana', tcg: 'Disney Lorcana', price: 89, condition: 'Mint', stock: 8, badge: 'Rare', badgeType: 'rare', mockup: 5, symbol: '♛', year: 2023, language: 'Englisch', rarity: 'Super Rare', desc: 'Elsa Spirit of Winter in der seltenen Foil-Version aus dem ersten Lorcana Set. Eine der gefragtesten Karten unter Disney-Sammlern und Lorcana-Spielern gleichermaßen.', rating: 4.7, reviews: 134 },
-    { id: 'p006', name: 'Pikachu VMAX Rainbow Rare', cardName: 'Pikachu VMAX', set: 'Vivid Voltage', category: 'Pokémon', tcg: 'Pokémon', price: 149, condition: 'Near Mint', stock: 6, badge: 'Ultra Rare', badgeType: 'rare', mockup: 6, symbol: '⚡', year: 2020, language: 'Englisch', rarity: 'Rainbow Rare', desc: 'Pikachu VMAX in der spektakulären Rainbow Rare Version. Diese Karte aus dem Vivid Voltage Set zeigt Pikachu in seiner kraftvollsten Form mit beeindruckendem Regenbogen-Foil.', rating: 4.9, reviews: 198 },
+    { id: 'p006', name: 'Pikachu VMAX Rainbow Rare', cardName: 'Pikachu VMAX', set: 'Vivid Voltage', category: 'Pokémon', tcg: 'Pokémon', price: 149, condition: 'Near Mint', stock: 6, badge: 'Ultra Rare', badgeType: 'rare', mockup: 6, symbol: '⊙', year: 2020, language: 'Englisch', rarity: 'Rainbow Rare', desc: 'Pikachu VMAX in der spektakulären Rainbow Rare Version. Diese Karte aus dem Vivid Voltage Set zeigt Pikachu in seiner kraftvollsten Form mit beeindruckendem Regenbogen-Foil.', rating: 4.9, reviews: 198 },
     { id: 'p007', name: 'Liliana of the Veil - Foil', cardName: 'Liliana', set: 'March of the Machine', category: 'MTG', tcg: 'Magic: The Gathering', price: 220, condition: 'Near Mint', stock: 4, badge: 'Mythic', badgeType: 'mythic', mockup: 7, symbol: '✦', year: 2023, language: 'Englisch', rarity: 'Mythic Rare', desc: 'Liliana of the Veil in der begehrten Foil-Version aus March of the Machine. Eine der mächtigsten Planeswalker-Karten in Magic: The Gathering – Pflicht für jeden Schwarz-Spieler.', rating: 4.8, reviews: 67 },
-    { id: 'p008', name: 'Agumon Bond of Bravery', cardName: 'Agumon', set: 'BT-15', category: 'Digimon', tcg: 'Digimon TCG', price: 45, condition: 'Mint', stock: 18, badge: 'Secret Rare', badgeType: 'secret', mockup: 8, symbol: '◉', year: 2024, language: 'Englisch', rarity: 'Secret Rare', desc: 'Agumon Bond of Bravery Secret Rare aus dem BT-15 Set Exceed Apocalypse. Mit alternativem Artwork und besonderer Foil-Behandlung – ein Highlight jeder Digimon-Sammlung.', rating: 4.6, reviews: 45 },
-    { id: 'p009', name: 'Shining Mewtwo Gold Star', cardName: 'Mewtwo', set: 'Promo', category: 'Pokémon', tcg: 'Pokémon', price: 3499, condition: 'PSA 8', stock: 2, badge: 'Ultra Rare', badgeType: 'rare', mockup: 1, symbol: '⚡', year: 2005, language: 'Englisch', rarity: 'Gold Star', desc: 'Shining Mewtwo Gold Star aus der EX Holon Phantoms Promo-Reihe. Eine der seltensten und teuersten Pokémon-Karten der modernen Ära, PSA 8 zertifiziert.', rating: 5.0, reviews: 19 },
+    { id: 'p008', name: 'Agumon Bond of Bravery', cardName: 'Agumon', set: 'BT-15', category: 'Digimon', tcg: 'Digimon TCG', price: 45, condition: 'Mint', stock: 18, badge: 'Secret Rare', badgeType: 'secret', mockup: 8, symbol: '⬢', year: 2024, language: 'Englisch', rarity: 'Secret Rare', desc: 'Agumon Bond of Bravery Secret Rare aus dem BT-15 Set Exceed Apocalypse. Mit alternativem Artwork und besonderer Foil-Behandlung – ein Highlight jeder Digimon-Sammlung.', rating: 4.6, reviews: 45 },
+    { id: 'p009', name: 'Shining Mewtwo Gold Star', cardName: 'Mewtwo', set: 'Promo', category: 'Pokémon', tcg: 'Pokémon', price: 3499, condition: 'PSA 8', stock: 2, badge: 'Ultra Rare', badgeType: 'rare', mockup: 1, symbol: '⊙', year: 2005, language: 'Englisch', rarity: 'Gold Star', desc: 'Shining Mewtwo Gold Star aus der EX Holon Phantoms Promo-Reihe. Eine der seltensten und teuersten Pokémon-Karten der modernen Ära, PSA 8 zertifiziert.', rating: 5.0, reviews: 19 },
     { id: 'p010', name: 'MOM Collector Booster Box', cardName: 'Collector Booster', set: 'MOM', category: 'MTG', tcg: 'Magic: The Gathering', price: 329, condition: 'Versiegelt', stock: 7, badge: 'Sealed', badgeType: 'special', mockup: 2, symbol: '✦', year: 2023, language: 'Englisch', rarity: 'Collector Box', desc: 'Versiegelte March of the Machine Collector Booster Box. Enthält 12 Collector Boosters mit garantierten Foils und seltenen Sammelkarten der Premium-Edition.', rating: 4.8, reviews: 89 },
     { id: 'p011', name: 'Dark Magician 1st Edition', cardName: 'Dark Magician', set: 'LOB', category: 'Yu-Gi-Oh!', tcg: 'Yu-Gi-Oh!', price: 899, condition: 'Near Mint', stock: 5, badge: 'Ultra Rare', badgeType: 'rare', mockup: 3, symbol: '◈', year: 2002, language: 'Englisch', rarity: 'Ultra Rare', desc: 'Dark Magician 1st Edition aus dem ersten Yu-Gi-Oh! Set LOB. Die Lieblingskarte von Yugi Mutou und eine der ikonischsten Karten des TCGs in Near Mint Zustand.', rating: 4.9, reviews: 112 },
-    { id: 'p012', name: 'Pokémon 151 Elite Trainer Box', cardName: 'ETB', set: '151', category: 'Pokémon', tcg: 'Pokémon', price: 79, condition: 'Versiegelt', stock: 25, badge: 'Sealed', badgeType: 'special', mockup: 4, symbol: '⚡', year: 2023, language: 'Englisch', rarity: 'ETB', desc: 'Versiegelte Pokémon 151 Elite Trainer Box mit allen Original-151 Pokémon. Enthält 9 Booster Packs, Karten-Sleeves, Würfel und exklusives Zubehör – das ultimative Sammler-Set.', rating: 4.9, reviews: 423 }
+    { id: 'p012', name: 'Pokémon 151 Elite Trainer Box', cardName: 'ETB', set: '151', category: 'Pokémon', tcg: 'Pokémon', price: 79, condition: 'Versiegelt', stock: 25, badge: 'Sealed', badgeType: 'special', mockup: 4, symbol: '⊙', year: 2023, language: 'Englisch', rarity: 'ETB', desc: 'Versiegelte Pokémon 151 Elite Trainer Box mit allen Original-151 Pokémon. Enthält 9 Booster Packs, Karten-Sleeves, Würfel und exklusives Zubehör – das ultimative Sammler-Set.', rating: 4.9, reviews: 423 }
 ];
 
 // ====== STATE ======
@@ -1115,26 +1138,92 @@ function closeCart() {
 // ====== WISHLIST ======
 function toggleWishlistItem(productId) {
     const idx = wishlist.indexOf(productId);
+    const product = PRODUCTS.find(p => p.id === productId);
     if (idx >= 0) {
         wishlist.splice(idx, 1);
         showToast('Aus der Wunschliste entfernt');
     } else {
         wishlist.push(productId);
-        showToast('Zur Wunschliste hinzugefügt ♥');
+        showToast((product ? product.cardName : 'Karte') + ' zur Wunschliste hinzugefügt ♥', 'success');
     }
     localStorage.setItem('rc_wishlist', JSON.stringify(wishlist));
     document.querySelectorAll('[data-wishlist-id="' + productId + '"]').forEach(btn => {
         btn.classList.toggle('active', wishlist.includes(productId));
         btn.textContent = wishlist.includes(productId) ? '♥' : '♡';
     });
+    updateWishlistBadge();
+    if (document.getElementById('wishlistPanel').classList.contains('active')) {
+        renderWishlist();
+    }
 }
 
-function toggleWishlist() {
+function updateWishlistBadge() {
+    const badge = document.getElementById('wishlistCount');
+    if (!badge) return;
+    badge.textContent = wishlist.length;
+    badge.classList.toggle('hidden', wishlist.length === 0);
+    badge.classList.remove('bump');
+    void badge.offsetWidth;
+    if (wishlist.length > 0) badge.classList.add('bump');
+}
+
+function openWishlist() {
+    document.getElementById('wishlistOverlay').classList.add('active');
+    document.getElementById('wishlistPanel').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    renderWishlist();
+}
+
+function closeWishlist() {
+    document.getElementById('wishlistOverlay').classList.remove('active');
+    document.getElementById('wishlistPanel').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function renderWishlist() {
+    const body = document.getElementById('wishlistBody');
+    const headerCount = document.getElementById('wlHeaderCount');
+    headerCount.textContent = wishlist.length > 0 ? ' (' + wishlist.length + ')' : '';
     if (wishlist.length === 0) {
-        showToast('Ihre Wunschliste ist leer');
+        body.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon">♡</div><p>Ihre Wunschliste ist noch leer.<br>Klicken Sie auf das Herz, um Karten zu speichern.</p><button class="btn-outline" onclick="closeWishlist(); navigateTo(\'shop\')">Zum Shop</button></div>';
         return;
     }
-    showToast(wishlist.length + ' Artikel auf der Wunschliste');
+    body.innerHTML = wishlist.map(id => {
+        const p = PRODUCTS.find(p => p.id === id);
+        if (!p) return '';
+        return '<div class="cart-item">' +
+            '<div class="cart-item-img"><div class="card-mockup card-mockup-' + p.mockup + '"><div class="mockup-inner"><span class="mockup-symbol">' + p.symbol + '</span></div></div></div>' +
+            '<div class="cart-item-info">' +
+                '<div class="cart-item-name" onclick="closeWishlist(); openProduct(\'' + p.id + '\')">' + p.name + '</div>' +
+                '<div class="cart-item-meta">' + p.category + ' · ' + p.condition + '</div>' +
+                '<div class="cart-item-row">' +
+                    '<button class="btn-add-cart" onclick="moveWishlistToCart(\'' + p.id + '\')" ' + (p.stock === 0 ? 'disabled' : '') + '>' + (p.stock === 0 ? 'Ausverkauft' : 'Übernehmen') + '</button>' +
+                    '<div class="cart-item-price">' + fmtPrice(p.price) + '</div>' +
+                '</div>' +
+            '</div>' +
+            '<button class="cart-item-remove" onclick="removeFromWishlist(\'' + p.id + '\')" aria-label="Entfernen">×</button>' +
+        '</div>';
+    }).join('');
+}
+
+function moveWishlistToCart(productId) {
+    addToCart(productId, 1);
+    removeFromWishlist(productId);
+}
+
+function removeFromWishlist(productId) {
+    const idx = wishlist.indexOf(productId);
+    if (idx < 0) return;
+    wishlist.splice(idx, 1);
+    localStorage.setItem('rc_wishlist', JSON.stringify(wishlist));
+    document.querySelectorAll('[data-wishlist-id="' + productId + '"]').forEach(btn => {
+        btn.classList.remove('active');
+        btn.textContent = '♡';
+    });
+    updateWishlistBadge();
+    if (document.getElementById('wishlistPanel').classList.contains('active')) {
+        renderWishlist();
+    }
 }
 
 // ====== PRODUCT RENDERING ======
@@ -1494,6 +1583,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderFeatured();
     renderArrivals();
     updateCartUI();
+    updateWishlistBadge();
 
     const mobileToggle = document.getElementById('mobileToggle');
     const mainNav = document.getElementById('mainNav');
@@ -1532,6 +1622,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeCart();
+            closeWishlist();
             closeCheckout();
             document.getElementById('searchBar').classList.remove('active');
         }
