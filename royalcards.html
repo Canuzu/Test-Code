@@ -103,6 +103,7 @@ em { font-style: italic; color: var(--violet); background: linear-gradient(120de
 a { color: var(--violet-royal); text-decoration: none; transition: var(--transition); }
 a:hover { color: var(--violet); }
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+[onclick], a, button, label[for], summary, .product-card, .category-card, .arrival-item { cursor: pointer; -webkit-tap-highlight-color: rgba(123, 63, 191, 0.18); touch-action: manipulation; }
 ul { list-style: none; }
 .container { width: 100%; max-width: 1280px; margin: 0 auto; padding: 0 24px; }
 
@@ -687,6 +688,12 @@ ul { list-style: none; }
     .section-header { margin-bottom: 44px; }
     .faq-question { font-size: 1.02rem; padding: 18px 20px; }
     .faq-answer-inner { padding: 0 20px 18px; }
+    .cookie-banner { padding: 14px 16px; }
+    .cookie-inner { gap: 12px; }
+    .cookie-text strong { font-size: 1rem; }
+    .cookie-text p { font-size: 0.76rem; line-height: 1.5; }
+    .cookie-actions { width: 100%; }
+    .cookie-btn { flex: 1; padding: 12px 8px; font-size: 0.78rem; text-align: center; }
 }
 @media (max-width: 480px) {
     .container { padding: 0 16px; }
