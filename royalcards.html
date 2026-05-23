@@ -548,6 +548,36 @@ ul { list-style: none; }
 .modal-success h3 { margin-bottom: 12px; font-size: 1.8rem; }
 .modal-success p { color: var(--text-soft); margin-bottom: 24px; line-height: 1.7; }
 .modal-order-id { padding: 12px 20px; background: var(--bg-soft); border-radius: var(--radius-sm); display: inline-block; font-family: monospace; font-size: 0.9rem; color: var(--violet); margin-bottom: 28px; }
+.modal-legal { max-width: 720px; }
+.legal-body { padding: 28px 32px 36px; max-height: 70vh; overflow-y: auto; }
+.legal-body h4 { font-family: var(--font-sans); font-size: 0.95rem; font-weight: 700; color: var(--text); letter-spacing: 0.03em; margin: 24px 0 8px; }
+.legal-body h4:first-child { margin-top: 0; }
+.legal-body p { color: var(--text-soft); line-height: 1.75; font-size: 0.92rem; margin-bottom: 12px; }
+.legal-body ul { padding-left: 22px; margin-bottom: 12px; }
+.legal-body li { color: var(--text-soft); line-height: 1.7; font-size: 0.92rem; list-style: disc; margin-bottom: 4px; }
+.legal-body a { color: var(--violet); }
+.legal-note { background: var(--violet-mist); border-left: 3px solid var(--gold); padding: 12px 16px; border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-soft); margin-bottom: 20px; }
+
+/* Cookie Banner */
+.cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; z-index: 250; background: var(--panel-bg); border-top: 1px solid var(--border); box-shadow: 0 -8px 32px rgba(0,0,0,0.18); padding: 22px 24px; transform: translateY(110%); transition: transform 0.5s cubic-bezier(0.16,1,0.3,1); }
+.cookie-banner.active { transform: translateY(0); }
+.cookie-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.cookie-text { flex: 1; min-width: 260px; }
+.cookie-text strong { display: block; font-family: var(--font-serif); font-size: 1.2rem; color: var(--text); margin-bottom: 4px; }
+.cookie-text p { font-size: 0.85rem; color: var(--text-soft); line-height: 1.6; }
+.cookie-text a { color: var(--violet); cursor: pointer; text-decoration: underline; }
+.cookie-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.cookie-btn { padding: 12px 22px; border-radius: var(--radius-sm); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.03em; cursor: pointer; transition: var(--transition); border: 1.5px solid var(--violet-deep); white-space: nowrap; }
+.cookie-btn-outline { background: transparent; color: var(--text); border-color: var(--border); }
+.cookie-btn-outline:hover { border-color: var(--violet); color: var(--violet); }
+.cookie-btn-primary { background: linear-gradient(135deg, var(--violet-royal) 0%, var(--violet) 100%); color: #fff; border-color: transparent; }
+.cookie-btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+/* Form consent */
+.form-consent { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; }
+.form-consent input { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; accent-color: var(--violet); cursor: pointer; }
+.form-consent label { font-size: 0.82rem; color: var(--text-soft); line-height: 1.5; cursor: pointer; }
+.form-consent a { color: var(--violet); cursor: pointer; text-decoration: underline; }
 
 /* Toast */
 .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: linear-gradient(135deg, var(--violet-royal) 0%, var(--violet) 100%); color: #fff; padding: 14px 28px; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; box-shadow: var(--shadow-xl); opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s; z-index: 500; white-space: nowrap; display: flex; align-items: center; gap: 10px; }
@@ -961,6 +991,7 @@ ul { list-style: none; }
                     <div class="form-group"><label>E-Mail-Adresse</label><input type="email" required></div>
                     <div class="form-group"><label>Anliegen</label><select required><option>Allgemeine Anfrage</option><option>Frage zu einer Karte</option><option>Grading-Service</option><option>Karten verkaufen</option><option>Bestellung & Versand</option></select></div>
                     <div class="form-group"><label>Ihre Nachricht</label><textarea placeholder="Wie können wir Ihnen helfen?" required></textarea></div>
+                    <div class="form-consent"><input type="checkbox" id="contactConsent" required><label for="contactConsent">Ich habe die <a onclick="openLegal('datenschutz')">Datenschutzerklärung</a> gelesen und stimme zu, dass meine Angaben zur Bearbeitung meiner Anfrage gespeichert werden. *</label></div>
                     <button type="submit" class="btn-primary" style="width: 100%;">Nachricht senden ♛</button>
                 </form>
             </div>
@@ -1104,6 +1135,31 @@ ul { list-style: none; }
     </div>
 </div>
 
+<!-- Legal Modal -->
+<div class="modal-overlay" id="legalModal" onclick="if(event.target===this)closeLegal()">
+    <div class="modal modal-legal">
+        <div class="modal-header">
+            <h3 id="legalTitle"></h3>
+            <button class="modal-close" onclick="closeLegal()">×</button>
+        </div>
+        <div class="modal-body legal-body" id="legalBody"></div>
+    </div>
+</div>
+
+<!-- Cookie Consent Banner -->
+<div class="cookie-banner" id="cookieBanner">
+    <div class="cookie-inner">
+        <div class="cookie-text">
+            <strong>Wir respektieren Ihre Privatsphäre</strong>
+            <p>RoyalCards verwendet notwendige Cookies für den Betrieb des Shops (z.B. Warenkorb). Optionale Cookies für Statistik & Komfort nur mit Ihrer Einwilligung. Mehr in der <a onclick="openLegal('datenschutz')">Datenschutzerklärung</a>.</p>
+        </div>
+        <div class="cookie-actions">
+            <button class="cookie-btn cookie-btn-outline" onclick="acceptCookies('essential')">Nur notwendige</button>
+            <button class="cookie-btn cookie-btn-primary" onclick="acceptCookies('all')">Alle akzeptieren</button>
+        </div>
+    </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -1119,13 +1175,13 @@ ul { list-style: none; }
                 <div class="social-links"><a>IG</a><a>FB</a><a>YT</a><a>DC</a></div>
             </div>
             <div class="footer-col"><h4>Shop</h4><ul><li><a onclick="filterShop('Pokémon')">Pokémon</a></li><li><a onclick="filterShop('MTG')">Magic</a></li><li><a onclick="filterShop('Yu-Gi-Oh!')">Yu-Gi-Oh!</a></li><li><a onclick="filterShop('One Piece')">One Piece</a></li><li><a onclick="filterShop('Lorcana')">Lorcana</a></li></ul></div>
-            <div class="footer-col"><h4>Service</h4><ul><li><a onclick="scrollToSection('grading')">Grading</a></li><li><a>Karten verkaufen</a></li><li><a>Versand</a></li><li><a>FAQ</a></li></ul></div>
+            <div class="footer-col"><h4>Service</h4><ul><li><a onclick="scrollToSection('grading')">Grading</a></li><li><a onclick="scrollToSection('kontakt')">Karten verkaufen</a></li><li><a onclick="openLegal('versand')">Versand & Lieferung</a></li><li><a onclick="openLegal('widerruf')">Rückgabe & Widerruf</a></li><li><a onclick="scrollToSection('faq')">FAQ</a></li></ul></div>
             <div class="footer-col"><h4>Unternehmen</h4><ul><li><a onclick="scrollToSection('ueber-uns')">Über uns</a></li><li><a>Karriere</a></li><li><a>Blog</a></li></ul></div>
             <div class="footer-col"><h4>Kontakt</h4><ul class="contact-list"><li>Königsallee 42<br>40212 Düsseldorf</li><li>support@royalcards.de</li><li>+49 (0)211 1234567</li></ul></div>
         </div>
         <div class="footer-bottom">
             <p>&copy; 2026 RoyalCards GmbH. Alle Rechte vorbehalten.</p>
-            <ul class="footer-legal"><li><a>Impressum</a></li><li><a>Datenschutz</a></li><li><a>AGB</a></li></ul>
+            <ul class="footer-legal"><li><a onclick="openLegal('impressum')">Impressum</a></li><li><a onclick="openLegal('datenschutz')">Datenschutz</a></li><li><a onclick="openLegal('agb')">AGB</a></li><li><a onclick="openLegal('widerruf')">Widerruf</a></li></ul>
             <div class="payment-methods"><span>VISA</span><span>MC</span><span>PayPal</span><span>Klarna</span></div>
         </div>
     </div>
@@ -1838,13 +1894,106 @@ function completeOrder(e) {
     updateCartUI();
 }
 
+// ====== LEGAL PAGES ======
+const LEGAL = {
+    impressum: {
+        title: 'Impressum',
+        body:
+            '<div class="legal-note">Vorlage — die mit [eckigen Klammern] markierten Felder müssen vor dem Livegang mit den echten Unternehmensdaten ausgefüllt und anwaltlich geprüft werden.</div>' +
+            '<h4>Angaben gemäß § 5 DDG (Digitale-Dienste-Gesetz)</h4>' +
+            '<p>RoyalCards GmbH<br>Königsallee 42<br>40212 Düsseldorf<br>Deutschland</p>' +
+            '<h4>Vertreten durch</h4><p>Geschäftsführer: [Vor- und Nachname]</p>' +
+            '<h4>Kontakt</h4><p>Telefon: +49 (0)211 1234567<br>E-Mail: support@royalcards.de</p>' +
+            '<h4>Registereintrag</h4><p>Eintragung im Handelsregister.<br>Registergericht: Amtsgericht Düsseldorf<br>Registernummer: [HRB-Nummer]</p>' +
+            '<h4>Umsatzsteuer-ID</h4><p>Umsatzsteuer-Identifikationsnummer gemäß § 27a UStG:<br>[DE-Nummer]</p>' +
+            '<h4>Verbraucherstreitbeilegung</h4><p>Die EU-Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener">ec.europa.eu/consumers/odr</a>. Zur Teilnahme an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle sind wir nicht verpflichtet und grundsätzlich nicht bereit.</p>'
+    },
+    datenschutz: {
+        title: 'Datenschutzerklärung',
+        body:
+            '<div class="legal-note">Vorlage nach DSGVO — bitte vor dem Livegang an die tatsächlich eingesetzten Dienste (Zahlungsanbieter, Hosting, Analyse) anpassen und rechtlich prüfen lassen.</div>' +
+            '<h4>1. Verantwortlicher</h4><p>RoyalCards GmbH, Königsallee 42, 40212 Düsseldorf, E-Mail: datenschutz@royalcards.de</p>' +
+            '<h4>2. Welche Daten wir verarbeiten</h4><p>Wir verarbeiten personenbezogene Daten, die Sie uns aktiv mitteilen (z.B. bei Bestellung, Kontakt oder Newsletter): Name, Anschrift, E-Mail, Zahlungsdaten. Beim Besuch der Seite werden technisch notwendige Daten (IP-Adresse, Browsertyp, Zeitpunkt) zur Auslieferung verarbeitet.</p>' +
+            '<h4>3. Zwecke und Rechtsgrundlagen</h4><ul><li>Vertragsabwicklung & Versand – Art. 6 Abs. 1 lit. b DSGVO</li><li>Beantwortung von Anfragen – Art. 6 Abs. 1 lit. b/f DSGVO</li><li>Newsletter – Einwilligung, Art. 6 Abs. 1 lit. a DSGVO</li><li>Gesetzliche Aufbewahrung – Art. 6 Abs. 1 lit. c DSGVO</li></ul>' +
+            '<h4>4. Cookies</h4><p>Notwendige Cookies (z.B. Warenkorb) sind für den Betrieb erforderlich. Optionale Cookies setzen wir nur mit Ihrer Einwilligung über den Cookie-Banner, die Sie jederzeit widerrufen können.</p>' +
+            '<h4>5. Empfänger</h4><p>Daten geben wir nur an Dienstleister weiter, soweit zur Vertragserfüllung nötig (Zahlungsdienstleister, Versanddienstleister, Hosting) – jeweils auf Basis von Auftragsverarbeitungsverträgen.</p>' +
+            '<h4>6. Ihre Rechte</h4><p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch sowie ein Beschwerderecht bei einer Aufsichtsbehörde. Kontakt: datenschutz@royalcards.de</p>' +
+            '<h4>7. Speicherdauer</h4><p>Wir speichern Daten nur so lange, wie es für die genannten Zwecke erforderlich ist bzw. gesetzliche Aufbewahrungsfristen (i.d.R. 6–10 Jahre für Geschäftsunterlagen) bestehen.</p>'
+    },
+    agb: {
+        title: 'Allgemeine Geschäftsbedingungen',
+        body:
+            '<div class="legal-note">Vorlage — AGB sollten vor dem Livegang individuell und anwaltlich erstellt werden.</div>' +
+            '<h4>§ 1 Geltungsbereich</h4><p>Diese AGB gelten für alle Bestellungen über den Online-Shop der RoyalCards GmbH durch Verbraucher und Unternehmer.</p>' +
+            '<h4>§ 2 Vertragspartner & Vertragsschluss</h4><p>Der Kaufvertrag kommt mit der RoyalCards GmbH zustande. Die Darstellung der Produkte stellt kein bindendes Angebot dar. Mit Anklicken von „Kostenpflichtig bestellen" geben Sie ein verbindliches Angebot ab. Der Vertrag kommt durch unsere Auftragsbestätigung bzw. Versand zustande.</p>' +
+            '<h4>§ 3 Preise & Versandkosten</h4><p>Alle Preise verstehen sich inkl. gesetzlicher Mehrwertsteuer. Versandkosten werden vor Abschluss der Bestellung angezeigt; ab 50 € Bestellwert ist der Versand innerhalb Deutschlands kostenlos.</p>' +
+            '<h4>§ 4 Zahlung</h4><p>Es stehen die im Bestellprozess angezeigten Zahlungsarten zur Verfügung (u.a. Kreditkarte, PayPal, Klarna, SEPA).</p>' +
+            '<h4>§ 5 Lieferung</h4><p>Die Lieferung erfolgt versichert innerhalb der angegebenen Lieferzeit. Bei Sammlerstücken kann die Verfügbarkeit auf Einzelstücke begrenzt sein.</p>' +
+            '<h4>§ 6 Eigentumsvorbehalt</h4><p>Die Ware bleibt bis zur vollständigen Bezahlung unser Eigentum.</p>' +
+            '<h4>§ 7 Gewährleistung</h4><p>Es gelten die gesetzlichen Gewährleistungsrechte. Den Zustand jeder Sammelkarte beschreiben wir transparent.</p>'
+    },
+    widerruf: {
+        title: 'Widerrufsrecht & Rückgabe',
+        body:
+            '<div class="legal-note">Vorlage der gesetzlichen Muster-Widerrufsbelehrung — vor dem Livegang prüfen lassen.</div>' +
+            '<h4>Widerrufsrecht</h4><p>Sie haben das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen. Die Widerrufsfrist beträgt vierzehn Tage ab dem Tag, an dem Sie oder ein von Ihnen benannter Dritter die Waren in Besitz genommen haben.</p>' +
+            '<p>Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (RoyalCards GmbH, Königsallee 42, 40212 Düsseldorf, E-Mail: support@royalcards.de) mittels einer eindeutigen Erklärung (z.B. per Brief oder E-Mail) über Ihren Entschluss informieren. Zur Wahrung der Frist genügt die rechtzeitige Absendung.</p>' +
+            '<h4>Folgen des Widerrufs</h4><p>Wenn Sie diesen Vertrag widerrufen, erstatten wir Ihnen alle Zahlungen einschließlich Standard-Lieferkosten unverzüglich und spätestens binnen vierzehn Tagen zurück. Sie tragen die unmittelbaren Kosten der Rücksendung. Ein Wertersatz kann anfallen, wenn der Wertverlust auf einen nicht notwendigen Umgang mit der Ware zurückzuführen ist.</p>' +
+            '<h4>Muster-Widerrufsformular</h4><p>An RoyalCards GmbH, Königsallee 42, 40212 Düsseldorf — Hiermit widerrufe(n) ich/wir den von mir/uns abgeschlossenen Vertrag über den Kauf der folgenden Waren: ____________ · Bestellt am / erhalten am: ____________ · Name: ____________ · Anschrift: ____________ · Datum & Unterschrift: ____________</p>'
+    },
+    versand: {
+        title: 'Versand & Lieferung',
+        body:
+            '<h4>Versandkosten</h4><p>Innerhalb Deutschlands versenden wir versichert mit DHL/UPS. Ab 50 € Bestellwert ist der Versand kostenlos, andernfalls fallen 4,95 € an.</p>' +
+            '<h4>Lieferzeit</h4><p>Versand innerhalb von 1–2 Werktagen nach Zahlungseingang. Zustellung innerhalb Deutschlands i.d.R. in 2–3 Werktagen, international 3–7 Werktage.</p>' +
+            '<h4>Verpackung</h4><p>Jede Karte wird professionell mit Toploader, Schutzhülle und stabilem Versandumschlag verpackt. Hochwertige und graded Karten erhalten zusätzlichen Schutz.</p>' +
+            '<h4>Sendungsverfolgung</h4><p>Nach dem Versand erhalten Sie eine E-Mail mit Tracking-Nummer.</p>'
+    }
+};
+
+function openLegal(key) {
+    const doc = LEGAL[key];
+    if (!doc) return;
+    document.getElementById('legalTitle').textContent = doc.title;
+    document.getElementById('legalBody').innerHTML = doc.body;
+    document.getElementById('legalBody').scrollTop = 0;
+    document.getElementById('legalModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLegal() {
+    document.getElementById('legalModal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// ====== COOKIE CONSENT ======
+function initCookieBanner() {
+    if (!localStorage.getItem('rc_cookie_consent')) {
+        setTimeout(() => document.getElementById('cookieBanner').classList.add('active'), 1200);
+    }
+}
+
+function acceptCookies(level) {
+    localStorage.setItem('rc_cookie_consent', level);
+    localStorage.setItem('rc_cookie_date', new Date().toISOString());
+    document.getElementById('cookieBanner').classList.remove('active');
+    showToast(level === 'all' ? 'Alle Cookies akzeptiert' : 'Nur notwendige Cookies aktiv', 'success');
+}
+
 // ====== FORMS ======
 function handleContactForm(e) {
     e.preventDefault();
+    const consent = document.getElementById('contactConsent');
+    if (consent && !consent.checked) {
+        showToast('Bitte stimmen Sie der Datenschutzerklärung zu', 'error');
+        return;
+    }
     const btn = e.target.querySelector('button[type="submit"]');
     const original = btn.textContent;
     btn.textContent = 'Wird gesendet...';
     btn.disabled = true;
+    // Hinweis: Hier wird später die echte Übermittlung angebunden
+    // (z.B. fetch zu einem Formular-Endpunkt oder Backend-API).
     setTimeout(() => {
         btn.textContent = 'Erfolgreich gesendet ♛';
         showToast('Nachricht gesendet!', 'success');
@@ -1872,6 +2021,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderRecent();
     updateCartUI();
     updateWishlistBadge();
+    initCookieBanner();
 
 
     // Scroll reveal
@@ -1903,6 +2053,7 @@ document.addEventListener('DOMContentLoaded', () => {
             closeWishlist();
             closeSideMenu();
             closeCheckout();
+            closeLegal();
             closeSearch();
         }
     });
