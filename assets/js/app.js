@@ -23,8 +23,12 @@
     catch { return fallback; }
   }
   function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
-    localStorage.setItem(FAV_KEY, JSON.stringify([...favs]));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+      localStorage.setItem(FAV_KEY, JSON.stringify([...favs]));
+    } catch (_) {
+      /* z. B. file:// oder Privatmodus – Warenkorb läuft dann nur im Speicher */
+    }
   }
   const product = (id) => PRODUCTS.find((p) => p.id === id);
 

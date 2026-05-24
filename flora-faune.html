@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="FLORA & FAUNE – nachhaltige Damenmode aus natürlichen Materialien. Kleider, Strick, Mäntel und Accessoires für jeden Tag."
+    />
+    <title>FLORA &amp; FAUNE · Naturnahe Damenmode</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+/* =====================================================================
+   FLORA & FAUNE – Stylesheet
+   Warme, naturnahe Palette · weiche Formen · viel Weißraum
+   ===================================================================== */
+
+:root {
+  --cream: #faf6ef;
+  --sand: #f1e9dc;
+  --clay: #c57b57;
+  --clay-dark: #a9613f;
+  --olive: #6b7256;
+  --olive-dark: #565d44;
+  --ink: #2e2a26;
+  --muted: #7c746b;
+  --line: #e7ddcd;
+  --white: #fffdf9;
+
+  --radius: 18px;
+  --radius-lg: 28px;
+  --shadow-sm: 0 4px 16px rgba(46, 42, 38, 0.06);
+  --shadow-md: 0 12px 40px rgba(46, 42, 38, 0.1);
+  --serif: "Fraunces", Georgia, "Times New Roman", serif;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --maxw: 1180px;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+
+body {
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--cream);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4 { font-family: var(--serif); font-weight: 500; line-height: 1.1; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2.4rem, 6vw, 4.1rem); }
+h2 { font-size: clamp(1.9rem, 4vw, 2.9rem); }
+em { font-style: italic; }
+img { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+
+.container { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--clay);
+  margin-bottom: 0.9rem;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  font-family: var(--sans); font-weight: 600; font-size: 0.95rem;
+  padding: 0.85rem 1.6rem; border-radius: 999px; border: 1.5px solid transparent;
+  cursor: pointer; transition: transform 0.25s var(--ease), background 0.25s, color 0.25s, box-shadow 0.25s;
+  white-space: nowrap;
+}
+.btn:active { transform: scale(0.97); }
+.btn--primary { background: var(--olive); color: var(--white); }
+.btn--primary:hover { background: var(--olive-dark); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.btn--ghost { background: transparent; color: var(--ink); border-color: var(--ink); }
+.btn--ghost:hover { background: var(--ink); color: var(--cream); }
+.btn--block { width: 100%; }
+
+/* ---------- Ankündigung ---------- */
+.announce {
+  background: var(--olive); color: var(--cream);
+  text-align: center; font-size: 0.82rem; letter-spacing: 0.04em;
+  padding: 0.55rem 1rem;
+}
+
+/* ---------- Header ---------- */
+.header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(250, 246, 239, 0.82);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: box-shadow 0.3s, border-color 0.3s, background 0.3s;
+}
+.header.is-scrolled { box-shadow: var(--shadow-sm); border-color: var(--line); }
+.header__inner { display: flex; align-items: center; gap: 1rem; height: 72px; }
+
+.logo {
+  font-family: var(--serif); font-size: 1.32rem; font-weight: 600;
+  letter-spacing: 0.02em; display: inline-flex; align-items: center; gap: 0.45rem;
+  margin-right: auto;
+}
+.logo em { color: var(--clay); font-style: italic; }
+.logo__leaf { color: var(--olive); font-size: 1.1em; transform: translateY(1px); }
+
+.nav { display: flex; gap: 1.7rem; margin: 0 auto; }
+.nav a {
+  font-size: 0.95rem; font-weight: 500; color: var(--ink); position: relative; padding: 0.3rem 0;
+}
+.nav a::after {
+  content: ""; position: absolute; left: 0; bottom: -2px; width: 0; height: 2px;
+  background: var(--clay); transition: width 0.3s var(--ease);
+}
+.nav a:hover::after { width: 100%; }
+
+.cart-btn {
+  position: relative; background: none; border: none; cursor: pointer; color: var(--ink);
+  padding: 0.45rem; display: inline-flex; border-radius: 50%; transition: background 0.2s, transform 0.2s;
+}
+.cart-btn:hover { background: var(--sand); transform: translateY(-1px); }
+.cart-btn__count {
+  position: absolute; top: -2px; right: -2px; background: var(--clay); color: #fff;
+  font-size: 0.66rem; font-weight: 700; min-width: 18px; height: 18px; border-radius: 999px;
+  display: grid; place-items: center; padding: 0 4px; font-family: var(--sans);
+}
+
+.nav-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 6px; }
+.nav-toggle span { width: 24px; height: 2px; background: var(--ink); border-radius: 2px; transition: transform 0.3s, opacity 0.3s; }
+.nav-toggle.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle.is-open span:nth-child(2) { opacity: 0; }
+.nav-toggle.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ---------- Hero ---------- */
+.hero { position: relative; padding: clamp(2.5rem, 6vw, 5rem) 0 clamp(3rem, 7vw, 6rem); overflow: hidden; }
+.hero__inner { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(2rem, 5vw, 4rem); align-items: center; }
+.hero__text { max-width: 540px; }
+.hero h1 { margin-bottom: 1.2rem; }
+.hero h1 em { color: var(--clay); }
+.hero__lead { font-size: 1.12rem; color: var(--muted); margin-bottom: 2rem; }
+.hero__actions { display: flex; gap: 0.9rem; flex-wrap: wrap; margin-bottom: 2.3rem; }
+.hero__badges { list-style: none; display: flex; flex-wrap: wrap; gap: 1.3rem; font-size: 0.88rem; color: var(--ink); font-weight: 500; }
+
+.hero__media { position: relative; }
+.hero__img {
+  width: 100%; height: clamp(380px, 52vw, 560px); object-fit: cover;
+  border-radius: 52% 48% 46% 54% / 58% 56% 44% 42%;
+  box-shadow: var(--shadow-md);
+}
+.hero__chip {
+  position: absolute; bottom: 18px; left: -6px; background: var(--white);
+  padding: 0.7rem 1.1rem; border-radius: 14px; box-shadow: var(--shadow-md);
+  display: flex; flex-direction: column; line-height: 1.2;
+}
+.hero__chip strong { font-family: var(--serif); font-size: 1.15rem; }
+.hero__chip span { font-size: 0.74rem; color: var(--muted); }
+
+.hero__blob { position: absolute; border-radius: 50%; filter: blur(8px); opacity: 0.5; z-index: -1; }
+.hero__blob--1 { width: 360px; height: 360px; background: radial-gradient(circle, #e9d9c4, transparent 70%); top: -80px; right: -60px; }
+.hero__blob--2 { width: 300px; height: 300px; background: radial-gradient(circle, #d7e0c5, transparent 70%); bottom: -90px; left: -80px; }
+
+/* ---------- Werte ---------- */
+.values {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem;
+  padding: 2.5rem 24px; margin-top: -1rem;
+}
+.value {
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1.5rem; text-align: center; transition: transform 0.3s var(--ease), box-shadow 0.3s;
+}
+.value:hover { transform: translateY(-4px); box-shadow: var(--shadow-sm); }
+.value span { font-size: 1.7rem; display: block; margin-bottom: 0.6rem; }
+.value h3 { font-size: 1.05rem; margin-bottom: 0.3rem; }
+.value p { font-size: 0.86rem; color: var(--muted); }
+
+/* ---------- Shop ---------- */
+.shop { padding: clamp(3rem, 6vw, 5rem) 24px; }
+.shop__head { text-align: center; max-width: 560px; margin: 0 auto 2rem; }
+.shop__head p { color: var(--muted); margin-top: 0.6rem; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; margin-bottom: 2.6rem; }
+.filter {
+  border: 1.5px solid var(--line); background: var(--white); color: var(--ink);
+  padding: 0.5rem 1.15rem; border-radius: 999px; font-size: 0.9rem; font-weight: 500;
+  cursor: pointer; transition: all 0.22s var(--ease);
+}
+.filter:hover { border-color: var(--olive); color: var(--olive); }
+.filter.is-active { background: var(--olive); border-color: var(--olive); color: var(--white); }
+
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.6rem 1.4rem; }
+.grid__empty { text-align: center; color: var(--muted); padding: 3rem 0; }
+
+/* ---------- Produktkarte ---------- */
+.card {
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-lg);
+  overflow: hidden; display: flex; flex-direction: column;
+  transition: transform 0.35s var(--ease), box-shadow 0.35s;
+}
+.card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
+.card__media { position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: var(--sand); }
+.card__img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
+.card:hover .card__img { transform: scale(1.06); }
+
+/* Fallback-Kachel, falls ein Foto nicht lädt */
+.card__media.is-fallback { display: grid; place-items: center; }
+.card__media.is-fallback .card__img { display: none; }
+.card__media.is-fallback::after {
+  content: attr(data-label); position: absolute; inset: 0;
+  display: grid; place-items: center; text-align: center; padding: 1rem;
+  font-family: var(--serif); font-size: 1.25rem; color: #fff; letter-spacing: 0.02em;
+}
+.fb-0 { background: linear-gradient(135deg, #c8a98b, #a9613f); }
+.fb-1 { background: linear-gradient(135deg, #b6bd9a, #565d44); }
+.fb-2 { background: linear-gradient(135deg, #d8c4a8, #b08968); }
+.fb-3 { background: linear-gradient(135deg, #cdb89c, #6b7256); }
+
+.card__tag {
+  position: absolute; top: 12px; left: 12px; z-index: 2;
+  background: var(--clay); color: #fff; font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 0.05em; text-transform: uppercase; padding: 0.3rem 0.7rem; border-radius: 999px;
+}
+.card__fav {
+  position: absolute; top: 10px; right: 10px; z-index: 2; width: 36px; height: 36px;
+  border: none; border-radius: 50%; background: rgba(255, 253, 249, 0.9); cursor: pointer;
+  display: grid; place-items: center; color: var(--ink); transition: transform 0.2s, color 0.2s, background 0.2s;
+  font-size: 1.05rem;
+}
+.card__fav:hover { transform: scale(1.12); }
+.card__fav.is-fav { color: var(--clay); background: #fff; }
+
+.card__body { padding: 1.1rem 1.2rem 1.3rem; display: flex; flex-direction: column; flex: 1; }
+.card__cat { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--olive); font-weight: 600; }
+.card__name { font-family: var(--serif); font-size: 1.18rem; margin: 0.25rem 0 0.35rem; }
+.card__desc { font-size: 0.85rem; color: var(--muted); flex: 1; }
+.card__foot { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; gap: 0.6rem; }
+.card__price { font-family: var(--serif); font-size: 1.3rem; font-weight: 600; }
+.card__add {
+  background: var(--sand); color: var(--ink); border: none; border-radius: 999px;
+  padding: 0.6rem 1.05rem; font-weight: 600; font-size: 0.85rem; cursor: pointer;
+  transition: background 0.22s, color 0.22s, transform 0.2s;
+}
+.card__add:hover { background: var(--clay); color: #fff; transform: translateY(-2px); }
+
+/* ---------- Story ---------- */
+.story { background: var(--sand); padding: clamp(3rem, 7vw, 6rem) 0; }
+.story__inner { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: clamp(2rem, 5vw, 4rem); align-items: center; }
+.story__media img {
+  width: 100%; height: clamp(320px, 42vw, 480px); object-fit: cover;
+  border-radius: 46% 54% 52% 48% / 54% 48% 52% 46%; box-shadow: var(--shadow-md);
+}
+.story__text { max-width: 520px; }
+.story__text h2 { margin-bottom: 1.2rem; }
+.story__text p { color: var(--muted); margin-bottom: 1rem; }
+.story__text .btn { margin-top: 0.8rem; }
+
+/* ---------- Newsletter ---------- */
+.newsletter { padding: clamp(3rem, 6vw, 5rem) 0; }
+.newsletter__inner {
+  background: var(--olive); color: var(--cream); border-radius: var(--radius-lg);
+  text-align: center; padding: clamp(2.5rem, 5vw, 4rem) 1.5rem; max-width: 860px;
+}
+.newsletter h2 { color: var(--cream); }
+.newsletter p { color: rgba(250, 246, 239, 0.85); margin: 0.7rem 0 1.6rem; }
+.newsletter__form { display: flex; gap: 0.6rem; max-width: 440px; margin: 0 auto; flex-wrap: wrap; }
+.newsletter__form input {
+  flex: 1; min-width: 220px; border: none; border-radius: 999px; padding: 0.85rem 1.3rem;
+  font-family: var(--sans); font-size: 0.95rem; background: var(--cream); color: var(--ink);
+}
+.newsletter__form input:focus { outline: 2px solid var(--clay); }
+.newsletter__form .btn--primary { background: var(--clay); }
+.newsletter__form .btn--primary:hover { background: var(--clay-dark); }
+.newsletter__hint { font-size: 0.85rem; margin-top: 0.9rem; min-height: 1.2em; color: var(--sand); }
+
+/* ---------- Footer ---------- */
+.footer { background: var(--ink); color: #d9d1c6; padding: clamp(2.5rem, 5vw, 4rem) 0 1.5rem; }
+.footer__inner { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 2rem; padding-bottom: 2.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+.logo--light { color: var(--cream); margin-bottom: 0.8rem; }
+.logo--light em { color: var(--clay); }
+.footer__brand p { font-size: 0.9rem; color: #a59c90; max-width: 240px; }
+.footer__col h4 { font-family: var(--sans); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; color: #fff; margin-bottom: 1rem; }
+.footer__col a { display: block; font-size: 0.9rem; color: #b5ac9f; padding: 0.28rem 0; transition: color 0.2s; }
+.footer__col a:hover { color: var(--clay); }
+.footer__bar { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; padding-top: 1.5rem; font-size: 0.8rem; color: #968d80; }
+
+/* ---------- Warenkorb-Drawer ---------- */
+.drawer { position: fixed; inset: 0; z-index: 100; visibility: hidden; }
+.drawer.is-open { visibility: visible; }
+.drawer__overlay { position: absolute; inset: 0; background: rgba(46, 42, 38, 0.45); opacity: 0; transition: opacity 0.35s; }
+.drawer.is-open .drawer__overlay { opacity: 1; }
+.drawer__panel {
+  position: absolute; top: 0; right: 0; height: 100%; width: min(420px, 100%);
+  background: var(--cream); display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform 0.4s var(--ease); box-shadow: var(--shadow-md);
+}
+.drawer.is-open .drawer__panel { transform: translateX(0); }
+.drawer__head { display: flex; align-items: center; justify-content: space-between; padding: 1.3rem 1.4rem; border-bottom: 1px solid var(--line); }
+.drawer__head h3 { font-size: 1.3rem; }
+.drawer__close { background: none; border: none; font-size: 1.8rem; line-height: 1; cursor: pointer; color: var(--ink); }
+.drawer__body { flex: 1; overflow-y: auto; padding: 0.6rem 1.4rem; }
+.drawer__empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: var(--muted); padding: 2rem; text-align: center; }
+
+.cart-item { display: grid; grid-template-columns: 64px 1fr auto; gap: 0.9rem; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+.cart-item__img { width: 64px; height: 80px; object-fit: cover; border-radius: 10px; background: var(--sand); }
+.cart-item__name { font-family: var(--serif); font-size: 1.02rem; }
+.cart-item__price { font-size: 0.85rem; color: var(--muted); }
+.cart-item__qty { display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; border: 1px solid var(--line); border-radius: 999px; padding: 0.15rem 0.3rem; width: max-content; }
+.cart-item__qty button { width: 24px; height: 24px; border: none; background: var(--sand); border-radius: 50%; cursor: pointer; font-size: 1rem; line-height: 1; color: var(--ink); transition: background 0.2s; }
+.cart-item__qty button:hover { background: var(--clay); color: #fff; }
+.cart-item__qty span { min-width: 18px; text-align: center; font-weight: 600; font-size: 0.9rem; }
+.cart-item__right { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; }
+.cart-item__sum { font-family: var(--serif); font-weight: 600; }
+.cart-item__remove { background: none; border: none; color: var(--muted); font-size: 0.78rem; cursor: pointer; text-decoration: underline; }
+.cart-item__remove:hover { color: var(--clay); }
+
+.drawer__foot { padding: 1.3rem 1.4rem; border-top: 1px solid var(--line); background: var(--white); }
+.drawer__total { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.05rem; margin-bottom: 0.4rem; }
+.drawer__total strong { font-family: var(--serif); font-size: 1.4rem; }
+.drawer__note { font-size: 0.78rem; color: var(--muted); margin-bottom: 1rem; }
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(140%);
+  background: var(--ink); color: var(--cream); padding: 0.85rem 1.4rem; border-radius: 999px;
+  font-size: 0.9rem; font-weight: 500; box-shadow: var(--shadow-md); z-index: 200;
+  transition: transform 0.4s var(--ease); pointer-events: none; max-width: 90vw;
+}
+.toast.is-visible { transform: translateX(-50%) translateY(0); }
+
+/* ---------- Scroll-Reveal ---------- */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.7s var(--ease), transform 0.7s var(--ease); }
+.reveal.is-visible { opacity: 1; transform: none; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 980px) {
+  .hero__inner { grid-template-columns: 1fr; }
+  .hero__media { order: -1; max-width: 460px; margin: 0 auto; }
+  .values { grid-template-columns: repeat(2, 1fr); }
+  .grid { grid-template-columns: repeat(3, 1fr); }
+  .story__inner { grid-template-columns: 1fr; }
+  .story__media { max-width: 460px; margin: 0 auto; }
+  .footer__inner { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 680px) {
+  .nav-toggle { display: flex; }
+  .nav {
+    position: absolute; top: 72px; left: 0; right: 0; flex-direction: column; gap: 0;
+    background: var(--cream); border-bottom: 1px solid var(--line);
+    padding: 0.5rem 24px; margin: 0; transform: translateY(-120%); opacity: 0; pointer-events: none;
+    transition: transform 0.35s var(--ease), opacity 0.3s; box-shadow: var(--shadow-sm);
+  }
+  .nav.is-open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .nav a { padding: 0.85rem 0; border-bottom: 1px solid var(--line); width: 100%; }
+  .nav a:last-child { border-bottom: none; }
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .card__body { padding: 0.9rem 0.95rem 1.1rem; }
+  .card__desc { display: none; }
+  .card__name { font-size: 1.05rem; }
+  .values { grid-template-columns: 1fr 1fr; }
+  .footer__inner { grid-template-columns: 1fr 1fr; }
+  .footer__bar { flex-direction: column; }
+}
+
+@media (max-width: 420px) {
+  .grid { grid-template-columns: 1fr; }
+  .hero__badges { gap: 0.8rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1; transform: none; }
+  html { scroll-behavior: auto; }
+}
+
+    </style>
+  </head>
+  <body>
+    <!-- Ankündigungsleiste -->
+    <div class="announce">
+      Kostenloser, klimaneutraler Versand ab 80 € · 30 Tage Rückgabe
+    </div>
+
+    <!-- Kopfzeile -->
+    <header class="header" id="header">
+      <div class="container header__inner">
+        <button class="nav-toggle" id="navToggle" aria-label="Menü öffnen" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+
+        <a href="#top" class="logo">
+          <span class="logo__leaf" aria-hidden="true">❧</span>
+          FLORA <em>&amp;</em> FAUNE
+        </a>
+
+        <nav class="nav" id="nav" aria-label="Hauptnavigation">
+          <a href="#kollektion" data-cat="alle">Kollektion</a>
+          <a href="#kollektion" data-cat="kleider">Kleider</a>
+          <a href="#kollektion" data-cat="strick">Strick</a>
+          <a href="#kollektion" data-cat="maentel">Mäntel</a>
+          <a href="#story">Über uns</a>
+        </nav>
+
+        <button class="cart-btn" id="cartBtn" aria-label="Warenkorb öffnen">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+            <path d="M3 6h18" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+          <span class="cart-btn__count" id="cartCount" hidden>0</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- Hero -->
+      <section class="hero">
+        <div class="hero__blob hero__blob--1" aria-hidden="true"></div>
+        <div class="hero__blob hero__blob--2" aria-hidden="true"></div>
+        <div class="container hero__inner">
+          <div class="hero__text reveal">
+            <p class="eyebrow">Naturnahe Mode · Frühling / Sommer</p>
+            <h1>Kleidung, die <em>atmet</em> wie die Natur.</h1>
+            <p class="hero__lead">
+              Zeitlose Schnitte aus Leinen, Bio-Baumwolle und recycelter Wolle.
+              Bewusst gefertigt, gemacht zum Lieben – Saison für Saison.
+            </p>
+            <div class="hero__actions">
+              <a href="#kollektion" class="btn btn--primary">Kollektion entdecken</a>
+              <a href="#story" class="btn btn--ghost">Unsere Geschichte</a>
+            </div>
+            <ul class="hero__badges">
+              <li>♺ Nachhaltige Stoffe</li>
+              <li>✶ Faire Produktion</li>
+              <li>❤ 30 Tage Rückgabe</li>
+            </ul>
+          </div>
+          <div class="hero__media reveal">
+            <img
+              class="hero__img"
+              src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80"
+              alt="Frau in heller, natürlicher Sommermode mit Einkaufstaschen"
+              loading="eager"
+              onerror="this.onerror=null;this.alt='';this.removeAttribute('src');this.style.background='linear-gradient(135deg,#e9d9c4,#c57b57)';"
+            />
+            <div class="hero__chip">
+              <strong>4,9 / 5</strong><span>aus 2.300+ Bewertungen</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Werte / USP -->
+      <section class="values container" aria-label="Unsere Versprechen">
+        <div class="value reveal"><span>🌱</span><h3>Natürliche Materialien</h3><p>Leinen, Tencel™ &amp; Bio-Baumwolle – hautfreundlich und langlebig.</p></div>
+        <div class="value reveal"><span>✂️</span><h3>Bewusst gefertigt</h3><p>Kleine Editionen in fair zertifizierten Manufakturen.</p></div>
+        <div class="value reveal"><span>📦</span><h3>Klimaneutraler Versand</h3><p>Plastikfreie Verpackung, kompensierter Transport.</p></div>
+        <div class="value reveal"><span>↩️</span><h3>Einfache Rückgabe</h3><p>30 Tage Zeit – unkompliziert und kostenlos.</p></div>
+      </section>
+
+      <!-- Kollektion -->
+      <section class="shop container" id="kollektion">
+        <div class="shop__head reveal">
+          <h2>Die Kollektion</h2>
+          <p>Handverlesene Stücke, die sich endlos kombinieren lassen.</p>
+        </div>
+
+        <div class="filters" id="filters" role="tablist" aria-label="Kategorien filtern"></div>
+
+        <div class="grid" id="productGrid"></div>
+        <p class="grid__empty" id="gridEmpty" hidden>Keine Stücke in dieser Kategorie.</p>
+      </section>
+
+      <!-- Story -->
+      <section class="story" id="story">
+        <div class="container story__inner">
+          <div class="story__media reveal">
+            <img
+              src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80"
+              alt="Detailaufnahme von natürlichem Stoff und Nähten"
+              loading="lazy"
+              onerror="this.onerror=null;this.alt='';this.removeAttribute('src');this.style.background='linear-gradient(135deg,#b6bd9a,#565d44)';"
+            />
+          </div>
+          <div class="story__text reveal">
+            <p class="eyebrow">Unsere Geschichte</p>
+            <h2>Aus Liebe zu Stoff und Erde</h2>
+            <p>
+              FLORA &amp; FAUNE entstand aus dem Wunsch nach Kleidung, die sich gut
+              anfühlt – auf der Haut und im Gewissen. Wir arbeiten mit
+              Manufakturen, die Menschen fair bezahlen, und mit Stoffen, die der
+              Natur möglichst wenig nehmen.
+            </p>
+            <p>
+              Jedes Stück wird in kleinen Auflagen gefertigt. Kein
+              Wegwerftrend – sondern Lieblingsteile, die bleiben.
+            </p>
+            <a href="#kollektion" class="btn btn--primary">Jetzt stöbern</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Newsletter -->
+      <section class="newsletter">
+        <div class="container newsletter__inner reveal">
+          <h2>10 % auf deine erste Bestellung</h2>
+          <p>Melde dich für unseren Newsletter an – Neuheiten, Lookbooks und Angebote.</p>
+          <form class="newsletter__form" id="newsletterForm" novalidate>
+            <input type="email" id="newsletterEmail" placeholder="deine@email.de" aria-label="E-Mail-Adresse" required />
+            <button type="submit" class="btn btn--primary">Anmelden</button>
+          </form>
+          <p class="newsletter__hint" id="newsletterHint" role="status"></p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Fußzeile -->
+    <footer class="footer">
+      <div class="container footer__inner">
+        <div class="footer__brand">
+          <a href="#top" class="logo logo--light"><span class="logo__leaf">❧</span> FLORA <em>&amp;</em> FAUNE</a>
+          <p>Naturnahe Damenmode, bewusst gemacht.</p>
+        </div>
+        <div class="footer__col"><h4>Shop</h4><a href="#kollektion">Kleider</a><a href="#kollektion">Strick</a><a href="#kollektion">Mäntel</a><a href="#kollektion">Accessoires</a></div>
+        <div class="footer__col"><h4>Service</h4><a href="#">Versand &amp; Rückgabe</a><a href="#">Größentabelle</a><a href="#">Pflegehinweise</a><a href="#">Kontakt</a></div>
+        <div class="footer__col"><h4>Unternehmen</h4><a href="#story">Über uns</a><a href="#">Nachhaltigkeit</a><a href="#">Karriere</a><a href="#">Impressum</a></div>
+      </div>
+      <div class="container footer__bar">
+        <span>© <span id="year"></span> FLORA &amp; FAUNE. Alle Rechte vorbehalten.</span>
+        <span class="footer__pay">VISA · Mastercard · PayPal · Klarna</span>
+      </div>
+    </footer>
+
+    <!-- Warenkorb-Drawer -->
+    <div class="drawer" id="cartDrawer" aria-hidden="true">
+      <div class="drawer__overlay" data-close></div>
+      <aside class="drawer__panel" role="dialog" aria-label="Warenkorb" aria-modal="true">
+        <div class="drawer__head">
+          <h3>Dein Warenkorb</h3>
+          <button class="drawer__close" data-close aria-label="Warenkorb schließen">&times;</button>
+        </div>
+        <div class="drawer__body" id="cartItems"></div>
+        <div class="drawer__empty" id="cartEmpty">
+          <p>Dein Warenkorb ist noch leer.</p>
+          <button class="btn btn--ghost" data-close>Weiter stöbern</button>
+        </div>
+        <div class="drawer__foot" id="cartFoot" hidden>
+          <div class="drawer__total"><span>Zwischensumme</span><strong id="cartTotal">0,00 €</strong></div>
+          <p class="drawer__note">Versand &amp; Steuern werden an der Kasse berechnet.</p>
+          <button class="btn btn--primary btn--block" id="checkoutBtn">Zur Kasse</button>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script>
+/**
+ * Produktkatalog für FLORA & FAUNE.
+ * Bilder stammen vom Unsplash-CDN (echte Fotos). Sollte ein Bild einmal nicht
+ * laden, greift in app.js ein farblich passender Verlauf-Fallback.
+ */
+const CATEGORIES = [
+  { id: "alle", label: "Alle Stücke" },
+  { id: "kleider", label: "Kleider" },
+  { id: "oberteile", label: "Oberteile" },
+  { id: "strick", label: "Strick" },
+  { id: "maentel", label: "Jacken & Mäntel" },
+  { id: "hosen", label: "Hosen & Röcke" },
+  { id: "accessoires", label: "Accessoires" },
+];
+
+const U = (id, w = 700) =>
+  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
+
+const PRODUCTS = [
+  {
+    id: "leinenkleid-sahara",
+    name: "Leinenkleid Sahara",
+    category: "kleider",
+    price: 89.9,
+    tag: "Neu",
+    material: "100 % Bio-Leinen",
+    desc: "Luftiges Midikleid aus Bio-Leinen in warmem Sandton – fällt weich und atmet an heißen Tagen.",
+    img: U("photo-1496747611176-843222e1e57c"),
+  },
+  {
+    id: "sommerkleid-flora",
+    name: "Sommerkleid Flora",
+    category: "kleider",
+    price: 79.9,
+    material: "Viskose (LENZING™ ECOVERO™)",
+    desc: "Fließendes Blumenkleid mit zartem Print und schmeichelnder Taille.",
+    img: U("photo-1572804013309-59a88b7e92f1"),
+  },
+  {
+    id: "wickelkleid-aurelia",
+    name: "Wickelkleid Aurelia",
+    category: "kleider",
+    price: 99.9,
+    tag: "Bestseller",
+    material: "Tencel™ Lyocell",
+    desc: "Elegantes Wickelkleid, das jede Silhouette umspielt – Tag wie Abend.",
+    img: U("photo-1595777457583-95e059d581b8"),
+  },
+  {
+    id: "seidenbluse-camille",
+    name: "Seidenbluse Camille",
+    category: "oberteile",
+    price: 69.9,
+    material: "Maulbeerseide",
+    desc: "Schimmernde Bluse aus reiner Seide in gedecktem Creme – ein zeitloser Begleiter.",
+    img: U("photo-1551163943-3f6a855d1153"),
+  },
+  {
+    id: "baumwolltop-lina",
+    name: "Baumwoll-Top Lina",
+    category: "oberteile",
+    price: 34.9,
+    material: "Bio-Baumwolle",
+    desc: "Schlichtes Basic-Top mit feinen Trägern – pur kombinierbar.",
+    img: U("photo-1564257631407-4deb1f99d992"),
+  },
+  {
+    id: "rueschenbluse-margot",
+    name: "Rüschenbluse Margot",
+    category: "oberteile",
+    price: 59.9,
+    tag: "Neu",
+    material: "Bio-Baumwolle",
+    desc: "Romantische Bluse mit zarten Rüschen und Perlmuttknöpfen.",
+    img: U("photo-1485462537746-965f33f7f6a7"),
+  },
+  {
+    id: "strickpullover-hygge",
+    name: "Strickpullover Hygge",
+    category: "strick",
+    price: 74.9,
+    material: "Recycelte Wolle",
+    desc: "Grob gestrickter Pullover aus recycelter Wolle – kuschelig und nachhaltig.",
+    img: U("photo-1576566588028-4147f3842f27"),
+  },
+  {
+    id: "cardigan-wolke",
+    name: "Cardigan Wolke",
+    category: "strick",
+    price: 84.9,
+    tag: "Bestseller",
+    material: "Alpaka-Mix",
+    desc: "Weicher Oversize-Cardigan aus Alpaka-Mischung – wie eine warme Umarmung.",
+    img: U("photo-1515886657613-9f3515b0c78f"),
+  },
+  {
+    id: "feinstrick-mira",
+    name: "Feinstrick Mira",
+    category: "strick",
+    price: 64.9,
+    material: "Merinowolle",
+    desc: "Anschmiegsamer Feinstrickpullover aus Merino – leicht und temperaturausgleichend.",
+    img: U("photo-1583744946564-b52ac1c389c8"),
+  },
+  {
+    id: "trenchcoat-paris",
+    name: "Trenchcoat Paris",
+    category: "maentel",
+    price: 149.9,
+    material: "Baumwoll-Gabardine",
+    desc: "Klassischer Trench in Camel – wetterfest, geschnitten für jede Saison.",
+    img: U("photo-1591047139829-d91aecb6caea"),
+  },
+  {
+    id: "wollmantel-nord",
+    name: "Wollmantel Nord",
+    category: "maentel",
+    price: 189.9,
+    tag: "Premium",
+    material: "Schurwolle",
+    desc: "Langer Mantel aus reiner Schurwolle – warm, schlicht, unverwüstlich.",
+    img: U("photo-1539533018447-63fcce2678e3"),
+  },
+  {
+    id: "leinenblazer-toscana",
+    name: "Leinenblazer Toscana",
+    category: "maentel",
+    price: 119.9,
+    tag: "Neu",
+    material: "Leinen-Mix",
+    desc: "Unstrukturierter Blazer aus Leinen – lässig über Kleid oder Top.",
+    img: U("photo-1507680434567-5739c80be1ac"),
+  },
+  {
+    id: "marlenehose-bardot",
+    name: "Marlenehose Bardot",
+    category: "hosen",
+    price: 89.9,
+    material: "Tencel™ Lyocell",
+    desc: "Weit fallende Hose mit hohem Bund – elegant und unglaublich bequem.",
+    img: U("photo-1594633312681-425c7b97ccd1"),
+  },
+  {
+    id: "leinenrock-brise",
+    name: "Leinenrock Brise",
+    category: "hosen",
+    price: 69.9,
+    material: "Bio-Leinen",
+    desc: "Wadenlanger Rock aus Leinen mit feiner Knopfleiste – sommerlich leicht.",
+    img: U("photo-1583496661160-fb5886a0aaaa"),
+  },
+  {
+    id: "ledertasche-olivia",
+    name: "Ledertasche Olivia",
+    category: "accessoires",
+    price: 129.9,
+    tag: "Bestseller",
+    material: "Pflanzlich gegerbtes Leder",
+    desc: "Geräumige Schultertasche aus pflanzlich gegerbtem Leder – altert wunderschön.",
+    img: U("photo-1548036328-c9fa89d128fa"),
+  },
+  {
+    id: "seidenschal-botanica",
+    name: "Seidenschal Botanica",
+    category: "accessoires",
+    price: 39.9,
+    material: "Seiden-Twill",
+    desc: "Handbedruckter Schal mit botanischem Muster – der Akzent für jeden Look.",
+    img: U("photo-1601924994987-69e26d50dc26"),
+  },
+];
+
+    </script>
+    <script>
+/* =====================================================================
+   FLORA & FAUNE – App-Logik
+   Rendering, Filter, Warenkorb (localStorage), Drawer, UI-Helfer
+   ===================================================================== */
+(function () {
+  "use strict";
+
+  const $ = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+  const euro = (n) => n.toLocaleString("de-DE", { style: "currency", currency: "EUR" });
+  const catLabel = (id) => (CATEGORIES.find((c) => c.id === id) || {}).label || id;
+
+  const STORAGE_KEY = "ff_cart_v1";
+  const FAV_KEY = "ff_favs_v1";
+
+  let activeCat = "alle";
+  let cart = loadJSON(STORAGE_KEY, {});      // { productId: qty }
+  let favs = new Set(loadJSON(FAV_KEY, []));
+
+  /* ---------- Persistenz ---------- */
+  function loadJSON(key, fallback) {
+    try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+    catch { return fallback; }
+  }
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+      localStorage.setItem(FAV_KEY, JSON.stringify([...favs]));
+    } catch (_) {
+      /* z. B. file:// oder Privatmodus – Warenkorb läuft dann nur im Speicher */
+    }
+  }
+  const product = (id) => PRODUCTS.find((p) => p.id === id);
+
+  /* ---------- Filter rendern ---------- */
+  function renderFilters() {
+    const wrap = $("#filters");
+    wrap.innerHTML = "";
+    CATEGORIES.forEach((c) => {
+      const btn = document.createElement("button");
+      btn.className = "filter" + (c.id === activeCat ? " is-active" : "");
+      btn.textContent = c.label;
+      btn.setAttribute("role", "tab");
+      btn.setAttribute("aria-selected", c.id === activeCat);
+      btn.addEventListener("click", () => setCategory(c.id));
+      wrap.appendChild(btn);
+    });
+  }
+
+  function setCategory(id) {
+    activeCat = id;
+    renderFilters();
+    renderGrid();
+  }
+
+  /* ---------- Produktgitter ---------- */
+  function renderGrid() {
+    const grid = $("#productGrid");
+    const empty = $("#gridEmpty");
+    const items = PRODUCTS.filter((p) => activeCat === "alle" || p.category === activeCat);
+
+    grid.innerHTML = "";
+    empty.hidden = items.length > 0;
+
+    items.forEach((p, i) => grid.appendChild(buildCard(p, i)));
+    observeReveals();
+  }
+
+  function buildCard(p, index) {
+    const card = document.createElement("article");
+    card.className = "card reveal";
+
+    const media = document.createElement("div");
+    media.className = "card__media";
+    media.dataset.label = p.name;
+
+    const img = document.createElement("img");
+    img.className = "card__img";
+    img.src = p.img;
+    img.alt = `${p.name} – ${catLabel(p.category)}`;
+    img.loading = "lazy";
+    // Eleganter Fallback, falls das Foto nicht lädt
+    img.addEventListener("error", () => {
+      media.classList.add("is-fallback", "fb-" + (index % 4));
+    });
+    media.appendChild(img);
+
+    if (p.tag) {
+      const tag = document.createElement("span");
+      tag.className = "card__tag";
+      tag.textContent = p.tag;
+      media.appendChild(tag);
+    }
+
+    const fav = document.createElement("button");
+    fav.className = "card__fav" + (favs.has(p.id) ? " is-fav" : "");
+    fav.setAttribute("aria-label", "Zu Favoriten hinzufügen");
+    fav.textContent = favs.has(p.id) ? "♥" : "♡";
+    fav.addEventListener("click", () => toggleFav(p.id, fav));
+    media.appendChild(fav);
+
+    const body = document.createElement("div");
+    body.className = "card__body";
+    body.innerHTML = `
+      <span class="card__cat">${catLabel(p.category)}</span>
+      <h3 class="card__name">${p.name}</h3>
+      <p class="card__desc">${p.desc}</p>
+      <div class="card__foot">
+        <span class="card__price">${euro(p.price)}</span>
+      </div>`;
+
+    const addBtn = document.createElement("button");
+    addBtn.className = "card__add";
+    addBtn.textContent = "In den Warenkorb";
+    addBtn.addEventListener("click", () => addToCart(p.id));
+    $(".card__foot", body).appendChild(addBtn);
+
+    card.append(media, body);
+    return card;
+  }
+
+  function toggleFav(id, btn) {
+    if (favs.has(id)) { favs.delete(id); btn.classList.remove("is-fav"); btn.textContent = "♡"; }
+    else { favs.add(id); btn.classList.add("is-fav"); btn.textContent = "♥"; toast("Zu Favoriten hinzugefügt"); }
+    save();
+  }
+
+  /* ---------- Warenkorb ---------- */
+  function addToCart(id) {
+    cart[id] = (cart[id] || 0) + 1;
+    save();
+    updateCartUI();
+    toast(`„${product(id).name}" hinzugefügt`);
+    bumpCount();
+  }
+  function setQty(id, qty) {
+    if (qty <= 0) delete cart[id];
+    else cart[id] = qty;
+    save();
+    updateCartUI();
+  }
+  const cartCount = () => Object.values(cart).reduce((a, b) => a + b, 0);
+  const cartTotal = () =>
+    Object.entries(cart).reduce((sum, [id, q]) => sum + (product(id)?.price || 0) * q, 0);
+
+  function updateCartUI() {
+    const count = cartCount();
+    const badge = $("#cartCount");
+    badge.textContent = count;
+    badge.hidden = count === 0;
+
+    const body = $("#cartItems");
+    const empty = $("#cartEmpty");
+    const foot = $("#cartFoot");
+    const entries = Object.entries(cart);
+
+    empty.style.display = entries.length ? "none" : "flex";
+    foot.hidden = entries.length === 0;
+    body.innerHTML = "";
+
+    entries.forEach(([id, qty]) => {
+      const p = product(id);
+      if (!p) return;
+      const row = document.createElement("div");
+      row.className = "cart-item";
+      row.innerHTML = `
+        <img class="cart-item__img" src="${p.img}" alt="${p.name}"
+             onerror="this.style.background='var(--clay)';this.removeAttribute('src');" />
+        <div>
+          <div class="cart-item__name">${p.name}</div>
+          <div class="cart-item__price">${euro(p.price)}</div>
+          <div class="cart-item__qty">
+            <button aria-label="Weniger" data-dec>−</button>
+            <span>${qty}</span>
+            <button aria-label="Mehr" data-inc>+</button>
+          </div>
+        </div>
+        <div class="cart-item__right">
+          <span class="cart-item__sum">${euro(p.price * qty)}</span>
+          <button class="cart-item__remove" data-remove>Entfernen</button>
+        </div>`;
+      $("[data-dec]", row).addEventListener("click", () => setQty(id, qty - 1));
+      $("[data-inc]", row).addEventListener("click", () => setQty(id, qty + 1));
+      $("[data-remove]", row).addEventListener("click", () => setQty(id, 0));
+      body.appendChild(row);
+    });
+
+    $("#cartTotal").textContent = euro(cartTotal());
+  }
+
+  function bumpCount() {
+    const badge = $("#cartCount");
+    badge.animate(
+      [{ transform: "scale(1)" }, { transform: "scale(1.4)" }, { transform: "scale(1)" }],
+      { duration: 320, easing: "ease-out" }
+    );
+  }
+
+  /* ---------- Drawer ---------- */
+  function openDrawer() { $("#cartDrawer").classList.add("is-open"); $("#cartDrawer").setAttribute("aria-hidden", "false"); document.body.style.overflow = "hidden"; }
+  function closeDrawer() { $("#cartDrawer").classList.remove("is-open"); $("#cartDrawer").setAttribute("aria-hidden", "true"); document.body.style.overflow = ""; }
+
+  /* ---------- Toast ---------- */
+  let toastTimer;
+  function toast(msg) {
+    const el = $("#toast");
+    el.textContent = msg;
+    el.classList.add("is-visible");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("is-visible"), 2200);
+  }
+
+  /* ---------- Scroll-Reveal ---------- */
+  let revealObserver;
+  function observeReveals() {
+    if (!("IntersectionObserver" in window)) {
+      $$(".reveal").forEach((el) => el.classList.add("is-visible"));
+      return;
+    }
+    revealObserver = revealObserver || new IntersectionObserver(
+      (entries) => entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add("is-visible"); revealObserver.unobserve(e.target); }
+      }),
+      { threshold: 0.12 }
+    );
+    $$(".reveal:not(.is-visible)").forEach((el) => revealObserver.observe(el));
+  }
+
+  /* ---------- Events verdrahten ---------- */
+  function bindEvents() {
+    $("#cartBtn").addEventListener("click", openDrawer);
+    $$("[data-close]").forEach((el) => el.addEventListener("click", closeDrawer));
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawer(); });
+
+    $("#checkoutBtn").addEventListener("click", () => {
+      toast("Bestellung simuliert – danke fürs Stöbern! 🌿");
+      cart = {};
+      save();
+      updateCartUI();
+      setTimeout(closeDrawer, 900);
+    });
+
+    // Mobile Navigation
+    const toggle = $("#navToggle");
+    const nav = $("#nav");
+    toggle.addEventListener("click", () => {
+      const open = nav.classList.toggle("is-open");
+      toggle.classList.toggle("is-open", open);
+      toggle.setAttribute("aria-expanded", open);
+    });
+
+    // Nav-Links: ggf. Kategorie setzen + Mobilmenü schließen
+    $$("#nav a").forEach((a) =>
+      a.addEventListener("click", () => {
+        const cat = a.dataset.cat;
+        if (cat) setCategory(cat);
+        nav.classList.remove("is-open");
+        toggle.classList.remove("is-open");
+        toggle.setAttribute("aria-expanded", "false");
+      })
+    );
+
+    // Newsletter
+    $("#newsletterForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = $("#newsletterEmail");
+      const hint = $("#newsletterHint");
+      const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value.trim());
+      if (ok) { hint.textContent = "Willkommen! Dein 10-%-Code ist unterwegs. 🌸"; input.value = ""; }
+      else { hint.textContent = "Bitte gib eine gültige E-Mail-Adresse ein."; }
+    });
+
+    // Schatten am Header beim Scrollen
+    const header = $("#header");
+    const onScroll = () => header.classList.toggle("is-scrolled", window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+
+  /* ---------- Init ---------- */
+  function init() {
+    $("#year").textContent = new Date().getFullYear();
+    renderFilters();
+    renderGrid();
+    updateCartUI();
+    bindEvents();
+    observeReveals();
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+
+    </script>
+  </body>
+</html>
