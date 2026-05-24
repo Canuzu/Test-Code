@@ -886,6 +886,29 @@ ul { list-style: none; }
         </div>
     </section>
 
+    <section class="new-arrivals">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-eyebrow">— Frisch eingetroffen</span>
+                <h2>Neuheiten</h2>
+                <p>Die neuesten Sets und seltensten Funde – jede Woche aktualisiert</p>
+            </div>
+            <div class="arrivals-grid" id="arrivalsGrid"></div>
+        </div>
+    </section>
+
+    <section class="recent-section" id="recentSection">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-eyebrow">— Ihre Auswahl</span>
+                <h2>Zuletzt angesehen</h2>
+                <p>Karten, die Sie kürzlich erkundet haben</p>
+            </div>
+            <div class="recent-grid product-grid" id="recentGrid"></div>
+            <button class="recent-clear" onclick="clearRecent()">Verlauf leeren</button>
+        </div>
+    </section>
+
     <section class="features">
         <div class="container">
             <div class="features-grid">
@@ -913,32 +936,6 @@ ul { list-style: none; }
         </div>
     </section>
 
-    <section class="new-arrivals">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-eyebrow">— Frisch eingetroffen</span>
-                <h2>Neuheiten</h2>
-                <p>Die neuesten Sets und seltensten Funde – jede Woche aktualisiert</p>
-            </div>
-            <div class="arrivals-grid" id="arrivalsGrid"></div>
-        </div>
-    </section>
-
-    <section class="grading-services" id="grading">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-eyebrow">— Grading Service</span>
-                <h2>Professionelles Kartengrading</h2>
-                <p>Lassen Sie Ihre Karten von den führenden Grading-Unternehmen weltweit bewerten</p>
-            </div>
-            <div class="grading-grid">
-                <div class="grading-card"><div class="grading-logo">PSA</div><h3>Professional Sports Authenticator</h3><p style="color: var(--text-soft); font-size: 0.9rem;">Der weltweite Marktführer im Card-Grading mit höchster Marktakzeptanz.</p><div class="grading-price">€35<small>/Karte</small></div><div class="grading-time">Bearbeitungszeit: 60-90 Tage</div><ul class="grading-features"><li>Skala 1-10 (Gem Mint)</li><li>Höchste Marktakzeptanz</li><li>Versichertes Sammeln</li><li>Digitales Zertifikat</li></ul><a class="btn-outline" style="width: 100%;" onclick="scrollToSection('kontakt')">Auswählen</a></div>
-                <div class="grading-card featured"><div class="grading-logo">BGS</div><h3>Beckett Grading Services</h3><p style="color: var(--text-soft); font-size: 0.9rem;">Bekannt für detaillierte Sub-Grades und perfekte "Black Label" Bewertungen.</p><div class="grading-price">€42<small>/Karte</small></div><div class="grading-time">Bearbeitungszeit: 45-75 Tage</div><ul class="grading-features"><li>Skala 1-10 mit Half-Grades</li><li>4 Sub-Grades pro Karte</li><li>Schwarze Schutzhülle</li><li>BGS 10 Pristine möglich</li></ul><a class="btn-primary" style="width: 100%;" onclick="scrollToSection('kontakt')">Auswählen</a></div>
-                <div class="grading-card"><div class="grading-logo">CGC</div><h3>Certified Guaranty Company</h3><p style="color: var(--text-soft); font-size: 0.9rem;">Schnellste Bearbeitungszeiten und ausgezeichnete Bewertungsdetails.</p><div class="grading-price">€28<small>/Karte</small></div><div class="grading-time">Bearbeitungszeit: 30-45 Tage</div><ul class="grading-features"><li>Skala 1-10 mit Half-Grades</li><li>Schnellste Bearbeitung</li><li>Beste Sichtbarkeit</li><li>Beste Preis-Leistung</li></ul><a class="btn-outline" style="width: 100%;" onclick="scrollToSection('kontakt')">Auswählen</a></div>
-            </div>
-        </div>
-    </section>
-
     <section class="testimonials" id="ueber-uns">
         <div class="container">
             <div class="section-header">
@@ -954,15 +951,18 @@ ul { list-style: none; }
         </div>
     </section>
 
-    <section class="recent-section" id="recentSection">
+    <section class="grading-services" id="grading">
         <div class="container">
             <div class="section-header">
-                <span class="section-eyebrow">— Ihre Auswahl</span>
-                <h2>Zuletzt angesehen</h2>
-                <p>Karten, die Sie kürzlich erkundet haben</p>
+                <span class="section-eyebrow">— Grading Service</span>
+                <h2>Professionelles Kartengrading</h2>
+                <p>Lassen Sie Ihre Karten von den führenden Grading-Unternehmen weltweit bewerten</p>
             </div>
-            <div class="recent-grid product-grid" id="recentGrid"></div>
-            <button class="recent-clear" onclick="clearRecent()">Verlauf leeren</button>
+            <div class="grading-grid">
+                <div class="grading-card"><div class="grading-logo">PSA</div><h3>Professional Sports Authenticator</h3><p style="color: var(--text-soft); font-size: 0.9rem;">Der weltweite Marktführer im Card-Grading mit höchster Marktakzeptanz.</p><div class="grading-price">€35<small>/Karte</small></div><div class="grading-time">Bearbeitungszeit: 60-90 Tage</div><ul class="grading-features"><li>Skala 1-10 (Gem Mint)</li><li>Höchste Marktakzeptanz</li><li>Versichertes Sammeln</li><li>Digitales Zertifikat</li></ul><a class="btn-outline" style="width: 100%;" onclick="scrollToSection('kontakt')">Auswählen</a></div>
+                <div class="grading-card featured"><div class="grading-logo">BGS</div><h3>Beckett Grading Services</h3><p style="color: var(--text-soft); font-size: 0.9rem;">Bekannt für detaillierte Sub-Grades und perfekte "Black Label" Bewertungen.</p><div class="grading-price">€42<small>/Karte</small></div><div class="grading-time">Bearbeitungszeit: 45-75 Tage</div><ul class="grading-features"><li>Skala 1-10 mit Half-Grades</li><li>4 Sub-Grades pro Karte</li><li>Schwarze Schutzhülle</li><li>BGS 10 Pristine möglich</li></ul><a class="btn-primary" style="width: 100%;" onclick="scrollToSection('kontakt')">Auswählen</a></div>
+                <div class="grading-card"><div class="grading-logo">CGC</div><h3>Certified Guaranty Company</h3><p style="color: var(--text-soft); font-size: 0.9rem;">Schnellste Bearbeitungszeiten und ausgezeichnete Bewertungsdetails.</p><div class="grading-price">€28<small>/Karte</small></div><div class="grading-time">Bearbeitungszeit: 30-45 Tage</div><ul class="grading-features"><li>Skala 1-10 mit Half-Grades</li><li>Schnellste Bearbeitung</li><li>Beste Sichtbarkeit</li><li>Beste Preis-Leistung</li></ul><a class="btn-outline" style="width: 100%;" onclick="scrollToSection('kontakt')">Auswählen</a></div>
+            </div>
         </div>
     </section>
 
@@ -1047,7 +1047,7 @@ ul { list-style: none; }
             </div>
         </div>
     </section>
-</div>
+    </div>
 
 <!-- ====== SHOP VIEW ====== -->
 <div class="view" id="view-shop">
