@@ -270,6 +270,12 @@ ul { list-style: none; }
 
 .categories { padding: 100px 0; background: var(--bg-card); transition: background 0.4s; }
 .category-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+.category-grid-types { margin-top: 24px; }
+.category-subhead { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 0 0 28px; font-family: var(--font-serif); font-size: 1.45rem; font-weight: 600; color: var(--violet-deep); letter-spacing: 0.01em; }
+[data-theme="dark"] .category-subhead { color: var(--violet-light); }
+.category-subhead::before, .category-subhead::after { content: ''; height: 1px; width: clamp(40px, 12vw, 110px); background: linear-gradient(90deg, transparent, var(--violet-soft)); }
+.category-subhead::after { background: linear-gradient(90deg, var(--violet-soft), transparent); }
+.category-subhead:not(:first-of-type) { margin-top: 8px; }
 .category-card { position: relative; padding: 40px 32px; background: var(--bg); border-radius: var(--radius-md); border: 1px solid var(--border); text-align: center; transition: var(--transition); overflow: hidden; color: var(--text); cursor: pointer; }
 .category-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--violet) 0%, var(--gold) 50%, var(--violet) 100%); transform: scaleX(0); transition: var(--transition); transform-origin: left; }
 .category-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); border-color: var(--violet-soft); }
@@ -845,10 +851,11 @@ ul { list-style: none; }
     <section class="categories" id="kategorien">
         <div class="container">
             <div class="section-header">
-                <span class="section-eyebrow">— Unsere Welten</span>
-                <h2>TCG Universen entdecken</h2>
-                <p>Wählen Sie Ihre Lieblingsserie und durchstöbern Sie unsere kuratierte Auswahl</p>
+                <span class="section-eyebrow">— Entdecken</span>
+                <h2>Stöbern Sie durch unsere Welt</h2>
+                <p>Nach Ihrem Lieblingsspiel oder nach Produktart – finden Sie genau das Richtige</p>
             </div>
+            <div class="category-subhead">Nach Spiel</div>
             <div class="category-grid">
                 <a class="category-card" onclick="filterShop('Pokémon')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="#FAF6EF" stroke="currentColor" stroke-width="1.2" opacity="1"/><path d="M1.5 12 A 10.5 10.5 0 0 1 22.5 12 Z" fill="currentColor"/><line x1="1.5" y1="12" x2="22.5" y2="12" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="3" fill="#FAF6EF" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/></svg></div><h3>Pokémon</h3><p>Von Base Set bis Scarlet & Violet</p><span class="category-count">4.200+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('MTG')"><div class="category-icon">✦</div><h3>Magic: The Gathering</h3><p>Vintage, Modern & Commander</p><span class="category-count">3.800+ Karten</span></a>
@@ -857,17 +864,8 @@ ul { list-style: none; }
                 <a class="category-card" onclick="filterShop('Lorcana')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="14.5" r="6.5"/><circle cx="5.5" cy="6.5" r="4"/><circle cx="18.5" cy="6.5" r="4"/></svg></div><h3>Disney Lorcana</h3><p>Magische Disney-Welten</p><span class="category-count">1.100+ Karten</span></a>
                 <a class="category-card" onclick="filterShop('Digimon')"><div class="category-icon">⬢</div><h3>Digimon</h3><p>Digitale Monster sammeln</p><span class="category-count">900+ Karten</span></a>
             </div>
-        </div>
-    </section>
-
-    <section class="categories" id="produktarten" style="background: var(--bg);">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-eyebrow">— Nach Produktart</span>
-                <h2>Was möchten Sie sammeln?</h2>
-                <p>Ob Einzelkarte, Booster oder Zubehör – stöbern Sie nach Produktart</p>
-            </div>
-            <div class="category-grid">
+            <div class="category-subhead">Nach Produktart</div>
+            <div class="category-grid category-grid-types">
                 <a class="category-card" onclick="filterShopType('Single')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="3.5" y="6" width="9.5" height="14" rx="1.6" opacity="0.45" transform="rotate(-9 8 13)"/><rect x="11" y="5" width="9.5" height="14" rx="1.6" transform="rotate(9 16 12)"/></svg></div><h3>Singles</h3><p>Einzelne Karten für Sammlung & Deck</p><span class="category-count">Einzelkarten</span></a>
                 <a class="category-card" onclick="filterShopType('Booster')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 6l1.5 1.3L9 6l1.5 1.3L12 6l1.5 1.3L15 6l1.5 1.3L18 6v13a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19z"/><rect x="9" y="11" width="6" height="2.2" rx="1.1" opacity="0.4"/></svg></div><h3>Booster</h3><p>Einzelne Booster Packs zum Öffnen</p><span class="category-count">Booster Packs</span></a>
                 <a class="category-card" onclick="filterShopType('Display')"><div class="category-icon svg-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6.5" y="3" width="3" height="7" rx="0.6" opacity="0.5"/><rect x="10.5" y="2.5" width="3" height="7.5" rx="0.6" opacity="0.7"/><rect x="14.5" y="3" width="3" height="7" rx="0.6" opacity="0.5"/><path d="M4 9.5h16l-1 10.5a1.5 1.5 0 0 1-1.5 1.3H6.5A1.5 1.5 0 0 1 5 20z"/></svg></div><h3>Displays</h3><p>Booster Boxen & Elite Trainer Boxen</p><span class="category-count">Versiegelt</span></a>
@@ -1646,7 +1644,6 @@ function openProduct(productId) {
     if (!p) return;
     currentProduct = p;
     addRecent(productId);
-    renderProductDetail();
     navigateTo('product');
 }
 
@@ -1804,7 +1801,7 @@ function shareProduct() {
 }
 
 // ====== NAVIGATION ======
-function navigateTo(view) {
+function applyView(view, productId) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     const target = document.getElementById('view-' + view);
     if (target) target.classList.add('active');
@@ -1816,10 +1813,27 @@ function navigateTo(view) {
         renderShopFilters();
         renderShopGrid();
     }
-
-    history.replaceState(null, '', '#' + view + (view === 'product' && currentProduct ? '/' + currentProduct.id : ''));
+    if (view === 'product') {
+        if (productId) { const p = PRODUCTS.find(x => x.id === productId); if (p) currentProduct = p; }
+        if (currentProduct) renderProductDetail();
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+function navigateTo(view) {
+    applyView(view);
+    const hash = '#' + view + (view === 'product' && currentProduct ? '/' + currentProduct.id : '');
+    history.pushState({ view: view, productId: currentProduct ? currentProduct.id : null }, '', hash);
+}
+
+window.addEventListener('popstate', () => {
+    const hash = (location.hash || '').slice(1);
+    if (!hash) { applyView('home'); return; }
+    const [view, productId] = hash.split('/');
+    if (view === 'product' && productId) applyView('product', productId);
+    else if (['home', 'shop'].includes(view)) applyView(view);
+    else applyView('home');
+});
 
 function scrollToSection(id) {
     if (currentView !== 'home') {
@@ -2117,16 +2131,16 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(el);
     });
 
-    // Handle initial hash
+    // Handle initial hash (replace state so first entry is valid, no extra history)
     const hash = window.location.hash.slice(1);
+    let initView = 'home', initProduct = null;
     if (hash) {
         const [view, productId] = hash.split('/');
-        if (view === 'product' && productId) {
-            openProduct(productId);
-        } else if (['home', 'shop'].includes(view)) {
-            navigateTo(view);
-        }
+        if (view === 'product' && productId && PRODUCTS.find(p => p.id === productId)) { initView = 'product'; initProduct = productId; }
+        else if (['home', 'shop'].includes(view)) initView = view;
     }
+    if (initView !== 'home' || hash) applyView(initView, initProduct);
+    history.replaceState({ view: initView, productId: initProduct }, '', '#' + initView + (initProduct ? '/' + initProduct : ''));
 
     // Keyboard: ESC closes panels
     document.addEventListener('keydown', (e) => {
