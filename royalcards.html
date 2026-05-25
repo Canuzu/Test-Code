@@ -1255,6 +1255,23 @@ const PRODUCTS = [
 let cart = JSON.parse(localStorage.getItem('rc_cart') || '[]');
 let wishlist = JSON.parse(localStorage.getItem('rc_wishlist') || '[]');
 let recentlyViewed = JSON.parse(localStorage.getItem('rc_recent') || '[]');
+
+// ===== Shopify-Anbindung: echter Checkout über Cart-Permalink =====
+// Domain + Varianten-IDs aus dem verbundenen Shop. "Zur Kasse" leitet zum
+// sicheren Shopify-Checkout. Funktioniert, sobald die Produkte im Shop auf
+// ACTIVE/veröffentlicht stehen (aktuell noch DRAFT).
+const SHOPIFY = {
+    domain: 'royalcards-shop.com',
+    variants: {
+        p001: '53992161280327', p002: '53992164065607', p003: '53992166457671',
+        p004: '53992168948039', p005: '53992169210183', p006: '53992170127687',
+        p007: '53992171012423', p008: '53992171798855', p009: '53992175370567',
+        p010: '53992177140039', p011: '53992178417991', p012: '53992178712903',
+        p013: '53992179695943', p014: '53992181072199', p015: '53992181268807',
+        p016: '53992184316231', p017: '53992185397575', p018: '53992185725255',
+        p019: '53992186216775'
+    }
+};
 let theme = localStorage.getItem('rc_theme') || 'light';
 let currentView = 'home';
 let currentProduct = null;
@@ -1938,26 +1955,18 @@ function executeSearch() {
 // ====== CHECKOUT ======
 function openCheckout() {
     if (cart.length === 0) return;
-    closeCart();
-    const subtotal = getCartSubtotal();
-    const shipping = subtotal >= 50 ? 0 : 4.95;
-    const total = subtotal + shipping;
-    document.getElementById('checkoutBody').innerHTML =
-        '<form onsubmit="completeOrder(event)">' +
-            '<div class="form-row"><div class="form-group"><label>Vorname *</label><input type="text" required></div><div class="form-group"><label>Nachname *</label><input type="text" required></div></div>' +
-            '<div class="form-group"><label>E-Mail *</label><input type="email" required></div>' +
-            '<div class="form-group"><label>Adresse *</label><input type="text" required placeholder="Straße & Hausnummer"></div>' +
-            '<div class="form-row"><div class="form-group"><label>PLZ *</label><input type="text" required></div><div class="form-group"><label>Ort *</label><input type="text" required></div></div>' +
-            '<div class="form-group"><label>Zahlungsmethode *</label><select required><option>Kreditkarte (Visa/MC)</option><option>PayPal</option><option>Klarna Rechnung</option><option>SEPA Lastschrift</option></select></div>' +
-            '<div style="padding:20px; background:var(--bg-soft); border-radius:8px; margin:24px 0;">' +
-                '<div class="cart-summary-row"><span>Zwischensumme</span><span>' + fmtPrice(subtotal) + '</span></div>' +
-                '<div class="cart-summary-row"><span>Versand</span><span>' + (shipping === 0 ? 'Kostenlos' : fmtPrice(shipping)) + '</span></div>' +
-                '<div class="cart-summary-total"><span>Gesamt</span><span class="price">' + fmtPrice(total) + '</span></div>' +
-            '</div>' +
-            '<button type="submit" class="btn-primary" style="width:100%;">Kostenpflichtig bestellen</button>' +
-        '</form>';
-    document.getElementById('checkoutModal').classList.add('active');
-    document.body.style.overflow = 'hidden';
+    // Baue Shopify Cart-Permalink aus dem lokalen Warenkorb und leite zum
+    // echten, sicheren Shopify-Checkout weiter (Zahlung/Versand/Steuern dort).
+    const parts = cart.map(item => {
+        const vid = SHOPIFY.variants[item.id];
+        return vid ? vid + ':' + item.quantity : null;
+    }).filter(Boolean);
+    if (parts.length === 0) {
+        showToast('Checkout für diese Artikel nicht verfügbar', 'error');
+        return;
+    }
+    showToast('Weiterleitung zum sicheren Checkout …', 'success');
+    window.location.href = 'https://' + SHOPIFY.domain + '/cart/' + parts.join(',');
 }
 
 function closeCheckout() {
