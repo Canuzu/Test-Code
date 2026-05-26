@@ -23,6 +23,9 @@ os.makedirs(OUTDIR, exist_ok=True)
 
 SCALE = 150.0  # px per inch
 EMU_IN = 914400.0
+DEBUG = os.environ.get("DEBUG_BOXES") == "1"
+WARN = []
+_CUR = {"slide": 0}
 FB = "/usr/share/fonts/truetype/royalbrand"
 DEJAVU = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 if not os.path.exists(DEJAVU):
@@ -62,7 +65,7 @@ def get_font(name, size_pt, bold, italic):
         sym = True
     if not sym:
         try:
-            target = "Bold" if bold else ("Medium" if name == "Cormorant Garamond" else "Regular")
+            target = "Bold" if bold else "Regular"
             names = [n.decode() if isinstance(n, bytes) else n
                      for n in f.get_variation_names()]
             if target in names:
@@ -214,6 +217,7 @@ def layout_paragraphs(draw, box, tf, vanchor):
             draw_run_text(draw, cx, cy + pad, txt, font, color, spc_px)
             cx += w
         cy += lh + ln["sa"]
+    return total
 
 
 def shape_fill(shape):
@@ -368,7 +372,15 @@ def render_shape(canvas, shape):
         mt = px(tf.margin_top or 0)
         mb = px(tf.margin_bottom or 0)
         box = (ml, mt, iw - ml - mr, ih - mt - mb)
-        layout_paragraphs(td, box, tf, tf.vertical_anchor)
+        total_h = layout_paragraphs(td, box, tf, tf.vertical_anchor)
+        if total_h > box[3] + 6:  # text taller than box -> overflow risk
+            snippet = tf.text.replace("\n", " / ")[:46]
+            WARN.append("slide %02d OVERFLOW +%.2f\" : %s"
+                        % (_CUR["slide"], (total_h - box[3]) / SCALE, snippet))
+            if DEBUG:
+                td.rectangle([0, 0, iw - 1, ih - 1], outline=(220, 40, 40), width=2)
+        elif DEBUG:
+            td.rectangle([0, 0, iw - 1, ih - 1], outline=(40, 140, 220), width=1)
 
     if abs(rot) > 0.01:
         tile = tile.rotate(-rot, expand=True, resample=Image.BICUBIC)
@@ -385,6 +397,7 @@ def render():
     H = int(px(prs.slide_height))
     paths = []
     for i, slide in enumerate(prs.slides, 1):
+        _CUR["slide"] = i
         canvas = Image.new("RGB", (W, H), (250, 246, 239))
         for shape in slide.shapes:
             render_shape(canvas, shape)
@@ -402,6 +415,9 @@ def render():
         sheet.paste(im, (20 + c * tw, 20 + r * th))
     sheet.save(os.path.join(OUTDIR, "contact_sheet.png"))
     print("contact sheet saved")
+    print("\n=== OVERFLOW REPORT (%d) ===" % len(WARN))
+    for w in WARN:
+        print(" ", w)
 
 
 if __name__ == "__main__":

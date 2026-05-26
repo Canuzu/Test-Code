@@ -9,9 +9,10 @@ from PIL import Image
 from pptx import Presentation
 from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.text import PP_ALIGN, MSO_ANCHOR, MSO_AUTO_SIZE
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.oxml.ns import qn
+from lxml import etree
 
 HERE = os.path.dirname(__file__)
 ASSETS = os.path.join(HERE, "assets")
@@ -76,12 +77,15 @@ def _set_spacing(run, val):
     rPr.set("spc", str(int(val)))
 
 
-def text(slide, x, y, w, h, paras, anchor=MSO_ANCHOR.TOP, wrap=True):
+def text(slide, x, y, w, h, paras, anchor=MSO_ANCHOR.TOP, wrap=True, fit=True):
     """paras: list of dicts {align,line,space_before,space_after,runs:[...]}.
     run dict: {t, font, s, c, b, i, sp}."""
     tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
     tf = tb.text_frame
     tf.word_wrap = wrap
+    # shrink-to-fit safety net: keeps text inside its box across font metrics
+    if fit:
+        tf.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
     tf.vertical_anchor = anchor
     tf.margin_left = 0
     tf.margin_right = 0
@@ -224,17 +228,17 @@ def footer(slide, n, dark=False):
 
 
 def crown(slide, x, y, size=30, color=GOLD, align=PP_ALIGN.LEFT, w=1.2):
-    text(slide, x, y, w, size / 50.0 + 0.3, [{
+    text(slide, x, y, w, size / 50.0 + 0.5, [{
         "align": align,
         "runs": [{"t": "♛", "font": SYM, "s": size, "c": color}],
-    }])
+    }], fit=False)
 
 
 def header(slide, eb, title_runs, eb_color=VIOLET, ty=1.16, tw=CW,
-           title_size=40, line=1.0):
+           title_size=40, line=1.05):
     eyebrow(slide, M, 0.74, eb, color=eb_color)
     hline(slide, M, 1.04, 0.46, color=GOLD, weight=1.6)
-    text(slide, M, ty, tw, 1.1, [{
+    text(slide, M, ty, tw, 1.45, [{
         "line": line,
         "runs": title_runs,
     }])
@@ -286,9 +290,9 @@ def s_cover():
     }])
     eyebrow(s, lx + 0.06, 3.18, "CURATED FOR COLLECTORS", color=GOLD_DARK)
     text(s, lx, 3.66, 6.6, 2.0, [
-        {"line": 0.98, "runs": [
+        {"line": 1.06, "runs": [
             {"t": "Königliche Schätze\n", "font": DISPLAY, "s": 52, "c": INK, "b": True}]},
-        {"line": 0.98, "runs": [
+        {"line": 1.06, "runs": [
             {"t": "für wahre ", "font": DISPLAY, "s": 52, "c": INK, "b": True},
             {"t": "Sammler", "font": DISPLAY, "s": 52, "c": VIOLET, "b": True, "i": True}]},
     ])
@@ -325,6 +329,7 @@ def fan_cards(s):
         tb.rotation = rot
         tf = tb.text_frame
         tf.word_wrap = True
+        tf.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
         tf.vertical_anchor = MSO_ANCHOR.TOP
         tf.margin_left = 0
         tf.margin_top = 0
@@ -399,14 +404,14 @@ def s_vision():
     s = slide_bg("bg_violet.png")
     crown(s, 0, 1.5, size=30, color=GOLD, align=PP_ALIGN.CENTER, w=SW)
     eyebrow(s, 0, 2.18, "DIE VISION", color=GOLD, w=SW, align=PP_ALIGN.CENTER)
-    text(s, 1.8, 2.74, SW - 3.6, 2.4, [
-        {"align": PP_ALIGN.CENTER, "line": 1.04, "runs": [
+    text(s, 1.2, 2.72, SW - 2.4, 2.3, [
+        {"align": PP_ALIGN.CENTER, "line": 1.12, "runs": [
             {"t": "Wir machen das Sammeln von Trading Cards\n",
-             "font": DISPLAY, "s": 41, "c": ON_V_TEXT, "b": True},
-            {"t": "zu einem ", "font": DISPLAY, "s": 41, "c": ON_V_TEXT, "b": True},
-            {"t": "königlichen Erlebnis", "font": DISPLAY, "s": 41,
+             "font": DISPLAY, "s": 37, "c": ON_V_TEXT, "b": True},
+            {"t": "zu einem ", "font": DISPLAY, "s": 37, "c": ON_V_TEXT, "b": True},
+            {"t": "königlichen Erlebnis", "font": DISPLAY, "s": 37,
              "c": GOLD, "b": True, "i": True},
-            {"t": ".", "font": DISPLAY, "s": 41, "c": ON_V_TEXT, "b": True},
+            {"t": ".", "font": DISPLAY, "s": 37, "c": ON_V_TEXT, "b": True},
         ]},
     ], anchor=MSO_ANCHOR.TOP)
     hline(s, SW / 2 - 0.5, 5.18, 1.0, color=GOLD, weight=1.4)
@@ -454,16 +459,16 @@ def s_problem():
 # SLIDE 4 — MARKT (violet emphasis)
 # ============================================================================
 def s_market():
-    s = slide_bg("bg_violet.png")
+    s = slide_bg("bg_violet_b.png")
     eyebrow(s, M, 0.74, "DER MARKT", color=GOLD)
     hline(s, M, 1.04, 0.46, color=GOLD, weight=1.6)
-    text(s, M, 1.16, CW, 1.0, [{
+    text(s, M, 1.16, CW, 1.45, [{
         "runs": [
-            {"t": "Sammelkarten sind eine ", "font": DISPLAY, "s": 40,
+            {"t": "Sammelkarten sind eine ", "font": DISPLAY, "s": 38,
              "c": ON_V_TEXT, "b": True},
-            {"t": "Anlageklasse", "font": DISPLAY, "s": 40, "c": GOLD,
+            {"t": "Anlageklasse", "font": DISPLAY, "s": 38, "c": GOLD,
              "b": True, "i": True},
-            {"t": " geworden.", "font": DISPLAY, "s": 40, "c": ON_V_TEXT, "b": True},
+            {"t": " geworden.", "font": DISPLAY, "s": 38, "c": ON_V_TEXT, "b": True},
         ],
     }])
     stats = [
@@ -541,13 +546,13 @@ def s_platform():
     s = slide_bg("bg_cream_content.png")
     eyebrow(s, M, 0.74, "DIE PLATTFORM", color=VIOLET)
     hline(s, M, 1.04, 0.46, color=GOLD, weight=1.6)
-    text(s, M, 1.16, CW, 1.0, [{
+    text(s, M, 1.16, CW, 1.45, [{
         "runs": [
-            {"t": "Ein Shop, gebaut wie ein ", "font": DISPLAY, "s": 40,
+            {"t": "Ein Shop, gebaut wie ein ", "font": DISPLAY, "s": 38,
              "c": INK, "b": True},
-            {"t": "Schmuckstück", "font": DISPLAY, "s": 40, "c": VIOLET,
+            {"t": "Schmuckstück", "font": DISPLAY, "s": 38, "c": VIOLET,
              "b": True, "i": True},
-            {"t": ".", "font": DISPLAY, "s": 40, "c": INK, "b": True},
+            {"t": ".", "font": DISPLAY, "s": 38, "c": INK, "b": True},
         ],
     }])
     # screenshot framed (left)
@@ -578,20 +583,20 @@ def s_platform():
     fx = px + pic_w + 0.6
     fw = SW - M - fx
     feats = [
-        ("Kuratierter Shop", "Stöbern nach Spiel & Produktart — intuitiv und elegant."),
-        ("Wunschliste & Verlauf", "„Merken“ und „Zuletzt angesehen“ halten Sammler im Shop."),
-        ("Sicherer Checkout", "PayPal, Klarna, SEPA & Kreditkarte — vertraut und geprüft."),
-        ("Exklusive Drops", "Neue & seltene Karten zuerst per Newsletter an Stammkunden."),
-        ("Mobil & blitzschnell", "Vollständig responsiv — Premium-Gefühl auf jedem Gerät."),
+        ("Kuratierter Shop", "Stöbern nach Spiel & Produktart."),
+        ("Wunschliste & Verlauf", "„Merken“ & „Zuletzt angesehen“."),
+        ("Sicherer Checkout", "PayPal, Klarna, SEPA & Kreditkarte."),
+        ("Exklusive Drops", "Seltene Karten zuerst — per Newsletter."),
+        ("Mobil & blitzschnell", "Voll responsiv, Premium auf jedem Gerät."),
     ]
-    fy = 2.66
-    rowh = 0.86
+    fy = 2.62
+    rowh = 0.84
     for i, (t, d) in enumerate(feats):
         yy = fy + i * rowh
-        oval(s, fx, yy + 0.02, 0.13, 0.13, fill=GOLD)
-        text(s, fx + 0.32, yy - 0.06, fw - 0.32, 0.8, [
+        oval(s, fx, yy + 0.05, 0.13, 0.13, fill=GOLD)
+        text(s, fx + 0.32, yy - 0.04, fw - 0.32, 0.76, [
             {"runs": [{"t": t, "font": DISPLAY, "s": 17, "c": INK, "b": True}]},
-            {"space_before": 1, "line": 1.1, "runs": [
+            {"space_before": 2, "line": 1.1, "runs": [
                 {"t": d, "font": BODY, "s": 10.5, "c": MUTED}]},
         ])
     footer(s, 6)
@@ -618,9 +623,9 @@ def s_assortment():
     gap = 0.30
     cols = 3
     w = (CW - (cols - 1) * gap) / cols
-    h = 1.62
-    y0 = 2.42
-    vgap = 0.26
+    h = 1.56
+    y0 = 2.62
+    vgap = 0.24
     for i, (ic, name, cnt) in enumerate(games):
         r, cidx = divmod(i, cols)
         x = M + cidx * (w + gap)
@@ -765,7 +770,7 @@ def s_traction():
     rrect(s, M, ty, CW, th, fill=CREAM_WARM, line=CREAM_DEEP, line_w=1.0,
           radius=0.04, shadow=True, shadow_kw={"opacity": 12, "blur": 0.10, "dist": 0.05})
     text(s, M + 0.5, ty + 0.22, 1.2, 1.0, [{
-        "runs": [{"t": "“", "font": DISPLAY, "s": 80, "c": GOLD}]}])
+        "runs": [{"t": "“", "font": DISPLAY, "s": 80, "c": GOLD}]}], fit=False)
     text(s, M + 1.4, ty + 0.42, CW - 2.4, 1.1, [{
         "line": 1.22,
         "runs": [{"t": "Die Verpackung war fürstlich, die Karte makellos. "
@@ -774,8 +779,8 @@ def s_traction():
                   "c": INK, "i": True}]}])
     text(s, M + 1.4, ty + th - 0.5, CW - 2.4, 0.4, [{
         "runs": [
-            {"t": "MARKUS R.", "font": BODY, "s": 10, "c": INK, "b": True, "sp": 120},
-            {"t": "   ·   Vintage-Sammler", "font": BODY, "s": 10, "c": MUTED, "sp": 40}]}])
+            {"t": "VERIFIZIERTE KUNDENBEWERTUNG", "font": BODY, "s": 10, "c": INK, "b": True, "sp": 120},
+            {"t": "   ·   RoyalCards", "font": BODY, "s": 10, "c": MUTED, "sp": 40}]}])
     footer(s, 10)
 
 
@@ -873,14 +878,14 @@ def s_roadmap():
 # SLIDE 13 — CLOSING / ASK
 # ============================================================================
 def s_closing():
-    s = slide_bg("bg_violet.png")
+    s = slide_bg("bg_violet_c.png")
     crown(s, 0, 1.35, size=32, color=GOLD, align=PP_ALIGN.CENTER, w=SW)
     eyebrow(s, 0, 2.05, "LASSEN SIE UNS SPRECHEN", color=GOLD, w=SW, align=PP_ALIGN.CENTER)
-    text(s, 1.5, 2.6, SW - 3.0, 1.6, [
-        {"align": PP_ALIGN.CENTER, "line": 1.04, "runs": [
-            {"t": "Werden Sie Teil der\n", "font": DISPLAY, "s": 44, "c": ON_V_TEXT, "b": True},
-            {"t": "königlichen Kollektion", "font": DISPLAY, "s": 44, "c": GOLD, "b": True, "i": True},
-            {"t": ".", "font": DISPLAY, "s": 44, "c": ON_V_TEXT, "b": True}]},
+    text(s, 1.3, 2.58, SW - 2.6, 1.7, [
+        {"align": PP_ALIGN.CENTER, "line": 1.12, "runs": [
+            {"t": "Werden Sie Teil der\n", "font": DISPLAY, "s": 40, "c": ON_V_TEXT, "b": True},
+            {"t": "königlichen Kollektion", "font": DISPLAY, "s": 40, "c": GOLD, "b": True, "i": True},
+            {"t": ".", "font": DISPLAY, "s": 40, "c": ON_V_TEXT, "b": True}]},
     ])
     text(s, 2.6, 4.35, SW - 5.2, 0.9, [{
         "align": PP_ALIGN.CENTER, "line": 1.28,
@@ -906,11 +911,126 @@ def s_closing():
     footer(s, 13, dark=True)
 
 
+# ============================================================================
+# MOTION — gentle fade transition + auto, staggered fade-in builds
+# ============================================================================
+P_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
+A_NS = "http://schemas.openxmlformats.org/drawingml/2006/main"
+from pptx.enum.shapes import MSO_SHAPE_TYPE  # noqa: E402
+from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE as _AST  # noqa: E402
+
+
+def _area_in(sh):
+    try:
+        return (sh.width / 914400.0) * (sh.height / 914400.0)
+    except Exception:
+        return 0.0
+
+
+def _is_container(sh):
+    try:
+        a = sh.auto_shape_type
+    except Exception:
+        return False
+    if a not in (_AST.ROUNDED_RECTANGLE, _AST.RECTANGLE, _AST.OVAL):
+        return False
+    return _area_in(sh) >= 1.5
+
+
+def _groups(slide):
+    """Cluster shapes into build groups (a panel + its contents = one beat)."""
+    sw = prs.slide_width
+    groups = []
+    cur = None
+    cont = None
+    for sh in slide.shapes:
+        if sh.shape_type == MSO_SHAPE_TYPE.PICTURE and sh.width >= sw * 0.97:
+            continue  # full-bleed background — always visible
+        if sh.top is not None and sh.top >= Inches(6.85):
+            continue  # footer — always visible
+        sid = sh.shape_id
+        if _is_container(sh):
+            cur = [sid]
+            groups.append(cur)
+            cont = (sh.left, sh.top, sh.width, sh.height)
+        else:
+            if cont is not None:
+                cx = sh.left + sh.width / 2
+                cy = sh.top + sh.height / 2
+                bx, by, bw, bh = cont
+                if (bx - 9144 <= cx <= bx + bw + 9144
+                        and by - 9144 <= cy <= by + bh + 9144):
+                    cur.append(sid)
+                    continue
+            cur = [sid]
+            groups.append(cur)
+            cont = None
+    return groups
+
+
+def _eff_par(cid, sid, node, delay, dur, grp):
+    c1, c2, c3 = cid, cid + 1, cid + 2
+    return ('<p:par><p:cTn id="%d" presetID="10" presetClass="entr" '
+            'presetSubtype="0" fill="hold" grpId="%d" nodeType="%s">'
+            '<p:stCondLst><p:cond delay="%d"/></p:stCondLst><p:childTnLst>'
+            '<p:set><p:cBhvr><p:cTn id="%d" dur="1" fill="hold">'
+            '<p:stCondLst><p:cond delay="0"/></p:stCondLst></p:cTn>'
+            '<p:tgtEl><p:spTgt spid="%d"/></p:tgtEl>'
+            '<p:attrNameLst><p:attrName>style.visibility</p:attrName>'
+            '</p:attrNameLst></p:cBhvr><p:to><p:strVal val="visible"/></p:to></p:set>'
+            '<p:animEffect transition="in" filter="fade"><p:cBhvr>'
+            '<p:cTn id="%d" dur="%d"/><p:tgtEl><p:spTgt spid="%d"/></p:tgtEl>'
+            '</p:cBhvr></p:animEffect></p:childTnLst></p:cTn></p:par>'
+            % (c1, grp, node, delay, c2, sid, c3, dur, sid))
+
+
+def _timing_xml(groups, dur=480, cascade=210, initial=200):
+    cid = 100
+    pars = []
+    first = True
+    for gi, g in enumerate(groups):
+        for si, sid in enumerate(g):
+            if first:
+                node, delay = "afterEffect", initial
+                first = False
+            elif si == 0:
+                node, delay = "withEffect", cascade
+            else:
+                node, delay = "withEffect", 0
+            pars.append(_eff_par(cid, sid, node, delay, dur, gi))
+            cid += 3
+    body = "".join(pars)
+    return (
+        '<p:timing xmlns:p="%s" xmlns:a="%s"><p:tnLst><p:par>'
+        '<p:cTn id="1" dur="indefinite" restart="never" nodeType="tmRoot">'
+        '<p:childTnLst><p:seq concurrent="1" nextAc="seek">'
+        '<p:cTn id="2" dur="indefinite" nodeType="mainSeq"><p:childTnLst>%s'
+        '</p:childTnLst></p:cTn>'
+        '<p:prevCondLst><p:cond evt="onPrev" delay="0"><p:tgtEl><p:sldTgt/>'
+        '</p:tgtEl></p:cond></p:prevCondLst>'
+        '<p:nextCondLst><p:cond evt="onNext" delay="0"><p:tgtEl><p:sldTgt/>'
+        '</p:tgtEl></p:cond></p:nextCondLst>'
+        '</p:seq></p:childTnLst></p:cTn></p:par></p:tnLst></p:timing>'
+        % (P_NS, A_NS, body))
+
+
+def add_motion(slide):
+    el = slide._element
+    el.append(etree.fromstring(
+        '<p:transition xmlns:p="%s" spd="med"><p:fade/></p:transition>' % P_NS))
+    groups = _groups(slide)
+    if groups:
+        el.append(etree.fromstring(_timing_xml(groups)))
+
+
 # ----------------------------------------------------------------------------
 for fn in (s_cover, s_vision, s_problem, s_market, s_solution, s_platform,
            s_assortment, s_promise, s_grading, s_traction, s_business,
            s_roadmap, s_closing):
     fn()
+
+for _slide in prs.slides:
+    add_motion(_slide)
 
 prs.save(OUT)
 print("saved:", OUT, "| slides:", len(prs.slides._sldIdLst))

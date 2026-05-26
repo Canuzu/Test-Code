@@ -110,6 +110,31 @@ make_dark(
     vignette=0.60,
 )
 
+# STATEMENT variant B (market) — cooler, even, readable for stats
+make_dark(
+    os.path.join(ASSETS, "bg_violet_b.png"),
+    glows=[
+        (W * 0.18, H * -0.05, W * 0.70, VIOLET_L, 0.30, 2.1),
+        (W * 0.86, H * 0.16, W * 0.50, VIOLET, 0.22, 2.2),
+        (W * 0.10, H * 0.96, W * 0.42, GOLD, 0.12, 2.5),
+    ],
+    base=VIOLET_DEEP,
+    vignette=0.54,
+)
+
+# STATEMENT variant C (closing) — dramatic golden "throne" glow
+make_dark(
+    os.path.join(ASSETS, "bg_violet_c.png"),
+    glows=[
+        (W * 0.50, H * 1.02, W * 0.62, GOLD, 0.34, 2.2),       # strong gold rise
+        (W * 0.50, H * 1.08, W * 0.34, GOLD_L, 0.20, 2.6),
+        (W * 0.16, H * -0.06, W * 0.55, VIOLET_L, 0.26, 2.1),
+        (W * 0.86, H * -0.04, W * 0.50, VIOLET, 0.22, 2.2),
+    ],
+    base=VIOLET_DEEP,
+    vignette=0.62,
+)
+
 print("backgrounds written:")
 for f in sorted(os.listdir(ASSETS)):
     if f.startswith("bg_"):
