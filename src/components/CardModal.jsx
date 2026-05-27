@@ -124,7 +124,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
               <div>
                 <div style={sectionLabel}>🛒 Direkt zum Marktplatz</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                  <a href={card.cardmarketUrl || links.cardmarket} target="_blank" rel="noopener noreferrer" style={mpBtn('#0066cc')}>🛒 Cardmarket →</a>
+                  <a href={card.cardmarketUrl || links.cardmarket} target="_blank" rel="noopener noreferrer" style={mpBtn('#0066cc')}>🛒 Cardmarket {card.cardmarketUrl ? '(exakte Karte)' : '(Suche)'} →</a>
                   <a href={links.ebay} target="_blank" rel="noopener noreferrer" style={mpBtn('#3a3a8c')}>🛒 eBay Deutschland →</a>
                   <a href={links.priceCharting} target="_blank" rel="noopener noreferrer" style={mpBtn('#7c3aed')}>📊 PriceCharting →</a>
                   <a href={links.psa} target="_blank" rel="noopener noreferrer" style={mpBtn('#ec4899')}>🏆 PSA Population →</a>
