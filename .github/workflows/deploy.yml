@@ -3,6 +3,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main, claude/pensive-euler-SFLHH]
+  schedule:
+    - cron: '0 5 * * *' # daily 05:00 UTC: rebuild with fresh prices
   workflow_dispatch:
 
 permissions:
@@ -25,6 +27,10 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - name: Fetch live Cardmarket prices (server-side, no CORS)
+        run: node scripts/fetch-prices.mjs
+        env:
+          POKEMONTCG_API_KEY: ${{ secrets.POKEMONTCG_API_KEY }}
       - run: npm run build
       - uses: actions/configure-pages@v5
         with:

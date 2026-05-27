@@ -1,13 +1,17 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { store, KEYS } from './lib/storage.js';
 import { enrich } from './lib/metrics.js';
-import { getProvider, getGame } from './data/providers/index.js';
+import { getGame } from './data/providers/index.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
 
 const StoreContext = createContext(null);
 export const useStore = () => useContext(StoreContext);
 
 const DEFAULT_SETTINGS = { game: 'pokemon', apiKey: '', platform: 'cardmarket', includeShipping: true };
+
+// Static daily snapshot produced by scripts/fetch-prices.mjs at deploy time.
+// Same-origin, so no browser CORS limits (unlike calling the API directly).
+const SNAPSHOT_URL = `${import.meta.env.BASE_URL}data/cards.json`;
 
 export function StoreProvider({ children }) {
   const [rawCards, setRawCards] = useState([]);
@@ -25,7 +29,6 @@ export function StoreProvider({ children }) {
   const [compareList, setCompareList] = useState([]);
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
-  const abortRef = useRef(null);
 
   // ---- load persisted state once, then auto-refresh if stale ------------
   useEffect(() => {
@@ -42,24 +45,19 @@ export function StoreProvider({ children }) {
     const s = st && typeof st === 'object' ? { ...DEFAULT_SETTINGS, ...st } : DEFAULT_SETTINGS;
     if (st && typeof st === 'object') setSettings(s);
 
-    let cacheTs = null;
     if (cache && Array.isArray(cache.cards) && cache.cards.length) {
       setRawCards(cache.cards);
       setSource('cache');
-      cacheTs = cache.ts || null;
       if (cache.ts) setLastUpdated(new Date(cache.ts));
     } else {
       setRawCards(SAMPLE_CARDS);
       setSource('sample');
     }
 
-    // Background live refresh when the cache is empty or older than 12h.
-    // Silent: if it fails (e.g. opened from file://) we quietly keep the
-    // current data instead of showing an error.
-    const STALE_MS = 12 * 60 * 60 * 1000;
-    if (!cacheTs || Date.now() - cacheTs > STALE_MS) {
-      runFetch('', { silent: true, gameId: s.game, apiKey: s.apiKey });
-    }
+    // Always pull the freshly-deployed snapshot (same-origin JSON, no CORS).
+    // Silent: on failure (offline / opened from file://) we keep the cached
+    // or sample data shown above.
+    loadSnapshot({ silent: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -86,6 +84,32 @@ export function StoreProvider({ children }) {
   }, []);
 
   // ---- data fetching ----------------------------------------------------
+  // Loads the static daily snapshot baked into the site at deploy time.
+  // `silent` = background load on mount (no error banner; keep current data).
+  const loadSnapshot = useCallback(async ({ silent = false } = {}) => {
+    setLoading(true);
+    if (!silent) setError(null);
+    try {
+      const res = await fetch(SNAPSHOT_URL, { cache: 'no-cache' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const list = Array.isArray(data?.cards) ? data.cards : [];
+      if (list.length === 0) throw new Error('Snapshot leer');
+      const ts = data.generatedAt ? new Date(data.generatedAt).getTime() : Date.now();
+      setRawCards(list);
+      setSource('snapshot');
+      setLastUpdated(new Date(ts));
+      store.set(KEYS.cards, { cards: list, ts });
+      if (!silent) showToast(`✓ Aktuelle Marktdaten geladen · ${list.length} Karten`);
+      return true;
+    } catch (e) {
+      if (!silent) setError(`Aktuelle Daten konnten nicht geladen werden (${e.message}). Es werden gespeicherte bzw. Beispieldaten gezeigt.`);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
   const loadSample = useCallback(() => {
     setRawCards(SAMPLE_CARDS);
     setSource('sample');
@@ -93,43 +117,7 @@ export function StoreProvider({ children }) {
     showToast('🃏 Beispieldaten geladen');
   }, [showToast]);
 
-  // Core fetch. `silent` = background auto-refresh (no error banner; keep the
-  // current data on failure). gameId/apiKey overrides let the mount effect use
-  // freshly-read settings before state has committed.
-  const runFetch = useCallback(async (query = '', { silent = false, gameId, apiKey } = {}) => {
-    const g = gameId ?? settings.game;
-    const key = apiKey ?? settings.apiKey;
-    const provider = getProvider(g);
-    if (!provider) {
-      if (!silent) showToast(`${getGame(g).label} kommt bald – aktuell nur Pokémon`);
-      return;
-    }
-    abortRef.current?.abort();
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
-    setLoading(true);
-    if (!silent) setError(null);
-    try {
-      const { cards: fetched } = await provider.search({ query, apiKey: key, signal: ctrl.signal });
-      if (!fetched || fetched.length === 0) {
-        if (!silent) setError('Keine Karten mit Preis gefunden. Anderen Suchbegriff probieren.');
-      } else {
-        const ts = Date.now();
-        setRawCards(fetched);
-        setSource('live');
-        setLastUpdated(new Date(ts));
-        store.set(KEYS.cards, { cards: fetched, ts });
-        showToast(`${silent ? '🟢 Live-Preise aktualisiert' : '✓ Live-Preise (Cardmarket EU)'} · ${fetched.length} Karten`);
-      }
-    } catch (e) {
-      if (e.name === 'AbortError') return;
-      if (!silent) setError(`Live-Abruf fehlgeschlagen: ${e.message}. Du siehst weiter die zuletzt geladenen Daten.`);
-    } finally {
-      setLoading(false);
-    }
-  }, [settings.game, settings.apiKey, showToast]);
-
-  const fetchCards = useCallback((query = '') => runFetch(query, { silent: false }), [runFetch]);
+  const fetchCards = useCallback(() => loadSnapshot({ silent: false }), [loadSnapshot]);
 
   // ---- collection actions ----------------------------------------------
   const inWatchlist = useCallback((id) => watchlist.some((c) => c.id === id), [watchlist]);

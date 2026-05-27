@@ -108,10 +108,9 @@ export default function Discover({ onOpen }) {
           <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.textFaint }} />
           <input
             className="control"
-            placeholder="Karte oder Set suchen…  (Enter = live von Cardmarket laden)"
+            placeholder="Karte oder Set filtern…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && fetchCards(search)}
             style={{ width: '100%', padding: '9px 10px 9px 32px' }}
           />
         </div>
@@ -154,16 +153,16 @@ export default function Discover({ onOpen }) {
             <button key={m} onClick={() => setViewMode(m)} style={{ padding: '5px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', background: viewMode === m ? '#ffd70022' : 'transparent', color: viewMode === m ? C.gold : C.textFaint, fontSize: 14, fontWeight: 700 }}>{icon}</button>
           ))}
         </div>
-        <button className="btn-primary" onClick={() => fetchCards(search)} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <RefreshCw size={13} className={loading ? 'spin' : ''} /> {loading ? 'Lädt…' : 'Live-Preise'}
+        <button className="btn-primary" onClick={() => fetchCards()} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <RefreshCw size={13} className={loading ? 'spin' : ''} /> {loading ? 'Lädt…' : 'Aktualisieren'}
         </button>
       </div>
 
       {/* Source line */}
       <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 12 }}>
-        {source === 'live' && <>🟢 Live von Cardmarket EU · aktualisiert {fmtRelative(lastUpdated)} · </>}
-        {source === 'cache' && <>💾 Zwischengespeichert · {fmtRelative(lastUpdated)} · </>}
-        {source === 'sample' && <>🃏 Beispieldaten (klicke „Live-Preise") · </>}
+        {source === 'snapshot' && <>🟢 Aktuelle Marktdaten (Cardmarket EU) · Stand {fmtRelative(lastUpdated)} · täglich automatisch aktualisiert · </>}
+        {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
+        {source === 'sample' && <>🃏 Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}
         Zeige <strong style={{ color: C.textSoft }}>{filtered.length}</strong> von {cards.length} Karten
       </div>
 

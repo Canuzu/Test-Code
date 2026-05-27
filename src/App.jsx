@@ -70,9 +70,9 @@ function Shell() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           {cards.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: source === 'live' ? '#00e67615' : '#ffffff0c', border: `1px solid ${source === 'live' ? '#00e67630' : C.lineStrong}`, borderRadius: 20, padding: '4px 11px' }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: source === 'live' ? C.green : C.textFaint, animation: source === 'live' ? 'blink 2s infinite' : 'none' }} />
-              <span style={{ fontSize: 11, color: source === 'live' ? C.green : C.textDim, fontWeight: 600 }}>{cards.length} · Ø {avgScore}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: source === 'snapshot' ? '#00e67615' : '#ffffff0c', border: `1px solid ${source === 'snapshot' ? '#00e67630' : C.lineStrong}`, borderRadius: 20, padding: '4px 11px' }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: source === 'snapshot' ? C.green : C.textFaint, animation: source === 'snapshot' ? 'blink 2s infinite' : 'none' }} />
+              <span style={{ fontSize: 11, color: source === 'snapshot' ? C.green : C.textDim, fontWeight: 600 }}>{cards.length} · Ø {avgScore}</span>
             </div>
           )}
           <button onClick={() => exportCSV(cards)} disabled={!cards.length} title="CSV-Export" className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center', gap: 4, opacity: cards.length ? 1 : 0.4 }}>

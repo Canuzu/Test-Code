@@ -43,21 +43,32 @@ npm run preview  # baut + serviert den Build lokal
 `dist/` ist eine statische Seite und kann z. B. auf Netlify, Vercel, GitHub Pages
 oder jedem Webserver gehostet werden.
 
-## Live-Preise aktivieren
+## Live-Preise (Build-Zeit-Snapshot)
 
-In der Entdecken-Ansicht einen Suchbegriff eingeben und **Enter** drücken bzw. auf
-**„Live-Preise"** klicken — die App lädt dann aktuelle Cardmarket-Preise.
+Browser dürfen die pokemontcg.io-API wegen CORS nicht direkt aufrufen. Deshalb
+holt **`scripts/fetch-prices.mjs` die echten Cardmarket-Preise serverseitig beim
+Deploy** (im GitHub-Actions-Workflow, ohne CORS-Beschränkung) und schreibt sie
+nach `public/data/cards.json`. Die App lädt diese Datei dann **same-origin** —
+inklusive echter Bilder und exakter Cardmarket-Produktlinks.
 
-> Hinweis: Die App funktioniert ohne API-Key (mit niedrigerem Anfragelimit). Ein
-> optionaler, kostenloser Key von **pokemontcg.io/dashboard** kann in den
-> Einstellungen hinterlegt werden (wird nur lokal im Browser gespeichert) und hebt
-> das Limit an. In abgeschotteten Umgebungen ohne Internetzugang zeigt die App
-> automatisch die eingebauten Beispieldaten.
+- **Aktualisierung:** Der Workflow läuft bei jedem Push **und täglich per Cron**
+  (`0 5 * * *`) → die Preise sind täglich frisch (Cardmarket aktualisiert ohnehin
+  nur täglich).
+- **Ohne Netz / lokal:** Gibt es keine `cards.json`, fällt die App automatisch auf
+  die eingebauten Beispieldaten zurück.
+- **Optionaler API-Key:** Für höhere Limits einen kostenlosen Key auf
+  `pokemontcg.io/dashboard` anlegen und als **GitHub-Secret `POKEMONTCG_API_KEY`**
+  hinterlegen (Repo → Settings → Secrets and variables → Actions). Das Skript
+  funktioniert mit und ohne Key.
+
+Lokal kann der Snapshot mit `node scripts/fetch-prices.mjs` erzeugt werden
+(braucht Internetzugang zur API).
 
 ## Technik
 
 - React 18 + Vite, Charts mit `recharts`, Icons mit `lucide-react`.
-- Keine geheimen Schlüssel im Code: der optionale API-Key bleibt clientseitig.
+- Preisdaten werden zur Build-Zeit serverseitig geholt — kein Secret/Key im
+  Client-Code, kein CORS-Problem.
 - Berechnete Werte (Score, Beliebtheit) sind transparente Heuristiken aus den
   Preisdaten — siehe `src/lib/metrics.js`.
 
