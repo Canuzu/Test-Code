@@ -7,6 +7,10 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 const single = process.env.SINGLE === '1';
 
 export default defineConfig({
+  // Relative asset paths so the build works both on GitHub Pages (served under
+  // /<repo>/) and when opened directly from disk.
+  base: './',
   plugins: [react(), ...(single ? [viteSingleFile()] : [])],
+  build: { chunkSizeWarningLimit: 900 },
   server: { host: true, port: 5173 },
 });

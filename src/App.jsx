@@ -1,16 +1,27 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Settings as Cog, GitCompare, Download } from 'lucide-react';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
-import { fmtNum, fmtDateTime } from './lib/format.js';
+import { fmtNum } from './lib/format.js';
 import { getGame } from './data/providers/index.js';
 import Discover from './components/Discover.jsx';
-import Analytics from './components/Analytics.jsx';
 import WatchlistView from './components/WatchlistView.jsx';
 import PortfolioView from './components/PortfolioView.jsx';
-import CardModal from './components/CardModal.jsx';
-import CompareModal from './components/CompareModal.jsx';
-import SettingsModal from './components/SettingsModal.jsx';
+
+// Heavy / on-demand views are code-split so the charting library (recharts)
+// and modals are not part of the initial bundle.
+const Analytics = lazy(() => import('./components/Analytics.jsx'));
+const CardModal = lazy(() => import('./components/CardModal.jsx'));
+const CompareModal = lazy(() => import('./components/CompareModal.jsx'));
+const SettingsModal = lazy(() => import('./components/SettingsModal.jsx'));
+
+function Loader() {
+  return (
+    <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 90, pointerEvents: 'none' }}>
+      <div style={{ width: 30, height: 30, border: '3px solid #ffffff22', borderTopColor: C.gold, borderRadius: '50%' }} className="spin" />
+    </div>
+  );
+}
 
 const exportCSV = (cards) => {
   if (!cards.length) return;
@@ -86,7 +97,7 @@ function Shell() {
       {/* Body */}
       <main style={{ padding: '16px 20px', maxWidth: 1400, margin: '0 auto' }}>
         {tab === 'discover' && <Discover onOpen={onOpen} />}
-        {tab === 'analytics' && <Analytics onOpen={onOpen} />}
+        {tab === 'analytics' && <Suspense fallback={<Loader />}><Analytics onOpen={onOpen} /></Suspense>}
         {tab === 'watchlist' && <WatchlistView onOpen={onOpen} />}
         {tab === 'portfolio' && <PortfolioView />}
       </main>
@@ -103,9 +114,11 @@ function Shell() {
         </button>
       )}
 
-      {modal && <CardModal card={modal.card} initialTab={modal.tab} onClose={() => setModal(null)} />}
-      {showCompare && <CompareModal onClose={() => setShowCompare(false)} />}
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      <Suspense fallback={<Loader />}>
+        {modal && <CardModal card={modal.card} initialTab={modal.tab} onClose={() => setModal(null)} />}
+        {showCompare && <CompareModal onClose={() => setShowCompare(false)} />}
+        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      </Suspense>
 
       {toast && (
         <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 10, padding: '10px 18px', fontSize: 13, color: C.text, boxShadow: '0 4px 24px #00000070', zIndex: 200, animation: 'slideUp 0.25s ease' }}>

@@ -27,7 +27,7 @@ export function StoreProvider({ children }) {
   const toastTimer = useRef(null);
   const abortRef = useRef(null);
 
-  // ---- load persisted state once ---------------------------------------
+  // ---- load persisted state once, then auto-refresh if stale ------------
   useEffect(() => {
     const wl = store.get(KEYS.watchlist);
     const pf = store.get(KEYS.portfolio);
@@ -39,14 +39,26 @@ export function StoreProvider({ children }) {
     if (Array.isArray(pf)) setPortfolio(pf);
     if (nt && typeof nt === 'object') setNotes(nt);
     if (tg && typeof tg === 'object') setTags(tg);
-    if (st && typeof st === 'object') setSettings({ ...DEFAULT_SETTINGS, ...st });
+    const s = st && typeof st === 'object' ? { ...DEFAULT_SETTINGS, ...st } : DEFAULT_SETTINGS;
+    if (st && typeof st === 'object') setSettings(s);
+
+    let cacheTs = null;
     if (cache && Array.isArray(cache.cards) && cache.cards.length) {
       setRawCards(cache.cards);
       setSource('cache');
-      setLastUpdated(cache.ts ? new Date(cache.ts) : null);
+      cacheTs = cache.ts || null;
+      if (cache.ts) setLastUpdated(new Date(cache.ts));
     } else {
       setRawCards(SAMPLE_CARDS);
       setSource('sample');
+    }
+
+    // Background live refresh when the cache is empty or older than 12h.
+    // Silent: if it fails (e.g. opened from file://) we quietly keep the
+    // current data instead of showing an error.
+    const STALE_MS = 12 * 60 * 60 * 1000;
+    if (!cacheTs || Date.now() - cacheTs > STALE_MS) {
+      runFetch('', { silent: true, gameId: s.game, apiKey: s.apiKey });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -81,36 +93,43 @@ export function StoreProvider({ children }) {
     showToast('🃏 Beispieldaten geladen');
   }, [showToast]);
 
-  const fetchCards = useCallback(async (query = '') => {
-    const provider = getProvider(settings.game);
+  // Core fetch. `silent` = background auto-refresh (no error banner; keep the
+  // current data on failure). gameId/apiKey overrides let the mount effect use
+  // freshly-read settings before state has committed.
+  const runFetch = useCallback(async (query = '', { silent = false, gameId, apiKey } = {}) => {
+    const g = gameId ?? settings.game;
+    const key = apiKey ?? settings.apiKey;
+    const provider = getProvider(g);
     if (!provider) {
-      showToast(`${getGame(settings.game).label} kommt bald – aktuell nur Pokémon`);
+      if (!silent) showToast(`${getGame(g).label} kommt bald – aktuell nur Pokémon`);
       return;
     }
     abortRef.current?.abort();
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     setLoading(true);
-    setError(null);
+    if (!silent) setError(null);
     try {
-      const { cards: fetched } = await provider.search({ query, apiKey: settings.apiKey, signal: ctrl.signal });
+      const { cards: fetched } = await provider.search({ query, apiKey: key, signal: ctrl.signal });
       if (!fetched || fetched.length === 0) {
-        setError('Keine Karten mit Preis gefunden. Anderen Suchbegriff probieren.');
+        if (!silent) setError('Keine Karten mit Preis gefunden. Anderen Suchbegriff probieren.');
       } else {
         const ts = Date.now();
         setRawCards(fetched);
         setSource('live');
         setLastUpdated(new Date(ts));
         store.set(KEYS.cards, { cards: fetched, ts });
-        showToast(`✓ ${fetched.length} Karten · Live-Preise (Cardmarket EU)`);
+        showToast(`${silent ? '🟢 Live-Preise aktualisiert' : '✓ Live-Preise (Cardmarket EU)'} · ${fetched.length} Karten`);
       }
     } catch (e) {
       if (e.name === 'AbortError') return;
-      setError(`Live-Abruf fehlgeschlagen: ${e.message}. Du siehst weiter die zuletzt geladenen Daten.`);
+      if (!silent) setError(`Live-Abruf fehlgeschlagen: ${e.message}. Du siehst weiter die zuletzt geladenen Daten.`);
     } finally {
       setLoading(false);
     }
   }, [settings.game, settings.apiKey, showToast]);
+
+  const fetchCards = useCallback((query = '') => runFetch(query, { silent: false }), [runFetch]);
 
   // ---- collection actions ----------------------------------------------
   const inWatchlist = useCallback((id) => watchlist.some((c) => c.id === id), [watchlist]);
