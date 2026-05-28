@@ -1,5 +1,6 @@
 import { useState, lazy, Suspense } from 'react';
-import { Settings as Cog, GitCompare, Download, Sun, Moon } from 'lucide-react';
+import { Settings as Cog, GitCompare, Download, Sun, Moon, LogIn } from 'lucide-react';
+import AuthModal from './components/AuthModal.jsx';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
 import { fmtNum } from './lib/format.js';
@@ -45,11 +46,12 @@ const TABS = [
 ];
 
 function Shell() {
-  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme } = useStore();
+  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, user, team, profile } = useStore();
   const [tab, setTab] = useState('discover');
   const [modal, setModal] = useState(null); // { card, tab }
   const [showCompare, setShowCompare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
 
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
   const game = getGame(settings.game);
@@ -75,6 +77,23 @@ function Shell() {
               <span style={{ fontSize: 11, color: source === 'snapshot' ? C.green : C.textDim, fontWeight: 600 }}>{cards.length} · Ø {avgScore}</span>
             </div>
           )}
+          <button
+            onClick={() => setShowAuth(true)}
+            title={user ? 'Profil / Team' : 'Anmelden / Registrieren'}
+            className="control"
+            style={{ padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 6, background: user ? '#448aff12' : undefined, border: user ? '1px solid #448aff30' : undefined, borderRadius: 8 }}
+          >
+            {user ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg,#448aff,#6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff' }}>
+                  {(profile?.name || user.email || '?')[0].toUpperCase()}
+                </div>
+                {team && <span style={{ fontSize: 11, color: '#448aff', fontWeight: 700 }}>👥</span>}
+              </div>
+            ) : (
+              <><LogIn size={13} /><span style={{ fontSize: 12, fontWeight: 600 }}>Anmelden</span></>
+            )}
+          </button>
           <button onClick={() => exportCSV(cards)} disabled={!cards.length} title="CSV-Export" className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center', gap: 4, opacity: cards.length ? 1 : 0.4 }}>
             <Download size={13} />
           </button>
@@ -122,6 +141,7 @@ function Shell() {
         {showCompare && <CompareModal onClose={() => setShowCompare(false)} />}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       </Suspense>
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
 
       {toast && (
         <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 10, padding: '10px 18px', fontSize: 13, color: C.text, boxShadow: '0 4px 24px #00000070', zIndex: 200, animation: 'slideUp 0.25s ease' }}>
