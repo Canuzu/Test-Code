@@ -10,7 +10,8 @@ create table if not exists public.profiles (
   created_at  timestamptz default now()
 );
 alter table public.profiles enable row level security;
-create policy "profiles_own" on public.profiles using (auth.uid() = id) with check (auth.uid() = id);
+create policy "profiles_own" on public.profiles
+  using (auth.uid() = id) with check (auth.uid() = id);
 
 -- ── 2. Teams ───────────────────────────────────────────────────────────────
 create table if not exists public.teams (
@@ -21,14 +22,9 @@ create table if not exists public.teams (
   created_at   timestamptz default now()
 );
 alter table public.teams enable row level security;
-create policy "teams_member_select" on public.teams for select using (
-  owner_id = auth.uid() or
-  id in (select team_id from public.team_members where user_id = auth.uid())
-);
-create policy "teams_owner_insert" on public.teams for insert with check (owner_id = auth.uid());
-create policy "teams_owner_delete" on public.teams for delete using (owner_id = auth.uid());
 
 -- ── 3. Team-Mitglieder ─────────────────────────────────────────────────────
+-- Muss VOR den teams-Policies angelegt werden, da die Policies team_members referenzieren
 create table if not exists public.team_members (
   team_id  uuid references public.teams(id)    on delete cascade,
   user_id  uuid references public.profiles(id) on delete cascade,
@@ -36,9 +32,21 @@ create table if not exists public.team_members (
   primary key (team_id, user_id)
 );
 alter table public.team_members enable row level security;
+
+-- ── 4. Teams-Policies (jetzt wo team_members existiert) ────────────────────
+create policy "teams_member_select" on public.teams for select using (
+  owner_id = auth.uid() or
+  id in (select team_id from public.team_members where user_id = auth.uid())
+);
+create policy "teams_owner_insert" on public.teams for insert
+  with check (owner_id = auth.uid());
+create policy "teams_owner_delete" on public.teams for delete
+  using (owner_id = auth.uid());
+
+-- ── 5. Team-Members-Policies ───────────────────────────────────────────────
 create policy "tm_select" on public.team_members for select using (
   user_id = auth.uid() or
-  team_id in (select team_id from public.team_members where user_id = auth.uid())
+  team_id in (select team_id from public.team_members tm2 where tm2.user_id = auth.uid())
 );
 create policy "tm_insert" on public.team_members for insert with check (
   user_id = auth.uid() or
@@ -49,7 +57,7 @@ create policy "tm_delete" on public.team_members for delete using (
   team_id in (select id from public.teams where owner_id = auth.uid())
 );
 
--- ── 4. Datenspeicher (Watchlist, Portfolio, etc.) ──────────────────────────
+-- ── 6. Datenspeicher (Watchlist, Portfolio, etc.) ──────────────────────────
 create table if not exists public.user_store (
   id          uuid primary key default gen_random_uuid(),
   owner_id    uuid   not null,
@@ -61,19 +69,21 @@ create table if not exists public.user_store (
 );
 alter table public.user_store enable row level security;
 
-create policy "store_access" on public.user_store using (
-  (owner_type = 'user'  and owner_id = auth.uid()) or
-  (owner_type = 'team'  and owner_id in (
-    select team_id from public.team_members where user_id = auth.uid()
-  ))
-) with check (
-  (owner_type = 'user'  and owner_id = auth.uid()) or
-  (owner_type = 'team'  and owner_id in (
-    select team_id from public.team_members where user_id = auth.uid()
-  ))
-);
+create policy "store_access" on public.user_store
+  using (
+    (owner_type = 'user'  and owner_id = auth.uid()) or
+    (owner_type = 'team'  and owner_id in (
+      select team_id from public.team_members where user_id = auth.uid()
+    ))
+  )
+  with check (
+    (owner_type = 'user'  and owner_id = auth.uid()) or
+    (owner_type = 'team'  and owner_id in (
+      select team_id from public.team_members where user_id = auth.uid()
+    ))
+  );
 
--- ── 5. Trigger: Profil beim Signup anlegen ─────────────────────────────────
+-- ── 7. Trigger: Profil beim Signup automatisch anlegen ─────────────────────
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer as $$
 begin
