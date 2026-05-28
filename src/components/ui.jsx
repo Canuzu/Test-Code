@@ -54,7 +54,7 @@ export function CardImage({ card, height = 150, radius = 10 }) {
     <img
       src={src}
       alt={card?.name || 'Karte'}
-      loading="lazy"
+      referrerPolicy="no-referrer"
       onError={() => setBroken(true)}
       style={{ height, width: 'auto', borderRadius: radius, display: 'block', flexShrink: 0, boxShadow: '0 4px 14px #00000060' }}
     />
