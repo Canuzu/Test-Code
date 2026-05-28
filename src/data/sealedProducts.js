@@ -4,18 +4,18 @@
 // a fabricated number. Tiles use the official set logo as the image.
 
 const SETS = [
-  { set: 'Prismatic Evolutions', year: 2025, setId: 'sv8pt5' },
-  { set: 'Surging Sparks', year: 2024, setId: 'sv8' },
-  { set: 'Stellar Crown', year: 2024, setId: 'sv7' },
-  { set: 'Twilight Masquerade', year: 2024, setId: 'sv6' },
-  { set: 'Paldean Fates', year: 2024, setId: 'sv4pt5' },
-  { set: 'Pokémon 151', year: 2023, setId: 'sv3pt5' },
-  { set: 'Obsidian Flames', year: 2023, setId: 'sv3' },
-  { set: 'Paradox Rift', year: 2023, setId: 'sv4' },
-  { set: 'Crown Zenith', year: 2023, setId: 'swsh12pt5' },
-  { set: 'Evolving Skies', year: 2021, setId: 'swsh7' },
-  { set: 'Lost Origin', year: 2022, setId: 'swsh11' },
-  { set: 'Brilliant Stars', year: 2022, setId: 'swsh9' },
+  { set: 'Prismatische Entwicklungen', setEn: 'Prismatic Evolutions', year: 2025, setId: 'sv8pt5' },
+  { set: 'Elektrische Funken', setEn: 'Surging Sparks', year: 2024, setId: 'sv8' },
+  { set: 'Strahlende Krone', setEn: 'Stellar Crown', year: 2024, setId: 'sv7' },
+  { set: 'Twilights Maskerade', setEn: 'Twilight Masquerade', year: 2024, setId: 'sv6' },
+  { set: 'Paldeas Schicksale', setEn: 'Paldean Fates', year: 2024, setId: 'sv4pt5' },
+  { set: 'Pokémon 151', setEn: 'Pokémon 151', year: 2023, setId: 'sv3pt5' },
+  { set: 'Obsidianflammen', setEn: 'Obsidian Flames', year: 2023, setId: 'sv3' },
+  { set: 'Paradoxrift', setEn: 'Paradox Rift', year: 2023, setId: 'sv4' },
+  { set: 'Krönender Höhepunkt', setEn: 'Crown Zenith', year: 2023, setId: 'swsh12pt5' },
+  { set: 'Himmelsscheibe', setEn: 'Evolving Skies', year: 2021, setId: 'swsh7' },
+  { set: 'Verlorener Ursprung', setEn: 'Lost Origin', year: 2022, setId: 'swsh11' },
+  { set: 'Strahlende Sterne', setEn: 'Brilliant Stars', year: 2022, setId: 'swsh9' },
 ];
 
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -26,9 +26,9 @@ const PRODUCT_TYPES = {
   etb: { label: 'Top-Trainer-Box', suffix: 'Top-Trainer-Box', emoji: '🎁', grad: ['#c084fc', '#7c3aed'] },
 };
 
-export const SEALED = SETS.flatMap(({ set, year, setId }) =>
+export const SEALED = SETS.flatMap(({ set, setEn, year, setId }) =>
   Object.entries(PRODUCT_TYPES).map(([type, def]) => ({
-    id: `${type}-${slug(set)}`,
+    id: `${type}-${slug(setEn)}`,
     type,
     typeLabel: def.label,
     emoji: def.emoji,
@@ -37,7 +37,7 @@ export const SEALED = SETS.flatMap(({ set, year, setId }) =>
     set,
     year,
     logo: `https://images.pokemontcg.io/${setId}/logo.png`,
-    cardmarketUrl: `https://www.cardmarket.com/de/Pokemon/Products/Search?searchString=${encodeURIComponent(`${set} ${def.suffix}`)}`,
+    cardmarketUrl: `https://www.cardmarket.com/de/Pokemon/Products/Search?searchString=${encodeURIComponent(`${setEn} ${def.suffix}`)}`,
   })),
 );
 
