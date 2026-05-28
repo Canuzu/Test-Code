@@ -37,7 +37,11 @@ export function Spark({ series, width = 96, height = 30, strokeWidth = 2 }) {
 // Card artwork with graceful fallback if the image is missing or blocked.
 export function CardImage({ card, height = 150, radius = 10 }) {
   const [broken, setBroken] = useState(false);
-  const src = card?.image?.small || card?.image?.large;
+  // Try image.small → image.large → CDN URL constructed from setId/number.
+  const constructed = (card?.setId && card?.number)
+    ? `https://images.pokemontcg.io/${card.setId}/${card.number}.png`
+    : null;
+  const src = card?.image?.small || card?.image?.large || constructed;
   if (!src || broken) {
     return (
       <div style={{ height, width: height * 0.72, borderRadius: radius, background: 'linear-gradient(160deg,#23234a,#161630)', border: `1px solid ${C.lineStrong}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, flexShrink: 0 }}>

@@ -30,24 +30,36 @@ const displayName = (raw) => {
   return raw.name;
 };
 
+// Constructs the standard pokemontcg.io CDN URL as a fallback when the API
+// response omits the images field (e.g. older cards or partial responses).
+const cdnUrl = (setId, number, hires = false) =>
+  setId && number
+    ? `https://images.pokemontcg.io/${setId}/${number}${hires ? '_hires' : ''}.png`
+    : null;
+
 // Normalises a raw pokemontcg.io card into our common Card shape.
 export const normalize = (raw) => {
   const cm = raw.cardmarket || {};
   const p = cm.prices || {};
+  const sId = raw.set?.id || '';
+  const num = raw.number || '';
   return {
     id: raw.id,
     game: 'pokemon',
     name: displayName(raw),
     baseName: raw.name,
     set: raw.set?.name || '',
-    setId: raw.set?.id || '',
+    setId: sId,
     setReleaseDate: raw.set?.releaseDate || '',
     series: raw.set?.series || '',
-    number: raw.number || '',
+    number: num,
     rarity: raw.rarity || '',
     cardType: [raw.supertype, ...(raw.subtypes || [])].filter(Boolean).join(' · '),
     year: yearOf(raw.set?.releaseDate),
-    image: { small: raw.images?.small || null, large: raw.images?.large || null },
+    image: {
+      small: raw.images?.small || cdnUrl(sId, num),
+      large: raw.images?.large || cdnUrl(sId, num, true),
+    },
     prices: {
       currency: 'EUR',
       market: p.trendPrice ?? p.averageSellPrice ?? null,

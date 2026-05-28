@@ -165,12 +165,9 @@ export default function Discover({ onOpen }) {
                 🌟 Top-Karten
                 <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 500 }}>die 5 stärksten Karten gerade</span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 16 }}>
                 {highlights.map((h) => (
-                  <div key={h.card.id} style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', top: -8, left: 12, zIndex: 2, background: h.color, color: '#0c0c1a', fontSize: 10, fontWeight: 800, padding: '2px 9px', borderRadius: 20, boxShadow: `0 2px 8px ${h.color}66` }}>{h.label}</div>
-                    <CardTile card={h.card} onOpen={onOpen} />
-                  </div>
+                  <HighlightCard key={h.card.id} h={h} onOpen={onOpen} />
                 ))}
               </div>
             </div>
@@ -260,13 +257,47 @@ export default function Discover({ onOpen }) {
   );
 }
 
+function HighlightCard({ h, onOpen }) {
+  return (
+    <div
+      onClick={() => onOpen(h.card, 'overview')}
+      className="card-hover fade-in"
+      style={{
+        background: C.surface,
+        border: `1px solid ${C.line}`,
+        borderRadius: 16,
+        padding: 14,
+        cursor: 'pointer',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 10,
+      }}
+    >
+      <div style={{ alignSelf: 'flex-start', background: h.color, color: '#0c0c1a', fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 20, boxShadow: `0 2px 8px ${h.color}66` }}>
+        {h.label}
+      </div>
+      <CardImage card={h.card} height={230} radius={12} />
+      <div style={{ width: '100%', textAlign: 'center' }}>
+        <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3 }}>{h.card.name}</div>
+        <div style={{ fontSize: 11, color: C.textDim, marginTop: 2 }}>{h.card.set}</div>
+        <div style={{ fontSize: 24, fontWeight: 800, color: C.gold, marginTop: 8, lineHeight: 1 }}>{fmtEur(h.card.m.market)}</div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 6 }}>
+          <ChangeBadge value={h.card.m.change7} label="7T" />
+          <ChangeBadge value={h.card.m.change30} label="30T" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SetTiles({ sets, onSelect }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 12 }}>
       {sets.map((s) => (
         <button key={s.id} onClick={() => onSelect(s.id)} className="card-hover fade-in"
           style={{ display: 'flex', gap: 12, textAlign: 'left', background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 12, cursor: 'pointer', color: C.text, alignItems: 'center' }}>
-          <CardImage card={s.top} height={74} />
+          <CardImage card={s.top} height={92} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontWeight: 700, fontSize: 13.5, lineHeight: 1.3 }}>{s.name}</div>
             <div style={{ fontSize: 11, color: C.textDim, marginTop: 3 }}>{s.year || '—'}</div>
@@ -294,9 +325,12 @@ function ListView({ cards, onOpen }) {
         <div key={c.id} onClick={() => onOpen(c, 'overview')} className="card-hover"
           style={{ display: 'grid', gridTemplateColumns: cols, gap: 8, padding: '10px 12px', alignItems: 'center', background: C.surface, border: `1px solid ${C.line}`, borderRadius: 10, marginBottom: 5, cursor: 'pointer' }}>
           <ScoreBadge tier={c.m.tier} score={c.m.score} />
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
-            <div style={{ fontSize: 10, color: C.textFaint }}>{c.set}{c.rarity ? ` · ${c.rarity}` : ''}</div>
+          <div style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <CardImage card={c} height={48} radius={4} />
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
+              <div style={{ fontSize: 10, color: C.textFaint }}>{c.set}{c.rarity ? ` · ${c.rarity}` : ''}</div>
+            </div>
           </div>
           <div style={{ textAlign: 'right', fontWeight: 800, fontSize: 13 }}>{fmtEur(c.m.market)}</div>
           <div style={{ textAlign: 'right' }}><ChangeBadge value={c.m.change7} size={11} /></div>
