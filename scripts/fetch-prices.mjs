@@ -16,7 +16,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/data/cards.json');
 const BASE = 'https://api.pokemontcg.io/v2';
 const API_KEY = process.env.POKEMONTCG_API_KEY || '';
-const TARGET = 90; // how many cards to keep in the snapshot
+const TARGET = 100; // how many cards to keep in the snapshot
 const SELECT = 'id,name,number,rarity,supertype,subtypes,images,set,cardmarket';
 
 // Curated queries that reliably return valuable, German-market-relevant cards
@@ -24,9 +24,13 @@ const SELECT = 'id,name,number,rarity,supertype,subtypes,images,set,cardmarket';
 const QUERIES = [
   'rarity:"Special Illustration Rare"',
   'rarity:"Illustration Rare"',
+  'rarity:"Hyper Rare"',
   'set.id:swsh7', // Evolving Skies (Moonbreon & alt arts)
   'set.id:base1', // Base Set classics
   'set.id:sv3pt5', // Pokémon 151
+  'set.id:sv8', // Surging Sparks
+  'set.id:sv8pt5', // Prismatic Evolutions
+  'set.id:swsh12pt5', // Crown Zenith
 ];
 
 async function fetchQuery(q, pageSize = 60) {

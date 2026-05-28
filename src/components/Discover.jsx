@@ -5,6 +5,8 @@ import { C, trendColor, trendIcon } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtRelative } from '../lib/format.js';
 import { marketLinks } from '../lib/marketLinks.js';
 import CardTile from './CardTile.jsx';
+import SealedGrid from './SealedGrid.jsx';
+import { SEALED_CATEGORIES } from '../data/sealedProducts.js';
 import { ChangeBadge, ScoreBadge, EmptyState } from './ui.jsx';
 
 const PRESETS = [
@@ -26,6 +28,7 @@ export default function Discover({ onOpen }) {
   const [filterTag, setFilterTag] = useState('all');
   const [activePreset, setActivePreset] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
+  const [cat, setCat] = useState('singles');
 
   const allTags = useMemo(() => [...new Set(Object.values(tags).flat())].sort(), [tags]);
 
@@ -66,10 +69,12 @@ export default function Discover({ onOpen }) {
     const byScore = [...cards].sort((a, b) => b.m.score - a.m.score);
     const byChange = [...cards].filter((c) => c.m.change30 != null).sort((a, b) => b.m.change30 - a.m.change30);
     const byMargin = [...cards].filter((c) => c.m.margin != null).sort((a, b) => b.m.margin - a.m.margin);
+    const byPrice = [...cards].sort((a, b) => (b.m.market ?? 0) - (a.m.market ?? 0));
     const gem = byScore.find((c) => c.m.popularity <= 6 && c.m.score >= 60);
     return [
       { icon: '🏆', label: 'Top-Pick', card: byScore[0], color: C.gold, sub: (c) => `Score ${c.m.score}` },
       { icon: '🚀', label: 'Größter Steiger', card: byChange[0], color: C.green, sub: (c) => `30T ${fmtNum(c.m.change30, 1)} %` },
+      { icon: '💰', label: 'Wertvollste', card: byPrice[0], color: C.orange, sub: (c) => fmtEur(c.m.market, 0) },
       { icon: '🎯', label: 'Beste Marge', card: byMargin[0], color: C.blue, sub: (c) => `${fmtNum(c.m.margin, 0)} % Spielraum` },
       { icon: '💎', label: 'Geheimtipp', card: gem, color: C.purple, sub: (c) => `Bel. ${fmtNum(c.m.popularity, 1)}/10` },
     ].filter((x) => x.card);
@@ -90,6 +95,19 @@ export default function Discover({ onOpen }) {
         </div>
       )}
 
+      {/* Category tabs: Singles (live cards) + sealed products */}
+      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 16, borderBottom: `1px solid ${C.lineStrong}` }}>
+        {[{ id: 'singles', label: 'Singles', emoji: '🃏' }, ...SEALED_CATEGORIES].map((t) => (
+          <button key={t.id} onClick={() => setCat(t.id)} style={{ padding: '9px 16px', border: 'none', background: 'none', color: cat === t.id ? C.gold : C.textFaint, borderBottom: cat === t.id ? `2px solid ${C.gold}` : '2px solid transparent', cursor: 'pointer', fontWeight: cat === t.id ? 700 : 500, fontSize: 13.5, marginBottom: -1, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+            <span>{t.emoji}</span>{t.label}
+          </button>
+        ))}
+      </div>
+
+      {cat !== 'singles' && <SealedGrid type={cat} />}
+
+      {cat === 'singles' && (
+        <>
       {/* Quick filters */}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' }}>
         <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Schnellfilter:</span>
@@ -190,6 +208,8 @@ export default function Discover({ onOpen }) {
       )}
 
       {!loading && filtered.length > 0 && viewMode === 'list' && <ListView cards={filtered} onOpen={onOpen} />}
+        </>
+      )}
     </>
   );
 }
