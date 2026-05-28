@@ -14,15 +14,16 @@ const mpBtn = (color) => ({
   cursor: 'pointer', display: 'block',
 });
 
-const sectionLabel = { fontSize: 11, color: C.textFaint, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' };
-
 export default function CardModal({ card, initialTab = 'overview', onClose }) {
   const { notes, tags, settings, addToPortfolio, saveNote, addTag, removeTag } = useStore();
+  const sectionLabel = { fontSize: 11, color: C.textFaint, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' };
   const addMode = initialTab === 'buy';
   const [tab, setTab] = useState(addMode ? 'overview' : initialTab);
   const [noteText, setNoteText] = useState(notes[card.id] || '');
   const [newTag, setNewTag] = useState('');
   const [buyPrice, setBuyPrice] = useState(String(card.prices.low ?? card.prices.market ?? ''));
+  const [buyQty, setBuyQty] = useState('1');
+  const [buyCond, setBuyCond] = useState('NM');
 
   const m = card.m;
   const p = card.prices;
@@ -81,13 +82,27 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
             <>
               {addMode && (
                 <div style={{ background: '#34d39912', border: '1px solid #34d39930', borderRadius: 10, padding: 12, marginBottom: 14 }}>
-                  <div style={{ fontSize: 12, color: C.green2, fontWeight: 700, marginBottom: 8 }}>💼 Ins Portfolio aufnehmen</div>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <span style={{ fontSize: 12, color: C.textSoft }}>Tatsächlich gezahlt: €</span>
-                    <input type="number" step="0.01" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)}
-                      style={{ flex: 1, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '6px 10px', color: C.text, fontSize: 13, outline: 'none' }} />
-                    <button className="btn-primary" style={{ padding: '7px 14px', fontSize: 12 }} onClick={() => { addToPortfolio(card, buyPrice); onClose(); }}>Hinzufügen</button>
+                  <div style={{ fontSize: 12, color: C.green2, fontWeight: 700, marginBottom: 8 }}>📦 Zur Sammlung hinzufügen</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
+                    <label style={{ fontSize: 10, color: C.textFaint }}>Gezahlt (€)
+                      <input type="number" step="0.01" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)}
+                        style={{ width: '100%', marginTop: 3, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '6px 8px', color: C.text, fontSize: 13, outline: 'none' }} />
+                    </label>
+                    <label style={{ fontSize: 10, color: C.textFaint }}>Anzahl
+                      <input type="number" min="1" step="1" value={buyQty} onChange={(e) => setBuyQty(e.target.value)}
+                        style={{ width: '100%', marginTop: 3, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '6px 8px', color: C.text, fontSize: 13, outline: 'none' }} />
+                    </label>
+                    <label style={{ fontSize: 10, color: C.textFaint }}>Zustand
+                      <select value={buyCond} onChange={(e) => setBuyCond(e.target.value)}
+                        style={{ width: '100%', marginTop: 3, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '6px 8px', color: C.text, fontSize: 13, outline: 'none' }}>
+                        {['NM', 'EX', 'GD', 'LP', 'PL', 'PO'].map((x) => <option key={x} value={x}>{x}</option>)}
+                      </select>
+                    </label>
                   </div>
+                  <button className="btn-primary" style={{ width: '100%', padding: '8px', fontSize: 12 }}
+                    onClick={() => { addToPortfolio(card, { price: buyPrice, quantity: buyQty, condition: buyCond }); onClose(); }}>
+                    Hinzufügen
+                  </button>
                 </div>
               )}
 

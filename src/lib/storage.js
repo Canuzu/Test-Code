@@ -32,6 +32,7 @@ export const KEYS = {
   cards: 'cards_cache',
   watchlist: 'watchlist',
   portfolio: 'portfolio',
+  sold: 'sold',
   notes: 'notes',
   tags: 'tags',
   settings: 'settings',

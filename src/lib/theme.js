@@ -1,5 +1,21 @@
-// Central design tokens so colours stay consistent across components.
-export const C = {
+// Central design tokens. `C` is a single mutable palette object: components
+// read C.xxx at render time, and applyTheme() swaps the neutral tokens in place
+// for light/dark. Accent colours stay the same in both themes (alpha-hex
+// concatenation like `C.gold + '22'` keeps working because values stay hex).
+
+const ACCENTS = {
+  gold: '#ffd700',
+  gold2: '#ff9500',
+  orange: '#ff6b35',
+  green: '#00e676',
+  green2: '#34d399',
+  red: '#ff5252',
+  blue: '#448aff',
+  purple: '#c084fc',
+  pink: '#ff3d7f',
+};
+
+const DARK = {
   bg0: '#0a0a18',
   bg1: '#0e0e22',
   bg2: '#12122a',
@@ -12,16 +28,39 @@ export const C = {
   textDim: '#8888aa',
   textFaint: '#666688',
   textGhost: '#444466',
-  gold: '#ffd700',
-  gold2: '#ff9500',
-  orange: '#ff6b35',
-  green: '#00e676',
-  green2: '#34d399',
-  red: '#ff5252',
-  blue: '#448aff',
-  purple: '#c084fc',
-  pink: '#ff3d7f',
+  overlay: 'rgba(255,255,255,0.05)',
+  overlayStrong: 'rgba(255,255,255,0.09)',
+  headerBg: 'rgba(14,14,32,0.6)',
+  appGrad1: '#0a0a18',
+  appGrad2: '#120820',
 };
+
+const LIGHT = {
+  bg0: '#f3f4fb',
+  bg1: '#ffffff',
+  bg2: '#eceef7',
+  surface: '#ffffff',
+  surface2: '#f6f7fc',
+  line: '#e3e6f0',
+  lineStrong: '#d2d7e6',
+  text: '#181a2c',
+  textSoft: '#474c66',
+  textDim: '#6a6f8c',
+  textFaint: '#9095b0',
+  textGhost: '#b9bdd2',
+  overlay: 'rgba(20,22,45,0.04)',
+  overlayStrong: 'rgba(20,22,45,0.07)',
+  headerBg: 'rgba(255,255,255,0.78)',
+  appGrad1: '#f3f4fb',
+  appGrad2: '#e9ebf7',
+};
+
+export const C = { ...ACCENTS, ...DARK };
+
+export const applyTheme = (name) => {
+  Object.assign(C, name === 'light' ? LIGHT : DARK);
+};
+
 
 // Semantic helpers --------------------------------------------------------
 export const trendColor = (t) => ({ rising: C.green, stable: C.gold, falling: C.red }[t] || C.textDim);

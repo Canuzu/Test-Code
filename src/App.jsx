@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
-import { Settings as Cog, GitCompare, Download } from 'lucide-react';
+import { Settings as Cog, GitCompare, Download, Sun, Moon } from 'lucide-react';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
 import { fmtNum } from './lib/format.js';
@@ -41,11 +41,11 @@ const TABS = [
   { id: 'discover', label: '🔍 Entdecken' },
   { id: 'analytics', label: '📊 Analyse' },
   { id: 'watchlist', label: '⭐ Watchlist' },
-  { id: 'portfolio', label: '💼 Portfolio' },
+  { id: 'portfolio', label: '📦 Sammlung' },
 ];
 
 function Shell() {
-  const { cards, watchlist, portfolio, compareList, toast, settings, source } = useStore();
+  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme } = useStore();
   const [tab, setTab] = useState('discover');
   const [modal, setModal] = useState(null); // { card, tab }
   const [showCompare, setShowCompare] = useState(false);
@@ -57,9 +57,9 @@ function Shell() {
   const avgScore = cards.length ? fmtNum(cards.reduce((s, c) => s + c.m.score, 0) / cards.length, 0) : '–';
 
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(160deg, #0a0a18 0%, #120820 100%)', color: C.text }}>
+    <div style={{ minHeight: '100vh', background: `linear-gradient(160deg, ${C.appGrad1} 0%, ${C.appGrad2} 100%)`, color: C.text }}>
       {/* Header */}
-      <header style={{ background: '#0e0e2099', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.lineStrong}`, padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, position: 'sticky', top: 0, zIndex: 50 }}>
+      <header style={{ background: C.headerBg, backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.lineStrong}`, padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, position: 'sticky', top: 0, zIndex: 50 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
           <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg, #ffd700, #ff6b35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19, boxShadow: '0 0 18px #ffd70044' }}>{game.emoji}</div>
           <div>
@@ -78,6 +78,9 @@ function Shell() {
           <button onClick={() => exportCSV(cards)} disabled={!cards.length} title="CSV-Export" className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center', gap: 4, opacity: cards.length ? 1 : 0.4 }}>
             <Download size={13} />
           </button>
+          <button onClick={toggleTheme} title={theme === 'dark' ? 'Helles Design' : 'Dunkles Design'} className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center' }}>
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+          </button>
           <button onClick={() => setShowSettings(true)} title="Einstellungen" className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center' }}>
             <Cog size={14} />
           </button>
@@ -85,7 +88,7 @@ function Shell() {
       </header>
 
       {/* Tab nav */}
-      <nav style={{ display: 'flex', background: '#0e0e2a', borderBottom: `1px solid ${C.lineStrong}`, padding: '0 16px', overflowX: 'auto', position: 'sticky', top: 63, zIndex: 49 }}>
+      <nav style={{ display: 'flex', background: C.bg1, borderBottom: `1px solid ${C.lineStrong}`, padding: '0 16px', overflowX: 'auto', position: 'sticky', top: 63, zIndex: 49 }}>
         {TABS.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '12px 18px', border: 'none', background: 'none', color: tab === t.id ? C.gold : C.textFaint, borderBottom: tab === t.id ? `2px solid ${C.gold}` : '2px solid transparent', cursor: 'pointer', fontWeight: tab === t.id ? 700 : 500, fontSize: 13, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
             {t.label}

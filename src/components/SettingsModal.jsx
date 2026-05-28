@@ -4,10 +4,9 @@ import { C } from '../lib/theme.js';
 import { PLATFORM_FEES } from '../lib/fees.js';
 import { GAMES } from '../data/providers/index.js';
 
-const label = { fontSize: 11, color: C.textFaint, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' };
-
 export default function SettingsModal({ onClose }) {
   const { settings, updateSettings, watchlist, portfolio, tags, showToast } = useStore();
+  const label = { fontSize: 11, color: C.textFaint, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' };
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: '#000000bb', backdropFilter: 'blur(6px)', zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
@@ -83,7 +82,7 @@ export default function SettingsModal({ onClose }) {
         </div>
 
         <div style={{ fontSize: 10, color: C.textGhost, textAlign: 'center', borderTop: `1px solid ${C.lineStrong}`, paddingTop: 12 }}>
-          Watchlist: {watchlist.length} · Portfolio: {portfolio.length} · Tags: {Object.keys(tags).length} Karten
+          Watchlist: {watchlist.length} · Sammlung: {portfolio.length} · Tags: {Object.keys(tags).length} Karten
         </div>
       </div>
     </div>

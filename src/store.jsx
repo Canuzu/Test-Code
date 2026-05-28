@@ -1,13 +1,14 @@
-import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef } from 'react';
 import { store, KEYS } from './lib/storage.js';
 import { enrich } from './lib/metrics.js';
+import { applyTheme } from './lib/theme.js';
 import { getGame } from './data/providers/index.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
 
 const StoreContext = createContext(null);
 export const useStore = () => useContext(StoreContext);
 
-const DEFAULT_SETTINGS = { game: 'pokemon', apiKey: '', platform: 'cardmarket', includeShipping: true };
+const DEFAULT_SETTINGS = { game: 'pokemon', apiKey: '', platform: 'cardmarket', includeShipping: true, theme: 'dark' };
 
 // Static daily snapshot produced by scripts/fetch-prices.mjs at deploy time.
 // Same-origin, so no browser CORS limits (unlike calling the API directly).
@@ -22,6 +23,7 @@ export function StoreProvider({ children }) {
 
   const [watchlist, setWatchlist] = useState([]);
   const [portfolio, setPortfolio] = useState([]);
+  const [sold, setSold] = useState([]);
   const [notes, setNotes] = useState({});
   const [tags, setTags] = useState({});
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
@@ -30,16 +32,29 @@ export function StoreProvider({ children }) {
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
 
+  // Theme: apply synchronously during render so children read the right palette,
+  // and reflect it on <html data-theme> for the CSS-variable based styles.
+  const theme = settings.theme === 'light' ? 'light' : 'dark';
+  applyTheme(theme);
+  useLayoutEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+  const toggleTheme = useCallback(() => {
+    setSettings((prev) => ({ ...prev, theme: prev.theme === 'light' ? 'dark' : 'light' }));
+  }, []);
+
   // ---- load persisted state once, then auto-refresh if stale ------------
   useEffect(() => {
     const wl = store.get(KEYS.watchlist);
     const pf = store.get(KEYS.portfolio);
+    const sl = store.get(KEYS.sold);
     const nt = store.get(KEYS.notes);
     const tg = store.get(KEYS.tags);
     const st = store.get(KEYS.settings);
     const cache = store.get(KEYS.cards);
     if (Array.isArray(wl)) setWatchlist(wl);
     if (Array.isArray(pf)) setPortfolio(pf);
+    if (Array.isArray(sl)) setSold(sl);
     if (nt && typeof nt === 'object') setNotes(nt);
     if (tg && typeof tg === 'object') setTags(tg);
     const s = st && typeof st === 'object' ? { ...DEFAULT_SETTINGS, ...st } : DEFAULT_SETTINGS;
@@ -64,6 +79,7 @@ export function StoreProvider({ children }) {
   // ---- persistence ------------------------------------------------------
   useEffect(() => { store.set(KEYS.watchlist, watchlist); }, [watchlist]);
   useEffect(() => { store.set(KEYS.portfolio, portfolio); }, [portfolio]);
+  useEffect(() => { store.set(KEYS.sold, sold); }, [sold]);
   useEffect(() => { store.set(KEYS.notes, notes); }, [notes]);
   useEffect(() => { store.set(KEYS.tags, tags); }, [tags]);
   useEffect(() => { store.set(KEYS.settings, settings); }, [settings]);
@@ -133,22 +149,41 @@ export function StoreProvider({ children }) {
     });
   }, [showToast]);
 
-  const addToPortfolio = useCallback((card, actualPrice) => {
+  const addToPortfolio = useCallback((card, opts = {}) => {
+    const { price, quantity = 1, condition = 'NM' } = typeof opts === 'object' ? opts : { price: opts };
     const entry = {
       id: `${card.id}-${Date.now()}`,
       cardId: card.id,
       card,
-      actualBuyPrice: Number(actualPrice) || card.prices?.low || card.prices?.market || 0,
+      actualBuyPrice: Number(price) || card.prices?.low || card.prices?.market || 0,
+      quantity: Math.max(1, Number(quantity) || 1),
+      condition: condition || 'NM',
       purchaseDate: Date.now(),
     };
     setPortfolio((prev) => [...prev, entry]);
-    showToast('💼 Ins Portfolio aufgenommen');
+    showToast('📦 Zur Sammlung hinzugefügt');
   }, [showToast]);
 
   const removeFromPortfolio = useCallback((entryId) => {
     setPortfolio((prev) => prev.filter((e) => e.id !== entryId));
-    showToast('Aus Portfolio entfernt');
+    showToast('Aus Sammlung entfernt');
   }, [showToast]);
+
+  // Record a sale: move the holding to the sold log with realized profit.
+  const sellFromPortfolio = useCallback((entryId, sellPrice) => {
+    const entry = portfolio.find((e) => e.id === entryId);
+    if (!entry) return;
+    const qty = entry.quantity || 1;
+    const price = Number(sellPrice) || entry.card?.prices?.market || entry.actualBuyPrice || 0;
+    const realized = (price - (entry.actualBuyPrice || 0)) * qty;
+    setSold((prev) => [...prev, { ...entry, sellPrice: price, soldDate: Date.now(), realized }]);
+    setPortfolio((prev) => prev.filter((e) => e.id !== entryId));
+    showToast(`${realized >= 0 ? '✅' : '➖'} Verkauf erfasst: ${realized >= 0 ? '+' : ''}${realized.toFixed(2)} €`);
+  }, [portfolio, showToast]);
+
+  const removeSold = useCallback((entryId) => {
+    setSold((prev) => prev.filter((e) => e.id !== entryId));
+  }, []);
 
   const saveNote = useCallback((cardId, text) => {
     setNotes((prev) => ({ ...prev, [cardId]: text }));
@@ -188,10 +223,11 @@ export function StoreProvider({ children }) {
 
   const value = {
     cards, source, lastUpdated, loading, error,
-    watchlist, portfolio, notes, tags, settings, compareList, toast,
+    watchlist, portfolio, sold, notes, tags, settings, compareList, toast,
+    theme, toggleTheme,
     fetchCards, loadSample,
     inWatchlist, inPortfolio, inCompare,
-    toggleWatchlist, addToPortfolio, removeFromPortfolio,
+    toggleWatchlist, addToPortfolio, removeFromPortfolio, sellFromPortfolio, removeSold,
     saveNote, addTag, removeTag,
     toggleCompare, clearCompare,
     updateSettings, showToast, freshPrice,

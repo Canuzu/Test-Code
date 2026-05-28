@@ -5,12 +5,16 @@ import { C, rarityColor } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtPct } from '../lib/format.js';
 import { Stat, EmptyState, ChangeBadge } from './ui.jsx';
 
-const panel = { background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16 };
 const panelTitle = { fontWeight: 700, fontSize: 13, marginBottom: 12 };
-const tip = { background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 8 };
+
+// Built per-render (not module scope) so theme changes are picked up.
+const makePanel = () => ({ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16 });
+const makeTip = () => ({ background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 8 });
 
 export default function Analytics({ onOpen }) {
   const { cards } = useStore();
+  const panel = makePanel();
+  const tip = makeTip();
 
   if (cards.length === 0) {
     return <EmptyState icon={<BarChart3 size={56} style={{ opacity: 0.35 }} />} title="Noch keine Daten" hint="Lade zuerst Karten in der Entdecken-Ansicht." />;
@@ -125,6 +129,7 @@ export default function Analytics({ onOpen }) {
 }
 
 function MoverList({ title, cards, onOpen }) {
+  const panel = makePanel();
   return (
     <div style={panel}>
       <div style={panelTitle}>{title}</div>
