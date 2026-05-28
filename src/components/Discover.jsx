@@ -18,9 +18,15 @@ const PRESETS = [
   { id: 'top', label: '🏆 Nur S/A', fn: (c) => c.m.score >= 76 },
 ];
 
+const TABS = [
+  { id: 'sets', label: 'Sets', emoji: '🗂️' },
+  { id: 'singles', label: 'Singles', emoji: '🃏' },
+  ...SEALED_CATEGORIES,
+];
+
 export default function Discover({ onOpen }) {
   const { cards, loading, error, source, lastUpdated, fetchCards, loadSample, tags } = useStore();
-  const [cat, setCat] = useState('singles');
+  const [cat, setCat] = useState('sets');
   const [selectedSet, setSelectedSet] = useState(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('score');
@@ -32,27 +38,34 @@ export default function Discover({ onOpen }) {
   const [viewMode, setViewMode] = useState('grid');
 
   const allTags = useMemo(() => [...new Set(Object.values(tags).flat())].sort(), [tags]);
-  const searching = search.trim().length > 0;
-  const showCards = searching || !!selectedSet;
 
-  // ---- 5 highlights (the start-page hero) -------------------------------
-  const insights = useMemo(() => {
+  // Mode: what the Singles/Sets area shows.
+  const mode = cat === 'sets' ? (selectedSet ? 'setdetail' : 'home')
+    : cat === 'singles' ? 'singles'
+      : 'sealed';
+  const listing = mode === 'setdetail' || mode === 'singles';
+
+  // ---- 5 highlights (shown as full cards on the Sets home) --------------
+  const highlights = useMemo(() => {
     if (cards.length === 0) return [];
     const byScore = [...cards].sort((a, b) => b.m.score - a.m.score);
     const byChange = [...cards].filter((c) => c.m.change30 != null).sort((a, b) => b.m.change30 - a.m.change30);
     const byMargin = [...cards].filter((c) => c.m.margin != null).sort((a, b) => b.m.margin - a.m.margin);
     const byPrice = [...cards].sort((a, b) => (b.m.market ?? 0) - (a.m.market ?? 0));
     const gem = byScore.find((c) => c.m.popularity <= 6 && c.m.score >= 60);
-    return [
-      { icon: '🏆', label: 'Top-Pick', card: byScore[0], color: C.gold, sub: (c) => `Score ${c.m.score}` },
-      { icon: '🚀', label: 'Größter Steiger', card: byChange[0], color: C.green, sub: (c) => `30T ${fmtNum(c.m.change30, 1)} %` },
-      { icon: '💰', label: 'Wertvollste', card: byPrice[0], color: C.orange, sub: (c) => fmtEur(c.m.market, 0) },
-      { icon: '🎯', label: 'Beste Marge', card: byMargin[0], color: C.blue, sub: (c) => `${fmtNum(c.m.margin, 0)} % Spielraum` },
-      { icon: '💎', label: 'Geheimtipp', card: gem, color: C.purple, sub: (c) => `Bel. ${fmtNum(c.m.popularity, 1)}/10` },
+    const picks = [
+      { label: '🏆 Top-Pick', card: byScore[0], color: C.gold },
+      { label: '🚀 Größter Steiger', card: byChange[0], color: C.green },
+      { label: '💰 Wertvollste', card: byPrice[0], color: C.orange },
+      { label: '🎯 Beste Marge', card: byMargin[0], color: C.blue },
+      { label: '💎 Geheimtipp', card: gem, color: C.purple },
     ].filter((x) => x.card);
+    // de-dupe by card id (a card can win multiple categories)
+    const seen = new Set();
+    return picks.filter((p) => (seen.has(p.card.id) ? false : seen.add(p.card.id)));
   }, [cards]);
 
-  // ---- sets index (group cards by set) ----------------------------------
+  // ---- sets index -------------------------------------------------------
   const sets = useMemo(() => {
     const m = new Map();
     for (const c of cards) {
@@ -67,15 +80,14 @@ export default function Discover({ onOpen }) {
     return [...m.values()].sort((a, b) => (b.releaseDate || '').localeCompare(a.releaseDate || '') || b.year - a.year);
   }, [cards]);
 
-  // ---- cards to list (only when a set is open or searching) -------------
+  // ---- cards to list (set detail or singles) ----------------------------
   const listed = useMemo(() => {
-    if (!showCards) return [];
+    if (!listing) return [];
     let list = cards;
-    if (searching) {
+    if (mode === 'setdetail') list = list.filter((c) => (c.setId || c.set) === selectedSet);
+    if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter((c) => c.name.toLowerCase().includes(q) || c.set?.toLowerCase().includes(q));
-    } else {
-      list = list.filter((c) => (c.setId || c.set) === selectedSet);
     }
     if (activePreset) {
       const p = PRESETS.find((x) => x.id === activePreset);
@@ -103,147 +115,145 @@ export default function Discover({ onOpen }) {
       price_asc: (a, b) => (a.m.market ?? 0) - (b.m.market ?? 0),
     }[sortBy];
     return dir ? [...list].sort(dir) : list;
-  }, [cards, showCards, searching, search, selectedSet, activePreset, filterRisk, filterTrend, filterTag, priceRange, sortBy, tags]);
+  }, [cards, listing, mode, selectedSet, search, activePreset, filterRisk, filterTrend, filterTag, priceRange, sortBy, tags]);
 
   const openSet = sets.find((s) => s.id === selectedSet);
 
+  const switchCat = (id) => { setCat(id); setSelectedSet(null); setSearch(''); setActivePreset(null); };
+
   return (
     <>
-      {/* Hero: 5 highlights */}
-      {insights.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 18 }}>
-          {insights.map(({ icon, label, card, color, sub }) => (
-            <div key={label} onClick={() => onOpen(card, 'overview')} className="card-hover"
-              style={{ background: `linear-gradient(135deg, ${color}1f, ${color}08)`, border: `1px solid ${color}40`, borderRadius: 12, padding: 12, cursor: 'pointer' }}>
-              <div style={{ fontSize: 10, color, fontWeight: 700, marginBottom: 5 }}>{icon} {label}</div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.name}</div>
-              <div style={{ fontSize: 11, color: C.textDim, marginTop: 3 }}>{fmtEur(card.m.market)} · <span style={{ color, fontWeight: 700 }}>{sub(card)}</span></div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Category tabs */}
+      {/* Category tabs: Sets · Singles · Booster · Displays · Top-Trainer-Box */}
       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 16, borderBottom: `1px solid ${C.lineStrong}` }}>
-        {[{ id: 'singles', label: 'Singles', emoji: '🃏' }, ...SEALED_CATEGORIES].map((t) => (
-          <button key={t.id} onClick={() => { setCat(t.id); setSelectedSet(null); setSearch(''); }}
+        {TABS.map((t) => (
+          <button key={t.id} onClick={() => switchCat(t.id)}
             style={{ padding: '9px 16px', border: 'none', background: 'none', color: cat === t.id ? C.gold : C.textFaint, borderBottom: cat === t.id ? `2px solid ${C.gold}` : '2px solid transparent', cursor: 'pointer', fontWeight: cat === t.id ? 700 : 500, fontSize: 13.5, marginBottom: -1, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
             <span>{t.emoji}</span>{t.label}
           </button>
         ))}
       </div>
 
-      {cat !== 'singles' && <SealedGrid type={cat} />}
+      {/* Source line */}
+      <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 14 }}>
+        {source === 'snapshot' && <>🟢 Aktuelle Marktdaten (Cardmarket EU) · Stand {fmtRelative(lastUpdated)} · täglich aktualisiert · </>}
+        {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
+        {source === 'sample' && <>🃏 Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}
+        {cards.length} Karten in {sets.length} Sets
+      </div>
 
-      {cat === 'singles' && (
+      {error && (
+        <div style={{ background: '#ff525215', border: '1px solid #ff525240', borderRadius: 10, padding: 14, marginBottom: 16, color: C.red, fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <AlertCircle size={18} style={{ flexShrink: 0 }} /> <span style={{ flex: 1 }}>{error}</span>
+          <button onClick={loadSample} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #ff525240', background: '#ff525215', color: C.red, cursor: 'pointer', fontWeight: 700, fontSize: 12 }}>Beispieldaten laden</button>
+        </div>
+      )}
+
+      {mode === 'sealed' && <SealedGrid type={cat} />}
+
+      {loading && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+          {Array.from({ length: 8 }).map((_, i) => <div key={i} className="skeleton" style={{ height: 150 }} />)}
+        </div>
+      )}
+
+      {/* Sets home: big highlight cards + set tiles */}
+      {!loading && mode === 'home' && (
         <>
-          {/* Search + refresh (always); when a card list is shown, full controls too */}
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
-            <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-              <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.textFaint }} />
-              <input className="control" placeholder="Karte suchen (über alle Sets)…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ width: '100%', padding: '9px 10px 9px 32px' }} />
+          {highlights.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                🌟 Top-Karten
+                <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 500 }}>die 5 stärksten Karten gerade</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
+                {highlights.map((h) => (
+                  <div key={h.card.id} style={{ position: 'relative' }}>
+                    <div style={{ position: 'absolute', top: -8, left: 12, zIndex: 2, background: h.color, color: '#0c0c1a', fontSize: 10, fontWeight: 800, padding: '2px 9px', borderRadius: 20, boxShadow: `0 2px 8px ${h.color}66` }}>{h.label}</div>
+                    <CardTile card={h.card} onOpen={onOpen} />
+                  </div>
+                ))}
+              </div>
             </div>
-            {showCards && (
-              <>
-                <select className="control" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                  <option value="score">↕ Score</option>
-                  <option value="change30">↕ Veränderung 30T</option>
-                  <option value="change7">↕ Veränderung 7T</option>
-                  <option value="popularity">↕ Beliebtheit</option>
-                  <option value="margin">↕ Marge</option>
-                  <option value="price_desc">↕ Preis ↓</option>
-                  <option value="price_asc">↕ Preis ↑</option>
-                </select>
-                <select className="control" value={priceRange} onChange={(e) => setPriceRange(e.target.value)}>
-                  <option value="all">Alle Preise</option>
-                  <option value="<25">Unter €25</option>
-                  <option value="25-100">€25–100</option>
-                  <option value="100-500">€100–500</option>
-                  <option value="500+">€500+</option>
-                </select>
-                <select className="control" value={filterTrend} onChange={(e) => setFilterTrend(e.target.value)}>
-                  <option value="all">Alle Trends</option>
-                  <option value="rising">↑ Steigend</option>
-                  <option value="stable">→ Stabil</option>
-                  <option value="falling">↓ Fallend</option>
-                </select>
-                {allTags.length > 0 && (
-                  <select className="control" value={filterTag} onChange={(e) => setFilterTag(e.target.value)}>
-                    <option value="all">Alle Tags</option>
-                    {allTags.map((t) => <option key={t} value={t}>#{t}</option>)}
-                  </select>
-                )}
-                <div style={{ display: 'flex', gap: 4, background: C.bg2, border: `1px solid ${C.lineStrong}`, borderRadius: 8, padding: 3 }}>
-                  {[['grid', '⊞'], ['list', '≡']].map(([m, icon]) => (
-                    <button key={m} onClick={() => setViewMode(m)} style={{ padding: '5px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', background: viewMode === m ? '#ffd70022' : 'transparent', color: viewMode === m ? C.gold : C.textFaint, fontSize: 14, fontWeight: 700 }}>{icon}</button>
-                  ))}
-                </div>
-              </>
+          )}
+
+          <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+            🗂️ Alle Sets
+            <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 500 }}>klick ein Set für seine Karten</span>
+          </div>
+          {sets.length === 0
+            ? <EmptyState icon="🃏" title="Keine Daten" hint="Klicke »Aktualisieren«, um aktuelle Karten zu laden." />
+            : <SetTiles sets={sets} onSelect={setSelectedSet} />}
+        </>
+      )}
+
+      {/* Card listing: a set is open, or the Singles tab */}
+      {!loading && listing && (
+        <>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+            {mode === 'setdetail' && (
+              <button onClick={() => { setSelectedSet(null); setSearch(''); setActivePreset(null); }} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.lineStrong}`, background: C.surface, color: C.textSoft, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                <ChevronLeft size={14} /> Sets
+              </button>
             )}
+            <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
+              <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.textFaint }} />
+              <input className="control" placeholder={mode === 'setdetail' ? 'In diesem Set suchen…' : 'Karte suchen (über alle Sets)…'} value={search} onChange={(e) => setSearch(e.target.value)} style={{ width: '100%', padding: '9px 10px 9px 32px' }} />
+            </div>
+            <select className="control" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+              <option value="score">↕ Score</option>
+              <option value="change30">↕ Veränderung 30T</option>
+              <option value="change7">↕ Veränderung 7T</option>
+              <option value="popularity">↕ Beliebtheit</option>
+              <option value="margin">↕ Marge</option>
+              <option value="price_desc">↕ Preis ↓</option>
+              <option value="price_asc">↕ Preis ↑</option>
+            </select>
+            <select className="control" value={priceRange} onChange={(e) => setPriceRange(e.target.value)}>
+              <option value="all">Alle Preise</option>
+              <option value="<25">Unter €25</option>
+              <option value="25-100">€25–100</option>
+              <option value="100-500">€100–500</option>
+              <option value="500+">€500+</option>
+            </select>
+            <select className="control" value={filterTrend} onChange={(e) => setFilterTrend(e.target.value)}>
+              <option value="all">Alle Trends</option>
+              <option value="rising">↑ Steigend</option>
+              <option value="stable">→ Stabil</option>
+              <option value="falling">↓ Fallend</option>
+            </select>
+            {allTags.length > 0 && (
+              <select className="control" value={filterTag} onChange={(e) => setFilterTag(e.target.value)}>
+                <option value="all">Alle Tags</option>
+                {allTags.map((t) => <option key={t} value={t}>#{t}</option>)}
+              </select>
+            )}
+            <div style={{ display: 'flex', gap: 4, background: C.bg2, border: `1px solid ${C.lineStrong}`, borderRadius: 8, padding: 3 }}>
+              {[['grid', '⊞'], ['list', '≡']].map(([m, icon]) => (
+                <button key={m} onClick={() => setViewMode(m)} style={{ padding: '5px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', background: viewMode === m ? '#ffd70022' : 'transparent', color: viewMode === m ? C.gold : C.textFaint, fontSize: 14, fontWeight: 700 }}>{icon}</button>
+              ))}
+            </div>
             <button className="btn-primary" onClick={() => fetchCards()} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <RefreshCw size={13} className={loading ? 'spin' : ''} /> {loading ? 'Lädt…' : 'Aktualisieren'}
+              <RefreshCw size={13} className={loading ? 'spin' : ''} /> Aktualisieren
             </button>
           </div>
 
-          {/* Quick filters (only while listing cards) */}
-          {showCards && (
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' }}>
-              {PRESETS.map((p) => (
-                <button key={p.id} onClick={() => setActivePreset(activePreset === p.id ? null : p.id)}
-                  style={{ padding: '4px 11px', borderRadius: 20, border: `1px solid ${activePreset === p.id ? C.gold : C.lineStrong}`, background: activePreset === p.id ? '#ffd70015' : 'transparent', color: activePreset === p.id ? C.gold : C.textSoft, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{p.label}</button>
-              ))}
-              {activePreset && <button onClick={() => setActivePreset(null)} style={{ padding: '4px 8px', border: 'none', background: 'transparent', color: C.textFaint, fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }}>zurücksetzen</button>}
-            </div>
-          )}
-
-          {/* Source line */}
-          <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 12 }}>
-            {source === 'snapshot' && <>🟢 Aktuelle Marktdaten (Cardmarket EU) · Stand {fmtRelative(lastUpdated)} · täglich aktualisiert · </>}
-            {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
-            {source === 'sample' && <>🃏 Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}
-            {cards.length} Karten in {sets.length} Sets
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' }}>
+            {PRESETS.map((p) => (
+              <button key={p.id} onClick={() => setActivePreset(activePreset === p.id ? null : p.id)}
+                style={{ padding: '4px 11px', borderRadius: 20, border: `1px solid ${activePreset === p.id ? C.gold : C.lineStrong}`, background: activePreset === p.id ? '#ffd70015' : 'transparent', color: activePreset === p.id ? C.gold : C.textSoft, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{p.label}</button>
+            ))}
           </div>
 
-          {error && (
-            <div style={{ background: '#ff525215', border: '1px solid #ff525240', borderRadius: 10, padding: 14, marginBottom: 16, color: C.red, fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <AlertCircle size={18} style={{ flexShrink: 0 }} /> <span style={{ flex: 1 }}>{error}</span>
-              <button onClick={loadSample} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #ff525240', background: '#ff525215', color: C.red, cursor: 'pointer', fontWeight: 700, fontSize: 12 }}>Beispieldaten laden</button>
-            </div>
-          )}
+          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>
+            {mode === 'setdetail' ? openSet?.name : 'Alle Singles'}
+            <span style={{ color: C.textFaint, fontWeight: 500, marginLeft: 8, fontSize: 12 }}>{listed.length} Karten</span>
+          </div>
 
-          {loading && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
-              {Array.from({ length: 8 }).map((_, i) => <div key={i} className="skeleton" style={{ height: 150 }} />)}
-            </div>
-          )}
-
-          {/* Set browser (default) */}
-          {!loading && !showCards && (
-            sets.length === 0
-              ? <EmptyState icon="🃏" title="Keine Daten" hint="Klicke »Aktualisieren«, um aktuelle Karten zu laden." />
-              : <SetTiles sets={sets} onSelect={setSelectedSet} />
-          )}
-
-          {/* Card list (a set is open, or searching) */}
-          {!loading && showCards && (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-                <button onClick={() => { setSelectedSet(null); setSearch(''); setActivePreset(null); }} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 8, border: `1px solid ${C.lineStrong}`, background: C.surface, color: C.textSoft, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                  <ChevronLeft size={14} /> Alle Sets
-                </button>
-                <div style={{ fontSize: 14, fontWeight: 700 }}>
-                  {searching ? `Suche: „${search}"` : openSet?.name}
-                  <span style={{ color: C.textFaint, fontWeight: 500, marginLeft: 8, fontSize: 12 }}>{listed.length} Karten</span>
-                </div>
-              </div>
-
-              {listed.length === 0
-                ? <EmptyState icon="🔍" title="Keine Karten gefunden" hint="Anderen Suchbegriff oder Filter probieren." />
-                : viewMode === 'grid'
-                  ? <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>{listed.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}</div>
-                  : <ListView cards={listed} onOpen={onOpen} />}
-            </>
-          )}
+          {listed.length === 0
+            ? <EmptyState icon="🔍" title="Keine Karten gefunden" hint="Anderen Suchbegriff oder Filter probieren." />
+            : viewMode === 'grid'
+              ? <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>{listed.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}</div>
+              : <ListView cards={listed} onOpen={onOpen} />}
         </>
       )}
     </>
