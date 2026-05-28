@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Search, RefreshCw, AlertCircle, ExternalLink } from 'lucide-react';
+import { Search, RefreshCw, AlertCircle, ExternalLink, ChevronLeft } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, trendColor, trendIcon } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtRelative } from '../lib/format.js';
@@ -7,7 +7,7 @@ import { marketLinks } from '../lib/marketLinks.js';
 import CardTile from './CardTile.jsx';
 import SealedGrid from './SealedGrid.jsx';
 import { SEALED_CATEGORIES } from '../data/sealedProducts.js';
-import { ChangeBadge, ScoreBadge, EmptyState } from './ui.jsx';
+import { ChangeBadge, ScoreBadge, EmptyState, CardImage } from './ui.jsx';
 
 const PRESETS = [
   { id: 'risers', label: '🚀 Steiger', fn: (c) => c.m.trend === 'rising' && (c.m.change30 ?? 0) > 3 },
@@ -20,6 +20,8 @@ const PRESETS = [
 
 export default function Discover({ onOpen }) {
   const { cards, loading, error, source, lastUpdated, fetchCards, loadSample, tags } = useStore();
+  const [cat, setCat] = useState('singles');
+  const [selectedSet, setSelectedSet] = useState(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('score');
   const [priceRange, setPriceRange] = useState('all');
@@ -28,42 +30,12 @@ export default function Discover({ onOpen }) {
   const [filterTag, setFilterTag] = useState('all');
   const [activePreset, setActivePreset] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
-  const [cat, setCat] = useState('singles');
 
   const allTags = useMemo(() => [...new Set(Object.values(tags).flat())].sort(), [tags]);
+  const searching = search.trim().length > 0;
+  const showCards = searching || !!selectedSet;
 
-  const filtered = useMemo(() => {
-    let list = cards;
-    if (activePreset) {
-      const p = PRESETS.find((x) => x.id === activePreset);
-      if (p) list = list.filter(p.fn);
-    }
-    list = list
-      .filter((c) => filterRisk === 'all' || c.m.risk === filterRisk)
-      .filter((c) => filterTrend === 'all' || c.m.trend === filterTrend)
-      .filter((c) => filterTag === 'all' || (tags[c.id] || []).includes(filterTag))
-      .filter((c) => {
-        const m = c.m.market ?? 0;
-        if (priceRange === '<25') return m < 25;
-        if (priceRange === '25-100') return m >= 25 && m < 100;
-        if (priceRange === '100-500') return m >= 100 && m < 500;
-        if (priceRange === '500+') return m >= 500;
-        return true;
-      })
-      .filter((c) => !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.set?.toLowerCase().includes(search.toLowerCase()));
-
-    const dir = {
-      score: (a, b) => b.m.score - a.m.score,
-      change30: (a, b) => (b.m.change30 ?? -999) - (a.m.change30 ?? -999),
-      change7: (a, b) => (b.m.change7 ?? -999) - (a.m.change7 ?? -999),
-      popularity: (a, b) => b.m.popularity - a.m.popularity,
-      margin: (a, b) => (b.m.margin ?? -999) - (a.m.margin ?? -999),
-      price_desc: (a, b) => (b.m.market ?? 0) - (a.m.market ?? 0),
-      price_asc: (a, b) => (a.m.market ?? 0) - (b.m.market ?? 0),
-    }[sortBy];
-    return dir ? [...list].sort(dir) : list;
-  }, [cards, activePreset, filterRisk, filterTrend, filterTag, priceRange, search, sortBy, tags]);
-
+  // ---- 5 highlights (the start-page hero) -------------------------------
   const insights = useMemo(() => {
     if (cards.length === 0) return [];
     const byScore = [...cards].sort((a, b) => b.m.score - a.m.score);
@@ -80,25 +52,82 @@ export default function Discover({ onOpen }) {
     ].filter((x) => x.card);
   }, [cards]);
 
+  // ---- sets index (group cards by set) ----------------------------------
+  const sets = useMemo(() => {
+    const m = new Map();
+    for (const c of cards) {
+      const key = c.setId || c.set || 'unknown';
+      let g = m.get(key);
+      if (!g) { g = { id: key, name: c.set || '—', releaseDate: c.setReleaseDate || '', year: c.year || 0, count: 0, top: null }; m.set(key, g); }
+      g.count += 1;
+      if (!g.top || (c.m.market ?? 0) > (g.top.m.market ?? 0)) g.top = c;
+      if (c.setReleaseDate && c.setReleaseDate > g.releaseDate) g.releaseDate = c.setReleaseDate;
+      if (c.year && c.year > g.year) g.year = c.year;
+    }
+    return [...m.values()].sort((a, b) => (b.releaseDate || '').localeCompare(a.releaseDate || '') || b.year - a.year);
+  }, [cards]);
+
+  // ---- cards to list (only when a set is open or searching) -------------
+  const listed = useMemo(() => {
+    if (!showCards) return [];
+    let list = cards;
+    if (searching) {
+      const q = search.toLowerCase();
+      list = list.filter((c) => c.name.toLowerCase().includes(q) || c.set?.toLowerCase().includes(q));
+    } else {
+      list = list.filter((c) => (c.setId || c.set) === selectedSet);
+    }
+    if (activePreset) {
+      const p = PRESETS.find((x) => x.id === activePreset);
+      if (p) list = list.filter(p.fn);
+    }
+    list = list
+      .filter((c) => filterRisk === 'all' || c.m.risk === filterRisk)
+      .filter((c) => filterTrend === 'all' || c.m.trend === filterTrend)
+      .filter((c) => filterTag === 'all' || (tags[c.id] || []).includes(filterTag))
+      .filter((c) => {
+        const mk = c.m.market ?? 0;
+        if (priceRange === '<25') return mk < 25;
+        if (priceRange === '25-100') return mk >= 25 && mk < 100;
+        if (priceRange === '100-500') return mk >= 100 && mk < 500;
+        if (priceRange === '500+') return mk >= 500;
+        return true;
+      });
+    const dir = {
+      score: (a, b) => b.m.score - a.m.score,
+      change30: (a, b) => (b.m.change30 ?? -999) - (a.m.change30 ?? -999),
+      change7: (a, b) => (b.m.change7 ?? -999) - (a.m.change7 ?? -999),
+      popularity: (a, b) => b.m.popularity - a.m.popularity,
+      margin: (a, b) => (b.m.margin ?? -999) - (a.m.margin ?? -999),
+      price_desc: (a, b) => (b.m.market ?? 0) - (a.m.market ?? 0),
+      price_asc: (a, b) => (a.m.market ?? 0) - (b.m.market ?? 0),
+    }[sortBy];
+    return dir ? [...list].sort(dir) : list;
+  }, [cards, showCards, searching, search, selectedSet, activePreset, filterRisk, filterTrend, filterTag, priceRange, sortBy, tags]);
+
+  const openSet = sets.find((s) => s.id === selectedSet);
+
   return (
     <>
+      {/* Hero: 5 highlights */}
       {insights.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 10, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 18 }}>
           {insights.map(({ icon, label, card, color, sub }) => (
             <div key={label} onClick={() => onOpen(card, 'overview')} className="card-hover"
-              style={{ background: `linear-gradient(135deg, ${color}18, ${color}05)`, border: `1px solid ${color}40`, borderRadius: 12, padding: 12, cursor: 'pointer' }}>
+              style={{ background: `linear-gradient(135deg, ${color}1f, ${color}08)`, border: `1px solid ${color}40`, borderRadius: 12, padding: 12, cursor: 'pointer' }}>
               <div style={{ fontSize: 10, color, fontWeight: 700, marginBottom: 5 }}>{icon} {label}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.name}</div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{card.name}</div>
               <div style={{ fontSize: 11, color: C.textDim, marginTop: 3 }}>{fmtEur(card.m.market)} · <span style={{ color, fontWeight: 700 }}>{sub(card)}</span></div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Category tabs: Singles (live cards) + sealed products */}
+      {/* Category tabs */}
       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 16, borderBottom: `1px solid ${C.lineStrong}` }}>
         {[{ id: 'singles', label: 'Singles', emoji: '🃏' }, ...SEALED_CATEGORIES].map((t) => (
-          <button key={t.id} onClick={() => setCat(t.id)} style={{ padding: '9px 16px', border: 'none', background: 'none', color: cat === t.id ? C.gold : C.textFaint, borderBottom: cat === t.id ? `2px solid ${C.gold}` : '2px solid transparent', cursor: 'pointer', fontWeight: cat === t.id ? 700 : 500, fontSize: 13.5, marginBottom: -1, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+          <button key={t.id} onClick={() => { setCat(t.id); setSelectedSet(null); setSearch(''); }}
+            style={{ padding: '9px 16px', border: 'none', background: 'none', color: cat === t.id ? C.gold : C.textFaint, borderBottom: cat === t.id ? `2px solid ${C.gold}` : '2px solid transparent', cursor: 'pointer', fontWeight: cat === t.id ? 700 : 500, fontSize: 13.5, marginBottom: -1, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
             <span>{t.emoji}</span>{t.label}
           </button>
         ))}
@@ -108,109 +137,138 @@ export default function Discover({ onOpen }) {
 
       {cat === 'singles' && (
         <>
-      {/* Quick filters */}
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' }}>
-        <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Schnellfilter:</span>
-        {PRESETS.map((p) => (
-          <button key={p.id} onClick={() => setActivePreset(activePreset === p.id ? null : p.id)}
-            style={{ padding: '4px 11px', borderRadius: 20, border: `1px solid ${activePreset === p.id ? C.gold : C.lineStrong}`, background: activePreset === p.id ? '#ffd70015' : 'transparent', color: activePreset === p.id ? C.gold : C.textSoft, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
-            {p.label}
-          </button>
-        ))}
-        {activePreset && <button onClick={() => setActivePreset(null)} style={{ padding: '4px 8px', border: 'none', background: 'transparent', color: C.textFaint, fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }}>zurücksetzen</button>}
-      </div>
+          {/* Search + refresh (always); when a card list is shown, full controls too */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+            <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+              <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.textFaint }} />
+              <input className="control" placeholder="Karte suchen (über alle Sets)…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ width: '100%', padding: '9px 10px 9px 32px' }} />
+            </div>
+            {showCards && (
+              <>
+                <select className="control" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                  <option value="score">↕ Score</option>
+                  <option value="change30">↕ Veränderung 30T</option>
+                  <option value="change7">↕ Veränderung 7T</option>
+                  <option value="popularity">↕ Beliebtheit</option>
+                  <option value="margin">↕ Marge</option>
+                  <option value="price_desc">↕ Preis ↓</option>
+                  <option value="price_asc">↕ Preis ↑</option>
+                </select>
+                <select className="control" value={priceRange} onChange={(e) => setPriceRange(e.target.value)}>
+                  <option value="all">Alle Preise</option>
+                  <option value="<25">Unter €25</option>
+                  <option value="25-100">€25–100</option>
+                  <option value="100-500">€100–500</option>
+                  <option value="500+">€500+</option>
+                </select>
+                <select className="control" value={filterTrend} onChange={(e) => setFilterTrend(e.target.value)}>
+                  <option value="all">Alle Trends</option>
+                  <option value="rising">↑ Steigend</option>
+                  <option value="stable">→ Stabil</option>
+                  <option value="falling">↓ Fallend</option>
+                </select>
+                {allTags.length > 0 && (
+                  <select className="control" value={filterTag} onChange={(e) => setFilterTag(e.target.value)}>
+                    <option value="all">Alle Tags</option>
+                    {allTags.map((t) => <option key={t} value={t}>#{t}</option>)}
+                  </select>
+                )}
+                <div style={{ display: 'flex', gap: 4, background: C.bg2, border: `1px solid ${C.lineStrong}`, borderRadius: 8, padding: 3 }}>
+                  {[['grid', '⊞'], ['list', '≡']].map(([m, icon]) => (
+                    <button key={m} onClick={() => setViewMode(m)} style={{ padding: '5px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', background: viewMode === m ? '#ffd70022' : 'transparent', color: viewMode === m ? C.gold : C.textFaint, fontSize: 14, fontWeight: 700 }}>{icon}</button>
+                  ))}
+                </div>
+              </>
+            )}
+            <button className="btn-primary" onClick={() => fetchCards()} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <RefreshCw size={13} className={loading ? 'spin' : ''} /> {loading ? 'Lädt…' : 'Aktualisieren'}
+            </button>
+          </div>
 
-      {/* Search + controls */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-          <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.textFaint }} />
-          <input
-            className="control"
-            placeholder="Karte oder Set filtern…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ width: '100%', padding: '9px 10px 9px 32px' }}
-          />
-        </div>
-        <select className="control" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          <option value="score">↕ Score</option>
-          <option value="change30">↕ Veränderung 30T</option>
-          <option value="change7">↕ Veränderung 7T</option>
-          <option value="popularity">↕ Beliebtheit</option>
-          <option value="margin">↕ Marge</option>
-          <option value="price_desc">↕ Preis ↓</option>
-          <option value="price_asc">↕ Preis ↑</option>
-        </select>
-        <select className="control" value={priceRange} onChange={(e) => setPriceRange(e.target.value)}>
-          <option value="all">Alle Preise</option>
-          <option value="<25">Unter €25</option>
-          <option value="25-100">€25–100</option>
-          <option value="100-500">€100–500</option>
-          <option value="500+">€500+</option>
-        </select>
-        <select className="control" value={filterTrend} onChange={(e) => setFilterTrend(e.target.value)}>
-          <option value="all">Alle Trends</option>
-          <option value="rising">↑ Steigend</option>
-          <option value="stable">→ Stabil</option>
-          <option value="falling">↓ Fallend</option>
-        </select>
-        <select className="control" value={filterRisk} onChange={(e) => setFilterRisk(e.target.value)}>
-          <option value="all">Alle Risiken</option>
-          <option value="low">Niedrig</option>
-          <option value="medium">Mittel</option>
-          <option value="high">Hoch</option>
-        </select>
-        {allTags.length > 0 && (
-          <select className="control" value={filterTag} onChange={(e) => setFilterTag(e.target.value)}>
-            <option value="all">Alle Tags</option>
-            {allTags.map((t) => <option key={t} value={t}>#{t}</option>)}
-          </select>
-        )}
-        <div style={{ display: 'flex', gap: 4, background: C.bg2, border: `1px solid ${C.lineStrong}`, borderRadius: 8, padding: 3 }}>
-          {[['grid', '⊞'], ['list', '≡']].map(([m, icon]) => (
-            <button key={m} onClick={() => setViewMode(m)} style={{ padding: '5px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', background: viewMode === m ? '#ffd70022' : 'transparent', color: viewMode === m ? C.gold : C.textFaint, fontSize: 14, fontWeight: 700 }}>{icon}</button>
-          ))}
-        </div>
-        <button className="btn-primary" onClick={() => fetchCards()} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <RefreshCw size={13} className={loading ? 'spin' : ''} /> {loading ? 'Lädt…' : 'Aktualisieren'}
-        </button>
-      </div>
+          {/* Quick filters (only while listing cards) */}
+          {showCards && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' }}>
+              {PRESETS.map((p) => (
+                <button key={p.id} onClick={() => setActivePreset(activePreset === p.id ? null : p.id)}
+                  style={{ padding: '4px 11px', borderRadius: 20, border: `1px solid ${activePreset === p.id ? C.gold : C.lineStrong}`, background: activePreset === p.id ? '#ffd70015' : 'transparent', color: activePreset === p.id ? C.gold : C.textSoft, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{p.label}</button>
+              ))}
+              {activePreset && <button onClick={() => setActivePreset(null)} style={{ padding: '4px 8px', border: 'none', background: 'transparent', color: C.textFaint, fontSize: 11, cursor: 'pointer', textDecoration: 'underline' }}>zurücksetzen</button>}
+            </div>
+          )}
 
-      {/* Source line */}
-      <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 12 }}>
-        {source === 'snapshot' && <>🟢 Aktuelle Marktdaten (Cardmarket EU) · Stand {fmtRelative(lastUpdated)} · täglich automatisch aktualisiert · </>}
-        {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
-        {source === 'sample' && <>🃏 Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}
-        Zeige <strong style={{ color: C.textSoft }}>{filtered.length}</strong> von {cards.length} Karten
-      </div>
+          {/* Source line */}
+          <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 12 }}>
+            {source === 'snapshot' && <>🟢 Aktuelle Marktdaten (Cardmarket EU) · Stand {fmtRelative(lastUpdated)} · täglich aktualisiert · </>}
+            {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
+            {source === 'sample' && <>🃏 Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}
+            {cards.length} Karten in {sets.length} Sets
+          </div>
 
-      {error && (
-        <div style={{ background: '#ff525215', border: '1px solid #ff525240', borderRadius: 10, padding: 14, marginBottom: 16, color: C.red, fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <AlertCircle size={18} style={{ flexShrink: 0 }} /> <span style={{ flex: 1 }}>{error}</span>
-          <button onClick={loadSample} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #ff525240', background: '#ff525215', color: C.red, cursor: 'pointer', fontWeight: 700, fontSize: 12 }}>Beispieldaten laden</button>
-        </div>
-      )}
+          {error && (
+            <div style={{ background: '#ff525215', border: '1px solid #ff525240', borderRadius: 10, padding: 14, marginBottom: 16, color: C.red, fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <AlertCircle size={18} style={{ flexShrink: 0 }} /> <span style={{ flex: 1 }}>{error}</span>
+              <button onClick={loadSample} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #ff525240', background: '#ff525215', color: C.red, cursor: 'pointer', fontWeight: 700, fontSize: 12 }}>Beispieldaten laden</button>
+            </div>
+          )}
 
-      {loading && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
-          {Array.from({ length: 6 }).map((_, i) => <div key={i} className="skeleton" style={{ height: 270 }} />)}
-        </div>
-      )}
+          {loading && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+              {Array.from({ length: 8 }).map((_, i) => <div key={i} className="skeleton" style={{ height: 150 }} />)}
+            </div>
+          )}
 
-      {!loading && filtered.length === 0 && (
-        <EmptyState icon="🔍" title="Keine Karten gefunden" hint="Filter zurücksetzen oder mit der Suche live von Cardmarket laden." />
-      )}
+          {/* Set browser (default) */}
+          {!loading && !showCards && (
+            sets.length === 0
+              ? <EmptyState icon="🃏" title="Keine Daten" hint="Klicke »Aktualisieren«, um aktuelle Karten zu laden." />
+              : <SetTiles sets={sets} onSelect={setSelectedSet} />
+          )}
 
-      {!loading && filtered.length > 0 && viewMode === 'grid' && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
-          {filtered.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}
-        </div>
-      )}
+          {/* Card list (a set is open, or searching) */}
+          {!loading && showCards && (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
+                <button onClick={() => { setSelectedSet(null); setSearch(''); setActivePreset(null); }} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px', borderRadius: 8, border: `1px solid ${C.lineStrong}`, background: C.surface, color: C.textSoft, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  <ChevronLeft size={14} /> Alle Sets
+                </button>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>
+                  {searching ? `Suche: „${search}"` : openSet?.name}
+                  <span style={{ color: C.textFaint, fontWeight: 500, marginLeft: 8, fontSize: 12 }}>{listed.length} Karten</span>
+                </div>
+              </div>
 
-      {!loading && filtered.length > 0 && viewMode === 'list' && <ListView cards={filtered} onOpen={onOpen} />}
+              {listed.length === 0
+                ? <EmptyState icon="🔍" title="Keine Karten gefunden" hint="Anderen Suchbegriff oder Filter probieren." />
+                : viewMode === 'grid'
+                  ? <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>{listed.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}</div>
+                  : <ListView cards={listed} onOpen={onOpen} />}
+            </>
+          )}
         </>
       )}
     </>
+  );
+}
+
+function SetTiles({ sets, onSelect }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 12 }}>
+      {sets.map((s) => (
+        <button key={s.id} onClick={() => onSelect(s.id)} className="card-hover fade-in"
+          style={{ display: 'flex', gap: 12, textAlign: 'left', background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 12, cursor: 'pointer', color: C.text, alignItems: 'center' }}>
+          <CardImage card={s.top} height={74} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 13.5, lineHeight: 1.3 }}>{s.name}</div>
+            <div style={{ fontSize: 11, color: C.textDim, marginTop: 3 }}>{s.year || '—'}</div>
+            <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'baseline' }}>
+              <span style={{ fontSize: 16, fontWeight: 800, color: C.gold }}>{s.count}</span>
+              <span style={{ fontSize: 10, color: C.textFaint }}>Karten</span>
+            </div>
+            {s.top && <div style={{ fontSize: 10, color: C.textFaint, marginTop: 2 }}>Top: {fmtEur(s.top.m.market, 0)}</div>}
+          </div>
+        </button>
+      ))}
+    </div>
   );
 }
 

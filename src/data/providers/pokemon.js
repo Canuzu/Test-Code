@@ -41,6 +41,7 @@ export const normalize = (raw) => {
     baseName: raw.name,
     set: raw.set?.name || '',
     setId: raw.set?.id || '',
+    setReleaseDate: raw.set?.releaseDate || '',
     series: raw.set?.series || '',
     number: raw.number || '',
     rarity: raw.rarity || '',

@@ -1,7 +1,10 @@
 // Build-time price fetcher. Runs on the GitHub Actions server (no browser CORS
 // limits) and writes a static snapshot to public/data/cards.json, which the
-// app then loads same-origin. This is what makes "live" data work on a static
-// GitHub Pages site. Scheduled daily in the deploy workflow.
+// app loads same-origin. Scheduled daily in the deploy workflow.
+//
+// Contents:
+//   1. ALL priced cards from the 2 newest Pokémon sets (determined live).
+//   2. A curated breadth of high-value cards across other sets.
 //
 // Works with or without a pokemontcg.io API key (POKEMONTCG_API_KEY env var).
 // On any failure it writes an empty snapshot and exits 0 so the deploy still
@@ -16,11 +19,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/data/cards.json');
 const BASE = 'https://api.pokemontcg.io/v2';
 const API_KEY = process.env.POKEMONTCG_API_KEY || '';
-const TARGET = 100; // how many cards to keep in the snapshot
+const CURATED_LIMIT = 200; // top valuable cards from the breadth queries
+const HARD_CAP = 1200; // safety bound on snapshot size
 const SELECT = 'id,name,number,rarity,supertype,subtypes,images,set,cardmarket';
+const headers = API_KEY ? { 'X-Api-Key': API_KEY } : {};
 
-// Curated queries that reliably return valuable, German-market-relevant cards
-// with real Cardmarket prices. We merge, keep priced cards, sort by price.
+// Breadth queries: valuable, German-market-relevant cards across many sets.
 const QUERIES = [
   'rarity:"Special Illustration Rare"',
   'rarity:"Illustration Rare"',
@@ -28,18 +32,39 @@ const QUERIES = [
   'set.id:swsh7', // Evolving Skies (Moonbreon & alt arts)
   'set.id:base1', // Base Set classics
   'set.id:sv3pt5', // Pokémon 151
-  'set.id:sv8', // Surging Sparks
-  'set.id:sv8pt5', // Prismatic Evolutions
   'set.id:swsh12pt5', // Crown Zenith
 ];
 
-async function fetchQuery(q, pageSize = 60) {
-  const params = new URLSearchParams({ q, pageSize: String(pageSize), orderBy: '-set.releaseDate', select: SELECT });
-  const res = await fetch(`${BASE}/cards?${params}`, {
-    headers: API_KEY ? { 'X-Api-Key': API_KEY } : {},
-  });
+async function getJSON(url) {
+  const res = await fetch(url, { headers });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
+  return res.json();
+}
+
+// The 2 newest sets, by release date (fetch all sets and sort — robust).
+async function newestSets(n = 2) {
+  const json = await getJSON(`${BASE}/sets?pageSize=250&select=id,name,releaseDate`);
+  return (json.data || [])
+    .filter((s) => s.releaseDate)
+    .sort((a, b) => b.releaseDate.localeCompare(a.releaseDate))
+    .slice(0, n);
+}
+
+async function allCardsInSet(setId) {
+  const out = [];
+  for (let page = 1; page <= 4; page++) {
+    const params = new URLSearchParams({ q: `set.id:${setId}`, pageSize: '250', page: String(page), select: SELECT });
+    const json = await getJSON(`${BASE}/cards?${params}`);
+    const data = json.data || [];
+    out.push(...data);
+    if (data.length < 250) break;
+  }
+  return out;
+}
+
+async function runQuery(q) {
+  const params = new URLSearchParams({ q, pageSize: '80', orderBy: '-set.releaseDate', select: SELECT });
+  const json = await getJSON(`${BASE}/cards?${params}`);
   return json.data || [];
 }
 
@@ -53,24 +78,45 @@ async function main() {
   const byId = new Map();
   let anyOk = false;
 
-  for (const q of QUERIES) {
-    try {
-      const raw = await fetchQuery(q);
+  // 1) ALL cards from the 2 newest sets.
+  try {
+    const sets = await newestSets(2);
+    console.log(`[fetch-prices] newest sets: ${sets.map((s) => `${s.name} (${s.id}, ${s.releaseDate})`).join(', ')}`);
+    for (const s of sets) {
+      const raw = await allCardsInSet(s.id);
       anyOk = true;
       let kept = 0;
       for (const r of raw) {
         const c = normalize(r);
         if (c.prices.market != null) { byId.set(c.id, c); kept++; }
       }
-      console.log(`[fetch-prices] "${q}" -> ${raw.length} cards, ${kept} priced`);
+      console.log(`[fetch-prices] set ${s.id}: ${raw.length} cards, ${kept} priced`);
+    }
+  } catch (e) {
+    console.error(`[fetch-prices] newest-sets step failed: ${e.message}`);
+  }
+
+  // 2) Curated breadth: keep the most valuable across the queries.
+  const curated = new Map();
+  for (const q of QUERIES) {
+    try {
+      const raw = await runQuery(q);
+      anyOk = true;
+      for (const r of raw) {
+        const c = normalize(r);
+        if (c.prices.market != null) curated.set(c.id, c);
+      }
+      console.log(`[fetch-prices] "${q}" -> ${raw.length} cards`);
     } catch (e) {
       console.error(`[fetch-prices] query "${q}" failed: ${e.message}`);
     }
   }
-
-  const cards = [...byId.values()]
+  [...curated.values()]
     .sort((a, b) => (b.prices.market ?? 0) - (a.prices.market ?? 0))
-    .slice(0, TARGET);
+    .slice(0, CURATED_LIMIT)
+    .forEach((c) => byId.set(c.id, c));
+
+  const cards = [...byId.values()].slice(0, HARD_CAP);
 
   if (!anyOk || cards.length === 0) {
     console.error('[fetch-prices] ⚠️  No live data fetched — app will use bundled sample data.');
