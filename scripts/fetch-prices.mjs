@@ -73,6 +73,53 @@ async function writeSnapshot(payload) {
   await writeFile(OUT, JSON.stringify(payload));
 }
 
+// ---- German names (official, from PokéAPI) ----------------------------------
+const speciesSlug = (name) => (name || '')
+  .toLowerCase()
+  .replace(/[.'’:]/g, '')
+  .replace(/\s+/g, '-')
+  .replace(/[^a-z0-9-]/g, '')
+  .replace(/-+/g, '-')
+  .replace(/(^-|-$)/g, '');
+
+async function mapPool(items, limit, fn) {
+  let i = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (i < items.length) { const idx = i++; await fn(items[idx]); }
+  });
+  await Promise.all(workers);
+}
+
+// Translate the Pokémon part of each card name to its official German name.
+// Trainer/Energy cards (no matching species) and set names stay English.
+async function applyGermanNames(cards) {
+  const slugToBase = new Map();
+  for (const c of cards) {
+    const slug = speciesSlug(c.baseName);
+    if (slug && !slugToBase.has(slug)) slugToBase.set(slug, c.baseName);
+  }
+  const de = new Map();
+  await mapPool([...slugToBase.keys()], 8, async (slug) => {
+    try {
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${slug}`);
+      if (!res.ok) return;
+      const json = await res.json();
+      const name = (json.names || []).find((n) => n.language?.name === 'de')?.name;
+      if (name) de.set(slug, name);
+    } catch { /* keep English for this one */ }
+  });
+
+  let translated = 0;
+  for (const c of cards) {
+    const g = de.get(speciesSlug(c.baseName));
+    if (g && c.baseName && c.name.includes(c.baseName)) {
+      const next = c.name.replace(c.baseName, g);
+      if (next !== c.name) { c.nameEn = c.name; c.name = next; translated++; }
+    }
+  }
+  console.log(`[fetch-prices] German names: ${de.size} species resolved, ${translated} cards translated`);
+}
+
 async function main() {
   console.log(`[fetch-prices] API key: ${API_KEY ? 'present' : 'none (keyless)'}`);
   const byId = new Map();
@@ -122,6 +169,12 @@ async function main() {
     console.error('[fetch-prices] ⚠️  No live data fetched — app will use bundled sample data.');
     await writeSnapshot({ generatedAt: new Date().toISOString(), source: 'pokemontcg.io', error: 'fetch_failed_or_empty', count: 0, cards: [] });
     return;
+  }
+
+  try {
+    await applyGermanNames(cards);
+  } catch (e) {
+    console.error(`[fetch-prices] German-name step failed (keeping English): ${e.message}`);
   }
 
   await writeSnapshot({

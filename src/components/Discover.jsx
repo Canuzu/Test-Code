@@ -87,7 +87,7 @@ export default function Discover({ onOpen }) {
     if (mode === 'setdetail') list = list.filter((c) => (c.setId || c.set) === selectedSet);
     if (search.trim()) {
       const q = search.toLowerCase();
-      list = list.filter((c) => c.name.toLowerCase().includes(q) || c.set?.toLowerCase().includes(q));
+      list = list.filter((c) => c.name.toLowerCase().includes(q) || c.nameEn?.toLowerCase().includes(q) || c.set?.toLowerCase().includes(q));
     }
     if (activePreset) {
       const p = PRESETS.find((x) => x.id === activePreset);
