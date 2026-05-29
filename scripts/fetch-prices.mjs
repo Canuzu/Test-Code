@@ -3,7 +3,7 @@
 // app loads same-origin. Scheduled daily in the deploy workflow.
 //
 // Contents:
-//   1. ALL priced cards from the 2 newest Pokémon sets (determined live).
+//   1. ALL priced cards from the 4 newest Pokémon sets (determined live).
 //   2. A curated breadth of high-value cards across other sets.
 //
 // Works with or without a pokemontcg.io API key (POKEMONTCG_API_KEY env var).
@@ -20,8 +20,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/data/cards.json');
 const BASE = 'https://api.pokemontcg.io/v2';
 const API_KEY = process.env.POKEMONTCG_API_KEY || '';
+const NEWEST_SETS = 4; // include every card from the N newest sets
 const CURATED_LIMIT = 200; // top valuable cards from the breadth queries
-const HARD_CAP = 1200; // safety bound on snapshot size
+const HARD_CAP = 2600; // safety bound on snapshot size
 const SELECT = 'id,name,number,rarity,supertype,subtypes,images,set,cardmarket';
 const headers = API_KEY ? { 'X-Api-Key': API_KEY } : {};
 
@@ -42,7 +43,7 @@ async function getJSON(url) {
   return res.json();
 }
 
-// The 2 newest sets, by release date (fetch all sets and sort — robust).
+// The N newest sets, by release date (fetch all sets and sort — robust).
 async function newestSets(n = 2) {
   const json = await getJSON(`${BASE}/sets?pageSize=250&select=id,name,releaseDate`);
   return (json.data || [])
@@ -126,9 +127,9 @@ async function main() {
   const byId = new Map();
   let anyOk = false;
 
-  // 1) ALL cards from the 2 newest sets.
+  // 1) ALL cards from the newest sets.
   try {
-    const sets = await newestSets(2);
+    const sets = await newestSets(NEWEST_SETS);
     console.log(`[fetch-prices] newest sets: ${sets.map((s) => `${s.name} (${s.id}, ${s.releaseDate})`).join(', ')}`);
     for (const s of sets) {
       const raw = await allCardsInSet(s.id);

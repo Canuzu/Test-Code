@@ -56,6 +56,16 @@
 - C ✓: History-Integration in `App.jsx` (push/replaceState pro Tab/Modal-Wechsel, `popstate`-Restore inkl. Karten-Modal via cardsRef; `firstNav`/`isPopping`-Guards) + ◀/▶-Buttons im Header.
 - D ✓: Hinweis-Footer in `AlertsView` (E-Mail braucht Backend), erweiterte Märkte-Notiz in `CardModal` (Auto-Live bei CM-Secrets); Pro-Demo-Hinweis steht bereits in `PricingModal`.
 
+## Folge-Batch 2 (Accounts, mehr Karten, Farben)
+- [ ] E. User-Accounts: lokales Login/Registrierung, pro Konto getrennte Daten (No-Backend, gekennzeichnet)
+- [x] F. Mehr Karten: Build holt die **4 neuesten Sets** mit **jeder** Karte
+- [x] G. Farben übersichtlicher (mehr Kontrast) ohne Design-Umbau
+
+### Folge-Batch 2 — Details
+- F ✓: `scripts/fetch-prices.mjs` → `NEWEST_SETS=4` (vorher 2), `HARD_CAP=2600`; holt jede Karte der 4 neuesten Sets + kuratierte Breite. README aktualisiert. (Lokal nicht testbar: pokemontcg.io in Sandbox 403; Skript fängt es ab. Greift im CI.)
+- G ✓: Kontrast erhöht in `theme.js` (DARK+LIGHT) und `index.css` (synchron): hellere/dunklere Sekundärtexte (textSoft/Dim/Faint/Ghost) + etwas stärkere Linien. Akzente & Layout unverändert.
+- E: (in Arbeit)
+
 ## Hinweise / offene Punkte für später
 - Deploy-Workflow triggert nur auf `main` (+ alter Branch). Für Live-Schaltung
   müssen die Änderungen nach `main` gemerged werden (bewusst nicht ohne
