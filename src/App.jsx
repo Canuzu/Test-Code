@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Settings as Cog, GitCompare, Download, Sun, Moon, Crown, Smartphone, ArrowLeft, ArrowRight, User } from 'lucide-react';
+import { Settings as Cog, GitCompare, Sun, Moon, Crown, Smartphone, ArrowLeft, ArrowRight, User } from 'lucide-react';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
 import { isPro } from './lib/pro.js';
@@ -29,25 +29,11 @@ function Loader() {
   );
 }
 
-const exportCSV = (cards) => {
-  if (!cards.length) return;
-  const head = ['Name', 'Set', 'Seltenheit', 'Markt', 'Guenstigste', 'Trend', 'Aenderung7T%', 'Aenderung30T%', 'Beliebtheit', 'Risiko', 'Score', 'Tier'];
-  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-  const rows = cards.map((c) => [c.name, c.set, c.rarity, c.m.market, c.prices.low, c.prices.trend, c.m.change7?.toFixed(1), c.m.change30?.toFixed(1), c.m.popularity, c.m.risk, c.m.score, c.m.tier.l].map(esc).join(','));
-  const blob = new Blob(['﻿' + [head.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `kartenwert_${new Date().toISOString().slice(0, 10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
 const TABS = [
   { id: 'discover', label: '🔍 Entdecken', icon: '🔍', short: 'Suchen' },
-  { id: 'analytics', label: '📊 Analyse', icon: '📊', short: 'Analyse' },
   { id: 'watchlist', label: '⭐ Watchlist', icon: '⭐', short: 'Merken' },
   { id: 'portfolio', label: '📦 Sammlung', icon: '📦', short: 'Bestand' },
+  { id: 'analytics', label: '📊 Analyse', icon: '📊', short: 'Analyse' },
   { id: 'buylist', label: '🧾 Buylist', icon: '🧾', short: 'Buylist' },
   { id: 'alerts', label: '🔔 Alerts', icon: '🔔', short: 'Alerts' },
 ];
@@ -143,9 +129,6 @@ function Shell() {
               <span style={{ fontSize: 11, color: source === 'snapshot' ? C.green : C.textDim, fontWeight: 600 }}>{cards.length} · Ø {avgScore}</span>
             </div>
           )}
-          <button onClick={() => exportCSV(cards)} disabled={!cards.length} title="CSV-Export" className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center', gap: 4, opacity: cards.length ? 1 : 0.4 }}>
-            <Download size={13} />
-          </button>
           <button onClick={toggleTheme} title={theme === 'dark' ? 'Helles Design' : 'Dunkles Design'} className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center' }}>
             {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
           </button>

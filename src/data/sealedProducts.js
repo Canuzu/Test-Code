@@ -21,9 +21,11 @@ const SETS = [
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 const PRODUCT_TYPES = {
-  booster: { label: 'Booster', suffix: 'Booster Pack', emoji: '📦', grad: ['#3b82f6', '#1e3a8a'] },
-  display: { label: 'Display', suffix: 'Display (36 Booster)', emoji: '🗃️', grad: ['#f59e0b', '#b45309'] },
-  etb: { label: 'Top-Trainer-Box', suffix: 'Top-Trainer-Box', emoji: '🎁', grad: ['#c084fc', '#7c3aed'] },
+  // `suffix` is the display label; `cmTerm` is the clean term used for the
+  // Cardmarket search (parentheticals/extra words there only hurt the match).
+  booster: { label: 'Booster', suffix: 'Booster Pack', cmTerm: 'Booster', emoji: '📦', grad: ['#3b82f6', '#1e3a8a'] },
+  display: { label: 'Display', suffix: 'Display (36 Booster)', cmTerm: 'Display', emoji: '🗃️', grad: ['#f59e0b', '#b45309'] },
+  etb: { label: 'Top-Trainer-Box', suffix: 'Top-Trainer-Box', cmTerm: 'Top-Trainer-Box', emoji: '🎁', grad: ['#c084fc', '#7c3aed'] },
 };
 
 export const SEALED = SETS.flatMap(({ set, setEn, year, setId }) =>
@@ -37,7 +39,7 @@ export const SEALED = SETS.flatMap(({ set, setEn, year, setId }) =>
     set,
     year,
     logo: `https://images.pokemontcg.io/${setId}/logo.png`,
-    cardmarketUrl: `https://www.cardmarket.com/de/Pokemon/Products/Search?searchString=${encodeURIComponent(`${setEn} ${def.suffix}`)}`,
+    cardmarketUrl: `https://www.cardmarket.com/de/Pokemon/Products/Search?searchString=${encodeURIComponent(`${setEn} ${def.cmTerm}`)}`,
   })),
 );
 

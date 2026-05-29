@@ -8,7 +8,7 @@ import { CardImage } from './ui.jsx';
 
 const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 const parseNum = (s) => { const v = parseFloat(String(s || '').replace(/\./g, (m, o, str) => (str.indexOf(',') > -1 ? '' : '.')).replace(',', '.')); return Number.isNaN(v) ? null : v; };
-const CONDS = ['NM', 'EX', 'GD', 'LP', 'PL', 'PO'];
+const CONDS = ['M', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'];
 const normCond = (s) => { const u = (s || '').toUpperCase().trim(); return CONDS.includes(u) ? u : 'NM'; };
 
 const FIELDS = [

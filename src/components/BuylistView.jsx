@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Printer, Download, Search, Settings2, Trash2, Star, TrendingUp } from 'lucide-react';
+import { Printer, Download, Search, Settings2, Trash2, Star } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, conditionColor } from '../lib/theme.js';
 import { fmtEur, fmtDate } from '../lib/format.js';
@@ -26,6 +26,7 @@ export default function BuylistView({ locked, onUpgrade }) {
   const items = buylist.items;
   const [showRules, setShowRules] = useState(false);
   const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(() => new Set()); // multi-select (card ids)
 
   const cardById = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
 
@@ -57,11 +58,14 @@ export default function BuylistView({ locked, onUpgrade }) {
     if (!add.length) { showToast('Watchlist ist leer oder schon enthalten'); return; }
     setItems((p) => [...p, ...add]); showToast(`${add.length} aus Watchlist übernommen`);
   };
-  const importTop = () => {
-    const have = new Set(items.map((i) => i.id));
-    const add = [...cards].sort((a, b) => (b.m.market || 0) - (a.m.market || 0)).filter((c) => !have.has(c.id)).slice(0, 25).map((c) => ({ id: c.id, condition: 'NM', qty: 1 }));
-    setItems((p) => [...p, ...add]); showToast(`Top ${add.length} nach Wert hinzugefügt`);
+  // ---- multi-select (#19) ----
+  const toggleSel = (id) => setSelected((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const allSel = resolved.length > 0 && resolved.every((r) => selected.has(r.id));
+  const toggleAll = () => setSelected(allSel ? new Set() : new Set(resolved.map((r) => r.id)));
+  const bulkRemove = () => {
+    if (selected.size && window.confirm(`${selected.size} Position(en) aus der Buylist entfernen?`)) { setItems((p) => p.filter((i) => !selected.has(i.id))); setSelected(new Set()); }
   };
+  const askExport = () => { if (resolved.length && window.confirm(`Buylist mit ${resolved.length} Positionen als CSV herunterladen?`)) exportCSV(resolved, rules); };
 
   if (locked) {
     return <EmptyState icon="🔒" title="Buylist ist ein Pro-Feature" hint="Erstelle Ankaufslisten mit konfigurierbaren Prozentsätzen und drucke sie als PDF.">
@@ -84,7 +88,7 @@ export default function BuylistView({ locked, onUpgrade }) {
         </div>
         <button className="control" onClick={() => setShowRules((s) => !s)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Settings2 size={14} /> Regeln</button>
         <div style={{ flex: 1 }} />
-        <button className="control" onClick={() => exportCSV(resolved, rules)} disabled={!resolved.length} style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: resolved.length ? 1 : 0.5 }}><Download size={14} /> CSV</button>
+        <button className="control" onClick={askExport} disabled={!resolved.length} style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: resolved.length ? 1 : 0.5 }}><Download size={14} /> CSV</button>
         <button className="btn-primary" onClick={() => window.print()} disabled={!resolved.length} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Printer size={14} /> Drucken / PDF</button>
       </div>
 
@@ -143,19 +147,32 @@ export default function BuylistView({ locked, onUpgrade }) {
             )}
           </div>
           <button className="control" onClick={importWatchlist} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Star size={13} /> Watchlist</button>
-          <button className="control" onClick={importTop} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={13} /> Top 25</button>
           {items.length > 0 && <button className="control" onClick={() => setItems([])}>Leeren</button>}
         </div>
       </div>
 
       {/* On-screen table */}
       {resolved.length === 0 ? (
-        <EmptyState icon="🧾" title="Buylist ist leer" hint="Füge Karten über die Suche, deine Watchlist oder »Top 25« hinzu. Der Ankaufspreis berechnet sich automatisch." />
+        <EmptyState icon="🧾" title="Buylist ist leer" hint="Füge Karten über die Suche oder deine Watchlist hinzu. Der Ankaufspreis berechnet sich automatisch." />
       ) : (
         <div className="no-print">
+          {/* Multi-select bulk bar (#19) */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8, fontSize: 12 }}>
+            <button onClick={toggleAll} className="control" style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
+              <span style={{ display: 'inline-flex', width: 14, height: 14, borderRadius: 3, border: `1.5px solid ${allSel ? C.gold : C.lineStrong}`, background: allSel ? C.gold : 'transparent', color: '#0c0c1a', alignItems: 'center', justifyContent: 'center', fontSize: 11, lineHeight: 1 }}>{allSel ? '✓' : ''}</span>
+              {allSel ? 'Auswahl aufheben' : 'Alle auswählen'}
+            </button>
+            {selected.size > 0 && (
+              <>
+                <span style={{ color: C.textSoft, fontWeight: 700 }}>{selected.size} ausgewählt</span>
+                <button onClick={bulkRemove} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: '1px solid #ff525240', background: '#ff525212', color: C.red, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}><Trash2 size={13} /> Entfernen</button>
+              </>
+            )}
+          </div>
           <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 12, overflow: 'hidden' }}>
             {resolved.map((r, i) => (
-              <div key={r.id} style={{ display: 'grid', gridTemplateColumns: '40px 2fr 0.8fr 0.6fr 0.8fr 0.9fr 30px', gap: 8, alignItems: 'center', padding: '9px 12px', borderBottom: i < resolved.length - 1 ? `1px solid ${C.line}` : 'none' }}>
+              <div key={r.id} style={{ display: 'grid', gridTemplateColumns: '28px 40px 2fr 0.8fr 0.6fr 0.8fr 0.9fr 30px', gap: 8, alignItems: 'center', padding: '9px 12px', borderBottom: i < resolved.length - 1 ? `1px solid ${C.line}` : 'none', background: selected.has(r.id) ? `${C.gold}0f` : 'transparent' }}>
+                <button onClick={() => toggleSel(r.id)} title={selected.has(r.id) ? 'Abwählen' : 'Auswählen'} style={{ width: 18, height: 18, borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, background: selected.has(r.id) ? C.gold : 'transparent', color: selected.has(r.id) ? '#0c0c1a' : C.textFaint, border: `1px solid ${selected.has(r.id) ? C.gold : C.lineStrong}` }}>{selected.has(r.id) ? '✓' : ''}</button>
                 <CardImage card={r.card} height={38} radius={3} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 12.5, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.card.name}</div>

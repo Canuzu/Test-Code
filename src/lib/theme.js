@@ -69,6 +69,10 @@ export const trendLabel = (t) => ({ rising: 'Steigend', stable: 'Stabil', fallin
 
 export const riskColor = (r) => ({ low: C.green, medium: C.gold, high: C.red }[r] || C.textDim);
 export const riskLabel = (r) => ({ low: 'Niedrig', medium: 'Mittel', high: 'Hoch' }[r] || 'Mittel');
+// Grammatically correct full German phrase, e.g. "Hohes Risiko" (not "Hoches").
+export const riskPhrase = (r) => ({ low: 'Niedriges Risiko', medium: 'Mittleres Risiko', high: 'Hohes Risiko' }[r] || 'Mittleres Risiko');
+// Dative neuter adjective for sentences like "… bei hohem Risiko".
+export const riskAdjDative = (r) => ({ low: 'niedrigem', medium: 'mittlerem', high: 'hohem' }[r] || 'mittlerem');
 
 // Cardmarket-style rarity buckets -> accent colours.
 export const rarityColor = (r) => {
@@ -88,9 +92,11 @@ export const changeColor = (v) => {
   return C.textDim;
 };
 
-// Condition quality scale: NM (green) → … → PO (red). Fixed hex so the green→
-// yellow→orange→red gradient stays stable in both light and dark themes.
+// Condition quality scale: M (Mint, purple) → NM (green) → … → PO (red). Fixed
+// hex so the gradient stays stable in both light and dark themes. Mint is the
+// top grade and gets its own distinct purple so it stands out from Near Mint.
 export const CONDITION_COLORS = {
+  M: '#c084fc',  // Mint – purple (best, distinct highlight)
   NM: '#00e676', // green
   EX: '#9ccc65', // yellow-green
   GD: '#ffd700', // yellow

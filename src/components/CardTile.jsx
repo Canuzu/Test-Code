@@ -112,7 +112,7 @@ export default function CardTile({ card, onOpen }) {
         <button
           onClick={() => onOpen(card, owned ? 'overview' : 'buy')}
           style={btn(C.green2, false)}
-        >{owned ? '📋 Details' : '💼 Kauf'}</button>
+        >{owned ? '📋 Details' : '📦 Sammlung'}</button>
       </div>
     </div>
   );

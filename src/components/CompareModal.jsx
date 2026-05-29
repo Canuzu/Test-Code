@@ -3,7 +3,7 @@ import { useStore } from '../store.jsx';
 import { C, riskLabel, trendIcon, trendLabel } from '../lib/theme.js';
 import { fmtEur, fmtPct, fmtNum } from '../lib/format.js';
 import { ScoreBadge } from './ui.jsx';
-import { marketLinks } from '../lib/marketLinks.js';
+import { cmUrl } from '../lib/marketLinks.js';
 
 const ROWS = [
   { label: 'Investment-Score', get: (c) => c.m.score, fmt: (v) => v, best: 'max' },
@@ -72,7 +72,7 @@ export default function CompareModal({ onClose }) {
                 <td style={{ padding: '12px 8px', color: C.textDim, fontWeight: 700 }}>Cardmarket</td>
                 {compareList.map((c) => (
                   <td key={c.id} style={{ padding: '12px 8px' }}>
-                    <a href={c.cardmarketUrl || marketLinks(c).cardmarket} target="_blank" rel="noopener noreferrer" style={{ color: C.blue, fontSize: 11, fontWeight: 700, textDecoration: 'none' }}>🛒 Öffnen →</a>
+                    <a href={cmUrl(c)} target="_blank" rel="noopener noreferrer" style={{ color: C.blue, fontSize: 11, fontWeight: 700, textDecoration: 'none' }}>🛒 Öffnen →</a>
                   </td>
                 ))}
               </tr>

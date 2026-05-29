@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { X, Info, TrendingUp, Calculator, Tag as TagIcon, Globe, Award, Receipt } from 'lucide-react';
+import { X, Info, TrendingUp, Calculator, Tag as TagIcon, Globe, Award, Receipt, Maximize2, Package } from 'lucide-react';
 import { useStore } from '../store.jsx';
-import { C, riskColor, riskLabel, rarityColor, trendColor, trendIcon, trendLabel } from '../lib/theme.js';
+import { C, riskColor, riskPhrase, riskAdjDative, rarityColor, trendColor, trendIcon, trendLabel } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtPct, fmtDate, fmtMoney, fmtUsd } from '../lib/format.js';
 import { calcNet, PLATFORM_FEES } from '../lib/fees.js';
-import { marketLinks } from '../lib/marketLinks.js';
+import { marketLinks, cmUrl } from '../lib/marketLinks.js';
 import { marketEstimates, arbitrage } from '../lib/markets.js';
 import { gradeEstimates, gradingProfit } from '../lib/grading.js';
 import { newRule } from '../lib/alerts.js';
@@ -18,16 +18,18 @@ const mpBtn = (color) => ({
 });
 
 export default function CardModal({ card, initialTab = 'overview', onClose }) {
-  const { notes, tags, settings, addToPortfolio, saveNote, addTag, removeTag, addAlert, inBuylist, addToBuylist } = useStore();
+  const { notes, tags, settings, addToPortfolio, saveNote, addTag, removeTag, addAlert, inBuylist, addToBuylist, inPortfolio } = useStore();
   const sectionLabel = { fontSize: 11, color: C.textFaint, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' };
-  const addMode = initialTab === 'buy';
-  const [tab, setTab] = useState(addMode ? 'overview' : initialTab);
+  const [tab, setTab] = useState(initialTab === 'buy' ? 'overview' : initialTab);
+  const [showAdd, setShowAdd] = useState(initialTab === 'buy'); // inline "add to collection" form
+  const [zoom, setZoom] = useState(false); // fullscreen image lightbox
   const [noteText, setNoteText] = useState(notes[card.id] || '');
   const [newTag, setNewTag] = useState('');
   const [buyPrice, setBuyPrice] = useState(String(card.prices.low ?? card.prices.market ?? ''));
   const [buyQty, setBuyQty] = useState('1');
   const [buyCond, setBuyCond] = useState('NM');
   const [buyLoc, setBuyLoc] = useState('');
+  const owned = inPortfolio(card.id);
   const [gradeFee, setGradeFee] = useState('20');
   const [gradeTarget, setGradeTarget] = useState('psa10');
   const [alertDir, setAlertDir] = useState('above');
@@ -36,6 +38,8 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   const m = card.m;
   const p = card.prices;
   const links = marketLinks(card);
+  const heroSrc = card.image?.large || card.image?.small
+    || (card.setId && card.number ? `https://images.pokemontcg.io/${card.setId}/${card.number}_hires.png` : null);
   const cardTags = tags[card.id] || [];
   const markets = marketEstimates(card, settings);
   const arb = arbitrage(card, settings);
@@ -59,13 +63,21 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   );
 
   return (
+    <>
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: '#000000bb', backdropFilter: 'blur(6px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 660, width: '100%', maxHeight: '92vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, background: '#ffffff15', border: 'none', color: C.textSoft, width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}><X size={15} /></button>
 
         {/* Header */}
         <div style={{ padding: '18px 20px 0', display: 'flex', gap: 14 }}>
-          <CardImage card={card} height={120} />
+          {/* Zoomable artwork: click the image or the ⤢ arrows for fullscreen */}
+          <button onClick={() => setZoom(true)} title="Bild vergrößern" className="zoomable-img"
+            style={{ position: 'relative', padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', flexShrink: 0, lineHeight: 0 }}>
+            <CardImage card={card} height={120} />
+            <span style={{ position: 'absolute', bottom: 6, right: 6, background: '#000000aa', color: '#fff', borderRadius: 6, padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px #00000080' }}>
+              <Maximize2 size={13} />
+            </span>
+          </button>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
               <ScoreBadge tier={m.tier} score={m.score} size="lg" />
@@ -75,7 +87,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
             <div style={{ fontSize: 12, color: C.textDim, marginTop: 3 }}>{card.set}{card.cardType ? ` · ${card.cardType}` : ''}</div>
             <div style={{ marginTop: 8, display: 'flex', gap: 5, flexWrap: 'wrap' }}>
               {card.rarity && <Pill color={rarityColor(card.rarity)}>{card.rarity}</Pill>}
-              <Pill color={riskColor(m.risk)}>{riskLabel(m.risk)}es Risiko</Pill>
+              <Pill color={riskColor(m.risk)}>{riskPhrase(m.risk)}</Pill>
               <Pill color={trendColor(m.trend)}>{trendIcon(m.trend)} {trendLabel(m.trend)}</Pill>
             </div>
           </div>
@@ -84,7 +96,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
         {/* Tabs */}
         <div style={{ display: 'flex', borderBottom: `1px solid ${C.lineStrong}`, padding: '6px 12px 0', marginTop: 14, overflowX: 'auto' }}>
           <TabBtn id="overview" label="Übersicht" icon={<Info size={12} />} />
-          <TabBtn id="value" label="Wertentwicklung" icon={<TrendingUp size={12} />} />
+          <TabBtn id="value" label="Preisentwicklung" icon={<TrendingUp size={12} />} />
           <TabBtn id="markets" label="Märkte" icon={<Globe size={12} />} />
           <TabBtn id="grading" label="Grading" icon={<Award size={12} />} />
           <TabBtn id="fees" label="Gebühren" icon={<Calculator size={12} />} />
@@ -95,9 +107,18 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
         <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
           {tab === 'overview' && (
             <>
-              {addMode && (
+              {!showAdd && (
+                <button onClick={() => setShowAdd(true)} title="Diese Karte der Sammlung hinzufügen"
+                  style={{ width: '100%', marginBottom: 14, padding: '10px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: owned ? `${C.green2}18` : `${C.green2}12`, color: C.green2, border: `1px solid ${C.green2}${owned ? '66' : '44'}` }}>
+                  <Package size={15} /> {owned ? 'Weitere zur Sammlung hinzufügen' : 'Zur Sammlung hinzufügen'}
+                </button>
+              )}
+              {showAdd && (
                 <div style={{ background: '#34d39912', border: '1px solid #34d39930', borderRadius: 10, padding: 12, marginBottom: 14 }}>
-                  <div style={{ fontSize: 12, color: C.green2, fontWeight: 700, marginBottom: 8 }}>📦 Zur Sammlung hinzufügen</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <div style={{ fontSize: 12, color: C.green2, fontWeight: 700 }}>📦 Zur Sammlung hinzufügen</div>
+                    <button onClick={() => setShowAdd(false)} title="Abbrechen" style={{ background: 'none', border: 'none', color: C.textFaint, cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>
+                  </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
                     <label style={{ fontSize: 10, color: C.textFaint }}>Gezahlt (€)
                       <input type="number" step="0.01" value={buyPrice} onChange={(e) => setBuyPrice(e.target.value)}
@@ -110,7 +131,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                     <label style={{ fontSize: 10, color: C.textFaint }}>Zustand
                       <select value={buyCond} onChange={(e) => setBuyCond(e.target.value)}
                         style={{ width: '100%', marginTop: 3, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '6px 8px', color: C.text, fontSize: 13, outline: 'none' }}>
-                        {['NM', 'EX', 'GD', 'LP', 'PL', 'PO'].map((x) => <option key={x} value={x}>{x}</option>)}
+                        {['M', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'].map((x) => <option key={x} value={x}>{x}</option>)}
                       </select>
                     </label>
                   </div>
@@ -119,7 +140,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                       style={{ width: '100%', marginTop: 3, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '6px 8px', color: C.text, fontSize: 13, outline: 'none' }} />
                   </label>
                   <button className="btn-primary" style={{ width: '100%', padding: '8px', fontSize: 12 }}
-                    onClick={() => { addToPortfolio(card, { price: buyPrice, quantity: buyQty, condition: buyCond, location: buyLoc }); onClose(); }}>
+                    onClick={() => { addToPortfolio(card, { price: buyPrice, quantity: buyQty, condition: buyCond, location: buyLoc }); setShowAdd(false); }}>
                     Hinzufügen
                   </button>
                 </div>
@@ -158,9 +179,8 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
               <div>
                 <div style={sectionLabel}>🛒 Direkt zum Marktplatz</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                  <a href={card.cardmarketUrl || links.cardmarket} target="_blank" rel="noopener noreferrer" style={mpBtn('#0066cc')}>🛒 Cardmarket {card.cardmarketUrl ? '(exakte Karte)' : '(Suche)'} →</a>
+                  <a href={cmUrl(card)} target="_blank" rel="noopener noreferrer" style={mpBtn('#0066cc')}>🛒 Cardmarket →</a>
                   <a href={links.ebay} target="_blank" rel="noopener noreferrer" style={mpBtn('#3a3a8c')}>🛒 eBay Deutschland →</a>
-                  <a href={links.priceCharting} target="_blank" rel="noopener noreferrer" style={mpBtn('#7c3aed')}>📊 PriceCharting →</a>
                   <a href={links.psa} target="_blank" rel="noopener noreferrer" style={mpBtn('#ec4899')}>🏆 PSA Population →</a>
                 </div>
                 <button onClick={() => addToBuylist(card)} title="Zur Einkaufsliste hinzufügen"
@@ -367,6 +387,20 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
         </div>
       </div>
     </div>
+
+    {/* Fullscreen image lightbox (#23) — opened from the ⤢ arrows on the card */}
+    {zoom && (
+      <div onClick={() => setZoom(false)} className="fade-in"
+        style={{ position: 'fixed', inset: 0, background: '#000000ee', zIndex: 130, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, cursor: 'zoom-out' }}>
+        <button onClick={() => setZoom(false)} title="Schließen" style={{ position: 'absolute', top: 16, right: 16, background: '#ffffff1f', border: 'none', color: '#fff', width: 38, height: 38, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={18} /></button>
+        {heroSrc
+          ? <img src={heroSrc} alt={card.name} referrerPolicy="no-referrer" onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: 14, boxShadow: '0 12px 50px #000000aa', cursor: 'default' }} />
+          : <div style={{ color: '#fff', fontSize: 14 }}>Kein Bild verfügbar</div>}
+        <div style={{ position: 'absolute', bottom: 18, left: 0, right: 0, textAlign: 'center', color: '#ffffffcc', fontSize: 13, fontWeight: 600, pointerEvents: 'none' }}>{card.name} · {card.set}</div>
+      </div>
+    )}
+    </>
   );
 }
 
@@ -376,7 +410,7 @@ function thesis(card) {
   const dir = m.change30 == null ? null : m.change30 > 2 ? 'gestiegen' : m.change30 < -2 ? 'gefallen' : 'stabil geblieben';
   const parts = [];
   if (dir) parts.push(`Der Preis ist über 30 Tage ${dir}${m.change30 != null ? ` (${fmtPct(m.change30)})` : ''}.`);
-  parts.push(`Beliebtheits-Index ${fmtNum(m.popularity, 1)}/10 bei ${riskLabel(m.risk).toLowerCase()}em Risiko.`);
+  parts.push(`Beliebtheits-Index ${fmtNum(m.popularity, 1)}/10 bei ${riskAdjDative(m.risk)} Risiko.`);
   if (m.margin != null) parts.push(`Zwischen günstigstem Angebot und Trend liegen ${fmtPct(m.margin)} Spielraum.`);
   parts.push(`Investment-Score ${m.score}/100 (Tier ${m.tier.l}).`);
   return parts.join(' ');

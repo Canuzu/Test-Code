@@ -5,7 +5,7 @@
 // condition, and payout type (store credit usually pays more than cash). Result
 // is rounded to a clean increment. Pure functions — the view persists the rules.
 
-export const CONDITIONS = ['NM', 'EX', 'GD', 'LP', 'PL', 'PO'];
+export const CONDITIONS = ['M', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'];
 
 export const DEFAULT_RULES = {
   shopName: 'Mein TCG-Laden',
@@ -19,7 +19,7 @@ export const DEFAULT_RULES = {
     { max: 500, pct: 65 },
     { max: null, pct: 70 },
   ],
-  conditionPct: { NM: 100, EX: 92, GD: 82, LP: 72, PL: 55, PO: 40 },
+  conditionPct: { M: 100, NM: 96, EX: 90, GD: 80, LP: 70, PL: 55, PO: 40 },
   payout: 'cash', // 'cash' | 'credit'
   creditBonusPct: 15, // store credit pays this much more than cash
   roundTo: 0.5,

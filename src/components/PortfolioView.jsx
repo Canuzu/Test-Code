@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
-import { Briefcase, Trash2, Info, Tag as TagIcon, Upload, Download } from 'lucide-react';
+import { Briefcase, Trash2, Info, Tag as TagIcon, Upload, Download, Search } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, conditionColor } from '../lib/theme.js';
 import { fmtEur, fmtPct, fmtDate } from '../lib/format.js';
 import { getTier } from '../lib/metrics.js';
-import { marketLinks } from '../lib/marketLinks.js';
+import { marketLinks, cmUrl } from '../lib/marketLinks.js';
 import { CardImage, ScoreBadge, Pill, Stat, EmptyState } from './ui.jsx';
 
-const CONDITIONS = ['NM', 'EX', 'GD', 'LP', 'PL', 'PO'];
+const CONDITIONS = ['M', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'];
 
 const exportInventoryCSV = (rows, freshPrice) => {
   if (!rows.length) return;
@@ -29,18 +29,21 @@ const exportInventoryCSV = (rows, freshPrice) => {
 };
 
 export default function PortfolioView({ onImport }) {
-  const { portfolio, sold, removeFromPortfolio, sellFromPortfolio, removeSold, freshPrice, updatePortfolioEntry } = useStore();
+  const { portfolio, sold, removeFromPortfolio, removeManyFromPortfolio, sellFromPortfolio, removeSold, freshPrice, updatePortfolioEntry } = useStore();
   const [sellingId, setSellingId] = useState(null);
   const [sellInput, setSellInput] = useState('');
   const [view, setView] = useState('cards');
   const [locFilter, setLocFilter] = useState('all');
   const [condFilter, setCondFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(() => new Set()); // multi-select (entry ids)
 
-  const locations = useMemo(() => [...new Set(portfolio.map((e) => e.location || '—'))].sort(), [portfolio]);
+  const locations = useMemo(() => [...new Set(portfolio.map((e) => e.location || '').filter(Boolean))].sort(), [portfolio]);
+  const locFilterOptions = useMemo(() => [...new Set(portfolio.map((e) => e.location || '—'))].sort(), [portfolio]);
 
   if (portfolio.length === 0 && sold.length === 0) {
     return (
-      <EmptyState icon={<Briefcase size={56} style={{ opacity: 0.35 }} />} title="Sammlung ist leer" hint="Klicke bei einer Karte auf »📦 Kauf«, oder importiere deinen Bestand per CSV.">
+      <EmptyState icon={<Briefcase size={56} style={{ opacity: 0.35 }} />} title="Sammlung ist leer" hint="Klicke bei einer Karte auf »📦 Sammlung«, oder importiere deinen Bestand per CSV.">
         {onImport && <button className="btn-primary" onClick={onImport} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Upload size={14} /> Massenimport (CSV)</button>}
       </EmptyState>
     );
@@ -57,9 +60,25 @@ export default function PortfolioView({ onImport }) {
   const startSell = (e) => { setSellingId(e.id); setSellInput(String((freshPrice(e) ?? e.actualBuyPrice ?? 0).toFixed(2))); };
   const confirmSell = (e) => { sellFromPortfolio(e.id, sellInput); setSellingId(null); };
 
+  const q = search.trim().toLowerCase();
   const filtered = portfolio.filter((e) =>
     (locFilter === 'all' || (e.location || '—') === locFilter) &&
-    (condFilter === 'all' || (e.condition || 'NM') === condFilter));
+    (condFilter === 'all' || (e.condition || 'NM') === condFilter) &&
+    (!q || (e.card?.name || '').toLowerCase().includes(q) || (e.card?.set || '').toLowerCase().includes(q) || String(e.card?.number || '').toLowerCase().includes(q)));
+
+  // ---- multi-select helpers (#19) ----
+  const toggleSel = (id) => setSelected((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const clearSel = () => setSelected(new Set());
+  const filteredIds = filtered.map((e) => e.id);
+  const allFilteredSelected = filtered.length > 0 && filteredIds.every((id) => selected.has(id));
+  const toggleSelectAll = () => setSelected(() => (allFilteredSelected ? new Set() : new Set(filteredIds)));
+  const selCount = selected.size;
+  const bulkRemove = () => {
+    if (!selCount) return;
+    if (window.confirm(`${selCount} ausgewählte Position(en) wirklich aus der Sammlung entfernen?`)) { removeManyFromPortfolio([...selected]); clearSel(); }
+  };
+  const bulkSetLocation = (loc) => { [...selected].forEach((id) => updatePortfolioEntry(id, { location: loc })); clearSel(); };
+  const askExport = () => { if (window.confirm(`${filtered.length} Positionen als CSV-Datei herunterladen?`)) exportInventoryCSV(filtered, freshPrice); };
 
   return (
     <div className="fade-in">
@@ -71,28 +90,58 @@ export default function PortfolioView({ onImport }) {
         <Stat label="Realisiert (verkauft)" value={`${realized >= 0 ? '+' : ''}${fmtEur(realized, 0)}`} color={realized >= 0 ? C.green : C.red} sub={sold.length ? `${sold.length} verkauft` : undefined} />
       </div>
 
-      {/* Toolbar: view toggle + import/export */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14 }}>
+      {/* Toolbar: view toggle + search + filters + import/export */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
         <div style={{ display: 'flex', gap: 4, background: C.bg2, border: `1px solid ${C.lineStrong}`, borderRadius: 8, padding: 3 }}>
           {[['cards', '⊞ Karten'], ['table', '≡ Inventar']].map(([m, lbl]) => (
             <button key={m} onClick={() => setView(m)} style={{ padding: '6px 12px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, background: view === m ? '#ffd70022' : 'transparent', color: view === m ? C.gold : C.textFaint }}>{lbl}</button>
           ))}
         </div>
+        {portfolio.length > 0 && (
+          <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+            <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.textFaint }} />
+            <input className="control" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="In der Sammlung suchen (Name, Set, Nummer)…" style={{ width: '100%', padding: '9px 10px 9px 32px' }} />
+          </div>
+        )}
         {view === 'table' && portfolio.length > 0 && (
           <>
             <select className="control" value={locFilter} onChange={(e) => setLocFilter(e.target.value)}>
               <option value="all">Alle Lagerorte</option>
-              {locations.map((l) => <option key={l} value={l}>{l}</option>)}
+              {locFilterOptions.map((l) => <option key={l} value={l}>{l === '—' ? 'ohne Lagerort' : l}</option>)}
             </select>
             <select className="control" value={condFilter} onChange={(e) => setCondFilter(e.target.value)}>
               <option value="all">Alle Zustände</option>
               {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
-            <button className="control" onClick={() => exportInventoryCSV(filtered, freshPrice)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Download size={13} /> CSV</button>
+            <button className="control" onClick={askExport} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Download size={13} /> CSV</button>
           </>
         )}
         {onImport && <button className="control" onClick={onImport} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Upload size={13} /> Import</button>}
       </div>
+
+      {/* Multi-select bulk-action bar (#19) */}
+      {portfolio.length > 0 && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14, fontSize: 12 }}>
+          <button onClick={toggleSelectAll} className="control" style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
+            <span style={{ display: 'inline-flex', width: 14, height: 14, borderRadius: 3, border: `1.5px solid ${allFilteredSelected ? C.gold : C.lineStrong}`, background: allFilteredSelected ? C.gold : 'transparent', color: '#0c0c1a', alignItems: 'center', justifyContent: 'center', fontSize: 11, lineHeight: 1 }}>{allFilteredSelected ? '✓' : ''}</span>
+            {allFilteredSelected ? 'Auswahl aufheben' : 'Alle auswählen'}
+          </button>
+          {selCount > 0 && (
+            <>
+              <span style={{ color: C.textSoft, fontWeight: 700 }}>{selCount} ausgewählt</span>
+              {locations.length > 0 && (
+                <select className="control" defaultValue="" onChange={(e) => { if (e.target.value !== '') { bulkSetLocation(e.target.value === '__none' ? '' : e.target.value); e.target.value = ''; } }}>
+                  <option value="">📍 Lagerort setzen…</option>
+                  <option value="__none">— kein Lagerort —</option>
+                  {locations.map((l) => <option key={l} value={l}>{l}</option>)}
+                </select>
+              )}
+              <button onClick={bulkRemove} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: '1px solid #ff525240', background: '#ff525212', color: C.red, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}><Trash2 size={13} /> Entfernen</button>
+              <button onClick={clearSel} className="control">Abwählen</button>
+            </>
+          )}
+        </div>
+      )}
 
       <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 10, padding: '11px 16px', marginBottom: 16, fontSize: 11.5, color: C.textSoft, display: 'flex', alignItems: 'center', gap: 8 }}>
         <Info size={14} style={{ flexShrink: 0, color: C.blue }} />
@@ -102,13 +151,16 @@ export default function PortfolioView({ onImport }) {
       {/* ---- Inventory table view ---- */}
       {view === 'table' && portfolio.length > 0 && (
         <InventoryTable rows={filtered} freshPrice={freshPrice} updatePortfolioEntry={updatePortfolioEntry} onRemove={removeFromPortfolio} onSell={startSell}
-          sellingId={sellingId} sellInput={sellInput} setSellInput={setSellInput} confirmSell={confirmSell} cancelSell={() => setSellingId(null)} />
+          sellingId={sellingId} sellInput={sellInput} setSellInput={setSellInput} confirmSell={confirmSell} cancelSell={() => setSellingId(null)}
+          selected={selected} toggleSel={toggleSel} />
       )}
 
       {/* ---- Card grid view ---- */}
       {view === 'cards' && portfolio.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12, marginBottom: sold.length ? 28 : 0 }}>
-          {portfolio.map((e) => {
+        filtered.length === 0
+          ? <div style={{ color: C.textFaint, fontSize: 13, padding: 24, textAlign: 'center' }}>Keine Karten für diese Suche/Filter.</div>
+          : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12, marginBottom: sold.length ? 28 : 0 }}>
+          {filtered.map((e) => {
             const card = e.card;
             const qty = qtyOf(e);
             const current = freshPrice(e);
@@ -117,8 +169,10 @@ export default function PortfolioView({ onImport }) {
             const tier = getTier(card.m?.score ?? 0);
             const links = marketLinks(card);
             const selling = sellingId === e.id;
+            const isSel = selected.has(e.id);
             return (
-              <div key={e.id} style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 14, position: 'relative' }}>
+              <div key={e.id} style={{ background: C.surface, border: `1px solid ${isSel ? C.gold : C.line}`, boxShadow: isSel ? `0 0 0 1px ${C.gold}55` : undefined, borderRadius: 14, padding: 14, position: 'relative' }}>
+                <button onClick={() => toggleSel(e.id)} title={isSel ? 'Abwählen' : 'Auswählen'} style={{ position: 'absolute', top: -9, left: 12, width: 22, height: 22, borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, background: isSel ? C.gold : C.surface2, color: isSel ? '#0c0c1a' : C.textFaint, border: `1px solid ${isSel ? C.gold : C.lineStrong}`, boxShadow: '0 2px 8px #00000040' }}>{isSel ? '✓' : ''}</button>
                 <div style={{ position: 'absolute', top: -9, right: 12 }}><ScoreBadge tier={tier} score={card.m?.score ?? 0} /></div>
                 <div style={{ display: 'flex', gap: 12, marginTop: 4, marginBottom: 10 }}>
                   <CardImage card={card} height={108} />
@@ -128,7 +182,20 @@ export default function PortfolioView({ onImport }) {
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
                       <Pill color={C.blue}>×{qty}</Pill>
                       <Pill color={conditionColor(e.condition)}>{e.condition || 'NM'}</Pill>
-                      {e.location && <Pill color={C.green2}>📍 {e.location}</Pill>}
+                    </div>
+                    {/* Lagerort als Drop-Down direkt in der Karte (#14) */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 7 }}>
+                      <span style={{ fontSize: 11, color: C.textFaint }}>📍</span>
+                      <select value={e.location || ''} onChange={(ev) => {
+                        const v = ev.target.value;
+                        if (v === '__new') { const nl = window.prompt('Neuer Lagerort:'); if (nl && nl.trim()) updatePortfolioEntry(e.id, { location: nl.trim() }); }
+                        else updatePortfolioEntry(e.id, { location: v });
+                      }}
+                        style={{ flex: 1, minWidth: 0, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '4px 6px', color: e.location ? C.green2 : C.textFaint, fontSize: 11.5, fontWeight: 600, outline: 'none' }}>
+                        <option value="">kein Lagerort</option>
+                        {[...new Set([...locations, ...(e.location ? [e.location] : [])])].sort().map((l) => <option key={l} value={l}>{l}</option>)}
+                        <option value="__new">+ neuer Lagerort…</option>
+                      </select>
                     </div>
                     <div style={{ fontSize: 10.5, color: C.textFaint, marginTop: 6 }}>gekauft {fmtDate(e.purchaseDate)}</div>
                   </div>
@@ -169,7 +236,7 @@ export default function PortfolioView({ onImport }) {
                 ) : (
                   <>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginBottom: 8 }}>
-                      <a href={card.cardmarketUrl || links.cardmarket} target="_blank" rel="noopener noreferrer" style={{ padding: '7px', borderRadius: 6, textAlign: 'center', textDecoration: 'none', fontSize: 11, fontWeight: 700, background: '#0066cc1f', color: C.blue, border: '1px solid #0066cc44' }}>🛒 Cardmarket</a>
+                      <a href={cmUrl(card)} target="_blank" rel="noopener noreferrer" style={{ padding: '7px', borderRadius: 6, textAlign: 'center', textDecoration: 'none', fontSize: 11, fontWeight: 700, background: '#0066cc1f', color: C.blue, border: '1px solid #0066cc44' }}>🛒 Cardmarket</a>
                       <a href={links.ebay} target="_blank" rel="noopener noreferrer" style={{ padding: '7px', borderRadius: 6, textAlign: 'center', textDecoration: 'none', fontSize: 11, fontWeight: 700, background: '#3a3a8c2f', color: '#8a8aff', border: '1px solid #3a3a8c66' }}>🛒 eBay</a>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
@@ -210,8 +277,8 @@ export default function PortfolioView({ onImport }) {
 }
 
 // Dense, editable inventory table with per-location subtotals.
-function InventoryTable({ rows, freshPrice, updatePortfolioEntry, onRemove, onSell, sellingId, sellInput, setSellInput, confirmSell, cancelSell }) {
-  const cols = '44px 2fr 0.8fr 1.1fr 0.7fr 0.9fr 0.9fr 1fr 88px';
+function InventoryTable({ rows, freshPrice, updatePortfolioEntry, onRemove, onSell, sellingId, sellInput, setSellInput, confirmSell, cancelSell, selected, toggleSel }) {
+  const cols = '30px 44px 2fr 0.8fr 1.1fr 0.7fr 0.9fr 0.9fr 1fr 88px';
   const cell = { background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 5, padding: '5px 6px', color: C.text, fontSize: 12, outline: 'none', width: '100%' };
 
   // Per-location subtotals
@@ -235,14 +302,14 @@ function InventoryTable({ rows, freshPrice, updatePortfolioEntry, onRemove, onSe
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 10.5, color: C.textFaint, marginBottom: 8 }}>
         <span>Preisfarbe nach Zustand:</span>
-        {['NM', 'EX', 'GD', 'LP', 'PL', 'PO'].map((c) => (
+        {CONDITIONS.map((c) => (
           <span key={c} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span style={{ width: 9, height: 9, borderRadius: '50%', background: conditionColor(c) }} />{c}</span>
         ))}
       </div>
       <div style={{ overflowX: 'auto' }}>
         <div style={{ minWidth: 760 }}>
           <div style={{ display: 'grid', gridTemplateColumns: cols, gap: 8, padding: '6px 10px', fontSize: 10, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase' }}>
-            <div></div><div>Karte</div><div>Zustand</div><div>Lagerort</div><div style={{ textAlign: 'right' }}>Menge</div><div style={{ textAlign: 'right' }}>EK/Stk</div><div style={{ textAlign: 'right' }}>Akt./Stk</div><div style={{ textAlign: 'right' }}>Wert / G/V</div><div></div>
+            <div></div><div></div><div>Karte</div><div>Zustand</div><div>Lagerort</div><div style={{ textAlign: 'right' }}>Menge</div><div style={{ textAlign: 'right' }}>EK/Stk</div><div style={{ textAlign: 'right' }}>Akt./Stk</div><div style={{ textAlign: 'right' }}>Wert / G/V</div><div></div>
           </div>
           {rows.map((e) => {
             const qty = e.quantity || 1;
@@ -250,8 +317,10 @@ function InventoryTable({ rows, freshPrice, updatePortfolioEntry, onRemove, onSe
             const value = cur * qty;
             const pnl = (cur - (e.actualBuyPrice || 0)) * qty;
             const selling = sellingId === e.id;
+            const isSel = selected?.has(e.id);
             return (
-              <div key={e.id} style={{ display: 'grid', gridTemplateColumns: cols, gap: 8, padding: '8px 10px', alignItems: 'center', background: C.surface, border: `1px solid ${C.line}`, borderRadius: 9, marginBottom: 5 }}>
+              <div key={e.id} style={{ display: 'grid', gridTemplateColumns: cols, gap: 8, padding: '8px 10px', alignItems: 'center', background: C.surface, border: `1px solid ${isSel ? C.gold : C.line}`, boxShadow: isSel ? `0 0 0 1px ${C.gold}55` : undefined, borderRadius: 9, marginBottom: 5 }}>
+                <button onClick={() => toggleSel?.(e.id)} title={isSel ? 'Abwählen' : 'Auswählen'} style={{ width: 20, height: 20, borderRadius: 5, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, background: isSel ? C.gold : 'transparent', color: isSel ? '#0c0c1a' : C.textFaint, border: `1px solid ${isSel ? C.gold : C.lineStrong}` }}>{isSel ? '✓' : ''}</button>
                 <CardImage card={e.card} height={40} radius={4} />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 12.5, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.card?.name}</div>

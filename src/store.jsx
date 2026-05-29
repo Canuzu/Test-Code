@@ -313,6 +313,14 @@ export function StoreProvider({ children }) {
     showToast('Aus Sammlung entfernt');
   }, [showToast]);
 
+  // Bulk-remove several inventory positions at once (multi-select).
+  const removeManyFromPortfolio = useCallback((entryIds) => {
+    const ids = new Set(entryIds || []);
+    if (!ids.size) return;
+    setPortfolio((prev) => prev.filter((e) => !ids.has(e.id)));
+    showToast(`${ids.size} Position${ids.size > 1 ? 'en' : ''} entfernt`);
+  }, [showToast]);
+
   // Record a sale: move the holding to the sold log with realized profit.
   const sellFromPortfolio = useCallback((entryId, sellPrice) => {
     const entry = portfolio.find((e) => e.id === entryId);
@@ -371,7 +379,7 @@ export function StoreProvider({ children }) {
     theme, toggleTheme,
     fetchCards, loadSample,
     inWatchlist, inPortfolio, inCompare,
-    toggleWatchlist, addToPortfolio, updatePortfolioEntry, addManyToPortfolio, removeFromPortfolio, sellFromPortfolio, removeSold,
+    toggleWatchlist, addToPortfolio, updatePortfolioEntry, addManyToPortfolio, removeFromPortfolio, removeManyFromPortfolio, sellFromPortfolio, removeSold,
     saveNote, addTag, removeTag,
     toggleCompare, clearCompare,
     updateSettings, showToast, freshPrice,

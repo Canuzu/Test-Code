@@ -38,6 +38,7 @@ const mulberry32 = (a) => () => {
 
 const num = (v) => (typeof v === 'number' && !Number.isNaN(v) ? v : null);
 const ymd = (ts) => new Date(ts).toISOString().slice(0, 10);
+const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 
 const RANGES = [
   { id: '1M', label: '1M', months: 1 },
@@ -83,20 +84,33 @@ export const buildSeries = (card, months = 6, realHistory = []) => {
   const totalDays = Math.round(months * 30.4);
   const step = months <= 1 ? 1 : months <= 3 ? 3 : 7;
 
-  // ---- modelled tail older than 30 days: a seeded mean-reverting walk that we
-  // rescale so it connects continuously to avg30 at day -30. -------------------
+  // ---- per-card "character" so two cards never share the same silhouette -----
+  // Amplitude is driven by the card's REAL 30-day swing plus a seeded baseline,
+  // and damped for pricier cards (which move less in % terms). A seeded regime
+  // picks trending vs. choppy/mean-reverting behaviour, and the drift direction
+  // follows the real momentum.
   const change30 = num(card?.m?.change30) ?? 0;
-  const driftPerStep = (Math.max(-18, Math.min(18, change30)) / 100) * 0.5 * (step / 30);
-  const vol = 0.018 * (step / 7); // volatility proxy, scaled by cadence
+  const change7 = num(card?.m?.change7) ?? 0;
+  const measuredVol = clamp(Math.abs(change30) / 100, 0, 0.35);
+  const priceDamp = 1 / (1 + Math.log10((trend ?? 1) + 1) * 0.45); // dearer -> calmer
+  const volBase = 0.008 + rnd() * 0.032;                           // 0.8%–4.0% seeded
+  const vol = (volBase + measuredVol * 0.35) * priceDamp * (step / 7);
+  const regime = rnd();                       // <.4 trend, <.75 choppy, else calm
+  const choppy = regime >= 0.4 && regime < 0.75 ? 1.6 : regime >= 0.75 ? 0.55 : 1;
+  const spikeChance = 0.03 + rnd() * 0.07;    // odd jumps on some cards only
+  const driftPerStep = (clamp(change30, -28, 28) / 100) * (0.28 + rnd() * 0.55) * (step / 30);
 
   const olderDaysAgo = [];
   for (let d = totalDays; d > 30; d -= step) olderDaysAgo.push(d);
-  // walk from oldest → newest (towards day 30)
+  // walk from oldest → newest (towards day 30), with a gentle pull back toward
+  // the connect point so a long run of same-sign shocks can't blow up the range.
   const raw = [];
   let v = avg30;
   for (let i = 0; i < olderDaysAgo.length; i++) {
-    const shock = (rnd() - 0.5) * 2 * vol;
-    v = v * (1 + driftPerStep + shock);
+    let shock = (rnd() - 0.5) * 2 * vol * choppy;
+    if (rnd() < spikeChance) shock += (rnd() - 0.5) * vol * 2.5; // occasional spike
+    const revert = ((avg30 - v) / avg30) * 0.10; // mean-reversion toward avg30
+    v = v * (1 + driftPerStep + shock + revert);
     raw.push(v);
   }
   // rescale so the last modelled point (closest to day 30) equals avg30
@@ -115,9 +129,25 @@ export const buildSeries = (card, months = 6, realHistory = []) => {
   };
 
   olderDaysAgo.forEach((d, i) => put(d, raw[i]));
-  // anchored recent window
-  for (let d = Math.min(30, totalDays); d >= 0; d -= step) put(d, interpRecent(anchors, d));
-  put(1, interpRecent(anchors, 1));
+
+  // ---- anchored recent window (last 30 days) with a seeded intra-window shape.
+  // The wiggle is a seeded multi-hump wave whose magnitude scales with this
+  // card's volatility; the four REAL anchors (30/7/1/0) are re-applied exactly
+  // afterwards so the genuine recent movement is never distorted. -------------
+  const phase = rnd() * Math.PI * 2;
+  const humps = 2 + Math.floor(rnd() * 4);     // 2–5 humps
+  const recentAmp = vol * (0.5 + rnd() * 1.1) * choppy;
+  const tilt = (change7 - change30 / 4) / 100;  // lean toward short-term momentum
+  for (let d = Math.min(30, totalDays); d >= 0; d -= step) {
+    const base = interpRecent(anchors, d);
+    const wave = Math.sin((1 - d / 30) * Math.PI * humps + phase) * recentAmp;
+    const lean = tilt * (1 - d / 30) * 0.6;
+    put(d, base * (1 + wave + lean));
+  }
+  // real anchors win — keep them exact
+  if (totalDays >= 30) put(30, avg30);
+  put(7, avg7);
+  put(1, avg1);
   put(0, trend);
 
   // ---- overlay real measured observations (authoritative) --------------------

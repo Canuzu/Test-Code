@@ -3,7 +3,7 @@ import { Search, RefreshCw, AlertCircle, ExternalLink, ChevronLeft } from 'lucid
 import { useStore } from '../store.jsx';
 import { C, trendColor, trendIcon } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtRelative } from '../lib/format.js';
-import { marketLinks } from '../lib/marketLinks.js';
+import { cmUrl } from '../lib/marketLinks.js';
 import CardTile from './CardTile.jsx';
 import SealedGrid from './SealedGrid.jsx';
 import { SEALED_CATEGORIES } from '../data/sealedProducts.js';
@@ -43,7 +43,10 @@ export default function Discover({ onOpen }) {
   const mode = cat === 'sets' ? (selectedSet ? 'setdetail' : 'home')
     : cat === 'singles' ? 'singles'
       : 'sealed';
-  const listing = mode === 'setdetail' || mode === 'singles';
+  // A query in the always-visible search bar searches ALL cards (global),
+  // regardless of the current category/set, and shows a results listing.
+  const searching = search.trim().length > 0;
+  const listing = searching || mode === 'setdetail' || mode === 'singles';
 
   // ---- 5 highlights (shown as full cards on the Sets home) --------------
   const highlights = useMemo(() => {
@@ -84,7 +87,8 @@ export default function Discover({ onOpen }) {
   const listed = useMemo(() => {
     if (!listing) return [];
     let list = cards;
-    if (mode === 'setdetail') list = list.filter((c) => (c.setId || c.set) === selectedSet);
+    // When actively searching, ignore the set scope so results are global.
+    if (mode === 'setdetail' && !searching) list = list.filter((c) => (c.setId || c.set) === selectedSet);
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter((c) => c.name.toLowerCase().includes(q) || c.nameEn?.toLowerCase().includes(q) || c.set?.toLowerCase().includes(q));
@@ -123,8 +127,24 @@ export default function Discover({ onOpen }) {
 
   return (
     <>
+      {/* Always-visible global search bar (directly on the start page) */}
+      <div style={{ position: 'relative', marginBottom: 14 }}>
+        <Search size={18} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.textFaint }} />
+        <input
+          className="control"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Karte suchen – über alle Sets (z. B. Glurak, Pikachu, Nachtara)…"
+          style={{ width: '100%', padding: '13px 42px 13px 42px', fontSize: 15, borderRadius: 12 }}
+        />
+        {searching && (
+          <button onClick={() => setSearch('')} title="Suche zurücksetzen"
+            style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: '#ffffff12', border: 'none', color: C.textSoft, width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+        )}
+      </div>
+
       {/* Category tabs: Sets · Singles · Booster · Displays · Top-Trainer-Box */}
-      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 16, borderBottom: `1px solid ${C.lineStrong}` }}>
+      <div style={{ display: searching ? 'none' : 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 16, borderBottom: `1px solid ${C.lineStrong}` }}>
         {TABS.map((t) => (
           <button key={t.id} onClick={() => switchCat(t.id)}
             style={{ padding: '9px 16px', border: 'none', background: 'none', color: cat === t.id ? C.gold : C.textFaint, borderBottom: cat === t.id ? `2px solid ${C.gold}` : '2px solid transparent', cursor: 'pointer', fontWeight: cat === t.id ? 700 : 500, fontSize: 13.5, marginBottom: -1, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
@@ -134,12 +154,14 @@ export default function Discover({ onOpen }) {
       </div>
 
       {/* Source line */}
-      <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 14 }}>
-        {source === 'snapshot' && <>🟢 Aktuelle Marktdaten (Cardmarket EU) · Stand {fmtRelative(lastUpdated)} · täglich aktualisiert · </>}
-        {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
-        {source === 'sample' && <>🃏 Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}
-        {cards.length} Karten in {sets.length} Sets
-      </div>
+      {!searching && (
+        <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 14 }}>
+          {source === 'snapshot' && <>🟢 Aktuelle Marktdaten (Cardmarket EU) · Stand {fmtRelative(lastUpdated)} · täglich aktualisiert · </>}
+          {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
+          {source === 'sample' && <>🃏 Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}
+          {cards.length} Karten in {sets.length} Sets
+        </div>
+      )}
 
       {error && (
         <div style={{ background: '#ff525215', border: '1px solid #ff525240', borderRadius: 10, padding: 14, marginBottom: 16, color: C.red, fontSize: 13, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -148,7 +170,7 @@ export default function Discover({ onOpen }) {
         </div>
       )}
 
-      {mode === 'sealed' && <SealedGrid type={cat} />}
+      {mode === 'sealed' && !searching && <SealedGrid type={cat} />}
 
       {loading && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
@@ -157,7 +179,7 @@ export default function Discover({ onOpen }) {
       )}
 
       {/* Sets home: big highlight cards + set tiles */}
-      {!loading && mode === 'home' && (
+      {!loading && mode === 'home' && !searching && (
         <>
           {highlights.length > 0 && (
             <div style={{ marginBottom: 24 }}>
@@ -187,15 +209,11 @@ export default function Discover({ onOpen }) {
       {!loading && listing && (
         <>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
-            {mode === 'setdetail' && (
+            {mode === 'setdetail' && !searching && (
               <button onClick={() => { setSelectedSet(null); setSearch(''); setActivePreset(null); }} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.lineStrong}`, background: C.surface, color: C.textSoft, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                 <ChevronLeft size={14} /> Sets
               </button>
             )}
-            <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
-              <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.textFaint }} />
-              <input className="control" placeholder={mode === 'setdetail' ? 'In diesem Set suchen…' : 'Karte suchen (über alle Sets)…'} value={search} onChange={(e) => setSearch(e.target.value)} style={{ width: '100%', padding: '9px 10px 9px 32px' }} />
-            </div>
             <select className="control" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
               <option value="score">↕ Score</option>
               <option value="change30">↕ Veränderung 30T</option>
@@ -224,6 +242,7 @@ export default function Discover({ onOpen }) {
                 {allTags.map((t) => <option key={t} value={t}>#{t}</option>)}
               </select>
             )}
+            <div style={{ flex: 1 }} />
             <div style={{ display: 'flex', gap: 4, background: C.bg2, border: `1px solid ${C.lineStrong}`, borderRadius: 8, padding: 3 }}>
               {[['grid', '⊞'], ['list', '≡']].map(([m, icon]) => (
                 <button key={m} onClick={() => setViewMode(m)} style={{ padding: '5px 10px', borderRadius: 5, border: 'none', cursor: 'pointer', background: viewMode === m ? '#ffd70022' : 'transparent', color: viewMode === m ? C.gold : C.textFaint, fontSize: 14, fontWeight: 700 }}>{icon}</button>
@@ -242,7 +261,7 @@ export default function Discover({ onOpen }) {
           </div>
 
           <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>
-            {mode === 'setdetail' ? openSet?.name : 'Alle Singles'}
+            {searching ? <>Suchergebnisse für „{search.trim()}"</> : mode === 'setdetail' ? openSet?.name : 'Alle Singles'}
             <span style={{ color: C.textFaint, fontWeight: 500, marginLeft: 8, fontSize: 12 }}>{listed.length} Karten</span>
           </div>
 
@@ -339,7 +358,7 @@ function ListView({ cards, onOpen }) {
           <div style={{ textAlign: 'center', fontSize: 11, color: C.gold }}>{fmtNum(c.m.popularity, 1)}</div>
           <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
             <button onClick={() => toggleWatchlist(c)} title="Merken" style={{ padding: '4px 7px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, background: inWatchlist(c.id) ? '#ff525215' : '#ffd70015', color: inWatchlist(c.id) ? C.red : C.gold }}>{inWatchlist(c.id) ? '✕' : '⭐'}</button>
-            <a href={c.cardmarketUrl || marketLinks(c).cardmarket} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} title="Cardmarket" style={{ padding: '4px 7px', borderRadius: 5, background: '#0066cc22', color: C.blue, display: 'inline-flex', alignItems: 'center' }}><ExternalLink size={11} /></a>
+            <a href={cmUrl(c)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} title="Cardmarket" style={{ padding: '4px 7px', borderRadius: 5, background: '#0066cc22', color: C.blue, display: 'inline-flex', alignItems: 'center' }}><ExternalLink size={11} /></a>
           </div>
         </div>
       ))}

@@ -13,6 +13,14 @@ export default function AlertsView({ locked, onUpgrade }) {
   const [dir, setDir] = useState('above');
   const [target, setTarget] = useState('');
   const [perm, setPerm] = useState(notifyPermission());
+  const [selected, setSelected] = useState(() => new Set()); // multi-select (alert ids)
+
+  // ---- multi-select (#19) ----
+  const toggleSel = (id) => setSelected((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const allSel = alerts.length > 0 && alerts.every((a) => selected.has(a.id));
+  const toggleAll = () => setSelected(allSel ? new Set() : new Set(alerts.map((a) => a.id)));
+  const bulkRemove = () => { if (selected.size && window.confirm(`${selected.size} Alert(s) löschen?`)) { [...selected].forEach((id) => removeAlert(id)); setSelected(new Set()); } };
+  const bulkSetActive = (active) => { alerts.filter((a) => selected.has(a.id) && a.active !== active).forEach((a) => toggleAlert(a.id)); };
 
   const cardById = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
   const suggestions = useMemo(() => {
@@ -77,6 +85,24 @@ export default function AlertsView({ locked, onUpgrade }) {
         </div>
       </div>
 
+      {/* Multi-select bulk bar (#19) */}
+      {alerts.length > 0 && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12, fontSize: 12 }}>
+          <button onClick={toggleAll} className="control" style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
+            <span style={{ display: 'inline-flex', width: 14, height: 14, borderRadius: 3, border: `1.5px solid ${allSel ? C.gold : C.lineStrong}`, background: allSel ? C.gold : 'transparent', color: '#0c0c1a', alignItems: 'center', justifyContent: 'center', fontSize: 11, lineHeight: 1 }}>{allSel ? '✓' : ''}</span>
+            {allSel ? 'Auswahl aufheben' : 'Alle auswählen'}
+          </button>
+          {selected.size > 0 && (
+            <>
+              <span style={{ color: C.textSoft, fontWeight: 700 }}>{selected.size} ausgewählt</span>
+              <button onClick={() => bulkSetActive(true)} className="control">Aktivieren</button>
+              <button onClick={() => bulkSetActive(false)} className="control">Pausieren</button>
+              <button onClick={bulkRemove} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: '1px solid #ff525240', background: '#ff525212', color: C.red, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}><Trash2 size={13} /> Löschen</button>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Active alerts */}
       {alerts.length === 0 ? (
         <EmptyState icon={<Bell size={52} style={{ opacity: 0.35 }} />} title="Noch keine Alerts" hint="Lege oben einen Alarm an, z. B.: Glurak ex steigt über 200 €." />
@@ -87,8 +113,9 @@ export default function AlertsView({ locked, onUpgrade }) {
             const price = card?.m?.market;
             const hit = ruleHit(a, price);
             return (
-              <div key={a.id} style={{ background: C.surface, border: `1px solid ${hit && a.active ? C.green + '55' : C.line}`, borderRadius: 12, padding: 12, opacity: a.active ? 1 : 0.6 }}>
+              <div key={a.id} style={{ background: C.surface, border: `1px solid ${selected.has(a.id) ? C.gold : hit && a.active ? C.green + '55' : C.line}`, boxShadow: selected.has(a.id) ? `0 0 0 1px ${C.gold}55` : undefined, borderRadius: 12, padding: 12, opacity: a.active ? 1 : 0.6 }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <button onClick={() => toggleSel(a.id)} title={selected.has(a.id) ? 'Abwählen' : 'Auswählen'} style={{ flexShrink: 0, width: 20, height: 20, borderRadius: 5, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, background: selected.has(a.id) ? C.gold : 'transparent', color: selected.has(a.id) ? '#0c0c1a' : C.textFaint, border: `1px solid ${selected.has(a.id) ? C.gold : C.lineStrong}` }}>{selected.has(a.id) ? '✓' : ''}</button>
                   {card && <CardImage card={card} height={48} radius={4} />}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 12.5, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.name}</div>

@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ScatterChart, Scatter, CartesianGrid } from 'recharts';
 import { BarChart3 } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, rarityColor } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtPct } from '../lib/format.js';
+import { enrich } from '../lib/metrics.js';
 import { Stat, EmptyState, ChangeBadge } from './ui.jsx';
 
 const panelTitle = { fontWeight: 700, fontSize: 13, marginBottom: 12 };
@@ -12,55 +14,87 @@ const makePanel = () => ({ background: C.surface, border: `1px solid ${C.line}`,
 const makeTip = () => ({ background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 8 });
 
 export default function Analytics({ onOpen, pro, onUpgrade }) {
-  const { cards } = useStore();
+  // Analyse ONLY the signed-in user's own collection (Sammlung), not every card
+  // on the site — so the numbers are individual to each user.
+  const { portfolio, cards, freshPrice } = useStore();
   const panel = makePanel();
   const tip = makeTip();
 
-  if (cards.length === 0) {
-    return <EmptyState icon={<BarChart3 size={56} style={{ opacity: 0.35 }} />} title="Noch keine Daten" hint="Lade zuerst Karten in der Entdecken-Ansicht." />;
+  const cardById = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
+
+  // One row per inventory position (with the freshest enriched card + qty),
+  // plus a copy merged by card id for per-card charts (a card you own 3× should
+  // count 3× in the distributions, but appear once in movers/scatter).
+  const holdings = useMemo(() => portfolio.map((e) => ({
+    e,
+    card: cardById.get(e.cardId) || enrich(e.card),
+    qty: e.quantity || 1,
+  })).filter((h) => h.card && h.card.m), [portfolio, cardById]);
+
+  const owned = useMemo(() => {
+    const m = new Map();
+    for (const h of holdings) {
+      const cur = m.get(h.card.id) || { card: h.card, qty: 0 };
+      cur.qty += h.qty;
+      m.set(h.card.id, cur);
+    }
+    return [...m.values()];
+  }, [holdings]);
+
+  if (holdings.length === 0) {
+    return <EmptyState icon={<BarChart3 size={56} style={{ opacity: 0.35 }} />} title="Deine Sammlung ist noch leer"
+      hint="Füge Karten über »📦 Sammlung« hinzu – die Analyse wertet dann genau deinen Bestand aus." />;
   }
 
-  const n = cards.length;
-  const avgScore = fmtNum(cards.reduce((s, c) => s + c.m.score, 0) / n, 1);
-  const change30Vals = cards.map((c) => c.m.change30).filter((v) => v != null);
-  const avgChange30 = change30Vals.length ? change30Vals.reduce((s, v) => s + v, 0) / change30Vals.length : null;
-  const risers = cards.filter((c) => c.m.trend === 'rising').length;
-  const fallers = cards.filter((c) => c.m.trend === 'falling').length;
-  const totalValue = cards.reduce((s, c) => s + (c.m.market || 0), 0);
+  const totalQty = owned.reduce((s, o) => s + o.qty, 0);
+  const marketValue = holdings.reduce((s, h) => s + (freshPrice(h.e) ?? h.card.m.market ?? 0) * h.qty, 0);
+  const invested = holdings.reduce((s, h) => s + (h.e.actualBuyPrice || 0) * h.qty, 0);
+  const pnl = marketValue - invested;
+
+  // quantity-weighted average score / 30-day change of the collection
+  const avgScore = fmtNum(owned.reduce((s, o) => s + o.card.m.score * o.qty, 0) / totalQty, 1);
+  const chgRows = owned.filter((o) => o.card.m.change30 != null);
+  const chgQty = chgRows.reduce((s, o) => s + o.qty, 0);
+  const avgChange30 = chgQty ? chgRows.reduce((s, o) => s + o.card.m.change30 * o.qty, 0) / chgQty : null;
+  const risers = owned.filter((o) => o.card.m.trend === 'rising').reduce((s, o) => s + o.qty, 0);
+  const fallers = owned.filter((o) => o.card.m.trend === 'falling').reduce((s, o) => s + o.qty, 0);
 
   const tierData = ['S', 'A', 'B', 'C', 'D', 'F'].map((l) => ({
     name: l,
-    count: cards.filter((c) => c.m.tier.l === l).length,
-    fill: cards.find((c) => c.m.tier.l === l)?.m.tier.c || C.textFaint,
+    count: owned.filter((o) => o.card.m.tier.l === l).reduce((s, o) => s + o.qty, 0),
+    fill: owned.find((o) => o.card.m.tier.l === l)?.card.m.tier.c || C.textFaint,
   })).filter((d) => d.count > 0);
 
-  const rarityCounts = cards.reduce((acc, c) => {
-    const key = c.rarity || 'Sonstige';
-    acc[key] = (acc[key] || 0) + 1;
+  const rarityCounts = owned.reduce((acc, o) => {
+    const key = o.card.rarity || 'Sonstige';
+    acc[key] = (acc[key] || 0) + o.qty;
     return acc;
   }, {});
   const rarityData = Object.entries(rarityCounts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 7);
 
   const trendData = [
     { name: 'Steigend', value: risers, fill: C.green },
-    { name: 'Stabil', value: cards.filter((c) => c.m.trend === 'stable').length, fill: C.gold },
+    { name: 'Stabil', value: owned.filter((o) => o.card.m.trend === 'stable').reduce((s, o) => s + o.qty, 0), fill: C.gold },
     { name: 'Fallend', value: fallers, fill: C.red },
   ];
 
-  const scatter = cards.map((c) => ({ price: c.m.market, change: c.m.change30 ?? 0, name: c.name, fill: c.m.tier.c }));
+  const scatter = owned.map((o) => ({ price: o.card.m.market, change: o.card.m.change30 ?? 0, name: o.card.name, fill: o.card.m.tier.c }));
 
-  const byChange = [...cards].filter((c) => c.m.change30 != null).sort((a, b) => b.m.change30 - a.m.change30);
+  const byChange = owned.map((o) => o.card).filter((c) => c.m.change30 != null).sort((a, b) => b.m.change30 - a.m.change30);
   const topGainers = byChange.slice(0, 5);
   const topLosers = byChange.slice(-5).reverse();
 
   return (
     <div className="fade-in">
+      <div style={{ fontSize: 12.5, color: C.textDim, marginBottom: 14 }}>
+        📦 Analyse deiner <strong style={{ color: C.textSoft }}>eigenen Sammlung</strong> · {owned.length} verschiedene Karten · {totalQty} Stück gesamt
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 16 }}>
-        <Stat label="Karten" value={n} color={C.textSoft} />
+        <Stat label="Karten" value={totalQty} color={C.textSoft} sub={owned.length !== totalQty ? `${owned.length} verschiedene` : undefined} />
+        <Stat label="Sammlungswert" value={fmtEur(marketValue, 0)} color={C.blue} sub={`investiert ${fmtEur(invested, 0)}`} />
+        <Stat label="Unrealisiert G/V" value={`${pnl >= 0 ? '+' : ''}${fmtEur(pnl, 0)}`} color={pnl >= 0 ? C.green : C.red} />
         <Stat label="Ø Investment-Score" value={avgScore} color={C.gold} />
-        <Stat label="Ø Veränderung 30T" value={fmtPct(avgChange30)} color={avgChange30 >= 0 ? C.green : C.red} />
-        <Stat label="Steiger / Faller" value={`${risers} / ${fallers}`} color={C.green2} />
-        <Stat label="Gesamt-Marktwert" value={fmtEur(totalValue, 0)} color={C.blue} />
+        <Stat label="Ø Δ30T · Steiger/Faller" value={fmtPct(avgChange30)} color={avgChange30 >= 0 ? C.green : C.red} sub={`${risers} ↑ / ${fallers} ↓`} />
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14, marginBottom: 14 }}>
@@ -129,14 +163,14 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
       <div style={{ marginTop: 14 }}>
         {pro ? (
           <div style={panel}>
-            <div style={panelTitle}>👑 Pro-Insight · Markt-Konzentration</div>
+            <div style={panelTitle}>👑 Pro-Insight · Konzentration deiner Sammlung</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
-              <Stat label="Top-5 Wertanteil" value={fmtPct((([...cards].sort((a, b) => (b.m.market || 0) - (a.m.market || 0)).slice(0, 5).reduce((s, c) => s + (c.m.market || 0), 0)) / (totalValue || 1)) * 100, 0, false)} color={C.gold} />
-              <Stat label="Premium-Karten (≥100 €)" value={cards.filter((c) => (c.m.market || 0) >= 100).length} color={C.orange} />
-              <Stat label="S/A-Tier-Anteil" value={fmtPct((cards.filter((c) => c.m.tier.l === 'S' || c.m.tier.l === 'A').length / n) * 100, 0, false)} color={C.pink} />
-              <Stat label="Ø Marge (Low→Trend)" value={fmtPct(cards.map((c) => c.m.margin).filter((v) => v != null).reduce((s, v, _i, a) => s + v / a.length, 0))} color={C.blue} />
+              <Stat label="Top-5 Wertanteil" value={fmtPct((([...owned].sort((a, b) => (b.card.m.market || 0) * b.qty - (a.card.m.market || 0) * a.qty).slice(0, 5).reduce((s, o) => s + (o.card.m.market || 0) * o.qty, 0)) / (marketValue || 1)) * 100, 0, false)} color={C.gold} />
+              <Stat label="Premium-Karten (≥100 €)" value={owned.filter((o) => (o.card.m.market || 0) >= 100).reduce((s, o) => s + o.qty, 0)} color={C.orange} />
+              <Stat label="S/A-Tier-Anteil" value={fmtPct((owned.filter((o) => o.card.m.tier.l === 'S' || o.card.m.tier.l === 'A').reduce((s, o) => s + o.qty, 0) / totalQty) * 100, 0, false)} color={C.pink} />
+              <Stat label="Ø Marge (Low→Trend)" value={fmtPct(owned.map((o) => o.card.m.margin).filter((v) => v != null).reduce((s, v, _i, a) => s + v / a.length, 0))} color={C.blue} />
             </div>
-            <div style={{ fontSize: 11, color: C.textFaint, marginTop: 10 }}>Konzentration & Qualität des aktuell geladenen Marktausschnitts – nützlich zur Risikoeinschätzung beim Einkauf.</div>
+            <div style={{ fontSize: 11, color: C.textFaint, marginTop: 10 }}>Konzentration & Qualität deines Bestands – nützlich zur Risikoeinschätzung deines Portfolios.</div>
           </div>
         ) : (
           <div style={{ ...panel, textAlign: 'center', padding: 24 }}>

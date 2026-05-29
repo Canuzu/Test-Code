@@ -76,29 +76,56 @@ export const popularityIndex = (card) => {
   return Math.round(clamp(rar + price + mom + base, 0, 10) * 10) / 10;
 };
 
-// Composite 0-100 investment score (adapted from the template, real-data driven).
+// Composite 1-100 investment score.
+//
+// Blends SIX largely-independent, real-data axes so two different cards rarely
+// land on the same number (the previous version compressed most cards into a
+// narrow band). Each axis is squashed/normalised to spread values across the
+// full range; weights sum to 100.
+//   • Momentum  (0-28): short + long-term price movement, tanh-squashed.
+//   • Nachfrage (0-24): popularity index (rarity, price level, momentum).
+//   • Qualität  (0-18): rarity tier + absolute price level (chase appeal).
+//   • Flip      (0-14): low→trend margin (buy-low headroom).
+//   • Stabilität(0-10): calmer cards score higher; very swingy ones lose points.
+//   • Datenbasis(0-6) : completeness of the underlying price guide.
+const tanh = (x) => Math.tanh(x);
+
 export const investmentScore = (card) => {
   const p = card.prices || {};
   const m = marketPrice(p) ?? 0;
+  const c7 = change(p, 7) ?? 0;
   const c30 = change(p, 30) ?? 0;
-  const pop = popularityIndex(card);
-  const vol = volatility(p);
+  const pop = popularityIndex(card);     // 0-10
+  const vol = volatility(p);             // |30d swing| in %
+  const margin = marginPct(p) ?? 0;      // low -> trend %
+  const rar = rarityWeight(card.rarity); // 0-4
 
-  const momentumScore = clamp(((c30 + 20) / 50) * 35, 0, 35); // -20%..+30% -> 0..35
-  const popScore = (pop / 10) * 25;
-  const accessScore = clamp(15 - Math.log10(m + 1) * 5, 0, 15); // cheap -> accessible
-  const stabilityScore = 15 - (clamp(vol, 0, 30) / 30) * 15;
-  const dataScore = (num(p.avg30) != null && num(p.low) != null && num(p.trend) != null) ? 10 : 5;
+  // Momentum: weight the 30-day trend more than the 7-day, squash for spread.
+  const momNorm = (tanh(c30 / 16) * 0.62 + tanh(c7 / 16) * 0.38 + 1) / 2; // 0..1
+  const momentum = clamp(momNorm, 0, 1) * 28;
 
-  return clamp(Math.round(momentumScore + popScore + accessScore + stabilityScore + dataScore), 0, 100);
+  const demand = clamp(pop / 10, 0, 1) * 24;
+
+  const quality = clamp((rar / 4) * 12 + clamp(Math.log10(m + 1) * 3, 0, 6), 0, 18);
+
+  const flip = clamp(margin / 30, 0, 1) * 14; // full marks around a 30% spread
+
+  const stability = (1 - clamp(vol, 0, 40) / 40) * 10;
+
+  const fields = (num(p.avg30) != null) + (num(p.low) != null) + (num(p.trend) != null);
+  const data = (fields / 3) * 6;
+
+  return clamp(Math.round(momentum + demand + quality + flip + stability + data), 1, 100);
 };
 
+// Tier bands + colours. A = green, B = orange (per request), keeping S pink and
+// the lower tiers blue/grey. Thresholds tuned to the score distribution above.
 export const getTier = (s) => {
-  if (s >= 88) return { l: 'S', c: '#ff3d7f', n: 'Elite' };
-  if (s >= 76) return { l: 'A', c: '#ffd700', n: 'Sehr stark' };
-  if (s >= 64) return { l: 'B', c: '#00e676', n: 'Stark' };
-  if (s >= 50) return { l: 'C', c: '#448aff', n: 'Solide' };
-  if (s >= 35) return { l: 'D', c: '#aaaacc', n: 'Durchschnitt' };
+  if (s >= 80) return { l: 'S', c: '#ff3d7f', n: 'Elite' };
+  if (s >= 68) return { l: 'A', c: '#00e676', n: 'Sehr stark' };   // green
+  if (s >= 56) return { l: 'B', c: '#ff9500', n: 'Stark' };        // orange
+  if (s >= 44) return { l: 'C', c: '#448aff', n: 'Solide' };
+  if (s >= 30) return { l: 'D', c: '#aaaacc', n: 'Durchschnitt' };
   return { l: 'F', c: '#666688', n: 'Schwach' };
 };
 
