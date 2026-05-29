@@ -1,7 +1,8 @@
 import { useState, lazy, Suspense } from 'react';
-import { Settings as Cog, GitCompare, Download, Sun, Moon } from 'lucide-react';
+import { Settings as Cog, GitCompare, Download, Sun, Moon, Crown } from 'lucide-react';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
+import { isPro } from './lib/pro.js';
 import { fmtNum } from './lib/format.js';
 import { getGame } from './data/providers/index.js';
 import Discover from './components/Discover.jsx';
@@ -17,6 +18,7 @@ const SettingsModal = lazy(() => import('./components/SettingsModal.jsx'));
 const BuylistView = lazy(() => import('./components/BuylistView.jsx'));
 const AlertsView = lazy(() => import('./components/AlertsView.jsx'));
 const ImportModal = lazy(() => import('./components/ImportModal.jsx'));
+const PricingModal = lazy(() => import('./components/PricingModal.jsx'));
 
 function Loader() {
   return (
@@ -56,9 +58,11 @@ function Shell() {
   const [showCompare, setShowCompare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showPricing, setShowPricing] = useState(false);
 
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
   const game = getGame(settings.game);
+  const pro = isPro(settings);
   const badge = { watchlist: watchlist.length, portfolio: portfolio.length, alerts: alerts.filter((a) => a.active).length };
   const avgScore = cards.length ? fmtNum(cards.reduce((s, c) => s + c.m.score, 0) / cards.length, 0) : '–';
 
@@ -87,6 +91,9 @@ function Shell() {
           <button onClick={toggleTheme} title={theme === 'dark' ? 'Helles Design' : 'Dunkles Design'} className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center' }}>
             {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
           </button>
+          <button onClick={() => setShowPricing(true)} title={pro ? 'Pro aktiv' : 'Pro freischalten'} className="control" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: pro ? C.gold : C.textSoft, borderColor: pro ? C.gold + '55' : undefined }}>
+            <Crown size={13} /> <span style={{ fontSize: 11, fontWeight: 700 }}>{pro ? 'Pro ✓' : 'Pro'}</span>
+          </button>
           <button onClick={() => setShowSettings(true)} title="Einstellungen" className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center' }}>
             <Cog size={14} />
           </button>
@@ -106,11 +113,11 @@ function Shell() {
       {/* Body */}
       <main style={{ padding: '16px 20px', maxWidth: 1400, margin: '0 auto' }}>
         {tab === 'discover' && <Discover onOpen={onOpen} />}
-        {tab === 'analytics' && <Suspense fallback={<Loader />}><Analytics onOpen={onOpen} /></Suspense>}
+        {tab === 'analytics' && <Suspense fallback={<Loader />}><Analytics onOpen={onOpen} pro={pro} onUpgrade={() => setShowPricing(true)} /></Suspense>}
         {tab === 'watchlist' && <WatchlistView onOpen={onOpen} />}
-        {tab === 'portfolio' && <PortfolioView onImport={() => setShowImport(true)} />}
-        {tab === 'buylist' && <Suspense fallback={<Loader />}><BuylistView /></Suspense>}
-        {tab === 'alerts' && <Suspense fallback={<Loader />}><AlertsView /></Suspense>}
+        {tab === 'portfolio' && <PortfolioView onImport={() => (pro ? setShowImport(true) : setShowPricing(true))} />}
+        {tab === 'buylist' && <Suspense fallback={<Loader />}><BuylistView locked={!pro} onUpgrade={() => setShowPricing(true)} /></Suspense>}
+        {tab === 'alerts' && <Suspense fallback={<Loader />}><AlertsView locked={!pro} onUpgrade={() => setShowPricing(true)} /></Suspense>}
       </main>
 
       <footer style={{ borderTop: `1px solid ${C.lineStrong}`, padding: '16px 20px', marginTop: 40, textAlign: 'center', fontSize: 10.5, color: C.textGhost, maxWidth: 900, margin: '40px auto 0', lineHeight: 1.6 }}>
@@ -130,6 +137,7 @@ function Shell() {
         {showCompare && <CompareModal onClose={() => setShowCompare(false)} />}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {showImport && <ImportModal onClose={() => setShowImport(false)} />}
+        {showPricing && <PricingModal onClose={() => setShowPricing(false)} />}
       </Suspense>
 
       {toast && (

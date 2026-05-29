@@ -11,7 +11,7 @@ const panelTitle = { fontWeight: 700, fontSize: 13, marginBottom: 12 };
 const makePanel = () => ({ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 16 });
 const makeTip = () => ({ background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 8 });
 
-export default function Analytics({ onOpen }) {
+export default function Analytics({ onOpen, pro, onUpgrade }) {
   const { cards } = useStore();
   const panel = makePanel();
   const tip = makeTip();
@@ -123,6 +123,28 @@ export default function Analytics({ onOpen }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14 }}>
         <MoverList title="🚀 Größte Gewinner (30T)" cards={topGainers} onOpen={onOpen} />
         <MoverList title="📉 Größte Verlierer (30T)" cards={topLosers} onOpen={onOpen} />
+      </div>
+
+      {/* Pro-gated advanced analytics */}
+      <div style={{ marginTop: 14 }}>
+        {pro ? (
+          <div style={panel}>
+            <div style={panelTitle}>👑 Pro-Insight · Markt-Konzentration</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
+              <Stat label="Top-5 Wertanteil" value={fmtPct((([...cards].sort((a, b) => (b.m.market || 0) - (a.m.market || 0)).slice(0, 5).reduce((s, c) => s + (c.m.market || 0), 0)) / (totalValue || 1)) * 100, 0, false)} color={C.gold} />
+              <Stat label="Premium-Karten (≥100 €)" value={cards.filter((c) => (c.m.market || 0) >= 100).length} color={C.orange} />
+              <Stat label="S/A-Tier-Anteil" value={fmtPct((cards.filter((c) => c.m.tier.l === 'S' || c.m.tier.l === 'A').length / n) * 100, 0, false)} color={C.pink} />
+              <Stat label="Ø Marge (Low→Trend)" value={fmtPct(cards.map((c) => c.m.margin).filter((v) => v != null).reduce((s, v, _i, a) => s + v / a.length, 0))} color={C.blue} />
+            </div>
+            <div style={{ fontSize: 11, color: C.textFaint, marginTop: 10 }}>Konzentration & Qualität des aktuell geladenen Marktausschnitts – nützlich zur Risikoeinschätzung beim Einkauf.</div>
+          </div>
+        ) : (
+          <div style={{ ...panel, textAlign: 'center', padding: 24 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 6 }}>👑 Erweiterte Analytics</div>
+            <div style={{ fontSize: 12.5, color: C.textDim, marginBottom: 14 }}>Markt-Konzentration, Premium-Anteil, Qualitäts- und Margen-Kennzahlen – im Pro-Plan.</div>
+            <button className="btn-primary" onClick={onUpgrade}>Pro freischalten</button>
+          </div>
+        )}
       </div>
     </div>
   );

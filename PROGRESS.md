@@ -25,7 +25,7 @@
 - [x] 5. Mehrere Marktplätze vergleichen (Cardmarket + eBay + TCGPlayer)
 - [x] 6. Preisalerts (in-app + Web-Notifications, No-Backend)
 - [x] 7. Massenimport (CSV-Wizard + Barcode-Scanner-Progressive-Enhancement)
-- [ ] 8. Subscription-Modell (Free/Pro, Feature-Gating, Pricing-Seite)
+- [x] 8. Subscription-Modell (Free/Pro, Feature-Gating, Pricing-Seite)
 - [ ] 9. Cardmarket-API (offiziell) — Provider + Build-Skript + Doku (env-gated)
 - [ ] 10. PWA / Mobile-App (Manifest, Service-Worker, Install, Responsive)
 
@@ -38,6 +38,7 @@
 - #2 Buylist ✓: `src/lib/buylist.js` (Tier-/Flat-%, Zustands-Faktor, Bar/Guthaben, Rundung) + `src/components/BuylistView.jsx` (Suche/Watchlist/Top25, Inline-Regeln, CSV + Druck/PDF via `@media print` + `.buylist-print`) + neuer Tab „Buylist" in App + Print-CSS in index.css. `locked`/`onUpgrade`-Props vorbereitet für #8.
 - #6 Alerts ✓: `src/lib/alerts.js` (Regeln, Web-Notification) + Store (alerts/alertLog, add/remove/toggle/update, Auswertung per useEffect mit firingRef-Debounce) + `src/components/AlertsView.jsx` (Anlegen/Verwalten/Log + Notification-Permission) + Tab „Alerts" mit Badge + Quick-Alarm in CardModal-Übersicht.
 - #7 Massenimport ✓: `src/lib/csv.js` (Parser + Spalten-Auto-Mapping + Vorlage) + `src/components/ImportModal.jsx` (CSV: Datei/Einfügen → Mapping → Fuzzy-Match → Vorschau → Import via `addManyToPortfolio`; Barcode: BarcodeDetector progressive mit Kamera) + App-Verdrahtung über Sammlung-`onImport`.
+- #8 Subscription ✓: `src/lib/pro.js` (PLANS, PRO_FEATURES, isPro) + `src/components/PricingModal.jsx` (Free/Pro, monatlich/jährlich, Demo-Unlock) + Gates an Buylist/Alerts/Import + Pro-Insight-Panel in Analytics + Crown-Button im Header. Billing-Backend andockbar (setzt nur `settings.pro`).
 
 ## Hinweise / offene Punkte für später
 - Deploy-Workflow triggert nur auf `main` (+ alter Branch). Für Live-Schaltung
