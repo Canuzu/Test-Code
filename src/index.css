@@ -128,3 +128,17 @@ button, input, select, textarea { font-family: inherit; }
   background: linear-gradient(90deg, #eceef7 25%, #f6f7fc 37%, #eceef7 63%);
   background-size: 800px 100%;
 }
+
+/* ---- Printing (Buylist PDF) ----
+   The print sheet lives off-screen on screen, and becomes the only visible
+   element when printing. */
+.buylist-print { position: absolute; left: -99999px; top: 0; width: 100%; color: #000; }
+
+@media print {
+  @page { margin: 14mm; }
+  html, body { background: #fff !important; }
+  body { visibility: hidden; }
+  .no-print { display: none !important; }
+  .buylist-print { position: absolute; left: 0; top: 0; width: 100%; }
+  .buylist-print, .buylist-print * { visibility: visible; color: #000 !important; }
+}

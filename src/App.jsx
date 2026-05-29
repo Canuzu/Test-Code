@@ -14,6 +14,7 @@ const Analytics = lazy(() => import('./components/Analytics.jsx'));
 const CardModal = lazy(() => import('./components/CardModal.jsx'));
 const CompareModal = lazy(() => import('./components/CompareModal.jsx'));
 const SettingsModal = lazy(() => import('./components/SettingsModal.jsx'));
+const BuylistView = lazy(() => import('./components/BuylistView.jsx'));
 
 function Loader() {
   return (
@@ -42,6 +43,7 @@ const TABS = [
   { id: 'analytics', label: '📊 Analyse' },
   { id: 'watchlist', label: '⭐ Watchlist' },
   { id: 'portfolio', label: '📦 Sammlung' },
+  { id: 'buylist', label: '🧾 Buylist' },
 ];
 
 function Shell() {
@@ -103,6 +105,7 @@ function Shell() {
         {tab === 'analytics' && <Suspense fallback={<Loader />}><Analytics onOpen={onOpen} /></Suspense>}
         {tab === 'watchlist' && <WatchlistView onOpen={onOpen} />}
         {tab === 'portfolio' && <PortfolioView />}
+        {tab === 'buylist' && <Suspense fallback={<Loader />}><BuylistView /></Suspense>}
       </main>
 
       <footer style={{ borderTop: `1px solid ${C.lineStrong}`, padding: '16px 20px', marginTop: 40, textAlign: 'center', fontSize: 10.5, color: C.textGhost, maxWidth: 900, margin: '40px auto 0', lineHeight: 1.6 }}>
