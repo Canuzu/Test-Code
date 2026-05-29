@@ -31,7 +31,7 @@ export default function WatchlistView({ onOpen }) {
         <Stat label="Δ seit Merken" value={`${delta >= 0 ? '+' : ''}${fmtEur(delta, 0)}`} color={delta >= 0 ? C.green : C.red} sub={deltaPct != null ? fmtPct(deltaPct) : undefined} />
         <Stat label="Im Aufwärtstrend" value={`${risers}/${items.length}`} color={C.green2} />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: 14 }}>
         {items.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}
       </div>
     </div>

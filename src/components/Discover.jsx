@@ -268,7 +268,7 @@ export default function Discover({ onOpen }) {
           {listed.length === 0
             ? <EmptyState icon="🔍" title="Keine Karten gefunden" hint="Anderen Suchbegriff oder Filter probieren." />
             : viewMode === 'grid'
-              ? <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>{listed.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}</div>
+              ? <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: 14 }}>{listed.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}</div>
               : <ListView cards={listed} onOpen={onOpen} />}
         </>
       )}
