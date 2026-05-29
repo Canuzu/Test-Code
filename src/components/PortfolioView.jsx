@@ -64,6 +64,7 @@ export default function PortfolioView() {
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
                       <Pill color={C.blue}>×{qty}</Pill>
                       <Pill color={C.purple}>{e.condition || 'NM'}</Pill>
+                      {e.location && <Pill color={C.textDim}>📍 {e.location}</Pill>}
                     </div>
                     <div style={{ fontSize: 10.5, color: C.textFaint, marginTop: 6 }}>gekauft {fmtDate(e.purchaseDate)}</div>
                   </div>

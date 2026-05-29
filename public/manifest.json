@@ -1,0 +1,21 @@
+{
+  "name": "KartenwertDE – TCG Preistracker",
+  "short_name": "KartenwertDE",
+  "description": "Live-Preistracker für Pokemon TCG – Cardmarket EU, Portfolio, Buylist",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0a0a18",
+  "theme_color": "#0a0a18",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%23120820'/%3E%3Cpath d='M108 24L54 108H90L84 168L138 78H102Z' fill='%23ffd700'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "shopping", "utilities"],
+  "screenshots": [],
+  "lang": "de"
+}

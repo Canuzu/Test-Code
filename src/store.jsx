@@ -4,19 +4,17 @@ import { enrich } from './lib/metrics.js';
 import { applyTheme } from './lib/theme.js';
 import { getGame } from './data/providers/index.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
+import { supabase } from './lib/supabase.js';
 
 const StoreContext = createContext(null);
 export const useStore = () => useContext(StoreContext);
 
 const DEFAULT_SETTINGS = { game: 'pokemon', apiKey: '', platform: 'cardmarket', includeShipping: true, theme: 'dark' };
-
-// Static daily snapshot produced by scripts/fetch-prices.mjs at deploy time.
-// Same-origin, so no browser CORS limits (unlike calling the API directly).
 const SNAPSHOT_URL = `${import.meta.env.BASE_URL}data/cards.json`;
 
 export function StoreProvider({ children }) {
   const [rawCards, setRawCards] = useState([]);
-  const [source, setSource] = useState(null); // 'live' | 'sample' | 'cache'
+  const [source, setSource] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -27,24 +25,105 @@ export function StoreProvider({ children }) {
   const [notes, setNotes] = useState({});
   const [tags, setTags] = useState({});
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-
   const [compareList, setCompareList] = useState([]);
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
+  const [alerts, setAlerts] = useState([]);
 
-  // Theme: apply synchronously during render so children read the right palette,
-  // and reflect it on <html data-theme> for the CSS-variable based styles.
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  const [user, setUser] = useState(null);
+  const [team, setTeam] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [authLoading, setAuthLoading] = useState(false);
+  const syncTimers = useRef({});
+  const cloudSyncing = useRef(false); // skip cloud-saves during initial load
+
+  // ── Theme ─────────────────────────────────────────────────────────────────
   const theme = settings.theme === 'light' ? 'light' : 'dark';
   applyTheme(theme);
-  useLayoutEffect(() => {
-    document.documentElement.dataset.theme = theme;
-  }, [theme]);
+  useLayoutEffect(() => { document.documentElement.dataset.theme = theme; }, [theme]);
   const toggleTheme = useCallback(() => {
-    setSettings((prev) => ({ ...prev, theme: prev.theme === 'light' ? 'dark' : 'light' }));
+    setSettings((p) => ({ ...p, theme: p.theme === 'light' ? 'dark' : 'light' }));
   }, []);
 
-  // ---- load persisted state once, then auto-refresh if stale ------------
+  // ── Cloud save (debounced 800 ms per key) ─────────────────────────────────
+  const cloudSave = useCallback((key, value) => {
+    if (!supabase || !user || cloudSyncing.current) return;
+    clearTimeout(syncTimers.current[key]);
+    syncTimers.current[key] = setTimeout(async () => {
+      const ownerId = team?.id || user.id;
+      const ownerType = team ? 'team' : 'user';
+      try {
+        await supabase.from('user_store').upsert(
+          { owner_id: ownerId, owner_type: ownerType, key, value, updated_at: new Date().toISOString() },
+          { onConflict: 'owner_id,owner_type,key' }
+        );
+      } catch (e) {
+        console.error('[cloud] save failed:', key, e.message);
+      }
+    }, 800);
+  }, [user, team]);
+
+  // ── Load all data from cloud ──────────────────────────────────────────────
+  const loadFromCloud = useCallback(async (u) => {
+    if (!supabase) return;
+    cloudSyncing.current = true;
+    try {
+      const { data: prof } = await supabase
+        .from('profiles').select('name, shop_name').eq('id', u.id).maybeSingle();
+      if (prof) setProfile(prof);
+
+      const { data: membership } = await supabase
+        .from('team_members')
+        .select('role, teams(id, name, invite_code, owner_id)')
+        .eq('user_id', u.id)
+        .maybeSingle();
+      const t = membership?.teams ? { ...membership.teams, role: membership.role } : null;
+      setTeam(t);
+
+      const ownerId = t?.id || u.id;
+      const ownerType = t ? 'team' : 'user';
+      const { data: rows } = await supabase
+        .from('user_store').select('key, value')
+        .eq('owner_id', ownerId).eq('owner_type', ownerType);
+
+      if (rows?.length) {
+        const byKey = Object.fromEntries(rows.map((r) => [r.key, r.value]));
+        if (byKey.watchlist) setWatchlist(byKey.watchlist);
+        if (byKey.portfolio) setPortfolio(byKey.portfolio);
+        if (byKey.sold)      setSold(byKey.sold);
+        if (byKey.notes)     setNotes(byKey.notes);
+        if (byKey.tags)      setTags(byKey.tags);
+        if (byKey.alerts)    setAlerts(byKey.alerts);
+      }
+    } catch (e) {
+      console.error('[cloud] load failed:', e.message);
+    } finally {
+      cloudSyncing.current = false;
+    }
+  }, []);
+
+  // ── Auth listener ─────────────────────────────────────────────────────────
   useEffect(() => {
+    if (!supabase) return;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) { setUser(session.user); loadFromCloud(session.user); }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        setUser(session.user);
+        loadFromCloud(session.user);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null); setTeam(null); setProfile(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [loadFromCloud]);
+
+  // ── Load from localStorage on mount ───────────────────────────────────────
+  useEffect(() => {
+    const al = store.get('alerts');
+    if (Array.isArray(al)) setAlerts(al);
     const wl = store.get(KEYS.watchlist);
     const pf = store.get(KEYS.portfolio);
     const sl = store.get(KEYS.sold);
@@ -59,32 +138,26 @@ export function StoreProvider({ children }) {
     if (tg && typeof tg === 'object') setTags(tg);
     const s = st && typeof st === 'object' ? { ...DEFAULT_SETTINGS, ...st } : DEFAULT_SETTINGS;
     if (st && typeof st === 'object') setSettings(s);
-
     if (cache && Array.isArray(cache.cards) && cache.cards.length) {
-      setRawCards(cache.cards);
-      setSource('cache');
+      setRawCards(cache.cards); setSource('cache');
       if (cache.ts) setLastUpdated(new Date(cache.ts));
     } else {
-      setRawCards(SAMPLE_CARDS);
-      setSource('sample');
+      setRawCards(SAMPLE_CARDS); setSource('sample');
     }
-
-    // Always pull the freshly-deployed snapshot (same-origin JSON, no CORS).
-    // Silent: on failure (offline / opened from file://) we keep the cached
-    // or sample data shown above.
     loadSnapshot({ silent: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ---- persistence ------------------------------------------------------
-  useEffect(() => { store.set(KEYS.watchlist, watchlist); }, [watchlist]);
-  useEffect(() => { store.set(KEYS.portfolio, portfolio); }, [portfolio]);
-  useEffect(() => { store.set(KEYS.sold, sold); }, [sold]);
-  useEffect(() => { store.set(KEYS.notes, notes); }, [notes]);
-  useEffect(() => { store.set(KEYS.tags, tags); }, [tags]);
+  // ── Persistence: localStorage + cloud ────────────────────────────────────
+  useEffect(() => { store.set(KEYS.watchlist, watchlist); cloudSave('watchlist', watchlist); }, [watchlist, cloudSave]);
+  useEffect(() => { store.set(KEYS.portfolio, portfolio); cloudSave('portfolio', portfolio); }, [portfolio, cloudSave]);
+  useEffect(() => { store.set(KEYS.sold, sold);           cloudSave('sold', sold);           }, [sold, cloudSave]);
+  useEffect(() => { store.set(KEYS.notes, notes);         cloudSave('notes', notes);         }, [notes, cloudSave]);
+  useEffect(() => { store.set(KEYS.tags, tags);           cloudSave('tags', tags);           }, [tags, cloudSave]);
   useEffect(() => { store.set(KEYS.settings, settings); }, [settings]);
+  useEffect(() => { store.set('alerts', alerts);          cloudSave('alerts', alerts);       }, [alerts, cloudSave]);
 
-  // ---- derived ----------------------------------------------------------
+  // ── Derived ───────────────────────────────────────────────────────────────
   const cards = useMemo(() => rawCards.map(enrich), [rawCards]);
   const cardById = useMemo(() => {
     const m = new Map();
@@ -92,16 +165,14 @@ export function StoreProvider({ children }) {
     return m;
   }, [rawCards]);
 
-  // ---- toast ------------------------------------------------------------
+  // ── Toast ─────────────────────────────────────────────────────────────────
   const showToast = useCallback((msg) => {
     setToast({ msg, id: Date.now() });
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2600);
   }, []);
 
-  // ---- data fetching ----------------------------------------------------
-  // Loads the static daily snapshot baked into the site at deploy time.
-  // `silent` = background load on mount (no error banner; keep current data).
+  // ── Snapshot fetch ────────────────────────────────────────────────────────
   const loadSnapshot = useCallback(async ({ silent = false } = {}) => {
     setLoading(true);
     if (!silent) setError(null);
@@ -112,9 +183,7 @@ export function StoreProvider({ children }) {
       const list = Array.isArray(data?.cards) ? data.cards : [];
       if (list.length === 0) throw new Error('Snapshot leer');
       const ts = data.generatedAt ? new Date(data.generatedAt).getTime() : Date.now();
-      setRawCards(list);
-      setSource('snapshot');
-      setLastUpdated(new Date(ts));
+      setRawCards(list); setSource('snapshot'); setLastUpdated(new Date(ts));
       store.set(KEYS.cards, { cards: list, ts });
       if (!silent) showToast(`✓ Aktuelle Marktdaten geladen · ${list.length} Karten`);
       return true;
@@ -127,40 +196,109 @@ export function StoreProvider({ children }) {
   }, [showToast]);
 
   const loadSample = useCallback(() => {
-    setRawCards(SAMPLE_CARDS);
-    setSource('sample');
-    setError(null);
+    setRawCards(SAMPLE_CARDS); setSource('sample'); setError(null);
     showToast('🃏 Beispieldaten geladen');
   }, [showToast]);
 
   const fetchCards = useCallback(() => loadSnapshot({ silent: false }), [loadSnapshot]);
 
-  // ---- collection actions ----------------------------------------------
+  // ── Auth actions ──────────────────────────────────────────────────────────
+  const signIn = useCallback(async (email, password) => {
+    if (!supabase) throw new Error('Supabase nicht konfiguriert');
+    setAuthLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    } finally {
+      setAuthLoading(false);
+    }
+  }, []);
+
+  const signUp = useCallback(async (email, password, name, shopName) => {
+    if (!supabase) throw new Error('Supabase nicht konfiguriert');
+    setAuthLoading(true);
+    try {
+      const { error } = await supabase.auth.signUp({
+        email, password,
+        options: { data: { name, shop_name: shopName } },
+      });
+      if (error) throw error;
+    } finally {
+      setAuthLoading(false);
+    }
+  }, []);
+
+  const signOut = useCallback(async () => {
+    if (supabase) await supabase.auth.signOut();
+  }, []);
+
+  const createTeam = useCallback(async (name) => {
+    if (!supabase || !user) return;
+    const { data: newTeam, error } = await supabase
+      .from('teams').insert({ name, owner_id: user.id }).select().single();
+    if (error) throw error;
+    await supabase.from('team_members')
+      .insert({ team_id: newTeam.id, user_id: user.id, role: 'owner' });
+    // migrate current user data into team context
+    for (const [key, value] of Object.entries({ watchlist, portfolio, sold, notes, tags, alerts })) {
+      await supabase.from('user_store').upsert(
+        { owner_id: newTeam.id, owner_type: 'team', key, value, updated_at: new Date().toISOString() },
+        { onConflict: 'owner_id,owner_type,key' }
+      );
+    }
+    setTeam({ ...newTeam, role: 'owner' });
+    showToast(`🏪 Team "${name}" erstellt!`);
+    return newTeam;
+  }, [user, watchlist, portfolio, sold, notes, tags, alerts, showToast]);
+
+  const joinTeam = useCallback(async (code) => {
+    if (!supabase || !user) return;
+    const { data: t, error } = await supabase.from('teams')
+      .select().eq('invite_code', code.trim().toUpperCase()).single();
+    if (error || !t) throw new Error('Team nicht gefunden – Code prüfen.');
+    const { error: joinErr } = await supabase.from('team_members')
+      .insert({ team_id: t.id, user_id: user.id, role: 'member' });
+    if (joinErr) throw new Error('Beitreten fehlgeschlagen – bereits Mitglied?');
+    await loadFromCloud(user);
+    showToast(`👥 Team "${t.name}" beigetreten!`);
+  }, [user, loadFromCloud, showToast]);
+
+  const leaveTeam = useCallback(async () => {
+    if (!supabase || !user || !team) return;
+    if (team.role === 'owner') {
+      await supabase.from('teams').delete().eq('id', team.id);
+    } else {
+      await supabase.from('team_members').delete()
+        .eq('team_id', team.id).eq('user_id', user.id);
+    }
+    setTeam(null);
+    showToast('Team verlassen');
+  }, [user, team, showToast]);
+
+  // ── Collection actions ────────────────────────────────────────────────────
   const inWatchlist = useCallback((id) => watchlist.some((c) => c.id === id), [watchlist]);
   const inPortfolio = useCallback((id) => portfolio.some((c) => c.cardId === id), [portfolio]);
-  const inCompare = useCallback((id) => compareList.some((c) => c.id === id), [compareList]);
+  const inCompare   = useCallback((id) => compareList.some((c) => c.id === id), [compareList]);
 
   const toggleWatchlist = useCallback((card) => {
     setWatchlist((prev) => {
-      const exists = prev.some((c) => c.id === card.id);
-      if (exists) { showToast('Aus Watchlist entfernt'); return prev.filter((c) => c.id !== card.id); }
+      if (prev.some((c) => c.id === card.id)) {
+        showToast('Aus Watchlist entfernt');
+        return prev.filter((c) => c.id !== card.id);
+      }
       showToast('⭐ Zur Watchlist hinzugefügt');
       return [...prev, { ...card, addedAt: Date.now(), addedPrice: card.prices?.market ?? null }];
     });
   }, [showToast]);
 
   const addToPortfolio = useCallback((card, opts = {}) => {
-    const { price, quantity = 1, condition = 'NM' } = typeof opts === 'object' ? opts : { price: opts };
-    const entry = {
-      id: `${card.id}-${Date.now()}`,
-      cardId: card.id,
-      card,
+    const { price, quantity = 1, condition = 'NM', location = '' } = typeof opts === 'object' ? opts : { price: opts };
+    setPortfolio((prev) => [...prev, {
+      id: `${card.id}-${Date.now()}`, cardId: card.id, card,
       actualBuyPrice: Number(price) || card.prices?.low || card.prices?.market || 0,
       quantity: Math.max(1, Number(quantity) || 1),
-      condition: condition || 'NM',
-      purchaseDate: Date.now(),
-    };
-    setPortfolio((prev) => [...prev, entry]);
+      condition: condition || 'NM', location: location || '', purchaseDate: Date.now(),
+    }]);
     showToast('📦 Zur Sammlung hinzugefügt');
   }, [showToast]);
 
@@ -169,7 +307,6 @@ export function StoreProvider({ children }) {
     showToast('Aus Sammlung entfernt');
   }, [showToast]);
 
-  // Record a sale: move the holding to the sold log with realized profit.
   const sellFromPortfolio = useCallback((entryId, sellPrice) => {
     const entry = portfolio.find((e) => e.id === entryId);
     if (!entry) return;
@@ -181,28 +318,18 @@ export function StoreProvider({ children }) {
     showToast(`${realized >= 0 ? '✅' : '➖'} Verkauf erfasst: ${realized >= 0 ? '+' : ''}${realized.toFixed(2)} €`);
   }, [portfolio, showToast]);
 
-  const removeSold = useCallback((entryId) => {
-    setSold((prev) => prev.filter((e) => e.id !== entryId));
-  }, []);
-
-  const saveNote = useCallback((cardId, text) => {
-    setNotes((prev) => ({ ...prev, [cardId]: text }));
-  }, []);
-
-  const addTag = useCallback((cardId, tag) => {
+  const removeSold    = useCallback((id) => setSold((p) => p.filter((e) => e.id !== id)), []);
+  const saveNote      = useCallback((cardId, text) => setNotes((p) => ({ ...p, [cardId]: text })), []);
+  const addTag        = useCallback((cardId, tag) => {
     const t = (tag || '').trim().toLowerCase();
     if (!t) return;
-    setTags((prev) => {
-      const cur = prev[cardId] || [];
-      if (cur.includes(t)) return prev;
-      return { ...prev, [cardId]: [...cur, t] };
+    setTags((p) => {
+      const cur = p[cardId] || [];
+      return cur.includes(t) ? p : { ...p, [cardId]: [...cur, t] };
     });
   }, []);
-
-  const removeTag = useCallback((cardId, tag) => {
-    setTags((prev) => ({ ...prev, [cardId]: (prev[cardId] || []).filter((x) => x !== tag) }));
-  }, []);
-
+  const removeTag     = useCallback((cardId, tag) =>
+    setTags((p) => ({ ...p, [cardId]: (p[cardId] || []).filter((x) => x !== tag) })), []);
   const toggleCompare = useCallback((card) => {
     setCompareList((prev) => {
       if (prev.some((c) => c.id === card.id)) return prev.filter((c) => c.id !== card.id);
@@ -210,27 +337,61 @@ export function StoreProvider({ children }) {
       return [...prev, card];
     });
   }, [showToast]);
+  const clearCompare  = useCallback(() => setCompareList([]), []);
 
-  const clearCompare = useCallback(() => setCompareList([]), []);
+  // ── Price Alerts ──────────────────────────────────────────────────────────
+  const addAlert = useCallback((alert) => {
+    setAlerts((prev) => [...prev, { ...alert, id: `a-${Date.now()}`, triggered: false, createdAt: Date.now() }]);
+    showToast('🔔 Alert gesetzt!');
+  }, [showToast]);
 
-  const updateSettings = useCallback((patch) => setSettings((prev) => ({ ...prev, ...patch })), []);
+  const removeAlert = useCallback((id) => setAlerts((prev) => prev.filter((a) => a.id !== id)), []);
 
-  // current price for a portfolio entry (live if the card is in the dataset)
-  const freshPrice = useCallback((entry) => {
+  const checkAlerts = useCallback((currentCards) => {
+    const byId = new Map(currentCards.map((c) => [c.id, c]));
+    setAlerts((prev) => prev.map((alert) => {
+      const card = byId.get(alert.cardId);
+      if (!card || alert.triggered) return alert;
+      const price = card.m.market;
+      if (price == null) return alert;
+      const hit = alert.direction === 'above' ? price >= alert.targetPrice : price <= alert.targetPrice;
+      if (hit) {
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          new Notification(`🔔 Preisalert: ${alert.cardName}`, {
+            body: `Preis ${alert.direction === 'above' ? '≥' : '≤'} ${alert.targetPrice.toFixed(2)}€ (jetzt: ${price.toFixed(2)}€)`,
+          });
+        }
+        return { ...alert, triggered: true, triggeredAt: Date.now(), triggeredPrice: price };
+      }
+      return alert;
+    }));
+  }, []);
+
+  const requestNotificationPermission = useCallback(async () => {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+  }, []);
+  const updateSettings = useCallback((patch) => setSettings((p) => ({ ...p, ...patch })), []);
+  const freshPrice    = useCallback((entry) => {
     const live = cardById.get(entry.cardId);
     return live?.prices?.market ?? entry.card?.prices?.market ?? null;
   }, [cardById]);
 
   const value = {
     cards, source, lastUpdated, loading, error,
-    watchlist, portfolio, sold, notes, tags, settings, compareList, toast,
+    watchlist, portfolio, sold, notes, tags, settings, compareList, toast, alerts,
     theme, toggleTheme,
     fetchCards, loadSample,
     inWatchlist, inPortfolio, inCompare,
     toggleWatchlist, addToPortfolio, removeFromPortfolio, sellFromPortfolio, removeSold,
-    saveNote, addTag, removeTag,
-    toggleCompare, clearCompare,
+    saveNote, addTag, removeTag, toggleCompare, clearCompare,
     updateSettings, showToast, freshPrice,
+    addAlert, removeAlert, checkAlerts, requestNotificationPermission,
+    // auth
+    user, team, profile, authLoading,
+    signIn, signUp, signOut,
+    createTeam, joinTeam, leaveTeam,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

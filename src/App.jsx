@@ -1,5 +1,6 @@
 import { useState, lazy, Suspense } from 'react';
-import { Settings as Cog, GitCompare, Download, Sun, Moon } from 'lucide-react';
+import { Settings as Cog, GitCompare, Download, Sun, Moon, LogIn, Upload } from 'lucide-react';
+import AuthModal from './components/AuthModal.jsx';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
 import { fmtNum } from './lib/format.js';
@@ -14,6 +15,9 @@ const Analytics = lazy(() => import('./components/Analytics.jsx'));
 const CardModal = lazy(() => import('./components/CardModal.jsx'));
 const CompareModal = lazy(() => import('./components/CompareModal.jsx'));
 const SettingsModal = lazy(() => import('./components/SettingsModal.jsx'));
+const BuylistView = lazy(() => import('./components/BuylistView.jsx'));
+const AlertsView = lazy(() => import('./components/AlertsView.jsx'));
+const ImportModal = lazy(() => import('./components/ImportModal.jsx'));
 
 function Loader() {
   return (
@@ -42,18 +46,23 @@ const TABS = [
   { id: 'analytics', label: '📊 Analyse' },
   { id: 'watchlist', label: '⭐ Watchlist' },
   { id: 'portfolio', label: '📦 Sammlung' },
+  { id: 'buylist', label: '🏷 Ankauf' },
+  { id: 'alerts', label: '🔔 Alerts' },
 ];
 
 function Shell() {
-  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme } = useStore();
+  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, user, team, profile, alerts } = useStore();
   const [tab, setTab] = useState('discover');
   const [modal, setModal] = useState(null); // { card, tab }
   const [showCompare, setShowCompare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
   const game = getGame(settings.game);
-  const badge = { watchlist: watchlist.length, portfolio: portfolio.length };
+  const triggeredAlerts = (alerts || []).filter((a) => a.triggered).length;
+  const badge = { watchlist: watchlist.length, portfolio: portfolio.length, alerts: triggeredAlerts };
   const avgScore = cards.length ? fmtNum(cards.reduce((s, c) => s + c.m.score, 0) / cards.length, 0) : '–';
 
   return (
@@ -75,6 +84,26 @@ function Shell() {
               <span style={{ fontSize: 11, color: source === 'snapshot' ? C.green : C.textDim, fontWeight: 600 }}>{cards.length} · Ø {avgScore}</span>
             </div>
           )}
+          <button
+            onClick={() => setShowAuth(true)}
+            title={user ? 'Profil / Team' : 'Anmelden / Registrieren'}
+            className="control"
+            style={{ padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 6, background: user ? '#448aff12' : undefined, border: user ? '1px solid #448aff30' : undefined, borderRadius: 8 }}
+          >
+            {user ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg,#448aff,#6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff' }}>
+                  {(profile?.name || user.email || '?')[0].toUpperCase()}
+                </div>
+                {team && <span style={{ fontSize: 11, color: '#448aff', fontWeight: 700 }}>👥</span>}
+              </div>
+            ) : (
+              <><LogIn size={13} /><span style={{ fontSize: 12, fontWeight: 600 }}>Anmelden</span></>
+            )}
+          </button>
+          <button onClick={() => setShowImport(true)} title="Massenimport" className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Upload size={13} />
+          </button>
           <button onClick={() => exportCSV(cards)} disabled={!cards.length} title="CSV-Export" className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center', gap: 4, opacity: cards.length ? 1 : 0.4 }}>
             <Download size={13} />
           </button>
@@ -103,6 +132,8 @@ function Shell() {
         {tab === 'analytics' && <Suspense fallback={<Loader />}><Analytics onOpen={onOpen} /></Suspense>}
         {tab === 'watchlist' && <WatchlistView onOpen={onOpen} />}
         {tab === 'portfolio' && <PortfolioView />}
+        {tab === 'buylist' && <Suspense fallback={<Loader />}><BuylistView /></Suspense>}
+        {tab === 'alerts' && <Suspense fallback={<Loader />}><AlertsView /></Suspense>}
       </main>
 
       <footer style={{ borderTop: `1px solid ${C.lineStrong}`, padding: '16px 20px', marginTop: 40, textAlign: 'center', fontSize: 10.5, color: C.textGhost, maxWidth: 900, margin: '40px auto 0', lineHeight: 1.6 }}>
@@ -121,6 +152,10 @@ function Shell() {
         {modal && <CardModal card={modal.card} initialTab={modal.tab} onClose={() => setModal(null)} />}
         {showCompare && <CompareModal onClose={() => setShowCompare(false)} />}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      </Suspense>
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+      <Suspense fallback={null}>
+        {showImport && <ImportModal onClose={() => setShowImport(false)} />}
       </Suspense>
 
       {toast && (
