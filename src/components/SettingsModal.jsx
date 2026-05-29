@@ -81,6 +81,16 @@ export default function SettingsModal({ onClose }) {
           </label>
         </div>
 
+        <div style={{ marginBottom: 16 }}>
+          <div style={label}>Wechselkurs EUR → USD</div>
+          <input type="number" step="0.01" min="0.5" max="2" value={settings.fxEurUsd ?? 1.08}
+            onChange={(e) => updateSettings({ fxEurUsd: Number(e.target.value) || 1.08 })}
+            style={{ width: '100%', background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 8, padding: '9px 12px', color: C.text, fontSize: 12.5, outline: 'none' }} />
+          <div style={{ fontSize: 10.5, color: C.textFaint, marginTop: 6 }}>
+            Für die geschätzten US-Preise (TCGplayer) und die Import/Export-Kalkulation im Märkte-Tab.
+          </div>
+        </div>
+
         <div style={{ fontSize: 10, color: C.textGhost, textAlign: 'center', borderTop: `1px solid ${C.lineStrong}`, paddingTop: 12 }}>
           Watchlist: {watchlist.length} · Sammlung: {portfolio.length} · Tags: {Object.keys(tags).length} Karten
         </div>

@@ -8,7 +8,7 @@ import { SAMPLE_CARDS } from './data/sampleCards.js';
 const StoreContext = createContext(null);
 export const useStore = () => useContext(StoreContext);
 
-const DEFAULT_SETTINGS = { game: 'pokemon', apiKey: '', platform: 'cardmarket', includeShipping: true, theme: 'dark' };
+const DEFAULT_SETTINGS = { game: 'pokemon', apiKey: '', platform: 'cardmarket', includeShipping: true, theme: 'dark', fxEurUsd: 1.08, pro: false, buyRules: null };
 
 // Static daily snapshot produced by scripts/fetch-prices.mjs at deploy time.
 // Same-origin, so no browser CORS limits (unlike calling the API directly).

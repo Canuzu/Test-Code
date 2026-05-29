@@ -2,6 +2,7 @@
 
 const eur0 = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
 const eur2 = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const usd2 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const num0 = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 });
 const num1 = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
@@ -9,6 +10,14 @@ export const fmtEur = (v, decimals = 2) => {
   if (v == null || Number.isNaN(v)) return '–';
   return (decimals === 0 ? eur0 : eur2).format(v);
 };
+
+export const fmtUsd = (v) => {
+  if (v == null || Number.isNaN(v)) return '–';
+  return usd2.format(v);
+};
+
+// Format a value in EUR or USD depending on the venue currency.
+export const fmtMoney = (v, currency = 'EUR') => (currency === 'USD' ? fmtUsd(v) : fmtEur(v));
 
 export const fmtNum = (v, decimals = 0) => {
   if (v == null || Number.isNaN(v)) return '–';

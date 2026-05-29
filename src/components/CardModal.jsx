@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { X, Info, TrendingUp, Calculator, Tag as TagIcon } from 'lucide-react';
+import { X, Info, TrendingUp, Calculator, Tag as TagIcon, Globe, Award } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, riskColor, riskLabel, rarityColor, trendColor, trendIcon, trendLabel } from '../lib/theme.js';
-import { fmtEur, fmtNum, fmtPct, fmtDate } from '../lib/format.js';
+import { fmtEur, fmtNum, fmtPct, fmtDate, fmtMoney, fmtUsd } from '../lib/format.js';
 import { calcNet, PLATFORM_FEES } from '../lib/fees.js';
 import { marketLinks } from '../lib/marketLinks.js';
+import { marketEstimates, arbitrage } from '../lib/markets.js';
+import { gradeEstimates, gradingProfit, GRADERS } from '../lib/grading.js';
 import { CardImage, Pill, ChangeBadge, ScoreBadge, Spark } from './ui.jsx';
 import PriceChart from './PriceChart.jsx';
 
@@ -24,11 +26,18 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   const [buyPrice, setBuyPrice] = useState(String(card.prices.low ?? card.prices.market ?? ''));
   const [buyQty, setBuyQty] = useState('1');
   const [buyCond, setBuyCond] = useState('NM');
+  const [gradeFee, setGradeFee] = useState('20');
+  const [gradeTarget, setGradeTarget] = useState('psa10');
 
   const m = card.m;
   const p = card.prices;
   const links = marketLinks(card);
   const cardTags = tags[card.id] || [];
+  const markets = marketEstimates(card, settings);
+  const arb = arbitrage(card, settings);
+  const grades = gradeEstimates(card);
+  const gProfit = gradingProfit(card, { gradeFee: Number(gradeFee) || 0, targetId: gradeTarget, commission: 0.05 });
+  const fieldStyle = { width: '100%', marginTop: 3, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '6px 8px', color: C.text, fontSize: 13, outline: 'none' };
 
   const labeled = [
     { k: 'Ø 30T', v: p.avg30 },
@@ -72,6 +81,8 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
         <div style={{ display: 'flex', borderBottom: `1px solid ${C.lineStrong}`, padding: '6px 12px 0', marginTop: 14, overflowX: 'auto' }}>
           <TabBtn id="overview" label="Übersicht" icon={<Info size={12} />} />
           <TabBtn id="value" label="Wertentwicklung" icon={<TrendingUp size={12} />} />
+          <TabBtn id="markets" label="Märkte" icon={<Globe size={12} />} />
+          <TabBtn id="grading" label="Grading" icon={<Award size={12} />} />
           <TabBtn id="fees" label="Gebühren" icon={<Calculator size={12} />} />
           <TabBtn id="notes" label="Notizen" icon={<TagIcon size={12} />} />
         </div>
@@ -189,6 +200,89 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
             </>
           )}
 
+          {tab === 'markets' && (
+            <>
+              <div style={sectionLabel}>🌍 Preise nach Marktplatz</div>
+              <div style={{ background: C.bg1, borderRadius: 10, overflow: 'hidden', marginBottom: 12 }}>
+                {markets.map((mk, i) => (
+                  <div key={mk.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 12px', borderBottom: i < markets.length - 1 ? `1px solid ${C.line}` : 'none' }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: mk.color, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13 }}>{mk.label} <span style={{ fontSize: 10, color: C.textFaint, fontWeight: 600 }}>· {mk.region}</span></div>
+                      <div style={{ fontSize: 10.5, color: C.textFaint }}>{mk.real ? '🟢 Live (Cardmarket EU)' : `geschätzt${mk.vsCardmarket != null ? ` · ${fmtPct(mk.vsCardmarket)} vs. CM` : ''}`}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: 800, fontSize: 14 }}>{fmtMoney(mk.price, mk.currency)}</div>
+                      {mk.currency === 'USD' && <div style={{ fontSize: 10, color: C.textFaint }}>≈ {fmtEur(mk.eur)}</div>}
+                    </div>
+                    <a href={mk.url} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 4, fontSize: 11, fontWeight: 700, color: mk.color, textDecoration: 'none', whiteSpace: 'nowrap' }}>prüfen →</a>
+                  </div>
+                ))}
+              </div>
+              {arb && (
+                <div style={{ background: arb.worthwhile ? '#00e67612' : '#ffffff06', border: `1px solid ${arb.worthwhile ? '#00e67630' : C.lineStrong}`, borderRadius: 10, padding: 12, marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>🔄 Import/Export EU → US</div>
+                  <div style={{ fontSize: 12, color: C.textSoft, lineHeight: 1.55 }}>
+                    Günstigste EU-Kopie {fmtEur(arb.buyEur)} → US-Verkauf ca. {fmtUsd(arb.sellUsd)} ({fmtEur(arb.sellEur)}).
+                    Spanne nach groben Grenzkosten: <strong style={{ color: arb.netPct >= 0 ? C.green : C.red }}>{fmtPct(arb.netPct)}</strong>{arb.worthwhile ? ' — potenziell lohnend.' : '.'}
+                  </div>
+                </div>
+              )}
+              <div style={{ fontSize: 11, color: C.textFaint }}>
+                Nur Cardmarket ist ein Live-Preis. eBay/TCGplayer sind transparente Schätzungen (Cardmarket-Preis × Venue-Aufschlag × Wechselkurs, in den Einstellungen anpassbar). Mit „prüfen" siehst du den echten aktuellen Preis.
+              </div>
+            </>
+          )}
+
+          {tab === 'grading' && (
+            <>
+              <div style={sectionLabel}>🏆 Geschätzte Slab-Werte</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 14 }}>
+                {grades.map((g) => (
+                  <div key={g.id} style={{ background: C.bg1, border: `1px solid ${g.color}30`, borderRadius: 9, padding: '9px 8px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: g.color }}>{g.label}</div>
+                    <div style={{ fontSize: 9, color: C.textFaint, marginBottom: 4 }}>{g.sub}</div>
+                    <div style={{ fontWeight: 800, fontSize: 14 }}>{fmtEur(g.value)}</div>
+                    {g.id !== 'raw' && <div style={{ fontSize: 9.5, color: C.textFaint }}>×{fmtNum(g.mult, 1)}</div>}
+                  </div>
+                ))}
+              </div>
+
+              <div style={sectionLabel}>🧮 Grading-Rechner</div>
+              <div style={{ background: C.bg1, borderRadius: 10, padding: 12, marginBottom: 12 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+                  <label style={{ fontSize: 10, color: C.textFaint }}>Grading-Kosten/Stk. (€)
+                    <input type="number" step="1" value={gradeFee} onChange={(e) => setGradeFee(e.target.value)} style={fieldStyle} />
+                  </label>
+                  <label style={{ fontSize: 10, color: C.textFaint }}>Zielnote
+                    <select value={gradeTarget} onChange={(e) => setGradeTarget(e.target.value)} style={fieldStyle}>
+                      {grades.filter((g) => g.id !== 'raw').map((g) => <option key={g.id} value={g.id}>{g.label}</option>)}
+                    </select>
+                  </label>
+                </div>
+                {gProfit && (
+                  <>
+                    <Row label="Roh-Einkauf (günstigstes Angebot)" v={fmtEur(gProfit.buy)} />
+                    <Row label="+ Grading-Gebühr" v={fmtEur(gProfit.gradeFee)} />
+                    <Row label={`Verkauf ${gProfit.target.label} (≈, netto Provision)`} v={fmtEur(gProfit.sellNet)} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '9px 10px', marginTop: 6, borderRadius: 8, background: gProfit.profit >= 0 ? '#00e67615' : '#ff525215', border: `1px solid ${gProfit.profit >= 0 ? '#00e67630' : '#ff525230'}` }}>
+                      <span style={{ fontSize: 12, fontWeight: 700 }}>Erwarteter Gewinn</span>
+                      <span style={{ fontWeight: 800, color: gProfit.profit >= 0 ? C.green : C.red }}>{gProfit.profit >= 0 ? '+' : ''}{fmtEur(gProfit.profit)} {gProfit.roi != null ? `(${fmtPct(gProfit.roi)})` : ''}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
+                <a href={links.psa} target="_blank" rel="noopener noreferrer" style={mpBtn('#ec4899')}>🏆 PSA Population →</a>
+                <a href={links.ebay} target="_blank" rel="noopener noreferrer" style={mpBtn('#3a3a8c')}>🔎 eBay „sold" (Slabs) →</a>
+              </div>
+              <div style={{ fontSize: 11, color: C.textFaint }}>
+                Schätzwerte: Roh-Marktpreis × Note/Alter-Faktor (Vintage deutlich höher, Top-Rarität mit Aufschlag). Keine garantierten Slab-Preise — vor Kauf/Verkauf echte „sold"-Daten prüfen. Die Grading-Trefferquote (z. B. PSA 10) hängt vom Zustand der Roh-Karte ab.
+              </div>
+            </>
+          )}
+
           {tab === 'fees' && (
             <>
               <div style={sectionLabel}>💸 Echter Gewinn nach Gebühren (Kauf günstigstes Angebot → Verkauf zum Trend)</div>
@@ -257,4 +351,14 @@ function thesis(card) {
   if (m.margin != null) parts.push(`Zwischen günstigstem Angebot und Trend liegen ${fmtPct(m.margin)} Spielraum.`);
   parts.push(`Investment-Score ${m.score}/100 (Tier ${m.tier.l}).`);
   return parts.join(' ');
+}
+
+// Compact label/value row used in the grading calculator.
+function Row({ label, v }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 2px', fontSize: 12 }}>
+      <span style={{ color: C.textDim }}>{label}</span>
+      <span style={{ fontWeight: 700 }}>{v}</span>
+    </div>
+  );
 }
