@@ -11,20 +11,77 @@ echte Live-Preise statt KI-Schätzungen, `localStorage` statt Artifact-Storage.
 
 ## Features
 
+**Grundlagen (kostenlos)**
+
 - **Live-Preise** von Cardmarket EU (in EUR) über die kostenlose
   [pokemontcg.io](https://pokemontcg.io)-API — inkl. Durchschnitten für 1/7/30 Tage.
-- **Wertentwicklung**: echte Veränderung über 7 und 30 Tage + Mini-Sparklines.
+- **Interaktiver Preisverlauf-Chart** (1M/3M/6M/1J) — an die echten Ø-Werte
+  verankert; gemessene Punkte kommen mit jedem täglichen Snapshot dazu.
 - **Kennzahlen pro Karte**: Marktpreis, günstigstes Angebot, Marge (Low→Trend),
   Beliebtheits-Index, Risiko, Trend, Investment-Score (S–F-Tiers).
+- **Mehrere Marktplätze vergleichen**: Cardmarket (live) + eBay & TCGplayer
+  (transparente Schätzung via Aufschlag & EUR→USD-Kurs) + EU→US-Arbitrage.
+- **Grading**: geschätzte PSA 10/9/8-, BGS 9.5- und CGC 10-Werte (nach
+  Alter/Rarität) inkl. **Grading-ROI-Rechner** und PSA-/eBay-Links.
 - **Netto-Gewinn nach Gebühren** für Cardmarket, eBay DE und TCGPlayer.
-- **Watchlist** (mit „Δ seit Merken") und **Portfolio** (Einkauf vs. Marktwert,
-  unrealisierter Gewinn/Verlust).
-- **Analyse**: Tier-/Seltenheits-/Trend-Verteilung, Preis-vs-Wertänderung-Scatter,
-  Top-Gewinner/Verlierer.
-- **Filter & Sortierung**, Schnellfilter, Grid-/Listenansicht, CSV-Export.
+- **Watchlist** und **Sammlung/Lagerbestand**: Anzahl, EK/Stück, **Zustand**,
+  **Lagerort** — als Karten- oder editierbare **Inventar-Tabelle** mit
+  Lagerort-Summen und CSV-Export.
+- **Analyse**: Tier-/Seltenheits-/Trend-Verteilung, Scatter, Top-Mover.
+- Light/Dark-Theme, Filter & Sortierung, CSV-Export.
+
+**Händler / Pro** (siehe [Subscription-Modell](#subscription-modell-freepro))
+
+- **🧾 Buylist** (Einkaufspreisliste): Ankaufspreis als konfigurierbarer
+  %-Satz vom Marktpreis (nach Preisstufe, Zustand, Bar/Guthaben), exportierbar
+  als **PDF/Druck** und CSV.
+- **🔔 Preisalerts**: „Benachrichtige mich, wenn Glurak ex über 200 € steigt" —
+  in-app + Web-Notification (PWA-tauglich).
+- **📥 Massenimport**: CSV-Wizard (Spalten-Mapping, Fuzzy-Match) + Barcode-Scan
+  (Kamera, wo unterstützt).
+- **📊 Erweiterte Analytics** (Markt-Konzentration u. a.) und Team-Zugang (vorbereitet).
+
+**Plattform**
+
+- **PWA / Mobile**: installierbar, offline-fähig (Service-Worker), mobile
+  Bottom-Navigation, App-Icons.
+- **Offizielle Cardmarket-API** als optionale Preisquelle (siehe unten).
 - **Erweiterbar**: Provider-Architektur — Magic, Yu-Gi-Oh!, One Piece lassen sich
   später als eigener Provider ergänzen (`src/data/providers/`).
 - **Beispieldaten** sind eingebaut, damit die App auch ohne Netzwerk sofort läuft.
+
+> Hinweis: eBay-/TCGplayer-Preise, Slab-Werte und der ältere Teil des
+> Preisverlaufs sind **transparent gekennzeichnete Schätzungen** (eine statische
+> Seite ohne Backend hat dafür keine Live-Quelle). Jede Schätzung ist mit einem
+> Direktlink zur Verifikation auf dem jeweiligen Marktplatz versehen.
+
+## Subscription-Modell (Free/Pro)
+
+Kostenlos sind alle Grundfunktionen; **Pro** (€19/Monat bzw. €15/Monat jährlich)
+schaltet Buylist, Alerts, Massenimport und erweiterte Analytics frei. Da eine
+statische Seite kein Zahlungs-Secret halten kann, ist die Freischaltung aktuell
+ein **lokaler Demo-Schalter** (`settings.pro` in `src/lib/pro.js`). Für echtes
+Abo-Billing wird ein Backend (z. B. Stripe Checkout) angebunden, das nach
+erfolgreicher Zahlung genau diesen Pro-Status setzt — der Rest der App bleibt
+unverändert.
+
+## Offizielle Cardmarket-API (optional)
+
+`pokemontcg.io` liefert bereits Cardmarket-Preise, aber die **offizielle
+MKM-API** hat mehr (volle Price-Guide, Verkaufshistorie, Angebote, Shop-Sync).
+Die Anbindung ist serverseitig (OAuth 1.0a, kein CORS, Secret) und **opt-in**:
+
+1. Auf cardmarket.com unter *Account → API* eine dedizierte App registrieren →
+   App-Token/-Secret und Access-Token/-Secret.
+2. Als GitHub-Secrets hinterlegen (*Repo → Settings → Secrets and variables →
+   Actions*): `CM_APP_TOKEN`, `CM_APP_SECRET`, `CM_ACCESS_TOKEN`,
+   `CM_ACCESS_SECRET`. Optional als *Variables*: `CM_GAME_ID` (Standard 6 =
+   Pokémon), `CM_SEARCH` (Komma-Liste an Suchbegriffen).
+3. Beim nächsten Deploy mischt `scripts/fetch-cardmarket.mjs` echte MKM-Produkte
+   in den Snapshot. **Ohne** die Secrets passiert nichts — die App nutzt weiter
+   den pokemontcg.io-Snapshot.
+
+Lokaler Signatur-/Credential-Test: `node scripts/fetch-cardmarket.mjs`.
 
 ## Schnellstart
 
