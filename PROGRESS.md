@@ -21,7 +21,7 @@
 - [x] 1. Preishistorie als interaktiver Chart (6–12 Monate)
 - [ ] 2. Einkaufspreisliste („Buylist") inkl. PDF/Druck-Export
 - [x] 3. Zustandsverwaltung / Grading (PSA 9/10, BGS) + Grading-Rechner
-- [ ] 4. Lagerbestand-Management (Anzahl, EK/Stk., Lagerort, Condition)
+- [x] 4. Lagerbestand-Management (Anzahl, EK/Stk., Lagerort, Condition)
 - [x] 5. Mehrere Marktplätze vergleichen (Cardmarket + eBay + TCGPlayer)
 - [ ] 6. Preisalerts (in-app + Web-Notifications, No-Backend)
 - [ ] 7. Massenimport (CSV-Wizard + Barcode-Scanner-Progressive-Enhancement)
@@ -34,6 +34,7 @@
 - #1 Preishistorie ✓: `src/lib/priceHistory.js` (seeded, an echten Ø-Werten verankert) + `src/components/PriceChart.jsx` (1M/3M/6M/1J, interaktiv) + Integration in CardModal-Tab „Wertentwicklung" + History-Akkumulation im Store (`getPriceHistory`, `accumulateHistory`, KEY `price_history`).
 - #5 Märkte ✓: `src/lib/markets.js` (Cardmarket live + eBay/TCGplayer-Schätzung via Aufschlag & FX) + `fmtUsd`/`fmtMoney` + neuer CardModal-Tab „Märkte" inkl. EU→US-Arbitrage + FX-Setting in SettingsModal + `fxEurUsd` in DEFAULT_SETTINGS.
 - #3 Grading ✓: `src/lib/grading.js` (PSA/BGS/CGC-Schätzung nach Alter/Rarität + Grading-ROI) + neuer CardModal-Tab „Grading" mit Slab-Werten, Rechner (Kosten/Zielnote) und PSA/eBay-Links.
+- #4 Lagerbestand ✓: Store um `location`, `updatePortfolioEntry`, `addManyToPortfolio` erweitert; CardModal-Kaufform um Lagerort; `PortfolioView` neu: Karten- ⇄ Inventar-Tabelle (Inline-Edit Menge/EK/Zustand/Lagerort), Filter, Lagerort-Summen, Inventar-CSV-Export, `onImport`-Prop (für #7).
 
 ## Hinweise / offene Punkte für später
 - Deploy-Workflow triggert nur auf `main` (+ alter Branch). Für Live-Schaltung

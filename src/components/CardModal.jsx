@@ -26,6 +26,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   const [buyPrice, setBuyPrice] = useState(String(card.prices.low ?? card.prices.market ?? ''));
   const [buyQty, setBuyQty] = useState('1');
   const [buyCond, setBuyCond] = useState('NM');
+  const [buyLoc, setBuyLoc] = useState('');
   const [gradeFee, setGradeFee] = useState('20');
   const [gradeTarget, setGradeTarget] = useState('psa10');
 
@@ -110,8 +111,12 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                       </select>
                     </label>
                   </div>
+                  <label style={{ fontSize: 10, color: C.textFaint, display: 'block', marginBottom: 8 }}>Lagerort (optional)
+                    <input value={buyLoc} onChange={(e) => setBuyLoc(e.target.value)} placeholder="z. B. Vitrine A · Ordner 3 · Lager"
+                      style={{ width: '100%', marginTop: 3, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '6px 8px', color: C.text, fontSize: 13, outline: 'none' }} />
+                  </label>
                   <button className="btn-primary" style={{ width: '100%', padding: '8px', fontSize: 12 }}
-                    onClick={() => { addToPortfolio(card, { price: buyPrice, quantity: buyQty, condition: buyCond }); onClose(); }}>
+                    onClick={() => { addToPortfolio(card, { price: buyPrice, quantity: buyQty, condition: buyCond, location: buyLoc }); onClose(); }}>
                     Hinzufügen
                   </button>
                 </div>

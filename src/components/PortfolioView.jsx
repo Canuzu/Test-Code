@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Briefcase, Trash2, Info, Tag as TagIcon } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Briefcase, Trash2, Info, Tag as TagIcon, Upload, Download } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C } from '../lib/theme.js';
 import { fmtEur, fmtPct, fmtDate } from '../lib/format.js';
@@ -7,13 +7,43 @@ import { getTier } from '../lib/metrics.js';
 import { marketLinks } from '../lib/marketLinks.js';
 import { CardImage, ScoreBadge, Pill, Stat, EmptyState } from './ui.jsx';
 
-export default function PortfolioView() {
-  const { portfolio, sold, removeFromPortfolio, sellFromPortfolio, removeSold, freshPrice } = useStore();
+const CONDITIONS = ['NM', 'EX', 'GD', 'LP', 'PL', 'PO'];
+
+const exportInventoryCSV = (rows, freshPrice) => {
+  if (!rows.length) return;
+  const head = ['Name', 'Set', 'Nummer', 'Zustand', 'Lagerort', 'Menge', 'EK_pro_Stueck', 'Aktuell_pro_Stueck', 'Wert', 'GuV'];
+  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const body = rows.map((e) => {
+    const cur = freshPrice(e) || 0;
+    const qty = e.quantity || 1;
+    return [e.card?.name, e.card?.set, e.card?.number, e.condition || 'NM', e.location || '', qty, e.actualBuyPrice, cur, cur * qty, (cur - (e.actualBuyPrice || 0)) * qty]
+      .map(esc).join(',');
+  });
+  const blob = new Blob(['﻿' + [head.join(','), ...body].join('\n')], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `inventar_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+export default function PortfolioView({ onImport }) {
+  const { portfolio, sold, removeFromPortfolio, sellFromPortfolio, removeSold, freshPrice, updatePortfolioEntry } = useStore();
   const [sellingId, setSellingId] = useState(null);
   const [sellInput, setSellInput] = useState('');
+  const [view, setView] = useState('cards');
+  const [locFilter, setLocFilter] = useState('all');
+  const [condFilter, setCondFilter] = useState('all');
+
+  const locations = useMemo(() => [...new Set(portfolio.map((e) => e.location || '—'))].sort(), [portfolio]);
 
   if (portfolio.length === 0 && sold.length === 0) {
-    return <EmptyState icon={<Briefcase size={56} style={{ opacity: 0.35 }} />} title="Sammlung ist leer" hint="Klicke bei einer Karte auf »📦 Kauf«, um sie in deine Sammlung aufzunehmen." />;
+    return (
+      <EmptyState icon={<Briefcase size={56} style={{ opacity: 0.35 }} />} title="Sammlung ist leer" hint="Klicke bei einer Karte auf »📦 Kauf«, oder importiere deinen Bestand per CSV.">
+        {onImport && <button className="btn-primary" onClick={onImport} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Upload size={14} /> Massenimport (CSV)</button>}
+      </EmptyState>
+    );
   }
 
   const qtyOf = (e) => e.quantity || 1;
@@ -27,6 +57,10 @@ export default function PortfolioView() {
   const startSell = (e) => { setSellingId(e.id); setSellInput(String((freshPrice(e) ?? e.actualBuyPrice ?? 0).toFixed(2))); };
   const confirmSell = (e) => { sellFromPortfolio(e.id, sellInput); setSellingId(null); };
 
+  const filtered = portfolio.filter((e) =>
+    (locFilter === 'all' || (e.location || '—') === locFilter) &&
+    (condFilter === 'all' || (e.condition || 'NM') === condFilter));
+
   return (
     <div className="fade-in">
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 14 }}>
@@ -37,12 +71,42 @@ export default function PortfolioView() {
         <Stat label="Realisiert (verkauft)" value={`${realized >= 0 ? '+' : ''}${fmtEur(realized, 0)}`} color={realized >= 0 ? C.green : C.red} sub={sold.length ? `${sold.length} verkauft` : undefined} />
       </div>
 
-      <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 10, padding: '11px 16px', marginBottom: 16, fontSize: 11.5, color: C.textSoft, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Info size={14} style={{ flexShrink: 0, color: C.blue }} />
-        <span>Unrealisiert = aktueller Marktwert minus Kaufpreis (aktualisiert sich täglich). „Verkaufen" erfasst den Verkauf und verbucht den realisierten Gewinn.</span>
+      {/* Toolbar: view toggle + import/export */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14 }}>
+        <div style={{ display: 'flex', gap: 4, background: C.bg2, border: `1px solid ${C.lineStrong}`, borderRadius: 8, padding: 3 }}>
+          {[['cards', '⊞ Karten'], ['table', '≡ Inventar']].map(([m, lbl]) => (
+            <button key={m} onClick={() => setView(m)} style={{ padding: '6px 12px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, background: view === m ? '#ffd70022' : 'transparent', color: view === m ? C.gold : C.textFaint }}>{lbl}</button>
+          ))}
+        </div>
+        {view === 'table' && portfolio.length > 0 && (
+          <>
+            <select className="control" value={locFilter} onChange={(e) => setLocFilter(e.target.value)}>
+              <option value="all">Alle Lagerorte</option>
+              {locations.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
+            <select className="control" value={condFilter} onChange={(e) => setCondFilter(e.target.value)}>
+              <option value="all">Alle Zustände</option>
+              {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <button className="control" onClick={() => exportInventoryCSV(filtered, freshPrice)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Download size={13} /> CSV</button>
+          </>
+        )}
+        {onImport && <button className="control" onClick={onImport} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Upload size={13} /> Import</button>}
       </div>
 
-      {portfolio.length > 0 && (
+      <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 10, padding: '11px 16px', marginBottom: 16, fontSize: 11.5, color: C.textSoft, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Info size={14} style={{ flexShrink: 0, color: C.blue }} />
+        <span>Unrealisiert = aktueller Marktwert minus Kaufpreis (aktualisiert sich täglich). In der Inventar-Ansicht kannst du Menge, EK, Zustand und Lagerort direkt bearbeiten.</span>
+      </div>
+
+      {/* ---- Inventory table view ---- */}
+      {view === 'table' && portfolio.length > 0 && (
+        <InventoryTable rows={filtered} freshPrice={freshPrice} updatePortfolioEntry={updatePortfolioEntry} onRemove={removeFromPortfolio} onSell={startSell}
+          sellingId={sellingId} sellInput={sellInput} setSellInput={setSellInput} confirmSell={confirmSell} cancelSell={() => setSellingId(null)} />
+      )}
+
+      {/* ---- Card grid view ---- */}
+      {view === 'cards' && portfolio.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12, marginBottom: sold.length ? 28 : 0 }}>
           {portfolio.map((e) => {
             const card = e.card;
@@ -64,6 +128,7 @@ export default function PortfolioView() {
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
                       <Pill color={C.blue}>×{qty}</Pill>
                       <Pill color={C.purple}>{e.condition || 'NM'}</Pill>
+                      {e.location && <Pill color={C.green2}>📍 {e.location}</Pill>}
                     </div>
                     <div style={{ fontSize: 10.5, color: C.textFaint, marginTop: 6 }}>gekauft {fmtDate(e.purchaseDate)}</div>
                   </div>
@@ -122,7 +187,7 @@ export default function PortfolioView() {
       )}
 
       {sold.length > 0 && (
-        <div>
+        <div style={{ marginTop: 28 }}>
           <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
             <TagIcon size={14} style={{ color: C.textFaint }} /> Verkaufshistorie
           </div>
@@ -135,6 +200,95 @@ export default function PortfolioView() {
                 </div>
                 <div style={{ fontWeight: 800, fontSize: 13, color: (e.realized || 0) >= 0 ? C.green : C.red, whiteSpace: 'nowrap' }}>{(e.realized || 0) >= 0 ? '+' : ''}{fmtEur(e.realized)}</div>
                 <button onClick={() => removeSold(e.id)} title="Aus Historie löschen" style={{ background: 'none', border: 'none', color: C.textFaint, cursor: 'pointer', padding: 4, display: 'flex' }}><Trash2 size={13} /></button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Dense, editable inventory table with per-location subtotals.
+function InventoryTable({ rows, freshPrice, updatePortfolioEntry, onRemove, onSell, sellingId, sellInput, setSellInput, confirmSell, cancelSell }) {
+  const cols = '44px 2fr 0.8fr 1.1fr 0.7fr 0.9fr 0.9fr 1fr 88px';
+  const cell = { background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 5, padding: '5px 6px', color: C.text, fontSize: 12, outline: 'none', width: '100%' };
+
+  // Per-location subtotals
+  const byLoc = useMemo(() => {
+    const m = new Map();
+    for (const e of rows) {
+      const key = e.location || '—';
+      const g = m.get(key) || { loc: key, qty: 0, invested: 0, value: 0 };
+      const q = e.quantity || 1;
+      g.qty += q;
+      g.invested += (e.actualBuyPrice || 0) * q;
+      g.value += (freshPrice(e) || 0) * q;
+      m.set(key, g);
+    }
+    return [...m.values()].sort((a, b) => b.value - a.value);
+  }, [rows, freshPrice]);
+
+  if (rows.length === 0) return <div style={{ color: C.textFaint, fontSize: 13, padding: 24, textAlign: 'center' }}>Keine Positionen für diesen Filter.</div>;
+
+  return (
+    <div>
+      <div style={{ overflowX: 'auto' }}>
+        <div style={{ minWidth: 760 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: cols, gap: 8, padding: '6px 10px', fontSize: 10, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase' }}>
+            <div></div><div>Karte</div><div>Zustand</div><div>Lagerort</div><div style={{ textAlign: 'right' }}>Menge</div><div style={{ textAlign: 'right' }}>EK/Stk</div><div style={{ textAlign: 'right' }}>Akt./Stk</div><div style={{ textAlign: 'right' }}>Wert / G/V</div><div></div>
+          </div>
+          {rows.map((e) => {
+            const qty = e.quantity || 1;
+            const cur = freshPrice(e) || 0;
+            const value = cur * qty;
+            const pnl = (cur - (e.actualBuyPrice || 0)) * qty;
+            const selling = sellingId === e.id;
+            return (
+              <div key={e.id} style={{ display: 'grid', gridTemplateColumns: cols, gap: 8, padding: '8px 10px', alignItems: 'center', background: C.surface, border: `1px solid ${C.line}`, borderRadius: 9, marginBottom: 5 }}>
+                <CardImage card={e.card} height={40} radius={4} />
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.card?.name}</div>
+                  <div style={{ fontSize: 10, color: C.textFaint }}>{e.card?.set}{e.card?.number ? ` · ${e.card.number}` : ''}</div>
+                </div>
+                <select defaultValue={e.condition || 'NM'} onChange={(ev) => updatePortfolioEntry(e.id, { condition: ev.target.value })} style={cell}>
+                  {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <input defaultValue={e.location || ''} placeholder="—" onBlur={(ev) => updatePortfolioEntry(e.id, { location: ev.target.value })} style={cell} />
+                <input type="number" min="1" defaultValue={qty} onBlur={(ev) => updatePortfolioEntry(e.id, { quantity: ev.target.value })} style={{ ...cell, textAlign: 'right' }} />
+                <input type="number" step="0.01" defaultValue={e.actualBuyPrice} onBlur={(ev) => updatePortfolioEntry(e.id, { actualBuyPrice: ev.target.value })} style={{ ...cell, textAlign: 'right' }} />
+                <div style={{ textAlign: 'right', fontSize: 12.5, fontWeight: 700 }}>{fmtEur(cur)}</div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 12.5, fontWeight: 800 }}>{fmtEur(value)}</div>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: pnl >= 0 ? C.green : C.red }}>{pnl >= 0 ? '+' : ''}{fmtEur(pnl)}</div>
+                </div>
+                <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                  <button onClick={() => onSell(e)} title="Verkaufen" style={{ padding: '5px 7px', borderRadius: 5, border: `1px solid ${C.green2}40`, background: `${C.green2}18`, color: C.green2, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>💰</button>
+                  <button onClick={() => onRemove(e.id)} title="Entfernen" style={{ padding: '5px 7px', borderRadius: 5, border: '1px solid #ff525230', background: '#ff525210', color: C.red, cursor: 'pointer', display: 'flex' }}><Trash2 size={12} /></button>
+                </div>
+                {selling && (
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 6, alignItems: 'center', background: C.bg1, border: `1px solid ${C.green2}55`, borderRadius: 7, padding: 8, marginTop: 2 }}>
+                    <span style={{ fontSize: 11, color: C.green2, fontWeight: 700 }}>Verkauf ({qty} Stk.) · Stückpreis €</span>
+                    <input type="number" step="0.01" autoFocus value={sellInput} onChange={(ev) => setSellInput(ev.target.value)} style={{ width: 110, background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '5px 8px', color: C.text, fontSize: 12, outline: 'none' }} />
+                    <button className="btn-primary" style={{ padding: '6px 12px', fontSize: 12 }} onClick={() => confirmSell(e)}>Buchen</button>
+                    <button onClick={cancelSell} style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${C.lineStrong}`, background: 'transparent', color: C.textSoft, fontSize: 12, cursor: 'pointer' }}>Abbrechen</button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {byLoc.length > 1 && (
+        <div style={{ marginTop: 14 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', marginBottom: 8 }}>📍 Summen je Lagerort</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
+            {byLoc.map((g) => (
+              <div key={g.loc} style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 10, padding: 12 }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>{g.loc}</div>
+                <div style={{ fontSize: 11, color: C.textDim }}>{g.qty} Karten · EK {fmtEur(g.invested, 0)}</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: C.text, marginTop: 2 }}>{fmtEur(g.value, 0)} <span style={{ fontSize: 11, fontWeight: 700, color: g.value - g.invested >= 0 ? C.green : C.red }}>({g.value - g.invested >= 0 ? '+' : ''}{fmtEur(g.value - g.invested, 0)})</span></div>
               </div>
             ))}
           </div>

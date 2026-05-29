@@ -178,7 +178,7 @@ export function StoreProvider({ children }) {
   }, [showToast]);
 
   const addToPortfolio = useCallback((card, opts = {}) => {
-    const { price, quantity = 1, condition = 'NM' } = typeof opts === 'object' ? opts : { price: opts };
+    const { price, quantity = 1, condition = 'NM', location = '' } = typeof opts === 'object' ? opts : { price: opts };
     const entry = {
       id: `${card.id}-${Date.now()}`,
       cardId: card.id,
@@ -186,10 +186,39 @@ export function StoreProvider({ children }) {
       actualBuyPrice: Number(price) || card.prices?.low || card.prices?.market || 0,
       quantity: Math.max(1, Number(quantity) || 1),
       condition: condition || 'NM',
+      location: (location || '').trim(),
       purchaseDate: Date.now(),
     };
     setPortfolio((prev) => [...prev, entry]);
     showToast('📦 Zur Sammlung hinzugefügt');
+  }, [showToast]);
+
+  // Inline-edit an inventory position (quantity, unit cost, condition, location).
+  const updatePortfolioEntry = useCallback((entryId, patch) => {
+    setPortfolio((prev) => prev.map((e) => {
+      if (e.id !== entryId) return e;
+      const next = { ...e, ...patch };
+      if (patch.quantity != null) next.quantity = Math.max(1, Number(patch.quantity) || 1);
+      if (patch.actualBuyPrice != null) next.actualBuyPrice = Math.max(0, Number(patch.actualBuyPrice) || 0);
+      return next;
+    }));
+  }, []);
+
+  // Bulk-add inventory positions (used by the CSV/mass importer).
+  const addManyToPortfolio = useCallback((entries) => {
+    if (!entries?.length) return;
+    const stamped = entries.map((e, i) => ({
+      id: `${e.cardId || 'imp'}-${Date.now()}-${i}`,
+      cardId: e.cardId,
+      card: e.card,
+      actualBuyPrice: Math.max(0, Number(e.actualBuyPrice) || 0),
+      quantity: Math.max(1, Number(e.quantity) || 1),
+      condition: e.condition || 'NM',
+      location: (e.location || '').trim(),
+      purchaseDate: e.purchaseDate || Date.now(),
+    }));
+    setPortfolio((prev) => [...prev, ...stamped]);
+    showToast(`📥 ${stamped.length} Positionen importiert`);
   }, [showToast]);
 
   const removeFromPortfolio = useCallback((entryId) => {
@@ -255,7 +284,7 @@ export function StoreProvider({ children }) {
     theme, toggleTheme,
     fetchCards, loadSample,
     inWatchlist, inPortfolio, inCompare,
-    toggleWatchlist, addToPortfolio, removeFromPortfolio, sellFromPortfolio, removeSold,
+    toggleWatchlist, addToPortfolio, updatePortfolioEntry, addManyToPortfolio, removeFromPortfolio, sellFromPortfolio, removeSold,
     saveNote, addTag, removeTag,
     toggleCompare, clearCompare,
     updateSettings, showToast, freshPrice,
