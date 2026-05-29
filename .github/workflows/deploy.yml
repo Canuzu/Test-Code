@@ -31,6 +31,14 @@ jobs:
         run: node scripts/fetch-prices.mjs
         env:
           POKEMONTCG_API_KEY: ${{ secrets.POKEMONTCG_API_KEY }}
+          # Optional: official Cardmarket (MKM) API. If these 4 secrets are set,
+          # real MKM products are merged into the snapshot; otherwise it no-ops.
+          CM_APP_TOKEN: ${{ secrets.CM_APP_TOKEN }}
+          CM_APP_SECRET: ${{ secrets.CM_APP_SECRET }}
+          CM_ACCESS_TOKEN: ${{ secrets.CM_ACCESS_TOKEN }}
+          CM_ACCESS_SECRET: ${{ secrets.CM_ACCESS_SECRET }}
+          CM_GAME_ID: ${{ vars.CM_GAME_ID }}
+          CM_SEARCH: ${{ vars.CM_SEARCH }}
       - run: npm run build
       - uses: actions/configure-pages@v5
         with:

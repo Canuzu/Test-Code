@@ -14,6 +14,7 @@ import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalize } from '../src/data/providers/pokemon.js';
+import { fetchCardmarket } from './fetch-cardmarket.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/data/cards.json');
@@ -162,6 +163,19 @@ async function main() {
     .sort((a, b) => (b.prices.market ?? 0) - (a.prices.market ?? 0))
     .slice(0, CURATED_LIMIT)
     .forEach((c) => byId.set(c.id, c));
+
+  // 3) Official Cardmarket API (opt-in via CM_* secrets). Merged on top; these
+  //    are real MKM products with full price guides. No-op without credentials.
+  try {
+    const cmCards = await fetchCardmarket({ limit: 120 });
+    if (cmCards.length) {
+      cmCards.forEach((c) => byId.set(c.id, c));
+      anyOk = true;
+      console.log(`[fetch-prices] merged ${cmCards.length} cards from the official Cardmarket API`);
+    }
+  } catch (e) {
+    console.error(`[fetch-prices] Cardmarket API step failed (keeping pokemontcg.io): ${e.message}`);
+  }
 
   const cards = [...byId.values()].slice(0, HARD_CAP);
 
