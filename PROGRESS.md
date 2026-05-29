@@ -23,7 +23,7 @@
 - [x] 3. Zustandsverwaltung / Grading (PSA 9/10, BGS) + Grading-Rechner
 - [x] 4. Lagerbestand-Management (Anzahl, EK/Stk., Lagerort, Condition)
 - [x] 5. Mehrere Marktplätze vergleichen (Cardmarket + eBay + TCGPlayer)
-- [ ] 6. Preisalerts (in-app + Web-Notifications, No-Backend)
+- [x] 6. Preisalerts (in-app + Web-Notifications, No-Backend)
 - [ ] 7. Massenimport (CSV-Wizard + Barcode-Scanner-Progressive-Enhancement)
 - [ ] 8. Subscription-Modell (Free/Pro, Feature-Gating, Pricing-Seite)
 - [ ] 9. Cardmarket-API (offiziell) — Provider + Build-Skript + Doku (env-gated)
@@ -36,6 +36,7 @@
 - #3 Grading ✓: `src/lib/grading.js` (PSA/BGS/CGC-Schätzung nach Alter/Rarität + Grading-ROI) + neuer CardModal-Tab „Grading" mit Slab-Werten, Rechner (Kosten/Zielnote) und PSA/eBay-Links.
 - #4 Lagerbestand ✓: Store um `location`, `updatePortfolioEntry`, `addManyToPortfolio` erweitert; CardModal-Kaufform um Lagerort; `PortfolioView` neu: Karten- ⇄ Inventar-Tabelle (Inline-Edit Menge/EK/Zustand/Lagerort), Filter, Lagerort-Summen, Inventar-CSV-Export, `onImport`-Prop (für #7).
 - #2 Buylist ✓: `src/lib/buylist.js` (Tier-/Flat-%, Zustands-Faktor, Bar/Guthaben, Rundung) + `src/components/BuylistView.jsx` (Suche/Watchlist/Top25, Inline-Regeln, CSV + Druck/PDF via `@media print` + `.buylist-print`) + neuer Tab „Buylist" in App + Print-CSS in index.css. `locked`/`onUpgrade`-Props vorbereitet für #8.
+- #6 Alerts ✓: `src/lib/alerts.js` (Regeln, Web-Notification) + Store (alerts/alertLog, add/remove/toggle/update, Auswertung per useEffect mit firingRef-Debounce) + `src/components/AlertsView.jsx` (Anlegen/Verwalten/Log + Notification-Permission) + Tab „Alerts" mit Badge + Quick-Alarm in CardModal-Übersicht.
 
 ## Hinweise / offene Punkte für später
 - Deploy-Workflow triggert nur auf `main` (+ alter Branch). Für Live-Schaltung

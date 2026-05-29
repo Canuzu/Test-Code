@@ -6,7 +6,8 @@ import { fmtEur, fmtNum, fmtPct, fmtDate, fmtMoney, fmtUsd } from '../lib/format
 import { calcNet, PLATFORM_FEES } from '../lib/fees.js';
 import { marketLinks } from '../lib/marketLinks.js';
 import { marketEstimates, arbitrage } from '../lib/markets.js';
-import { gradeEstimates, gradingProfit, GRADERS } from '../lib/grading.js';
+import { gradeEstimates, gradingProfit } from '../lib/grading.js';
+import { newRule } from '../lib/alerts.js';
 import { CardImage, Pill, ChangeBadge, ScoreBadge, Spark } from './ui.jsx';
 import PriceChart from './PriceChart.jsx';
 
@@ -17,7 +18,7 @@ const mpBtn = (color) => ({
 });
 
 export default function CardModal({ card, initialTab = 'overview', onClose }) {
-  const { notes, tags, settings, addToPortfolio, saveNote, addTag, removeTag } = useStore();
+  const { notes, tags, settings, addToPortfolio, saveNote, addTag, removeTag, addAlert } = useStore();
   const sectionLabel = { fontSize: 11, color: C.textFaint, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' };
   const addMode = initialTab === 'buy';
   const [tab, setTab] = useState(addMode ? 'overview' : initialTab);
@@ -29,6 +30,8 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   const [buyLoc, setBuyLoc] = useState('');
   const [gradeFee, setGradeFee] = useState('20');
   const [gradeTarget, setGradeTarget] = useState('psa10');
+  const [alertDir, setAlertDir] = useState('above');
+  const [alertTarget, setAlertTarget] = useState('');
 
   const m = card.m;
   const p = card.prices;
@@ -159,6 +162,23 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                   <a href={links.ebay} target="_blank" rel="noopener noreferrer" style={mpBtn('#3a3a8c')}>🛒 eBay Deutschland →</a>
                   <a href={links.priceCharting} target="_blank" rel="noopener noreferrer" style={mpBtn('#7c3aed')}>📊 PriceCharting →</a>
                   <a href={links.psa} target="_blank" rel="noopener noreferrer" style={mpBtn('#ec4899')}>🏆 PSA Population →</a>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 14 }}>
+                <div style={sectionLabel}>🔔 Preis-Alarm</div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 12, color: C.textSoft }}>Benachrichtige mich, wenn der Preis</span>
+                  <select value={alertDir} onChange={(e) => setAlertDir(e.target.value)} style={{ ...fieldStyle, width: 'auto', marginTop: 0 }}>
+                    <option value="above">über</option>
+                    <option value="below">unter</option>
+                  </select>
+                  <input type="number" step="0.01" value={alertTarget} onChange={(e) => setAlertTarget(e.target.value)} placeholder={String(Math.round((m.market || 0) * 1.2))} style={{ ...fieldStyle, width: 90, marginTop: 0 }} />
+                  <span style={{ fontSize: 12, color: C.textSoft }}>€ erreicht</span>
+                  <button className="btn-primary" style={{ padding: '7px 12px', fontSize: 12 }}
+                    onClick={() => { const t = Number(alertTarget) || Math.round((m.market || 0) * 1.2); addAlert(newRule({ cardId: card.id, name: card.name, direction: alertDir, target: t })); }}>
+                    Alarm anlegen
+                  </button>
                 </div>
               </div>
             </>

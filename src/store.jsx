@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef } from 'react';
 import { store, KEYS } from './lib/storage.js';
 import { enrich } from './lib/metrics.js';
+import { ruleHit, fireNotification } from './lib/alerts.js';
 import { applyTheme } from './lib/theme.js';
 import { getGame } from './data/providers/index.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
@@ -27,11 +28,14 @@ export function StoreProvider({ children }) {
   const [notes, setNotes] = useState({});
   const [tags, setTags] = useState({});
   const [priceHistory, setPriceHistory] = useState({});
+  const [alerts, setAlerts] = useState([]);
+  const [alertLog, setAlertLog] = useState([]);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 
   const [compareList, setCompareList] = useState([]);
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
+  const firingRef = useRef({}); // ruleId -> currently-firing (debounces repeats)
 
   // Theme: apply synchronously during render so children read the right palette,
   // and reflect it on <html data-theme> for the CSS-variable based styles.
@@ -52,6 +56,8 @@ export function StoreProvider({ children }) {
     const nt = store.get(KEYS.notes);
     const tg = store.get(KEYS.tags);
     const ph = store.get(KEYS.priceHistory);
+    const al = store.get(KEYS.alerts);
+    const alg = store.get(KEYS.alertLog);
     const st = store.get(KEYS.settings);
     const cache = store.get(KEYS.cards);
     if (Array.isArray(wl)) setWatchlist(wl);
@@ -60,6 +66,8 @@ export function StoreProvider({ children }) {
     if (nt && typeof nt === 'object') setNotes(nt);
     if (tg && typeof tg === 'object') setTags(tg);
     if (ph && typeof ph === 'object') setPriceHistory(ph);
+    if (Array.isArray(al)) setAlerts(al);
+    if (Array.isArray(alg)) setAlertLog(alg);
     const s = st && typeof st === 'object' ? { ...DEFAULT_SETTINGS, ...st } : DEFAULT_SETTINGS;
     if (st && typeof st === 'object') setSettings(s);
 
@@ -86,6 +94,8 @@ export function StoreProvider({ children }) {
   useEffect(() => { store.set(KEYS.notes, notes); }, [notes]);
   useEffect(() => { store.set(KEYS.tags, tags); }, [tags]);
   useEffect(() => { store.set(KEYS.priceHistory, priceHistory); }, [priceHistory]);
+  useEffect(() => { store.set(KEYS.alerts, alerts); }, [alerts]);
+  useEffect(() => { store.set(KEYS.alertLog, alertLog); }, [alertLog]);
   useEffect(() => { store.set(KEYS.settings, settings); }, [settings]);
 
   // ---- derived ----------------------------------------------------------
@@ -102,6 +112,38 @@ export function StoreProvider({ children }) {
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2600);
   }, []);
+
+  // ---- price alerts -----------------------------------------------------
+  const addAlert = useCallback((rule) => { setAlerts((prev) => [...prev, rule]); showToast('🔔 Preis-Alarm angelegt'); }, [showToast]);
+  const removeAlert = useCallback((id) => setAlerts((prev) => prev.filter((a) => a.id !== id)), []);
+  const toggleAlert = useCallback((id) => setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, active: !a.active } : a))), []);
+  const updateAlert = useCallback((id, patch) => setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, ...patch, target: patch.target != null ? Number(patch.target) || 0 : a.target } : a))), []);
+  const clearAlertLog = useCallback(() => setAlertLog([]), []);
+
+  // Evaluate alerts whenever fresh prices or the rules change. Fires once per
+  // rule on the false→true transition (firingRef debounces repeats) and emits an
+  // in-app toast plus a Web Notification.
+  useEffect(() => {
+    if (!cards.length || !alerts.length) return;
+    const byId = new Map(cards.map((c) => [c.id, c]));
+    const events = [];
+    for (const rule of alerts) {
+      if (!rule.active) { firingRef.current[rule.id] = false; continue; }
+      const price = byId.get(rule.cardId)?.m?.market;
+      if (price == null) continue;
+      const hit = ruleHit(rule, price);
+      if (hit && !firingRef.current[rule.id]) {
+        events.push({ ruleId: rule.id, cardId: rule.cardId, name: rule.name, direction: rule.direction, target: rule.target, price });
+      }
+      firingRef.current[rule.id] = hit;
+    }
+    if (events.length) {
+      const stamped = events.map((e, i) => ({ ...e, id: `ev-${Date.now()}-${i}`, at: Date.now() }));
+      setAlertLog((prev) => [...stamped, ...prev].slice(0, 120));
+      stamped.forEach(fireNotification);
+      showToast(`🔔 ${stamped.length} Preis-Alert${stamped.length > 1 ? 's' : ''} ausgelöst`);
+    }
+  }, [cards, alerts, showToast]);
 
   // ---- price-history accumulation --------------------------------------
   // Appends one observation per card per snapshot date, so the price chart
@@ -289,6 +331,7 @@ export function StoreProvider({ children }) {
     toggleCompare, clearCompare,
     updateSettings, showToast, freshPrice,
     getPriceHistory,
+    alerts, alertLog, addAlert, removeAlert, toggleAlert, updateAlert, clearAlertLog,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

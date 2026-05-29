@@ -15,6 +15,7 @@ const CardModal = lazy(() => import('./components/CardModal.jsx'));
 const CompareModal = lazy(() => import('./components/CompareModal.jsx'));
 const SettingsModal = lazy(() => import('./components/SettingsModal.jsx'));
 const BuylistView = lazy(() => import('./components/BuylistView.jsx'));
+const AlertsView = lazy(() => import('./components/AlertsView.jsx'));
 
 function Loader() {
   return (
@@ -44,10 +45,11 @@ const TABS = [
   { id: 'watchlist', label: '⭐ Watchlist' },
   { id: 'portfolio', label: '📦 Sammlung' },
   { id: 'buylist', label: '🧾 Buylist' },
+  { id: 'alerts', label: '🔔 Alerts' },
 ];
 
 function Shell() {
-  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme } = useStore();
+  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, alerts } = useStore();
   const [tab, setTab] = useState('discover');
   const [modal, setModal] = useState(null); // { card, tab }
   const [showCompare, setShowCompare] = useState(false);
@@ -55,7 +57,7 @@ function Shell() {
 
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
   const game = getGame(settings.game);
-  const badge = { watchlist: watchlist.length, portfolio: portfolio.length };
+  const badge = { watchlist: watchlist.length, portfolio: portfolio.length, alerts: alerts.filter((a) => a.active).length };
   const avgScore = cards.length ? fmtNum(cards.reduce((s, c) => s + c.m.score, 0) / cards.length, 0) : '–';
 
   return (
@@ -106,6 +108,7 @@ function Shell() {
         {tab === 'watchlist' && <WatchlistView onOpen={onOpen} />}
         {tab === 'portfolio' && <PortfolioView />}
         {tab === 'buylist' && <Suspense fallback={<Loader />}><BuylistView /></Suspense>}
+        {tab === 'alerts' && <Suspense fallback={<Loader />}><AlertsView /></Suspense>}
       </main>
 
       <footer style={{ borderTop: `1px solid ${C.lineStrong}`, padding: '16px 20px', marginTop: 40, textAlign: 'center', fontSize: 10.5, color: C.textGhost, maxWidth: 900, margin: '40px auto 0', lineHeight: 1.6 }}>
