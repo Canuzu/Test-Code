@@ -1,12 +1,21 @@
 import { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { X, Info, TrendingUp, Calculator, Tag as TagIcon } from 'lucide-react';
+import { X, Info, TrendingUp, Calculator, Tag as TagIcon, Award } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, riskColor, riskLabel, rarityColor, trendColor, trendIcon, trendLabel } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtPct, fmtDate } from '../lib/format.js';
 import { calcNet, PLATFORM_FEES } from '../lib/fees.js';
 import { marketLinks } from '../lib/marketLinks.js';
 import { CardImage, Pill, ChangeBadge, ScoreBadge, Spark } from './ui.jsx';
+
+const GRADES = [
+  { label: 'PSA 10', sub: 'Gem Mint', mult: 7.0, color: '#ff6b35' },
+  { label: 'PSA 9',  sub: 'Mint',     mult: 3.0, color: '#ffd700' },
+  { label: 'PSA 8',  sub: 'Near Mint / Mint', mult: 1.5, color: '#a3e635' },
+  { label: 'BGS 9.5',sub: 'Gem Mint', mult: 5.5, color: '#ec4899' },
+  { label: 'BGS 9',  sub: 'Mint',     mult: 2.5, color: '#c084fc' },
+  { label: 'Raw NM', sub: 'Unbewertet', mult: 1.0, color: C.textDim },
+];
 
 const mpBtn = (color) => ({
   padding: '10px', borderRadius: 8, textAlign: 'center', textDecoration: 'none',
@@ -24,6 +33,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   const [buyPrice, setBuyPrice] = useState(String(card.prices.low ?? card.prices.market ?? ''));
   const [buyQty, setBuyQty] = useState('1');
   const [buyCond, setBuyCond] = useState('NM');
+  const [buyLoc, setBuyLoc] = useState('');
 
   const m = card.m;
   const p = card.prices;
@@ -71,7 +81,8 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
         {/* Tabs */}
         <div style={{ display: 'flex', borderBottom: `1px solid ${C.lineStrong}`, padding: '6px 12px 0', marginTop: 14, overflowX: 'auto' }}>
           <TabBtn id="overview" label="Übersicht" icon={<Info size={12} />} />
-          <TabBtn id="value" label="Wertentwicklung" icon={<TrendingUp size={12} />} />
+          <TabBtn id="value" label="Verlauf" icon={<TrendingUp size={12} />} />
+          <TabBtn id="grading" label="Grading" icon={<Award size={12} />} />
           <TabBtn id="fees" label="Gebühren" icon={<Calculator size={12} />} />
           <TabBtn id="notes" label="Notizen" icon={<TagIcon size={12} />} />
         </div>
@@ -99,8 +110,12 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                       </select>
                     </label>
                   </div>
+                  <label style={{ fontSize: 10, color: C.textFaint, display: 'block', marginBottom: 8 }}>Standort (optional)
+                    <input type="text" placeholder="z.B. Laden, Zuhause, Lager…" value={buyLoc} onChange={(e) => setBuyLoc(e.target.value)}
+                      style={{ width: '100%', marginTop: 3, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '6px 8px', color: C.text, fontSize: 13, outline: 'none' }} />
+                  </label>
                   <button className="btn-primary" style={{ width: '100%', padding: '8px', fontSize: 12 }}
-                    onClick={() => { addToPortfolio(card, { price: buyPrice, quantity: buyQty, condition: buyCond }); onClose(); }}>
+                    onClick={() => { addToPortfolio(card, { price: buyPrice, quantity: buyQty, condition: buyCond, location: buyLoc }); onClose(); }}>
                     Hinzufügen
                   </button>
                 </div>
@@ -150,20 +165,40 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
 
           {tab === 'value' && (
             <>
-              <div style={sectionLabel}>📈 Preisverlauf (Cardmarket-Durchschnitte → Trend)</div>
-              <div style={{ background: C.bg1, borderRadius: 10, padding: '14px 8px 6px', marginBottom: 14 }}>
-                {labeled.length >= 2 ? (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={labeled} margin={{ top: 6, right: 12, left: -8, bottom: 0 }}>
-                      <CartesianGrid stroke={C.lineStrong} strokeDasharray="3 3" />
-                      <XAxis dataKey="k" tick={{ fill: C.textDim, fontSize: 11 }} />
-                      <YAxis tick={{ fill: C.textDim, fontSize: 11 }} domain={['auto', 'auto']} width={48} tickFormatter={(v) => `€${v}`} />
-                      <Tooltip contentStyle={{ background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 8 }} formatter={(v) => [fmtEur(v), 'Preis']} />
-                      <Line type="monotone" dataKey="v" stroke={C.gold} strokeWidth={2.5} dot={{ r: 4, fill: C.gold }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : <div style={{ color: C.textFaint, fontSize: 12, padding: 20, textAlign: 'center' }}>Nicht genug Verlaufsdaten.</div>}
-              </div>
+              {card.history?.length >= 2 ? (
+                <>
+                  <div style={sectionLabel}>📈 Preisverlauf – {card.history.length} Tage (täglich aktualisiert)</div>
+                  <div style={{ background: C.bg1, borderRadius: 10, padding: '14px 8px 6px', marginBottom: 14 }}>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <LineChart data={card.history.map((h) => ({ d: h.d, v: h.p }))} margin={{ top: 6, right: 12, left: -8, bottom: 0 }}>
+                        <CartesianGrid stroke={C.lineStrong} strokeDasharray="3 3" />
+                        <XAxis dataKey="d" tick={{ fill: C.textDim, fontSize: 9 }} interval="preserveStartEnd" />
+                        <YAxis tick={{ fill: C.textDim, fontSize: 11 }} domain={['auto', 'auto']} width={48} tickFormatter={(v) => `€${v}`} />
+                        <Tooltip contentStyle={{ background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 8 }} formatter={(v) => [fmtEur(v), 'Marktpreis']} />
+                        <Line type="monotone" dataKey="v" stroke={C.gold} strokeWidth={2} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={sectionLabel}>📈 Preisverlauf (Cardmarket-Durchschnitte → Trend)</div>
+                  <div style={{ background: C.bg1, borderRadius: 10, padding: '14px 8px 6px', marginBottom: 14 }}>
+                    {labeled.length >= 2 ? (
+                      <ResponsiveContainer width="100%" height={200}>
+                        <LineChart data={labeled} margin={{ top: 6, right: 12, left: -8, bottom: 0 }}>
+                          <CartesianGrid stroke={C.lineStrong} strokeDasharray="3 3" />
+                          <XAxis dataKey="k" tick={{ fill: C.textDim, fontSize: 11 }} />
+                          <YAxis tick={{ fill: C.textDim, fontSize: 11 }} domain={['auto', 'auto']} width={48} tickFormatter={(v) => `€${v}`} />
+                          <Tooltip contentStyle={{ background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 8 }} formatter={(v) => [fmtEur(v), 'Preis']} />
+                          <Line type="monotone" dataKey="v" stroke={C.gold} strokeWidth={2.5} dot={{ r: 4, fill: C.gold }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    ) : <div style={{ color: C.textFaint, fontSize: 12, padding: 20, textAlign: 'center' }}>Nicht genug Verlaufsdaten.</div>}
+                    <div style={{ fontSize: 10, color: C.textFaint, padding: '4px 8px', textAlign: 'center' }}>Tageshistorie wird ab morgen gesammelt und täglich erweitert.</div>
+                  </div>
+                </>
+              )}
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
                 <div style={{ background: C.bg1, borderRadius: 10, padding: 12, textAlign: 'center' }}>
@@ -195,6 +230,48 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
               <div style={{ fontSize: 11, color: C.textFaint, marginTop: 10 }}>
                 Marge günstigstes Angebot → Trend: <strong style={{ color: m.margin >= 0 ? C.green : C.red }}>{fmtPct(m.margin)}</strong>
                 {p.updatedAt ? ` · Datenstand ${p.updatedAt}` : ''}
+              </div>
+            </>
+          )}
+
+          {tab === 'grading' && (
+            <>
+              <div style={sectionLabel}>🏆 Grading-Schätzwerte (PSA / BGS)</div>
+              <div style={{ background: C.bg1, border: `1px solid ${C.line}`, borderRadius: 10, padding: '8px 12px', marginBottom: 14, fontSize: 11.5, color: C.textSoft }}>
+                Geschätzte Preise basieren auf marktüblichen Multiplikatoren (Raw NM = aktueller Marktpreis). Tatsächliche Grading-Preise können stark abweichen.
+              </div>
+              <div style={{ display: 'grid', gap: 8, marginBottom: 14 }}>
+                {GRADES.map((g) => {
+                  const base = m.market ?? 0;
+                  const est = base * g.mult;
+                  const profit = est - base;
+                  return (
+                    <div key={g.label} style={{ background: C.bg1, border: `1px solid ${g.color}30`, borderRadius: 10, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 8, background: `${g.color}15`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ fontSize: 9.5, fontWeight: 800, color: g.color, lineHeight: 1.2 }}>{g.label.split(' ')[0]}</div>
+                        <div style={{ fontSize: 11, fontWeight: 900, color: g.color }}>{g.label.split(' ')[1]}</div>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>{g.label}</div>
+                        <div style={{ fontSize: 10.5, color: C.textFaint }}>{g.sub} · ×{g.mult.toFixed(1)} vom Marktpreis</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 16, fontWeight: 800, color: g.color }}>{fmtEur(est)}</div>
+                        {g.mult !== 1 && (
+                          <div style={{ fontSize: 10.5, color: profit > 0 ? C.green2 : C.textFaint }}>+{fmtEur(profit - 0)} Aufschlag</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ background: C.bg1, borderRadius: 10, padding: 12, fontSize: 11.5, color: C.textSoft }}>
+                <strong style={{ color: C.text }}>💡 Grading lohnt sich bei:</strong>
+                <ul style={{ margin: '6px 0 0', paddingLeft: 16, lineHeight: 1.8 }}>
+                  <li>Karten mit Marktpreis &gt; €30 (PSA-Gebühren ca. €20–50/Karte)</li>
+                  <li>Hohem Investment-Score (Tier A/S) und stabiler Nachfrage</li>
+                  <li>Vintage-Karten aus Base Set / Jungle / Fossil</li>
+                </ul>
               </div>
             </>
           )}

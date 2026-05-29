@@ -10,10 +10,12 @@
 // On any failure it writes an empty snapshot and exits 0 so the deploy still
 // succeeds (the app falls back to its bundled sample data).
 
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalize } from '../src/data/providers/pokemon.js';
+
+const HIST_LIMIT = 90; // rolling days of price history per card
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/data/cards.json');
@@ -164,6 +166,27 @@ async function main() {
     .forEach((c) => byId.set(c.id, c));
 
   const cards = [...byId.values()].slice(0, HARD_CAP);
+
+  // ── Rolling price history ────────────────────────────────────────────────
+  // Load existing history from previous build and append today's price point.
+  let existingHistory = {};
+  try {
+    const prev = JSON.parse(await readFile(OUT, 'utf8'));
+    for (const c of (prev.cards || [])) {
+      if (c.id && Array.isArray(c.history)) existingHistory[c.id] = c.history;
+    }
+    console.log(`[fetch-prices] loaded history for ${Object.keys(existingHistory).length} cards`);
+  } catch { /* first build – no history yet */ }
+
+  const today = new Date().toISOString().slice(0, 10);
+  for (const card of cards) {
+    const prev = existingHistory[card.id] || [];
+    const withoutToday = prev.filter((h) => h.d !== today); // avoid duplicate if re-run
+    if (card.prices.market != null) withoutToday.push({ d: today, p: card.prices.market });
+    card.history = withoutToday
+      .sort((a, b) => a.d.localeCompare(b.d))
+      .slice(-HIST_LIMIT);
+  }
 
   if (!anyOk || cards.length === 0) {
     console.error('[fetch-prices] ⚠️  No live data fetched — app will use bundled sample data.');

@@ -28,6 +28,7 @@ export function StoreProvider({ children }) {
   const [compareList, setCompareList] = useState([]);
   const [toast, setToast] = useState(null);
   const toastTimer = useRef(null);
+  const [alerts, setAlerts] = useState([]);
 
   // ── Auth ──────────────────────────────────────────────────────────────────
   const [user, setUser] = useState(null);
@@ -93,6 +94,7 @@ export function StoreProvider({ children }) {
         if (byKey.sold)      setSold(byKey.sold);
         if (byKey.notes)     setNotes(byKey.notes);
         if (byKey.tags)      setTags(byKey.tags);
+        if (byKey.alerts)    setAlerts(byKey.alerts);
       }
     } catch (e) {
       console.error('[cloud] load failed:', e.message);
@@ -120,6 +122,8 @@ export function StoreProvider({ children }) {
 
   // ── Load from localStorage on mount ───────────────────────────────────────
   useEffect(() => {
+    const al = store.get('alerts');
+    if (Array.isArray(al)) setAlerts(al);
     const wl = store.get(KEYS.watchlist);
     const pf = store.get(KEYS.portfolio);
     const sl = store.get(KEYS.sold);
@@ -151,6 +155,7 @@ export function StoreProvider({ children }) {
   useEffect(() => { store.set(KEYS.notes, notes);         cloudSave('notes', notes);         }, [notes, cloudSave]);
   useEffect(() => { store.set(KEYS.tags, tags);           cloudSave('tags', tags);           }, [tags, cloudSave]);
   useEffect(() => { store.set(KEYS.settings, settings); }, [settings]);
+  useEffect(() => { store.set('alerts', alerts);          cloudSave('alerts', alerts);       }, [alerts, cloudSave]);
 
   // ── Derived ───────────────────────────────────────────────────────────────
   const cards = useMemo(() => rawCards.map(enrich), [rawCards]);
@@ -235,7 +240,7 @@ export function StoreProvider({ children }) {
     await supabase.from('team_members')
       .insert({ team_id: newTeam.id, user_id: user.id, role: 'owner' });
     // migrate current user data into team context
-    for (const [key, value] of Object.entries({ watchlist, portfolio, sold, notes, tags })) {
+    for (const [key, value] of Object.entries({ watchlist, portfolio, sold, notes, tags, alerts })) {
       await supabase.from('user_store').upsert(
         { owner_id: newTeam.id, owner_type: 'team', key, value, updated_at: new Date().toISOString() },
         { onConflict: 'owner_id,owner_type,key' }
@@ -244,7 +249,7 @@ export function StoreProvider({ children }) {
     setTeam({ ...newTeam, role: 'owner' });
     showToast(`🏪 Team "${name}" erstellt!`);
     return newTeam;
-  }, [user, watchlist, portfolio, sold, notes, tags, showToast]);
+  }, [user, watchlist, portfolio, sold, notes, tags, alerts, showToast]);
 
   const joinTeam = useCallback(async (code) => {
     if (!supabase || !user) return;
@@ -287,12 +292,12 @@ export function StoreProvider({ children }) {
   }, [showToast]);
 
   const addToPortfolio = useCallback((card, opts = {}) => {
-    const { price, quantity = 1, condition = 'NM' } = typeof opts === 'object' ? opts : { price: opts };
+    const { price, quantity = 1, condition = 'NM', location = '' } = typeof opts === 'object' ? opts : { price: opts };
     setPortfolio((prev) => [...prev, {
       id: `${card.id}-${Date.now()}`, cardId: card.id, card,
       actualBuyPrice: Number(price) || card.prices?.low || card.prices?.market || 0,
       quantity: Math.max(1, Number(quantity) || 1),
-      condition: condition || 'NM', purchaseDate: Date.now(),
+      condition: condition || 'NM', location: location || '', purchaseDate: Date.now(),
     }]);
     showToast('📦 Zur Sammlung hinzugefügt');
   }, [showToast]);
@@ -333,6 +338,40 @@ export function StoreProvider({ children }) {
     });
   }, [showToast]);
   const clearCompare  = useCallback(() => setCompareList([]), []);
+
+  // ── Price Alerts ──────────────────────────────────────────────────────────
+  const addAlert = useCallback((alert) => {
+    setAlerts((prev) => [...prev, { ...alert, id: `a-${Date.now()}`, triggered: false, createdAt: Date.now() }]);
+    showToast('🔔 Alert gesetzt!');
+  }, [showToast]);
+
+  const removeAlert = useCallback((id) => setAlerts((prev) => prev.filter((a) => a.id !== id)), []);
+
+  const checkAlerts = useCallback((currentCards) => {
+    const byId = new Map(currentCards.map((c) => [c.id, c]));
+    setAlerts((prev) => prev.map((alert) => {
+      const card = byId.get(alert.cardId);
+      if (!card || alert.triggered) return alert;
+      const price = card.m.market;
+      if (price == null) return alert;
+      const hit = alert.direction === 'above' ? price >= alert.targetPrice : price <= alert.targetPrice;
+      if (hit) {
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          new Notification(`🔔 Preisalert: ${alert.cardName}`, {
+            body: `Preis ${alert.direction === 'above' ? '≥' : '≤'} ${alert.targetPrice.toFixed(2)}€ (jetzt: ${price.toFixed(2)}€)`,
+          });
+        }
+        return { ...alert, triggered: true, triggeredAt: Date.now(), triggeredPrice: price };
+      }
+      return alert;
+    }));
+  }, []);
+
+  const requestNotificationPermission = useCallback(async () => {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+  }, []);
   const updateSettings = useCallback((patch) => setSettings((p) => ({ ...p, ...patch })), []);
   const freshPrice    = useCallback((entry) => {
     const live = cardById.get(entry.cardId);
@@ -341,13 +380,14 @@ export function StoreProvider({ children }) {
 
   const value = {
     cards, source, lastUpdated, loading, error,
-    watchlist, portfolio, sold, notes, tags, settings, compareList, toast,
+    watchlist, portfolio, sold, notes, tags, settings, compareList, toast, alerts,
     theme, toggleTheme,
     fetchCards, loadSample,
     inWatchlist, inPortfolio, inCompare,
     toggleWatchlist, addToPortfolio, removeFromPortfolio, sellFromPortfolio, removeSold,
     saveNote, addTag, removeTag, toggleCompare, clearCompare,
     updateSettings, showToast, freshPrice,
+    addAlert, removeAlert, checkAlerts, requestNotificationPermission,
     // auth
     user, team, profile, authLoading,
     signIn, signUp, signOut,

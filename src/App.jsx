@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react';
-import { Settings as Cog, GitCompare, Download, Sun, Moon, LogIn } from 'lucide-react';
+import { Settings as Cog, GitCompare, Download, Sun, Moon, LogIn, Upload } from 'lucide-react';
 import AuthModal from './components/AuthModal.jsx';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
@@ -15,6 +15,9 @@ const Analytics = lazy(() => import('./components/Analytics.jsx'));
 const CardModal = lazy(() => import('./components/CardModal.jsx'));
 const CompareModal = lazy(() => import('./components/CompareModal.jsx'));
 const SettingsModal = lazy(() => import('./components/SettingsModal.jsx'));
+const BuylistView = lazy(() => import('./components/BuylistView.jsx'));
+const AlertsView = lazy(() => import('./components/AlertsView.jsx'));
+const ImportModal = lazy(() => import('./components/ImportModal.jsx'));
 
 function Loader() {
   return (
@@ -43,19 +46,23 @@ const TABS = [
   { id: 'analytics', label: '📊 Analyse' },
   { id: 'watchlist', label: '⭐ Watchlist' },
   { id: 'portfolio', label: '📦 Sammlung' },
+  { id: 'buylist', label: '🏷 Ankauf' },
+  { id: 'alerts', label: '🔔 Alerts' },
 ];
 
 function Shell() {
-  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, user, team, profile } = useStore();
+  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, user, team, profile, alerts } = useStore();
   const [tab, setTab] = useState('discover');
   const [modal, setModal] = useState(null); // { card, tab }
   const [showCompare, setShowCompare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
   const game = getGame(settings.game);
-  const badge = { watchlist: watchlist.length, portfolio: portfolio.length };
+  const triggeredAlerts = (alerts || []).filter((a) => a.triggered).length;
+  const badge = { watchlist: watchlist.length, portfolio: portfolio.length, alerts: triggeredAlerts };
   const avgScore = cards.length ? fmtNum(cards.reduce((s, c) => s + c.m.score, 0) / cards.length, 0) : '–';
 
   return (
@@ -94,6 +101,9 @@ function Shell() {
               <><LogIn size={13} /><span style={{ fontSize: 12, fontWeight: 600 }}>Anmelden</span></>
             )}
           </button>
+          <button onClick={() => setShowImport(true)} title="Massenimport" className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Upload size={13} />
+          </button>
           <button onClick={() => exportCSV(cards)} disabled={!cards.length} title="CSV-Export" className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center', gap: 4, opacity: cards.length ? 1 : 0.4 }}>
             <Download size={13} />
           </button>
@@ -122,6 +132,8 @@ function Shell() {
         {tab === 'analytics' && <Suspense fallback={<Loader />}><Analytics onOpen={onOpen} /></Suspense>}
         {tab === 'watchlist' && <WatchlistView onOpen={onOpen} />}
         {tab === 'portfolio' && <PortfolioView />}
+        {tab === 'buylist' && <Suspense fallback={<Loader />}><BuylistView /></Suspense>}
+        {tab === 'alerts' && <Suspense fallback={<Loader />}><AlertsView /></Suspense>}
       </main>
 
       <footer style={{ borderTop: `1px solid ${C.lineStrong}`, padding: '16px 20px', marginTop: 40, textAlign: 'center', fontSize: 10.5, color: C.textGhost, maxWidth: 900, margin: '40px auto 0', lineHeight: 1.6 }}>
@@ -142,6 +154,9 @@ function Shell() {
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       </Suspense>
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+      <Suspense fallback={null}>
+        {showImport && <ImportModal onClose={() => setShowImport(false)} />}
+      </Suspense>
 
       {toast && (
         <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 10, padding: '10px 18px', fontSize: 13, color: C.text, boxShadow: '0 4px 24px #00000070', zIndex: 200, animation: 'slideUp 0.25s ease' }}>
