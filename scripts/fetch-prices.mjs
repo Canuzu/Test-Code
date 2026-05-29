@@ -1,19 +1,20 @@
 // Build-time price fetcher. Runs on the GitHub Actions server (no browser CORS
-// limits) and writes a static snapshot to public/data/cards.json, which the
-// app loads same-origin. Scheduled daily in the deploy workflow.
+// limits) and writes a snapshot to public/data/cards.json, which the app loads
+// same-origin. Scheduled daily in the deploy workflow.
 //
-// Contents: EVERY priced card of EVERY set, added newest → oldest, one complete
-// set at a time (a set is only started once the previous one is fully added).
-// We stop only at a SET boundary once HARD_CAP is reached, so no set is ever
-// half-included. If the keyless rate limit cuts the run short, the newest sets
-// are still complete and older ones simply aren't reached yet.
+// INCREMENTAL catalogue: the snapshot is committed to the repo and GROWS over
+// runs, newest → oldest, one complete set at a time. Each run:
+//   1. always re-fetches the REFRESH_RECENT newest sets (fresh prices), and
+//   2. adds the next BATCH_NEW sets that aren't complete yet (coverage),
+// then remembers which sets are done so the next run continues where it left
+// off. This way the catalogue keeps advancing to older sets even under the
+// keyless rate limit; an API key (POKEMONTCG_API_KEY) makes each run add far
+// more sets at once.
 //
-// Works with or without a pokemontcg.io API key (POKEMONTCG_API_KEY env var) —
-// a key is strongly recommended here for the higher rate limit (more sets).
-// On any failure it writes an empty snapshot and exits 0 so the deploy still
-// succeeds (the app falls back to its bundled sample data).
+// On a transient failure it keeps the existing snapshot (never clobbers it) and
+// exits 0 so the deploy still succeeds.
 
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalize } from '../src/data/providers/pokemon.js';
@@ -23,7 +24,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/data/cards.json');
 const BASE = 'https://api.pokemontcg.io/v2';
 const API_KEY = process.env.POKEMONTCG_API_KEY || '';
-const HARD_CAP = 9000; // soft bound — we only stop at a SET boundary, never mid-set
+const REFRESH_RECENT = 8; // newest sets re-fetched every run for fresh prices
+const BATCH_NEW = API_KEY ? 40 : 10; // additional not-yet-fetched sets per run
+const HARD_CAP = 8000; // stop ADDING new sets past this (refresh still runs); set boundaries respected
 const SELECT = 'id,name,number,rarity,supertype,subtypes,images,set,cardmarket';
 const headers = API_KEY ? { 'X-Api-Key': API_KEY } : {};
 
@@ -58,7 +61,21 @@ async function writeSnapshot(payload) {
   await writeFile(OUT, JSON.stringify(payload));
 }
 
-// ---- German names (official, from PokéAPI) ----------------------------------
+// Load the previously committed snapshot so this run continues from it.
+async function readExisting() {
+  try {
+    const j = JSON.parse(await readFile(OUT, 'utf8'));
+    return {
+      byId: new Map((j.cards || []).map((c) => [c.id, c])),
+      completed: new Set(j.completedSets || []),
+      deNames: j.deNames && typeof j.deNames === 'object' ? j.deNames : {},
+    };
+  } catch {
+    return { byId: new Map(), completed: new Set(), deNames: {} };
+  }
+}
+
+// ---- German names (official, from PokéAPI), cached across runs ----------------
 const speciesSlug = (name) => (name || '')
   .toLowerCase()
   .replace(/[.'’:]/g, '')
@@ -75,23 +92,23 @@ async function mapPool(items, limit, fn) {
   await Promise.all(workers);
 }
 
-// Translate the Pokémon part of each card name to its official German name.
-// Trainer/Energy cards (no matching species) and set names stay English.
-async function applyGermanNames(cards) {
-  const slugToBase = new Map();
+// Resolves German names for any species not already in the cache, then applies
+// them. Returns the updated cache (incl. '' for known misses, e.g. Trainers).
+async function resolveGermanNames(cards, deCache) {
+  const de = new Map(Object.entries(deCache || {}));
+  const need = new Set();
   for (const c of cards) {
     const slug = speciesSlug(c.baseName);
-    if (slug && !slugToBase.has(slug)) slugToBase.set(slug, c.baseName);
+    if (slug && !de.has(slug)) need.add(slug);
   }
-  const de = new Map();
-  await mapPool([...slugToBase.keys()], 8, async (slug) => {
+  await mapPool([...need], 8, async (slug) => {
     try {
       const res = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${slug}`);
-      if (!res.ok) return;
+      if (!res.ok) { de.set(slug, ''); return; } // remember permanent miss
       const json = await res.json();
       const name = (json.names || []).find((n) => n.language?.name === 'de')?.name;
-      if (name) de.set(slug, name);
-    } catch { /* keep English for this one */ }
+      de.set(slug, name || '');
+    } catch { /* transient: leave unknown, retried next run */ }
   });
 
   let translated = 0;
@@ -102,29 +119,32 @@ async function applyGermanNames(cards) {
       if (next !== c.name) { c.nameEn = c.name; c.name = next; translated++; }
     }
   }
-  console.log(`[fetch-prices] German names: ${de.size} species resolved, ${translated} cards translated`);
+  console.log(`[fetch-prices] German names: ${need.size} new lookups, ${translated} cards (re)translated`);
+  return Object.fromEntries(de);
 }
 
 async function main() {
   console.log(`[fetch-prices] API key: ${API_KEY ? 'present' : 'none (keyless)'}`);
-  const byId = new Map();
+  const { byId, completed, deNames } = await readExisting();
+  console.log(`[fetch-prices] existing snapshot: ${byId.size} cards, ${completed.size} complete sets`);
+
   let anyOk = false;
-
-  // EVERY card of EVERY set, newest → oldest, one complete set at a time.
   let sets = [];
-  try {
-    sets = await allSetsDesc();
-  } catch (e) {
-    console.error(`[fetch-prices] sets list failed: ${e.message}`);
-  }
-  console.log(`[fetch-prices] ${sets.length} sets found · adding newest→oldest, all cards per set (cap ${HARD_CAP})`);
+  try { sets = await allSetsDesc(); anyOk = true; } catch (e) { console.error(`[fetch-prices] sets list failed: ${e.message}`); }
 
-  let setsDone = 0;
-  for (const s of sets) {
-    if (byId.size >= HARD_CAP) {
-      console.log(`[fetch-prices] cap ${HARD_CAP} reached after ${setsDone} complete sets (${byId.size} cards) — stopping at set boundary`);
-      break;
-    }
+  // Work list: refresh the newest sets (fresh prices) + the next not-yet-done
+  // sets (coverage), de-duplicated, kept newest → oldest.
+  const recent = sets.slice(0, REFRESH_RECENT);
+  const pending = sets.filter((s) => !completed.has(s.id)).slice(0, BATCH_NEW);
+  const seen = new Set();
+  const work = [...recent, ...pending]
+    .filter((s) => (seen.has(s.id) ? false : seen.add(s.id)))
+    .sort((a, b) => b.releaseDate.localeCompare(a.releaseDate));
+  console.log(`[fetch-prices] this run: refresh ${recent.length} newest + ${pending.length} new = ${work.length} sets`);
+
+  for (const s of work) {
+    const isNew = !completed.has(s.id);
+    if (isNew && byId.size >= HARD_CAP) continue; // bound growth at a set boundary
     try {
       const raw = await allCardsInSet(s.id); // full set before moving on
       anyOk = true;
@@ -133,47 +153,45 @@ async function main() {
         const c = normalize(r);
         if (c.prices.market != null) { byId.set(c.id, c); kept++; }
       }
-      setsDone++;
-      console.log(`[fetch-prices] [${setsDone}] ${s.name} (${s.id}, ${s.releaseDate}): ${raw.length} cards, ${kept} priced · total ${byId.size}`);
+      completed.add(s.id);
+      console.log(`[fetch-prices] ${isNew ? '＋' : '↻'} ${s.name} (${s.id}, ${s.releaseDate}): ${kept} priced · total ${byId.size}`);
     } catch (e) {
       console.error(`[fetch-prices] set ${s.id} (${s.name}) failed, skipping: ${e.message}`);
     }
   }
 
-  // 3) Official Cardmarket API (opt-in via CM_* secrets). Merged on top; these
-  //    are real MKM products with full price guides. No-op without credentials.
+  // Official Cardmarket API (opt-in via CM_* secrets). No-op without credentials.
   try {
     const cmCards = await fetchCardmarket({ limit: 120 });
-    if (cmCards.length) {
-      cmCards.forEach((c) => byId.set(c.id, c));
-      anyOk = true;
-      console.log(`[fetch-prices] merged ${cmCards.length} cards from the official Cardmarket API`);
-    }
+    if (cmCards.length) { cmCards.forEach((c) => byId.set(c.id, c)); anyOk = true; console.log(`[fetch-prices] merged ${cmCards.length} Cardmarket-API cards`); }
   } catch (e) {
-    console.error(`[fetch-prices] Cardmarket API step failed (keeping pokemontcg.io): ${e.message}`);
+    console.error(`[fetch-prices] Cardmarket API step failed: ${e.message}`);
   }
 
-  const cards = [...byId.values()]; // already bounded at set boundaries above
-
-  if (!anyOk || cards.length === 0) {
-    console.error('[fetch-prices] ⚠️  No live data fetched — app will use bundled sample data.');
-    await writeSnapshot({ generatedAt: new Date().toISOString(), source: 'pokemontcg.io', error: 'fetch_failed_or_empty', count: 0, cards: [] });
+  if (byId.size === 0) {
+    console.error('[fetch-prices] ⚠️  No data at all — writing empty snapshot (app uses sample data).');
+    await writeSnapshot({ generatedAt: new Date().toISOString(), source: 'pokemontcg.io', error: 'fetch_failed_or_empty', count: 0, completedSets: [], deNames: {}, cards: [] });
     return;
   }
+  if (!anyOk) console.error('[fetch-prices] live fetch failed this run — keeping existing snapshot unchanged.');
 
-  try {
-    await applyGermanNames(cards);
-  } catch (e) {
-    console.error(`[fetch-prices] German-name step failed (keeping English): ${e.message}`);
-  }
+  // Newest → oldest by set release date, then by card number within a set.
+  const cards = [...byId.values()].sort((a, b) =>
+    (b.setReleaseDate || '').localeCompare(a.setReleaseDate || '') ||
+    String(a.number).localeCompare(String(b.number), undefined, { numeric: true }));
+
+  let de = deNames;
+  try { de = await resolveGermanNames(cards, deNames); } catch (e) { console.error(`[fetch-prices] German-name step failed: ${e.message}`); }
 
   await writeSnapshot({
     generatedAt: new Date().toISOString(),
     source: 'Cardmarket EU via pokemontcg.io',
     count: cards.length,
+    completedSets: [...completed],
+    deNames: de,
     cards,
   });
-  console.log(`[fetch-prices] ✓ wrote ${cards.length} cards to public/data/cards.json`);
+  console.log(`[fetch-prices] ✓ wrote ${cards.length} cards · ${completed.size}/${sets.length || '?'} sets complete`);
 }
 
 main().catch((e) => {
