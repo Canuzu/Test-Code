@@ -44,6 +44,18 @@
 
 ## ✅ ALLE 10 FEATURES UMGESETZT, GEBAUT & COMMITTET.
 
+## Folge-Batch (Verbesserungen)
+- [x] A. Icon-Button (🧾 Receipt) zum direkten Hinzufügen einer Karte zur Buylist
+- [x] B. Preisfarben je nach Zustand (NM grün → … → PO rot)
+- [x] C. Vor-/Zurück-Navigation in der Website (Browser-History + Header-Buttons)
+- [x] D. Transparenz-Hinweise im UI (Schätzungen+Verifikation, Alerts-Backend, Pro-Demo)
+
+### Folge-Batch — Details
+- A ✓: Buylist in den Store gehoben (`buylist {rules,items}`, `addToBuylist`/`inBuylist`/`removeFromBuylist`/`setBuylistItems`/`setBuylistRules`, KEY `buylist`). `BuylistView` nutzt jetzt den Store (eine Quelle der Wahrheit). Quick-Add-Icon (Receipt) auf `CardTile` (oben links) + Button in `CardModal`-Übersicht, mit „in Buylist"-Zustand.
+- B ✓: `conditionColor`/`CONDITION_COLORS` in `theme.js`. Angewandt auf Preise/Zustand in `PortfolioView` (Karten-Pill + „Aktuell/Stk", Inventar-Tabelle Select + „Akt./Stk" + Legende) und `BuylistView` (Zustands-Select + Angebotspreis).
+- C ✓: History-Integration in `App.jsx` (push/replaceState pro Tab/Modal-Wechsel, `popstate`-Restore inkl. Karten-Modal via cardsRef; `firstNav`/`isPopping`-Guards) + ◀/▶-Buttons im Header.
+- D ✓: Hinweis-Footer in `AlertsView` (E-Mail braucht Backend), erweiterte Märkte-Notiz in `CardModal` (Auto-Live bei CM-Secrets); Pro-Demo-Hinweis steht bereits in `PricingModal`.
+
 ## Hinweise / offene Punkte für später
 - Deploy-Workflow triggert nur auf `main` (+ alter Branch). Für Live-Schaltung
   müssen die Änderungen nach `main` gemerged werden (bewusst nicht ohne

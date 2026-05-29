@@ -1,8 +1,7 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { Printer, Download, Search, Settings2, Trash2, Star, TrendingUp } from 'lucide-react';
 import { useStore } from '../store.jsx';
-import { store, KEYS } from '../lib/storage.js';
-import { C } from '../lib/theme.js';
+import { C, conditionColor } from '../lib/theme.js';
 import { fmtEur, fmtDate } from '../lib/format.js';
 import { CONDITIONS, withDefaults, offerFor } from '../lib/buylist.js';
 import { CardImage, EmptyState } from './ui.jsx';
@@ -22,14 +21,11 @@ const exportCSV = (resolved, rules) => {
 };
 
 export default function BuylistView({ locked, onUpgrade }) {
-  const { cards, watchlist, showToast } = useStore();
-  const saved = store.get(KEYS.buylist) || {};
-  const [rules, setRules] = useState(() => withDefaults(saved.rules));
-  const [items, setItems] = useState(() => (Array.isArray(saved.items) ? saved.items : []));
+  const { cards, watchlist, showToast, buylist, setBuylistItems: setItems, setBuylistRules: setRules } = useStore();
+  const rules = useMemo(() => withDefaults(buylist.rules), [buylist.rules]);
+  const items = buylist.items;
   const [showRules, setShowRules] = useState(false);
   const [search, setSearch] = useState('');
-
-  useEffect(() => { store.set(KEYS.buylist, { rules, items }); }, [rules, items]);
 
   const cardById = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
 
@@ -79,11 +75,11 @@ export default function BuylistView({ locked, onUpgrade }) {
     <div className="fade-in">
       {/* Toolbar */}
       <div className="no-print" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14 }}>
-        <input value={rules.shopName} onChange={(e) => setRules((r) => ({ ...r, shopName: e.target.value }))} placeholder="Laden-Name"
+        <input value={rules.shopName} onChange={(e) => setRules({ ...rules, shopName: e.target.value })} placeholder="Laden-Name"
           className="control" style={{ fontWeight: 700, minWidth: 160 }} />
         <div style={{ display: 'flex', gap: 4, background: C.bg2, border: `1px solid ${C.lineStrong}`, borderRadius: 8, padding: 3 }}>
           {[['cash', '💶 Bar'], ['credit', '🎟 Guthaben']].map(([m, lbl]) => (
-            <button key={m} onClick={() => setRules((r) => ({ ...r, payout: m }))} style={{ padding: '6px 12px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, background: rules.payout === m ? '#ffd70022' : 'transparent', color: rules.payout === m ? C.gold : C.textFaint }}>{lbl}</button>
+            <button key={m} onClick={() => setRules({ ...rules, payout: m })} style={{ padding: '6px 12px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, background: rules.payout === m ? '#ffd70022' : 'transparent', color: rules.payout === m ? C.gold : C.textFaint }}>{lbl}</button>
           ))}
         </div>
         <button className="control" onClick={() => setShowRules((s) => !s)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Settings2 size={14} /> Regeln</button>
@@ -101,23 +97,23 @@ export default function BuylistView({ locked, onUpgrade }) {
               {rules.tiers.map((t, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
                   <span style={{ fontSize: 12, color: C.textDim, width: 92 }}>{i === 0 ? `bis ${fmtEur(t.max, 0)}` : t.max == null ? `> ${fmtEur(rules.tiers[i - 1].max, 0)}` : `${fmtEur(rules.tiers[i - 1].max, 0)}–${fmtEur(t.max, 0)}`}</span>
-                  <input type="number" value={t.pct} onChange={(e) => setRules((r) => ({ ...r, tiers: r.tiers.map((x, j) => j === i ? { ...x, pct: Number(e.target.value) || 0 } : x) }))} style={miniInput} /> %
+                  <input type="number" value={t.pct} onChange={(e) => setRules({ ...rules, tiers: rules.tiers.map((x, j) => j === i ? { ...x, pct: Number(e.target.value) || 0 } : x) })} style={miniInput} /> %
                 </div>
               ))}
-              <div style={{ fontSize: 11, color: C.textFaint, marginTop: 4 }}>Guthaben-Bonus: <input type="number" value={rules.creditBonusPct} onChange={(e) => setRules((r) => ({ ...r, creditBonusPct: Number(e.target.value) || 0 }))} style={miniInput} /> %</div>
+              <div style={{ fontSize: 11, color: C.textFaint, marginTop: 4 }}>Guthaben-Bonus: <input type="number" value={rules.creditBonusPct} onChange={(e) => setRules({ ...rules, creditBonusPct: Number(e.target.value) || 0 })} style={miniInput} /> %</div>
             </div>
             <div>
               <div style={lbl}>Zustands-Faktor (%)</div>
               {CONDITIONS.map((c) => (
                 <div key={c} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
                   <span style={{ fontSize: 12, color: C.textDim, width: 34 }}>{c}</span>
-                  <input type="number" value={rules.conditionPct[c]} onChange={(e) => setRules((r) => ({ ...r, conditionPct: { ...r.conditionPct, [c]: Number(e.target.value) || 0 } }))} style={miniInput} /> %
+                  <input type="number" value={rules.conditionPct[c]} onChange={(e) => setRules({ ...rules, conditionPct: { ...rules.conditionPct, [c]: Number(e.target.value) || 0 } })} style={miniInput} /> %
                 </div>
               ))}
             </div>
             <div>
               <div style={lbl}>Rundung</div>
-              <select value={rules.roundTo} onChange={(e) => setRules((r) => ({ ...r, roundTo: Number(e.target.value) }))} className="control">
+              <select value={rules.roundTo} onChange={(e) => setRules({ ...rules, roundTo: Number(e.target.value) })} className="control">
                 <option value={0.01}>auf 0,01 €</option>
                 <option value={0.5}>auf 0,50 €</option>
                 <option value={1}>auf 1 €</option>
@@ -165,12 +161,12 @@ export default function BuylistView({ locked, onUpgrade }) {
                   <div style={{ fontSize: 12.5, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.card.name}</div>
                   <div style={{ fontSize: 10.5, color: C.textFaint }}>{r.card.set} · Markt {fmtEur(r.card.m.market)} · {r.offer.basePct}%×{r.offer.condPct}%</div>
                 </div>
-                <select value={r.condition} onChange={(e) => setItem(r.id, { condition: e.target.value })} style={miniSelect}>
+                <select value={r.condition} onChange={(e) => setItem(r.id, { condition: e.target.value })} style={{ ...miniSelect, color: conditionColor(r.condition), borderColor: conditionColor(r.condition) + '66', fontWeight: 700 }}>
                   {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <input type="number" min="1" value={r.qty} onChange={(e) => setItem(r.id, { qty: Math.max(1, Number(e.target.value) || 1) })} style={{ ...miniSelect, textAlign: 'right' }} />
-                <div style={{ textAlign: 'right', fontSize: 12, color: C.textDim }}>{fmtEur(r.offer.unit)}/Stk</div>
-                <div style={{ textAlign: 'right', fontSize: 14, fontWeight: 800, color: C.green }}>{fmtEur(r.offer.total)}</div>
+                <div style={{ textAlign: 'right', fontSize: 12, color: conditionColor(r.condition) }}>{fmtEur(r.offer.unit)}/Stk</div>
+                <div style={{ textAlign: 'right', fontSize: 14, fontWeight: 800, color: conditionColor(r.condition) }}>{fmtEur(r.offer.total)}</div>
                 <button onClick={() => removeItem(r.id)} style={{ background: 'none', border: 'none', color: C.textFaint, cursor: 'pointer', display: 'flex', justifyContent: 'center' }}><Trash2 size={13} /></button>
               </div>
             ))}

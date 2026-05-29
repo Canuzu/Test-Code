@@ -1,3 +1,4 @@
+import { Receipt } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, riskColor, riskLabel, rarityColor, trendColor, trendIcon } from '../lib/theme.js';
 import { fmtEur, fmtNum } from '../lib/format.js';
@@ -6,11 +7,12 @@ import { calcNet, PLATFORM_FEES } from '../lib/fees.js';
 import { Spark, CardImage, Pill, ChangeBadge, ScoreBadge } from './ui.jsx';
 
 export default function CardTile({ card, onOpen }) {
-  const { inWatchlist, inPortfolio, inCompare, toggleWatchlist, toggleCompare, tags, settings } = useStore();
+  const { inWatchlist, inPortfolio, inCompare, toggleWatchlist, toggleCompare, tags, settings, inBuylist, addToBuylist } = useStore();
   const m = card.m;
   const listed = inWatchlist(card.id);
   const owned = inPortfolio(card.id);
   const comparing = inCompare(card.id);
+  const onBuylist = inBuylist(card.id);
   const cardTags = tags[card.id] || [];
   const net = calcNet(m.market, card.prices.low ?? m.market, settings.platform, settings.includeShipping);
 
@@ -31,6 +33,19 @@ export default function CardTile({ card, onOpen }) {
       <div style={{ position: 'absolute', top: -9, right: 12 }}>
         <ScoreBadge tier={m.tier} score={m.score} />
       </div>
+
+      <button
+        onClick={(e) => { e.stopPropagation(); addToBuylist(card); }}
+        title={onBuylist ? 'In der Buylist' : 'Zur Buylist hinzufügen'}
+        style={{
+          position: 'absolute', top: -9, left: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 26, height: 26, borderRadius: 7, cursor: 'pointer',
+          background: onBuylist ? C.gold : C.surface2, color: onBuylist ? '#0c0c1a' : C.gold,
+          border: `1px solid ${onBuylist ? C.gold : C.lineStrong}`, boxShadow: '0 2px 8px #00000040',
+        }}
+      >
+        <Receipt size={13} />
+      </button>
 
       <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
         <CardImage card={card} height={132} />

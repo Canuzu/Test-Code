@@ -30,6 +30,7 @@ export function StoreProvider({ children }) {
   const [priceHistory, setPriceHistory] = useState({});
   const [alerts, setAlerts] = useState([]);
   const [alertLog, setAlertLog] = useState([]);
+  const [buylist, setBuylist] = useState({ rules: null, items: [] });
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 
   const [compareList, setCompareList] = useState([]);
@@ -58,6 +59,7 @@ export function StoreProvider({ children }) {
     const ph = store.get(KEYS.priceHistory);
     const al = store.get(KEYS.alerts);
     const alg = store.get(KEYS.alertLog);
+    const bl = store.get(KEYS.buylist);
     const st = store.get(KEYS.settings);
     const cache = store.get(KEYS.cards);
     if (Array.isArray(wl)) setWatchlist(wl);
@@ -68,6 +70,7 @@ export function StoreProvider({ children }) {
     if (ph && typeof ph === 'object') setPriceHistory(ph);
     if (Array.isArray(al)) setAlerts(al);
     if (Array.isArray(alg)) setAlertLog(alg);
+    if (bl && typeof bl === 'object') setBuylist({ rules: bl.rules || null, items: Array.isArray(bl.items) ? bl.items : [] });
     const s = st && typeof st === 'object' ? { ...DEFAULT_SETTINGS, ...st } : DEFAULT_SETTINGS;
     if (st && typeof st === 'object') setSettings(s);
 
@@ -96,6 +99,7 @@ export function StoreProvider({ children }) {
   useEffect(() => { store.set(KEYS.priceHistory, priceHistory); }, [priceHistory]);
   useEffect(() => { store.set(KEYS.alerts, alerts); }, [alerts]);
   useEffect(() => { store.set(KEYS.alertLog, alertLog); }, [alertLog]);
+  useEffect(() => { store.set(KEYS.buylist, buylist); }, [buylist]);
   useEffect(() => { store.set(KEYS.settings, settings); }, [settings]);
 
   // ---- derived ----------------------------------------------------------
@@ -119,6 +123,19 @@ export function StoreProvider({ children }) {
   const toggleAlert = useCallback((id) => setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, active: !a.active } : a))), []);
   const updateAlert = useCallback((id, patch) => setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, ...patch, target: patch.target != null ? Number(patch.target) || 0 : a.target } : a))), []);
   const clearAlertLog = useCallback(() => setAlertLog([]), []);
+
+  // ---- buylist ----------------------------------------------------------
+  const inBuylist = useCallback((id) => buylist.items.some((i) => i.id === id), [buylist.items]);
+  const addToBuylist = useCallback((card) => {
+    setBuylist((bl) => {
+      if (bl.items.some((i) => i.id === card.id)) { showToast('Schon in der Buylist'); return bl; }
+      showToast('🧾 Zur Buylist hinzugefügt');
+      return { ...bl, items: [...bl.items, { id: card.id, condition: 'NM', qty: 1 }] };
+    });
+  }, [showToast]);
+  const removeFromBuylist = useCallback((id) => setBuylist((bl) => ({ ...bl, items: bl.items.filter((i) => i.id !== id) })), []);
+  const setBuylistItems = useCallback((updater) => setBuylist((bl) => ({ ...bl, items: typeof updater === 'function' ? updater(bl.items) : updater })), []);
+  const setBuylistRules = useCallback((updater) => setBuylist((bl) => ({ ...bl, rules: typeof updater === 'function' ? updater(bl.rules) : updater })), []);
 
   // Evaluate alerts whenever fresh prices or the rules change. Fires once per
   // rule on the false→true transition (firingRef debounces repeats) and emits an
@@ -332,6 +349,7 @@ export function StoreProvider({ children }) {
     updateSettings, showToast, freshPrice,
     getPriceHistory,
     alerts, alertLog, addAlert, removeAlert, toggleAlert, updateAlert, clearAlertLog,
+    buylist, inBuylist, addToBuylist, removeFromBuylist, setBuylistItems, setBuylistRules,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

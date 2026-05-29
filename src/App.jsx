@@ -1,5 +1,5 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
-import { Settings as Cog, GitCompare, Download, Sun, Moon, Crown, Smartphone } from 'lucide-react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { Settings as Cog, GitCompare, Download, Sun, Moon, Crown, Smartphone, ArrowLeft, ArrowRight } from 'lucide-react';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
 import { isPro } from './lib/pro.js';
@@ -71,6 +71,46 @@ function Shell() {
   }, []);
   const install = async () => { if (!installEvt) return; installEvt.prompt(); await installEvt.userChoice; setInstallEvt(null); };
 
+  // ---- browser back/forward navigation -------------------------------------
+  // Each navigable change (tab switch or opening a modal) becomes a history
+  // entry, so the browser Back/Forward buttons (and the Android system back
+  // button in the installed PWA) move through the app instead of leaving it.
+  const cardsRef = useRef(cards);
+  cardsRef.current = cards;
+  const isPopping = useRef(false);
+  const firstNav = useRef(true);
+  const navView = {
+    tab,
+    modal: modal ? { id: modal.card.id, tab: modal.tab } : null,
+    showCompare, showSettings, showImport, showPricing,
+  };
+
+  useEffect(() => {
+    window.history.replaceState({ __kw: { tab: 'discover' } }, '');
+    const onPop = (e) => {
+      const v = e.state?.__kw || {};
+      isPopping.current = true;
+      setTab(v.tab || 'discover');
+      setShowCompare(!!v.showCompare);
+      setShowSettings(!!v.showSettings);
+      setShowImport(!!v.showImport);
+      setShowPricing(!!v.showPricing);
+      if (v.modal) {
+        const c = cardsRef.current.find((x) => x.id === v.modal.id);
+        setModal(c ? { card: c, tab: v.modal.tab } : null);
+      } else setModal(null);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (firstNav.current) { firstNav.current = false; return; }
+    if (isPopping.current) { isPopping.current = false; return; }
+    window.history.pushState({ __kw: navView }, '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, modal, showCompare, showSettings, showImport, showPricing]);
+
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
   const game = getGame(settings.game);
   const pro = isPro(settings);
@@ -82,6 +122,10 @@ function Shell() {
       {/* Header */}
       <header style={{ background: C.headerBg, backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.lineStrong}`, padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, position: 'sticky', top: 0, zIndex: 50 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+          <div style={{ display: 'flex', gap: 3 }}>
+            <button onClick={() => window.history.back()} title="Zurück" className="control" style={{ padding: '7px 8px', display: 'flex', alignItems: 'center' }}><ArrowLeft size={15} /></button>
+            <button onClick={() => window.history.forward()} title="Vor" className="control" style={{ padding: '7px 8px', display: 'flex', alignItems: 'center' }}><ArrowRight size={15} /></button>
+          </div>
           <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg, #ffd700, #ff6b35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19, boxShadow: '0 0 18px #ffd70044' }}>{game.emoji}</div>
           <div>
             <div style={{ fontWeight: 800, fontSize: 17, background: 'linear-gradient(90deg, #ffd700, #ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>KartenwertDE</div>

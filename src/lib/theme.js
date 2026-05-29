@@ -87,3 +87,15 @@ export const changeColor = (v) => {
   if (v < -0.5) return C.red;
   return C.textDim;
 };
+
+// Condition quality scale: NM (green) → … → PO (red). Fixed hex so the green→
+// yellow→orange→red gradient stays stable in both light and dark themes.
+export const CONDITION_COLORS = {
+  NM: '#00e676', // green
+  EX: '#9ccc65', // yellow-green
+  GD: '#ffd700', // yellow
+  LP: '#ffa726', // orange
+  PL: '#ff7043', // deep orange
+  PO: '#ff5252', // red
+};
+export const conditionColor = (c) => CONDITION_COLORS[(c || '').toUpperCase()] || C.textDim;

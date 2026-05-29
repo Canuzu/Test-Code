@@ -136,6 +136,11 @@ export default function AlertsView({ locked, onUpgrade }) {
           </div>
         </div>
       )}
+
+      <div style={{ fontSize: 10.5, color: C.textGhost, textAlign: 'center', marginTop: 22, lineHeight: 1.6 }}>
+        Alerts werden bei jeder Preisaktualisierung (täglich) und beim Öffnen der App geprüft: in-app + Browser-Push.
+        Echte <strong>E-Mail-Benachrichtigungen</strong> brauchen ein Backend — die Architektur dafür steht.
+      </div>
     </div>
   );
 }

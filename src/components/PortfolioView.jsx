@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Briefcase, Trash2, Info, Tag as TagIcon, Upload, Download } from 'lucide-react';
 import { useStore } from '../store.jsx';
-import { C } from '../lib/theme.js';
+import { C, conditionColor } from '../lib/theme.js';
 import { fmtEur, fmtPct, fmtDate } from '../lib/format.js';
 import { getTier } from '../lib/metrics.js';
 import { marketLinks } from '../lib/marketLinks.js';
@@ -127,7 +127,7 @@ export default function PortfolioView({ onImport }) {
                     <div style={{ fontSize: 11, color: C.textDim, marginTop: 2 }}>{card.set}</div>
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
                       <Pill color={C.blue}>×{qty}</Pill>
-                      <Pill color={C.purple}>{e.condition || 'NM'}</Pill>
+                      <Pill color={conditionColor(e.condition)}>{e.condition || 'NM'}</Pill>
                       {e.location && <Pill color={C.green2}>📍 {e.location}</Pill>}
                     </div>
                     <div style={{ fontSize: 10.5, color: C.textFaint, marginTop: 6 }}>gekauft {fmtDate(e.purchaseDate)}</div>
@@ -140,7 +140,7 @@ export default function PortfolioView({ onImport }) {
                   </div>
                   <div style={{ background: C.overlay, borderRadius: 7, padding: 8, textAlign: 'center' }}>
                     <div style={{ fontSize: 9, color: C.textFaint }}>Aktuell (Stk.)</div>
-                    <div style={{ fontWeight: 700, color: C.text, fontSize: 14 }}>{fmtEur(current)}</div>
+                    <div style={{ fontWeight: 700, color: conditionColor(e.condition), fontSize: 14 }} title={`Preisfarbe nach Zustand ${e.condition || 'NM'}`}>{fmtEur(current)}</div>
                   </div>
                 </div>
                 <div style={{ background: unreal >= 0 ? '#00e67615' : '#ff525215', border: `1px solid ${unreal >= 0 ? '#00e67630' : '#ff525230'}`, borderRadius: 7, padding: '8px 10px', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -233,6 +233,12 @@ function InventoryTable({ rows, freshPrice, updatePortfolioEntry, onRemove, onSe
 
   return (
     <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', fontSize: 10.5, color: C.textFaint, marginBottom: 8 }}>
+        <span>Preisfarbe nach Zustand:</span>
+        {['NM', 'EX', 'GD', 'LP', 'PL', 'PO'].map((c) => (
+          <span key={c} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span style={{ width: 9, height: 9, borderRadius: '50%', background: conditionColor(c) }} />{c}</span>
+        ))}
+      </div>
       <div style={{ overflowX: 'auto' }}>
         <div style={{ minWidth: 760 }}>
           <div style={{ display: 'grid', gridTemplateColumns: cols, gap: 8, padding: '6px 10px', fontSize: 10, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase' }}>
@@ -251,13 +257,13 @@ function InventoryTable({ rows, freshPrice, updatePortfolioEntry, onRemove, onSe
                   <div style={{ fontSize: 12.5, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.card?.name}</div>
                   <div style={{ fontSize: 10, color: C.textFaint }}>{e.card?.set}{e.card?.number ? ` · ${e.card.number}` : ''}</div>
                 </div>
-                <select defaultValue={e.condition || 'NM'} onChange={(ev) => updatePortfolioEntry(e.id, { condition: ev.target.value })} style={cell}>
+                <select defaultValue={e.condition || 'NM'} onChange={(ev) => updatePortfolioEntry(e.id, { condition: ev.target.value })} style={{ ...cell, color: conditionColor(e.condition), fontWeight: 700 }}>
                   {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <input defaultValue={e.location || ''} placeholder="—" onBlur={(ev) => updatePortfolioEntry(e.id, { location: ev.target.value })} style={cell} />
                 <input type="number" min="1" defaultValue={qty} onBlur={(ev) => updatePortfolioEntry(e.id, { quantity: ev.target.value })} style={{ ...cell, textAlign: 'right' }} />
                 <input type="number" step="0.01" defaultValue={e.actualBuyPrice} onBlur={(ev) => updatePortfolioEntry(e.id, { actualBuyPrice: ev.target.value })} style={{ ...cell, textAlign: 'right' }} />
-                <div style={{ textAlign: 'right', fontSize: 12.5, fontWeight: 700 }}>{fmtEur(cur)}</div>
+                <div style={{ textAlign: 'right', fontSize: 12.5, fontWeight: 700, color: conditionColor(e.condition) }} title={`Preisfarbe nach Zustand ${e.condition || 'NM'}`}>{fmtEur(cur)}</div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: 12.5, fontWeight: 800 }}>{fmtEur(value)}</div>
                   <div style={{ fontSize: 10.5, fontWeight: 700, color: pnl >= 0 ? C.green : C.red }}>{pnl >= 0 ? '+' : ''}{fmtEur(pnl)}</div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Info, TrendingUp, Calculator, Tag as TagIcon, Globe, Award } from 'lucide-react';
+import { X, Info, TrendingUp, Calculator, Tag as TagIcon, Globe, Award, Receipt } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, riskColor, riskLabel, rarityColor, trendColor, trendIcon, trendLabel } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtPct, fmtDate, fmtMoney, fmtUsd } from '../lib/format.js';
@@ -18,7 +18,7 @@ const mpBtn = (color) => ({
 });
 
 export default function CardModal({ card, initialTab = 'overview', onClose }) {
-  const { notes, tags, settings, addToPortfolio, saveNote, addTag, removeTag, addAlert } = useStore();
+  const { notes, tags, settings, addToPortfolio, saveNote, addTag, removeTag, addAlert, inBuylist, addToBuylist } = useStore();
   const sectionLabel = { fontSize: 11, color: C.textFaint, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' };
   const addMode = initialTab === 'buy';
   const [tab, setTab] = useState(addMode ? 'overview' : initialTab);
@@ -163,6 +163,10 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                   <a href={links.priceCharting} target="_blank" rel="noopener noreferrer" style={mpBtn('#7c3aed')}>📊 PriceCharting →</a>
                   <a href={links.psa} target="_blank" rel="noopener noreferrer" style={mpBtn('#ec4899')}>🏆 PSA Population →</a>
                 </div>
+                <button onClick={() => addToBuylist(card)} title="Zur Einkaufsliste hinzufügen"
+                  style={{ marginTop: 6, width: '100%', padding: '9px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: inBuylist(card.id) ? C.gold + '22' : '#ffd70012', color: C.gold, border: `1px solid ${C.gold}${inBuylist(card.id) ? '66' : '33'}` }}>
+                  <Receipt size={14} /> {inBuylist(card.id) ? 'In der Buylist ✓' : 'Zur Buylist hinzufügen'}
+                </button>
               </div>
 
               <div style={{ marginTop: 14 }}>
@@ -254,7 +258,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                 </div>
               )}
               <div style={{ fontSize: 11, color: C.textFaint }}>
-                Nur Cardmarket ist ein Live-Preis. eBay/TCGplayer sind transparente Schätzungen (Cardmarket-Preis × Venue-Aufschlag × Wechselkurs, in den Einstellungen anpassbar). Mit „prüfen" siehst du den echten aktuellen Preis.
+                Nur Cardmarket ist ein Live-Preis. eBay/TCGplayer sind transparente Schätzungen (Cardmarket-Preis × Venue-Aufschlag × Wechselkurs, in den Einstellungen anpassbar) mit „prüfen"-Direktlink zur Verifikation. Echte Live-Werte kommen automatisch, sobald die Cardmarket-API-Secrets gesetzt sind (Anleitung in der README).
               </div>
             </>
           )}
