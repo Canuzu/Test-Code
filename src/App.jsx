@@ -1,5 +1,5 @@
-import { useState, lazy, Suspense } from 'react';
-import { Settings as Cog, GitCompare, Download, Sun, Moon, Crown } from 'lucide-react';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { Settings as Cog, GitCompare, Download, Sun, Moon, Crown, Smartphone } from 'lucide-react';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
 import { isPro } from './lib/pro.js';
@@ -43,12 +43,12 @@ const exportCSV = (cards) => {
 };
 
 const TABS = [
-  { id: 'discover', label: '🔍 Entdecken' },
-  { id: 'analytics', label: '📊 Analyse' },
-  { id: 'watchlist', label: '⭐ Watchlist' },
-  { id: 'portfolio', label: '📦 Sammlung' },
-  { id: 'buylist', label: '🧾 Buylist' },
-  { id: 'alerts', label: '🔔 Alerts' },
+  { id: 'discover', label: '🔍 Entdecken', icon: '🔍', short: 'Suchen' },
+  { id: 'analytics', label: '📊 Analyse', icon: '📊', short: 'Analyse' },
+  { id: 'watchlist', label: '⭐ Watchlist', icon: '⭐', short: 'Merken' },
+  { id: 'portfolio', label: '📦 Sammlung', icon: '📦', short: 'Bestand' },
+  { id: 'buylist', label: '🧾 Buylist', icon: '🧾', short: 'Buylist' },
+  { id: 'alerts', label: '🔔 Alerts', icon: '🔔', short: 'Alerts' },
 ];
 
 function Shell() {
@@ -59,6 +59,17 @@ function Shell() {
   const [showSettings, setShowSettings] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
+  const [installEvt, setInstallEvt] = useState(null);
+
+  // PWA install prompt: capture the event so we can offer an install button.
+  useEffect(() => {
+    const onBip = (e) => { e.preventDefault(); setInstallEvt(e); };
+    const onInstalled = () => setInstallEvt(null);
+    window.addEventListener('beforeinstallprompt', onBip);
+    window.addEventListener('appinstalled', onInstalled);
+    return () => { window.removeEventListener('beforeinstallprompt', onBip); window.removeEventListener('appinstalled', onInstalled); };
+  }, []);
+  const install = async () => { if (!installEvt) return; installEvt.prompt(); await installEvt.userChoice; setInstallEvt(null); };
 
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
   const game = getGame(settings.game);
@@ -91,6 +102,11 @@ function Shell() {
           <button onClick={toggleTheme} title={theme === 'dark' ? 'Helles Design' : 'Dunkles Design'} className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center' }}>
             {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
           </button>
+          {installEvt && (
+            <button onClick={install} title="Als App installieren" className="control" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: C.green2, borderColor: C.green2 + '55' }}>
+              <Smartphone size={13} /> <span style={{ fontSize: 11, fontWeight: 700 }}>App</span>
+            </button>
+          )}
           <button onClick={() => setShowPricing(true)} title={pro ? 'Pro aktiv' : 'Pro freischalten'} className="control" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: pro ? C.gold : C.textSoft, borderColor: pro ? C.gold + '55' : undefined }}>
             <Crown size={13} /> <span style={{ fontSize: 11, fontWeight: 700 }}>{pro ? 'Pro ✓' : 'Pro'}</span>
           </button>
@@ -100,8 +116,8 @@ function Shell() {
         </div>
       </header>
 
-      {/* Tab nav */}
-      <nav style={{ display: 'flex', background: C.bg1, borderBottom: `1px solid ${C.lineStrong}`, padding: '0 16px', overflowX: 'auto', position: 'sticky', top: 63, zIndex: 49 }}>
+      {/* Tab nav (desktop / tablet — replaced by a bottom bar on phones) */}
+      <nav className="desktop-nav" style={{ display: 'flex', background: C.bg1, borderBottom: `1px solid ${C.lineStrong}`, padding: '0 16px', overflowX: 'auto', position: 'sticky', top: 63, zIndex: 49 }}>
         {TABS.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '12px 18px', border: 'none', background: 'none', color: tab === t.id ? C.gold : C.textFaint, borderBottom: tab === t.id ? `2px solid ${C.gold}` : '2px solid transparent', cursor: 'pointer', fontWeight: tab === t.id ? 700 : 500, fontSize: 13, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
             {t.label}
@@ -127,10 +143,23 @@ function Shell() {
       </footer>
 
       {compareList.length > 0 && (
-        <button onClick={() => setShowCompare(true)} style={{ position: 'fixed', bottom: 24, right: 24, background: 'linear-gradient(135deg, #448aff, #6366f1)', color: '#fff', border: 'none', borderRadius: 50, padding: '12px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 20px #448aff66', zIndex: 80 }}>
+        <button onClick={() => setShowCompare(true)} className="fab-compare" style={{ position: 'fixed', bottom: 24, right: 24, background: 'linear-gradient(135deg, #448aff, #6366f1)', color: '#fff', border: 'none', borderRadius: 50, padding: '12px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 20px #448aff66', zIndex: 80 }}>
           <GitCompare size={16} /> Vergleichen ({compareList.length}/3)
         </button>
       )}
+
+      {/* Mobile bottom navigation */}
+      <nav className="bottom-nav">
+        {TABS.map((t) => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{ color: tab === t.id ? C.gold : C.textFaint }}>
+            <span style={{ fontSize: 18, lineHeight: 1, position: 'relative' }}>
+              {t.icon}
+              {badge[t.id] > 0 && <span style={{ position: 'absolute', top: -5, right: -10, background: C.red, color: '#fff', fontSize: 8, fontWeight: 800, borderRadius: 8, padding: '0 4px', lineHeight: '13px' }}>{badge[t.id]}</span>}
+            </span>
+            <span style={{ fontSize: 9.5, fontWeight: tab === t.id ? 700 : 600 }}>{t.short}</span>
+          </button>
+        ))}
+      </nav>
 
       <Suspense fallback={<Loader />}>
         {modal && <CardModal card={modal.card} initialTab={modal.tab} onClose={() => setModal(null)} />}

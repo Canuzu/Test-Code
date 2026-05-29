@@ -27,7 +27,7 @@
 - [x] 7. Massenimport (CSV-Wizard + Barcode-Scanner-Progressive-Enhancement)
 - [x] 8. Subscription-Modell (Free/Pro, Feature-Gating, Pricing-Seite)
 - [x] 9. Cardmarket-API (offiziell) — Provider + Build-Skript + Doku (env-gated)
-- [ ] 10. PWA / Mobile-App (Manifest, Service-Worker, Install, Responsive)
+- [x] 10. PWA / Mobile-App (Manifest, Service-Worker, Install, Responsive)
 
 ## Arbeitslog (neueste zuletzt)
 - Init: Codebase analysiert, Plan erstellt, PROGRESS.md angelegt.
@@ -40,6 +40,9 @@
 - #7 Massenimport ✓: `src/lib/csv.js` (Parser + Spalten-Auto-Mapping + Vorlage) + `src/components/ImportModal.jsx` (CSV: Datei/Einfügen → Mapping → Fuzzy-Match → Vorschau → Import via `addManyToPortfolio`; Barcode: BarcodeDetector progressive mit Kamera) + App-Verdrahtung über Sammlung-`onImport`.
 - #8 Subscription ✓: `src/lib/pro.js` (PLANS, PRO_FEATURES, isPro) + `src/components/PricingModal.jsx` (Free/Pro, monatlich/jährlich, Demo-Unlock) + Gates an Buylist/Alerts/Import + Pro-Insight-Panel in Analytics + Crown-Button im Header. Billing-Backend andockbar (setzt nur `settings.pro`).
 - #9 Cardmarket-API ✓: `src/data/providers/cardmarket.js` (reine MKM→Card-Normalisierung) + `scripts/fetch-cardmarket.mjs` (OAuth1-HMAC-SHA1, env-gated, getestet: skip ohne Creds, Signatur-Call mit Dummy = 403 sauber gefangen) + Merge in `fetch-prices.mjs` + Workflow-Env CM_*. Aktiviert sich automatisch bei gesetzten Secrets.
+- #10 PWA ✓: `scripts/make-icons.mjs` (echte PNG-Icons 192/512/maskable, Blitz auf Dunkel) + `public/manifest.webmanifest` + `public/sw.js` (network-first Navigation/cards.json, cache-first Assets, cross-origin unangetastet) + SW-Registrierung in main.jsx + Apple/Manifest-Meta + Install-Button (beforeinstallprompt) + mobile Bottom-Nav + Responsive-CSS (Safe-Areas, Tap-Targets). dist enthält manifest/sw/icons.
+
+## ✅ ALLE 10 FEATURES UMGESETZT, GEBAUT & COMMITTET.
 
 ## Hinweise / offene Punkte für später
 - Deploy-Workflow triggert nur auf `main` (+ alter Branch). Für Live-Schaltung
