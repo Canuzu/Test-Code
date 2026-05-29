@@ -62,7 +62,8 @@
 - [x] G. Farben übersichtlicher (mehr Kontrast) ohne Design-Umbau
 
 ### Folge-Batch 2 — Details
-- F ✓: `scripts/fetch-prices.mjs` → `NEWEST_SETS=4` (vorher 2), `HARD_CAP=2600`; holt jede Karte der 4 neuesten Sets + kuratierte Breite. README aktualisiert. (Lokal nicht testbar: pokemontcg.io in Sandbox 403; Skript fängt es ab. Greift im CI.)
+- F ✓ (überarbeitet): `scripts/fetch-prices.mjs` holt jetzt **ALLE Sets von neu→alt**, **jede Karte je Set vollständig**, ein Set nach dem anderen; Stopp nur an Set-Grenze bei `HARD_CAP=9000`. Kuratierte Breite + 4-Set-Limit entfernt (sie verletzten die Reihenfolge). `allSetsDesc()`, per-Set try/catch (Rate-Limit bricht nicht alles ab), `allCardsInSet` bis 6 Seiten. README: API-Key empfohlen. (Lokal 403/Sandbox, greift im CI.)
+- SW-Update: `public/sw.js` Cache `kwde-v1`→`kwde-v2`, damit veraltete zwischengespeicherte Versionen beim nächsten Laden ersetzt werden (Fix für „sehe keine Karten" bei Rückkehrern).
 - G ✓: Kontrast erhöht in `theme.js` (DARK+LIGHT) und `index.css` (synchron): hellere/dunklere Sekundärtexte (textSoft/Dim/Faint/Ghost) + etwas stärkere Linien. Akzente & Layout unverändert.
 - E ✓: `src/lib/auth.js` (lokale Konten, PBKDF2-SHA256 via Web Crypto, Registry/Session in localStorage) + Storage-Namespace in `storage.js` (`setNamespace`; Gast='' = bisherige Daten) + Store: `loadAll()` (Profil-Swap), `account`/`login`/`register`/`logout`, Namespace beim Mount aus Session. `src/components/AuthModal.jsx` + Account-Button im Header. Headless verifiziert: Datentrennung PASS (A=1, Gast=0, A-Re-Login=1), 0 App-Fehler.
 

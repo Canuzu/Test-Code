@@ -112,15 +112,19 @@ Deploy** (im GitHub-Actions-Workflow, ohne CORS-Beschränkung) und schreibt sie
 nach `public/data/cards.json`. Die App lädt diese Datei dann **same-origin** —
 inklusive echter Bilder und exakter Cardmarket-Produktlinks.
 
+- **Umfang:** Es werden **alle Sets von neu nach alt** aufgenommen, **jede Karte
+  je Set vollständig**, ein Set nach dem anderen — bis zur Obergrenze `HARD_CAP`
+  (Stopp nur an Set-Grenzen, nie mitten in einem Set). Reicht das Anfragelimit
+  nicht für alle Sets, sind zumindest die **neuesten Sets komplett** enthalten.
 - **Aktualisierung:** Der Workflow läuft bei jedem Push **und täglich per Cron**
   (`0 5 * * *`) → die Preise sind täglich frisch (Cardmarket aktualisiert ohnehin
   nur täglich).
 - **Ohne Netz / lokal:** Gibt es keine `cards.json`, fällt die App automatisch auf
   die eingebauten Beispieldaten zurück.
-- **Optionaler API-Key:** Für höhere Limits einen kostenlosen Key auf
-  `pokemontcg.io/dashboard` anlegen und als **GitHub-Secret `POKEMONTCG_API_KEY`**
-  hinterlegen (Repo → Settings → Secrets and variables → Actions). Das Skript
-  funktioniert mit und ohne Key.
+- **API-Key empfohlen:** Für viele Sets das Anfragelimit anheben — kostenlosen Key
+  auf `pokemontcg.io/dashboard` anlegen und als **GitHub-Secret
+  `POKEMONTCG_API_KEY`** hinterlegen (Repo → Settings → Secrets and variables →
+  Actions). Ohne Key werden weniger (die neuesten) Sets geladen.
 
 Lokal kann der Snapshot mit `node scripts/fetch-prices.mjs` erzeugt werden
 (braucht Internetzugang zur API).
