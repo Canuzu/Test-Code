@@ -16,6 +16,7 @@ const CompareModal = lazy(() => import('./components/CompareModal.jsx'));
 const SettingsModal = lazy(() => import('./components/SettingsModal.jsx'));
 const BuylistView = lazy(() => import('./components/BuylistView.jsx'));
 const AlertsView = lazy(() => import('./components/AlertsView.jsx'));
+const ImportModal = lazy(() => import('./components/ImportModal.jsx'));
 
 function Loader() {
   return (
@@ -54,6 +55,7 @@ function Shell() {
   const [modal, setModal] = useState(null); // { card, tab }
   const [showCompare, setShowCompare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
   const game = getGame(settings.game);
@@ -106,7 +108,7 @@ function Shell() {
         {tab === 'discover' && <Discover onOpen={onOpen} />}
         {tab === 'analytics' && <Suspense fallback={<Loader />}><Analytics onOpen={onOpen} /></Suspense>}
         {tab === 'watchlist' && <WatchlistView onOpen={onOpen} />}
-        {tab === 'portfolio' && <PortfolioView />}
+        {tab === 'portfolio' && <PortfolioView onImport={() => setShowImport(true)} />}
         {tab === 'buylist' && <Suspense fallback={<Loader />}><BuylistView /></Suspense>}
         {tab === 'alerts' && <Suspense fallback={<Loader />}><AlertsView /></Suspense>}
       </main>
@@ -127,6 +129,7 @@ function Shell() {
         {modal && <CardModal card={modal.card} initialTab={modal.tab} onClose={() => setModal(null)} />}
         {showCompare && <CompareModal onClose={() => setShowCompare(false)} />}
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+        {showImport && <ImportModal onClose={() => setShowImport(false)} />}
       </Suspense>
 
       {toast && (
