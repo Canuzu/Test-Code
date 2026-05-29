@@ -36,4 +36,8 @@ export const KEYS = {
   notes: 'notes',
   tags: 'tags',
   settings: 'settings',
+  priceHistory: 'price_history',
+  alerts: 'alerts',
+  alertLog: 'alert_log',
+  buylist: 'buylist',
 };

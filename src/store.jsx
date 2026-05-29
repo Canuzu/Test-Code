@@ -26,6 +26,7 @@ export function StoreProvider({ children }) {
   const [sold, setSold] = useState([]);
   const [notes, setNotes] = useState({});
   const [tags, setTags] = useState({});
+  const [priceHistory, setPriceHistory] = useState({});
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
 
   const [compareList, setCompareList] = useState([]);
@@ -50,6 +51,7 @@ export function StoreProvider({ children }) {
     const sl = store.get(KEYS.sold);
     const nt = store.get(KEYS.notes);
     const tg = store.get(KEYS.tags);
+    const ph = store.get(KEYS.priceHistory);
     const st = store.get(KEYS.settings);
     const cache = store.get(KEYS.cards);
     if (Array.isArray(wl)) setWatchlist(wl);
@@ -57,6 +59,7 @@ export function StoreProvider({ children }) {
     if (Array.isArray(sl)) setSold(sl);
     if (nt && typeof nt === 'object') setNotes(nt);
     if (tg && typeof tg === 'object') setTags(tg);
+    if (ph && typeof ph === 'object') setPriceHistory(ph);
     const s = st && typeof st === 'object' ? { ...DEFAULT_SETTINGS, ...st } : DEFAULT_SETTINGS;
     if (st && typeof st === 'object') setSettings(s);
 
@@ -82,6 +85,7 @@ export function StoreProvider({ children }) {
   useEffect(() => { store.set(KEYS.sold, sold); }, [sold]);
   useEffect(() => { store.set(KEYS.notes, notes); }, [notes]);
   useEffect(() => { store.set(KEYS.tags, tags); }, [tags]);
+  useEffect(() => { store.set(KEYS.priceHistory, priceHistory); }, [priceHistory]);
   useEffect(() => { store.set(KEYS.settings, settings); }, [settings]);
 
   // ---- derived ----------------------------------------------------------
@@ -98,6 +102,29 @@ export function StoreProvider({ children }) {
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2600);
   }, []);
+
+  // ---- price-history accumulation --------------------------------------
+  // Appends one observation per card per snapshot date, so the price chart
+  // gains genuine measured points over time (bounded per card). The modelled
+  // curve in lib/priceHistory.js fills in everything before these points.
+  const accumulateHistory = useCallback((list, ts) => {
+    const day = new Date(ts).toISOString().slice(0, 10);
+    setPriceHistory((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const c of list) {
+        const price = c?.prices?.trend ?? c?.prices?.market ?? c?.prices?.avg7;
+        if (price == null) continue;
+        const arr = next[c.id] || [];
+        if (arr.length && arr[arr.length - 1].d === day) continue; // already today
+        next[c.id] = [...arr, { d: day, p: Math.round(price * 100) / 100 }].slice(-160);
+        changed = true;
+      }
+      return changed ? next : prev;
+    });
+  }, []);
+
+  const getPriceHistory = useCallback((cardId) => priceHistory[cardId] || [], [priceHistory]);
 
   // ---- data fetching ----------------------------------------------------
   // Loads the static daily snapshot baked into the site at deploy time.
@@ -116,6 +143,7 @@ export function StoreProvider({ children }) {
       setSource('snapshot');
       setLastUpdated(new Date(ts));
       store.set(KEYS.cards, { cards: list, ts });
+      accumulateHistory(list, ts);
       if (!silent) showToast(`✓ Aktuelle Marktdaten geladen · ${list.length} Karten`);
       return true;
     } catch (e) {
@@ -124,7 +152,7 @@ export function StoreProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [showToast]);
+  }, [showToast, accumulateHistory]);
 
   const loadSample = useCallback(() => {
     setRawCards(SAMPLE_CARDS);
@@ -231,6 +259,7 @@ export function StoreProvider({ children }) {
     saveNote, addTag, removeTag,
     toggleCompare, clearCompare,
     updateSettings, showToast, freshPrice,
+    getPriceHistory,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

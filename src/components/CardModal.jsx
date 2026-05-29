@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { X, Info, TrendingUp, Calculator, Tag as TagIcon } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, riskColor, riskLabel, rarityColor, trendColor, trendIcon, trendLabel } from '../lib/theme.js';
@@ -7,6 +6,7 @@ import { fmtEur, fmtNum, fmtPct, fmtDate } from '../lib/format.js';
 import { calcNet, PLATFORM_FEES } from '../lib/fees.js';
 import { marketLinks } from '../lib/marketLinks.js';
 import { CardImage, Pill, ChangeBadge, ScoreBadge, Spark } from './ui.jsx';
+import PriceChart from './PriceChart.jsx';
 
 const mpBtn = (color) => ({
   padding: '10px', borderRadius: 8, textAlign: 'center', textDecoration: 'none',
@@ -150,19 +150,9 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
 
           {tab === 'value' && (
             <>
-              <div style={sectionLabel}>📈 Preisverlauf (Cardmarket-Durchschnitte → Trend)</div>
-              <div style={{ background: C.bg1, borderRadius: 10, padding: '14px 8px 6px', marginBottom: 14 }}>
-                {labeled.length >= 2 ? (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={labeled} margin={{ top: 6, right: 12, left: -8, bottom: 0 }}>
-                      <CartesianGrid stroke={C.lineStrong} strokeDasharray="3 3" />
-                      <XAxis dataKey="k" tick={{ fill: C.textDim, fontSize: 11 }} />
-                      <YAxis tick={{ fill: C.textDim, fontSize: 11 }} domain={['auto', 'auto']} width={48} tickFormatter={(v) => `€${v}`} />
-                      <Tooltip contentStyle={{ background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 8 }} formatter={(v) => [fmtEur(v), 'Preis']} />
-                      <Line type="monotone" dataKey="v" stroke={C.gold} strokeWidth={2.5} dot={{ r: 4, fill: C.gold }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : <div style={{ color: C.textFaint, fontSize: 12, padding: 20, textAlign: 'center' }}>Nicht genug Verlaufsdaten.</div>}
+              <div style={sectionLabel}>📈 Preisverlauf · interaktiv (Cardmarket EU)</div>
+              <div style={{ marginBottom: 14 }}>
+                <PriceChart card={card} defaultRange="6M" />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
