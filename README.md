@@ -43,6 +43,10 @@ echte Live-Preise statt KI-Schätzungen, `localStorage` statt Artifact-Storage.
 
 **Plattform**
 
+- **Lokale Konten**: Login/Registrierung im Browser (Passwort PBKDF2-gehasht),
+  pro Konto getrennte Daten (Watchlist/Sammlung/Buylist/Alerts/Einstellungen) –
+  ideal für ein geteiltes Ladengerät. Kein Server nötig; ein echtes Backend
+  (geräteübergreifend) lässt sich später andocken.
 - **PWA / Mobile**: installierbar, offline-fähig (Service-Worker), mobile
   Bottom-Navigation, App-Icons.
 - **Offizielle Cardmarket-API** als optionale Preisquelle (siehe unten).

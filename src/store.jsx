@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef } from 'react';
-import { store, KEYS } from './lib/storage.js';
+import { store, KEYS, setNamespace } from './lib/storage.js';
 import { enrich } from './lib/metrics.js';
 import { ruleHit, fireNotification } from './lib/alerts.js';
+import { currentAccount, getSession, register as authRegister, login as authLogin, logout as authLogout } from './lib/auth.js';
 import { applyTheme } from './lib/theme.js';
 import { getGame } from './data/providers/index.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
@@ -32,6 +33,7 @@ export function StoreProvider({ children }) {
   const [alertLog, setAlertLog] = useState([]);
   const [buylist, setBuylist] = useState({ rules: null, items: [] });
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [account, setAccount] = useState(null); // local account profile or null (guest)
 
   const [compareList, setCompareList] = useState([]);
   const [toast, setToast] = useState(null);
@@ -49,8 +51,10 @@ export function StoreProvider({ children }) {
     setSettings((prev) => ({ ...prev, theme: prev.theme === 'light' ? 'dark' : 'light' }));
   }, []);
 
-  // ---- load persisted state once, then auto-refresh if stale ------------
-  useEffect(() => {
+  // Loads ALL persisted user data for the CURRENT namespace into state. Always
+  // sets every field (to a default when missing) so switching accounts cleanly
+  // swaps profiles instead of leaking the previous account's data.
+  const loadAll = useCallback(() => {
     const wl = store.get(KEYS.watchlist);
     const pf = store.get(KEYS.portfolio);
     const sl = store.get(KEYS.sold);
@@ -61,19 +65,28 @@ export function StoreProvider({ children }) {
     const alg = store.get(KEYS.alertLog);
     const bl = store.get(KEYS.buylist);
     const st = store.get(KEYS.settings);
-    const cache = store.get(KEYS.cards);
-    if (Array.isArray(wl)) setWatchlist(wl);
-    if (Array.isArray(pf)) setPortfolio(pf);
-    if (Array.isArray(sl)) setSold(sl);
-    if (nt && typeof nt === 'object') setNotes(nt);
-    if (tg && typeof tg === 'object') setTags(tg);
-    if (ph && typeof ph === 'object') setPriceHistory(ph);
-    if (Array.isArray(al)) setAlerts(al);
-    if (Array.isArray(alg)) setAlertLog(alg);
-    if (bl && typeof bl === 'object') setBuylist({ rules: bl.rules || null, items: Array.isArray(bl.items) ? bl.items : [] });
-    const s = st && typeof st === 'object' ? { ...DEFAULT_SETTINGS, ...st } : DEFAULT_SETTINGS;
-    if (st && typeof st === 'object') setSettings(s);
+    setWatchlist(Array.isArray(wl) ? wl : []);
+    setPortfolio(Array.isArray(pf) ? pf : []);
+    setSold(Array.isArray(sl) ? sl : []);
+    setNotes(nt && typeof nt === 'object' ? nt : {});
+    setTags(tg && typeof tg === 'object' ? tg : {});
+    setPriceHistory(ph && typeof ph === 'object' ? ph : {});
+    setAlerts(Array.isArray(al) ? al : []);
+    setAlertLog(Array.isArray(alg) ? alg : []);
+    setBuylist(bl && typeof bl === 'object' ? { rules: bl.rules || null, items: Array.isArray(bl.items) ? bl.items : [] } : { rules: null, items: [] });
+    setSettings(st && typeof st === 'object' ? { ...DEFAULT_SETTINGS, ...st } : DEFAULT_SETTINGS);
+    firingRef.current = {}; // reset alert debounce when switching profiles
+  }, []);
 
+  // ---- load persisted state once, then auto-refresh if stale ------------
+  useEffect(() => {
+    // Point storage at the signed-in account's namespace (guest = '' = the
+    // original keys, so existing data is preserved).
+    setNamespace(getSession() || '');
+    setAccount(currentAccount());
+    loadAll();
+
+    const cache = store.get(KEYS.cards);
     if (cache && Array.isArray(cache.cards) && cache.cards.length) {
       setRawCards(cache.cards);
       setSource('cache');
@@ -136,6 +149,21 @@ export function StoreProvider({ children }) {
   const removeFromBuylist = useCallback((id) => setBuylist((bl) => ({ ...bl, items: bl.items.filter((i) => i.id !== id) })), []);
   const setBuylistItems = useCallback((updater) => setBuylist((bl) => ({ ...bl, items: typeof updater === 'function' ? updater(bl.items) : updater })), []);
   const setBuylistRules = useCallback((updater) => setBuylist((bl) => ({ ...bl, rules: typeof updater === 'function' ? updater(bl.rules) : updater })), []);
+
+  // ---- local accounts ---------------------------------------------------
+  const login = useCallback(async (creds) => {
+    const res = await authLogin(creds);
+    if (res.ok) { setNamespace(res.account.id); setAccount(res.account); loadAll(); showToast(`👤 Angemeldet: ${res.account.name}`); }
+    return res;
+  }, [loadAll, showToast]);
+  const register = useCallback(async (creds) => {
+    const res = await authRegister(creds);
+    if (res.ok) { setNamespace(res.account.id); setAccount(res.account); loadAll(); showToast(`✅ Konto erstellt: ${res.account.name}`); }
+    return res;
+  }, [loadAll, showToast]);
+  const logout = useCallback(() => {
+    authLogout(); setNamespace(''); setAccount(null); loadAll(); showToast('Abgemeldet · Gast-Profil');
+  }, [loadAll, showToast]);
 
   // Evaluate alerts whenever fresh prices or the rules change. Fires once per
   // rule on the false→true transition (firingRef debounces repeats) and emits an
@@ -350,6 +378,7 @@ export function StoreProvider({ children }) {
     getPriceHistory,
     alerts, alertLog, addAlert, removeAlert, toggleAlert, updateAlert, clearAlertLog,
     buylist, inBuylist, addToBuylist, removeFromBuylist, setBuylistItems, setBuylistRules,
+    account, login, register, logout,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

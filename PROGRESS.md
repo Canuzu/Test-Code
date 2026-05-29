@@ -57,14 +57,14 @@
 - D ✓: Hinweis-Footer in `AlertsView` (E-Mail braucht Backend), erweiterte Märkte-Notiz in `CardModal` (Auto-Live bei CM-Secrets); Pro-Demo-Hinweis steht bereits in `PricingModal`.
 
 ## Folge-Batch 2 (Accounts, mehr Karten, Farben)
-- [ ] E. User-Accounts: lokales Login/Registrierung, pro Konto getrennte Daten (No-Backend, gekennzeichnet)
+- [x] E. User-Accounts: lokales Login/Registrierung, pro Konto getrennte Daten (No-Backend, gekennzeichnet)
 - [x] F. Mehr Karten: Build holt die **4 neuesten Sets** mit **jeder** Karte
 - [x] G. Farben übersichtlicher (mehr Kontrast) ohne Design-Umbau
 
 ### Folge-Batch 2 — Details
 - F ✓: `scripts/fetch-prices.mjs` → `NEWEST_SETS=4` (vorher 2), `HARD_CAP=2600`; holt jede Karte der 4 neuesten Sets + kuratierte Breite. README aktualisiert. (Lokal nicht testbar: pokemontcg.io in Sandbox 403; Skript fängt es ab. Greift im CI.)
 - G ✓: Kontrast erhöht in `theme.js` (DARK+LIGHT) und `index.css` (synchron): hellere/dunklere Sekundärtexte (textSoft/Dim/Faint/Ghost) + etwas stärkere Linien. Akzente & Layout unverändert.
-- E: (in Arbeit)
+- E ✓: `src/lib/auth.js` (lokale Konten, PBKDF2-SHA256 via Web Crypto, Registry/Session in localStorage) + Storage-Namespace in `storage.js` (`setNamespace`; Gast='' = bisherige Daten) + Store: `loadAll()` (Profil-Swap), `account`/`login`/`register`/`logout`, Namespace beim Mount aus Session. `src/components/AuthModal.jsx` + Account-Button im Header. Headless verifiziert: Datentrennung PASS (A=1, Gast=0, A-Re-Login=1), 0 App-Fehler.
 
 ## Hinweise / offene Punkte für später
 - Deploy-Workflow triggert nur auf `main` (+ alter Branch). Für Live-Schaltung

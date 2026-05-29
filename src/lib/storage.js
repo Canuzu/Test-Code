@@ -1,11 +1,20 @@
 // Thin localStorage wrapper (replaces the artifact-only window.storage from the
-// template). JSON in / JSON out, namespaced, and safe if storage is unavailable.
+// template). JSON in / JSON out, and safe if storage is unavailable.
+//
+// All app data is stored under PREFIX + <namespace> + key. The namespace lets a
+// local user account keep its own data: guest = '' (the original, un-namespaced
+// keys, so existing data is preserved), a logged-in account = `acct_<id>_`.
 const PREFIX = 'kwde_';
+let ns = '';
+
+export const setNamespace = (n) => { ns = n ? `${n}_` : ''; };
+export const getNamespace = () => ns;
+const fullKey = (key) => `${PREFIX}${ns}${key}`;
 
 export const store = {
   get(key, fallback = null) {
     try {
-      const raw = localStorage.getItem(PREFIX + key);
+      const raw = localStorage.getItem(fullKey(key));
       return raw == null ? fallback : JSON.parse(raw);
     } catch {
       return fallback;
@@ -13,7 +22,7 @@ export const store = {
   },
   set(key, value) {
     try {
-      localStorage.setItem(PREFIX + key, JSON.stringify(value));
+      localStorage.setItem(fullKey(key), JSON.stringify(value));
       return true;
     } catch {
       return false;
@@ -21,7 +30,7 @@ export const store = {
   },
   remove(key) {
     try {
-      localStorage.removeItem(PREFIX + key);
+      localStorage.removeItem(fullKey(key));
     } catch {
       /* ignore */
     }

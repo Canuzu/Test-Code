@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Settings as Cog, GitCompare, Download, Sun, Moon, Crown, Smartphone, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Settings as Cog, GitCompare, Download, Sun, Moon, Crown, Smartphone, ArrowLeft, ArrowRight, User } from 'lucide-react';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
 import { isPro } from './lib/pro.js';
@@ -19,6 +19,7 @@ const BuylistView = lazy(() => import('./components/BuylistView.jsx'));
 const AlertsView = lazy(() => import('./components/AlertsView.jsx'));
 const ImportModal = lazy(() => import('./components/ImportModal.jsx'));
 const PricingModal = lazy(() => import('./components/PricingModal.jsx'));
+const AuthModal = lazy(() => import('./components/AuthModal.jsx'));
 
 function Loader() {
   return (
@@ -52,13 +53,14 @@ const TABS = [
 ];
 
 function Shell() {
-  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, alerts } = useStore();
+  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, alerts, account } = useStore();
   const [tab, setTab] = useState('discover');
   const [modal, setModal] = useState(null); // { card, tab }
   const [showCompare, setShowCompare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const [installEvt, setInstallEvt] = useState(null);
 
   // PWA install prompt: capture the event so we can offer an install button.
@@ -82,7 +84,7 @@ function Shell() {
   const navView = {
     tab,
     modal: modal ? { id: modal.card.id, tab: modal.tab } : null,
-    showCompare, showSettings, showImport, showPricing,
+    showCompare, showSettings, showImport, showPricing, showAuth,
   };
 
   useEffect(() => {
@@ -95,6 +97,7 @@ function Shell() {
       setShowSettings(!!v.showSettings);
       setShowImport(!!v.showImport);
       setShowPricing(!!v.showPricing);
+      setShowAuth(!!v.showAuth);
       if (v.modal) {
         const c = cardsRef.current.find((x) => x.id === v.modal.id);
         setModal(c ? { card: c, tab: v.modal.tab } : null);
@@ -109,7 +112,7 @@ function Shell() {
     if (isPopping.current) { isPopping.current = false; return; }
     window.history.pushState({ __kw: navView }, '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, modal, showCompare, showSettings, showImport, showPricing]);
+  }, [tab, modal, showCompare, showSettings, showImport, showPricing, showAuth]);
 
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
   const game = getGame(settings.game);
@@ -153,6 +156,12 @@ function Shell() {
           )}
           <button onClick={() => setShowPricing(true)} title={pro ? 'Pro aktiv' : 'Pro freischalten'} className="control" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: pro ? C.gold : C.textSoft, borderColor: pro ? C.gold + '55' : undefined }}>
             <Crown size={13} /> <span style={{ fontSize: 11, fontWeight: 700 }}>{pro ? 'Pro ✓' : 'Pro'}</span>
+          </button>
+          <button onClick={() => setShowAuth(true)} title={account ? account.email : 'Anmelden'} className="control" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
+            {account
+              ? <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'linear-gradient(135deg,#ffd700,#ff6b35)', color: '#0c0c1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800 }}>{(account.name || account.email).slice(0, 1).toUpperCase()}</span>
+              : <User size={14} />}
+            <span style={{ fontSize: 11, fontWeight: 700, maxWidth: 84, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{account ? account.name : 'Anmelden'}</span>
           </button>
           <button onClick={() => setShowSettings(true)} title="Einstellungen" className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center' }}>
             <Cog size={14} />
@@ -211,6 +220,7 @@ function Shell() {
         {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
         {showImport && <ImportModal onClose={() => setShowImport(false)} />}
         {showPricing && <PricingModal onClose={() => setShowPricing(false)} />}
+        {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
       </Suspense>
 
       {toast && (
