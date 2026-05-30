@@ -19,14 +19,14 @@ const PRESETS = [
 ];
 
 const TABS = [
-  { id: 'sets', label: 'Sets', emoji: '🗂️' },
+  { id: 'start', label: 'Start', emoji: '🏠' },
   { id: 'singles', label: 'Singles', emoji: '🃏' },
   ...SEALED_CATEGORIES,
 ];
 
 export default function Discover({ onOpen }) {
   const { cards, loading, error, source, lastUpdated, fetchCards, loadSample, tags } = useStore();
-  const [cat, setCat] = useState('sets');
+  const [cat, setCat] = useState('start');
   const [selectedSet, setSelectedSet] = useState(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('score');
@@ -39,14 +39,18 @@ export default function Discover({ onOpen }) {
 
   const allTags = useMemo(() => [...new Set(Object.values(tags).flat())].sort(), [tags]);
 
-  // Mode: what the Singles/Sets area shows.
-  const mode = cat === 'sets' ? (selectedSet ? 'setdetail' : 'home')
-    : cat === 'singles' ? 'singles'
+  // Mode:
+  //  • 'home'      → Start tab: welcome animation + Top-Karten (no big card list)
+  //  • 'setlist'   → Singles tab: pick a set first (avoids dumping all cards)
+  //  • 'setdetail' → a set is open: its individual cards
+  //  • 'sealed'    → sealed-product categories
+  const mode = cat === 'start' ? 'home'
+    : cat === 'singles' ? (selectedSet ? 'setdetail' : 'setlist')
       : 'sealed';
   // A query in the always-visible search bar searches ALL cards (global),
   // regardless of the current category/set, and shows a results listing.
   const searching = search.trim().length > 0;
-  const listing = searching || mode === 'setdetail' || mode === 'singles';
+  const listing = searching || mode === 'setdetail';
 
   // ---- 5 highlights (shown as full cards on the Sets home) --------------
   const highlights = useMemo(() => {
@@ -178,11 +182,12 @@ export default function Discover({ onOpen }) {
         </div>
       )}
 
-      {/* Sets home: big highlight cards + set tiles */}
+      {/* Start: a cool Pokémon animation (replaces the big set list) + Top-Karten */}
       {!loading && mode === 'home' && !searching && (
         <>
+          <PokemonHero onBrowse={() => switchCat('singles')} />
           {highlights.length > 0 && (
-            <div style={{ marginBottom: 24 }}>
+            <div style={{ marginBottom: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
                 🌟 Top-Karten
                 <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 500 }}>die 5 stärksten Karten gerade</span>
@@ -194,11 +199,18 @@ export default function Discover({ onOpen }) {
               </div>
             </div>
           )}
+        </>
+      )}
 
-          <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-            🗂️ Alle Sets
-            <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 500 }}>klick ein Set für seine Karten</span>
+      {/* Singles: choose a set first — its individual cards load only on click,
+          so the page never has to render hundreds of cards at once. */}
+      {!loading && mode === 'setlist' && !searching && (
+        <>
+          <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+            🗂️ Sets
+            <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 500 }}>wähle ein Set – dann erscheinen die Einzelkarten</span>
           </div>
+          <div style={{ fontSize: 11.5, color: C.textDim, marginBottom: 14 }}>{cards.length} Karten in {sets.length} Sets · oder oben gezielt nach einer Karte suchen</div>
           {sets.length === 0
             ? <EmptyState icon="🃏" title="Keine Daten" hint="Klicke »Aktualisieren«, um aktuelle Karten zu laden." />
             : <SetTiles sets={sets} onSelect={setSelectedSet} />}
@@ -273,6 +285,62 @@ export default function Discover({ onOpen }) {
         </>
       )}
     </>
+  );
+}
+
+// Cool, self-contained Pokémon animation for the start page: a bouncing Poké
+// Ball that does the classic "catch" wiggle, a glowing centre button, floating
+// sparkles and a CTA into the set browser. Pure CSS/SVG — no network/assets.
+function PokemonHero({ onBrowse }) {
+  const sparks = [
+    { left: '12%', top: '24%', d: '0s', s: 9 },
+    { left: '84%', top: '30%', d: '.5s', s: 7 },
+    { left: '74%', top: '66%', d: '1.1s', s: 10 },
+    { left: '18%', top: '64%', d: '1.6s', s: 6 },
+    { left: '50%', top: '12%', d: '.8s', s: 6 },
+  ];
+  return (
+    <div className="poke-hero">
+      {sparks.map((sp, i) => (
+        <span key={i} className="poke-spark" style={{ left: sp.left, top: sp.top, width: sp.s, height: sp.s, animationDelay: sp.d }} />
+      ))}
+      <div className="poke-bounce">
+        <div className="poke-wiggle">
+          <svg width="148" height="148" viewBox="0 0 100 100" className="poke-ball" role="img" aria-label="Pokéball">
+            <defs>
+              <linearGradient id="pbTop" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ff6b6b" /><stop offset="100%" stopColor="#e01f1f" />
+              </linearGradient>
+              <linearGradient id="pbBot" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ffffff" /><stop offset="100%" stopColor="#dde2ef" />
+              </linearGradient>
+              <radialGradient id="pbBtn" cx="50%" cy="45%" r="60%">
+                <stop offset="0%" stopColor="#ffffff" /><stop offset="65%" stopColor="#ffe9a6" /><stop offset="100%" stopColor="#d9a521" />
+              </radialGradient>
+              <clipPath id="pbClip"><circle cx="50" cy="50" r="46" /></clipPath>
+            </defs>
+            <g clipPath="url(#pbClip)">
+              <rect x="0" y="0" width="100" height="50" fill="url(#pbTop)" />
+              <rect x="0" y="50" width="100" height="50" fill="url(#pbBot)" />
+              <rect x="0" y="44" width="100" height="12" fill="#16161d" />
+              <ellipse cx="34" cy="28" rx="13" ry="9" fill="#ffffff" opacity="0.22" />
+            </g>
+            <circle cx="50" cy="50" r="46" fill="none" stroke="#16161d" strokeWidth="4" />
+            <circle cx="50" cy="50" r="15" fill="#16161d" />
+            <circle cx="50" cy="50" r="11" fill="#ffffff" />
+            <circle cx="50" cy="50" r="7" fill="url(#pbBtn)" className="poke-btn" />
+          </svg>
+        </div>
+        <div className="poke-shadow" />
+      </div>
+      <div style={{ textAlign: 'center', marginTop: 14, position: 'relative', zIndex: 1 }}>
+        <div style={{ fontSize: 22, fontWeight: 800, background: 'linear-gradient(90deg,#ffd700,#ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Schnapp sie dir alle!</div>
+        <div style={{ fontSize: 13, color: C.textDim, marginTop: 6, maxWidth: 440 }}>
+          Suche oben gezielt nach einer Karte – oder stöbere unter <strong style={{ color: C.textSoft }}>Singles</strong> Set für Set durch deine Sammlung.
+        </div>
+        <button className="btn-primary" style={{ marginTop: 16 }} onClick={onBrowse}>🃏 Sets durchstöbern</button>
+      </div>
+    </div>
   );
 }
 
