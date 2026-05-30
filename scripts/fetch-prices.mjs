@@ -25,8 +25,14 @@ const OUT = resolve(__dirname, '../public/data/cards.json');
 const BASE = 'https://api.pokemontcg.io/v2';
 const API_KEY = process.env.POKEMONTCG_API_KEY || '';
 const REFRESH_RECENT = 8; // newest sets re-fetched every run for fresh prices
-const BATCH_NEW = API_KEY ? 40 : 10; // additional not-yet-fetched sets per run
-const HARD_CAP = 8000; // stop ADDING new sets past this (refresh still runs); set boundaries respected
+// Sets added per run, newest→oldest, continuing from the committed snapshot.
+// Raised so the catalogue fills out toward TARGET_TOTAL quickly; the keyless
+// path stays moderate to respect the rate limit (failed sets simply retry next
+// run). An optional POKEMONTCG_API_KEY makes a single run reach the target.
+const BATCH_NEW = API_KEY ? 100 : 40; // additional not-yet-fetched sets per run
+// Stop ADDING new sets once the catalogue reaches ~this size (refresh of the
+// newest sets keeps running). ~606 today + ~5000 requested → ~5600.
+const HARD_CAP = 5600; // grow to roughly +5000 cards, then hold
 const SELECT = 'id,name,number,rarity,supertype,subtypes,images,set,cardmarket';
 const headers = API_KEY ? { 'X-Api-Key': API_KEY } : {};
 
