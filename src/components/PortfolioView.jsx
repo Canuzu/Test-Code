@@ -82,7 +82,7 @@ export default function PortfolioView({ onImport }) {
 
   return (
     <div className="fade-in">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginBottom: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: 10, marginBottom: 14 }}>
         <Stat label="Karten" value={totalCards} color={C.textSoft} sub={portfolio.length !== totalCards ? `${portfolio.length} Positionen` : undefined} />
         <Stat label="Investiert" value={fmtEur(invested, 0)} color={C.blue} />
         <Stat label="Marktwert" value={fmtEur(marketValue, 0)} color={C.text} />
@@ -159,7 +159,7 @@ export default function PortfolioView({ onImport }) {
       {view === 'cards' && portfolio.length > 0 && (
         filtered.length === 0
           ? <div style={{ color: C.textFaint, fontSize: 13, padding: 24, textAlign: 'center' }}>Keine Karten für diese Suche/Filter.</div>
-          : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12, marginBottom: sold.length ? 28 : 0 }}>
+          : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 12, marginBottom: sold.length ? 28 : 0 }}>
           {filtered.map((e) => {
             const card = e.card;
             const qty = qtyOf(e);
@@ -358,7 +358,7 @@ function InventoryTable({ rows, freshPrice, updatePortfolioEntry, onRemove, onSe
       {byLoc.length > 1 && (
         <div style={{ marginTop: 14 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', marginBottom: 8 }}>📍 Summen je Lagerort</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 200px), 1fr))', gap: 8 }}>
             {byLoc.map((g) => (
               <div key={g.loc} style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 10, padding: 12 }}>
                 <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>{g.loc}</div>

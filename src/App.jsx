@@ -4,6 +4,7 @@ import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
 import { isPro } from './lib/pro.js';
 import { fmtNum } from './lib/format.js';
+import { useIsMobile } from './lib/useMediaQuery.js';
 import { getGame } from './data/providers/index.js';
 import Discover from './components/Discover.jsx';
 import WatchlistView from './components/WatchlistView.jsx';
@@ -103,27 +104,31 @@ function Shell() {
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
   const game = getGame(settings.game);
   const pro = isPro(settings);
+  const isMobile = useIsMobile();
   const badge = { watchlist: watchlist.length, portfolio: portfolio.length, alerts: alerts.filter((a) => a.active).length };
   const avgScore = cards.length ? fmtNum(cards.reduce((s, c) => s + c.m.score, 0) / cards.length, 0) : '–';
 
   return (
     <div style={{ minHeight: '100vh', background: `linear-gradient(160deg, ${C.appGrad1} 0%, ${C.appGrad2} 100%)`, color: C.text }}>
-      {/* Header */}
-      <header style={{ background: C.headerBg, backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.lineStrong}`, padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-          <div style={{ display: 'flex', gap: 3 }}>
-            <button onClick={() => window.history.back()} title="Zurück" className="control" style={{ padding: '7px 8px', display: 'flex', alignItems: 'center' }}><ArrowLeft size={15} /></button>
-            <button onClick={() => window.history.forward()} title="Vor" className="control" style={{ padding: '7px 8px', display: 'flex', alignItems: 'center' }}><ArrowRight size={15} /></button>
-          </div>
-          <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg, #ffd700, #ff6b35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19, boxShadow: '0 0 18px #ffd70044' }}>{game.emoji}</div>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 17, background: 'linear-gradient(90deg, #ffd700, #ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>KartenwertDE</div>
-            <div style={{ fontSize: 10, color: C.textFaint }}>Live-Preistracker · Cardmarket EU · {game.label}</div>
+      {/* Header — compact + overflow-proof on phones (left block shrinks/ellipsizes,
+          right cluster shows icon-only buttons so it never exceeds the screen). */}
+      <header style={{ background: C.headerBg, backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.lineStrong}`, padding: isMobile ? '10px 12px' : '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: isMobile ? 8 : 12, position: 'sticky', top: 0, zIndex: 50 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 11, flex: '1 1 auto', minWidth: 0 }}>
+          {!isMobile && (
+            <div style={{ display: 'flex', gap: 3 }}>
+              <button onClick={() => window.history.back()} title="Zurück" className="control" style={{ padding: '7px 8px', display: 'flex', alignItems: 'center' }}><ArrowLeft size={15} /></button>
+              <button onClick={() => window.history.forward()} title="Vor" className="control" style={{ padding: '7px 8px', display: 'flex', alignItems: 'center' }}><ArrowRight size={15} /></button>
+            </div>
+          )}
+          <div style={{ width: isMobile ? 32 : 38, height: isMobile ? 32 : 38, flexShrink: 0, borderRadius: '50%', background: 'linear-gradient(135deg, #ffd700, #ff6b35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? 16 : 19, boxShadow: '0 0 18px #ffd70044' }}>{game.emoji}</div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 800, fontSize: isMobile ? 15 : 17, background: 'linear-gradient(90deg, #ffd700, #ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>KartenwertDE</div>
+            {!isMobile && <div style={{ fontSize: 10, color: C.textFaint }}>Live-Preistracker · Cardmarket EU · {game.label}</div>}
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {cards.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 5 : 10, flexShrink: 0 }}>
+          {!isMobile && cards.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: source === 'snapshot' ? '#00e67615' : '#ffffff0c', border: `1px solid ${source === 'snapshot' ? '#00e67630' : C.lineStrong}`, borderRadius: 20, padding: '4px 11px' }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: source === 'snapshot' ? C.green : C.textFaint, animation: source === 'snapshot' ? 'blink 2s infinite' : 'none' }} />
               <span style={{ fontSize: 11, color: source === 'snapshot' ? C.green : C.textDim, fontWeight: 600 }}>{cards.length} · Ø {avgScore}</span>
@@ -133,18 +138,18 @@ function Shell() {
             {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
           </button>
           {installEvt && (
-            <button onClick={install} title="Als App installieren" className="control" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: C.green2, borderColor: C.green2 + '55' }}>
-              <Smartphone size={13} /> <span style={{ fontSize: 11, fontWeight: 700 }}>App</span>
+            <button onClick={install} title="Als App installieren" className="control" style={{ padding: isMobile ? '7px 9px' : '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: C.green2, borderColor: C.green2 + '55' }}>
+              <Smartphone size={13} /> {!isMobile && <span style={{ fontSize: 11, fontWeight: 700 }}>App</span>}
             </button>
           )}
-          <button onClick={() => setShowPricing(true)} title={pro ? 'Pro aktiv' : 'Pro freischalten'} className="control" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: pro ? C.gold : C.textSoft, borderColor: pro ? C.gold + '55' : undefined }}>
-            <Crown size={13} /> <span style={{ fontSize: 11, fontWeight: 700 }}>{pro ? 'Pro ✓' : 'Pro'}</span>
+          <button onClick={() => setShowPricing(true)} title={pro ? 'Pro aktiv' : 'Pro freischalten'} className="control" style={{ padding: isMobile ? '7px 9px' : '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: pro ? C.gold : C.textSoft, borderColor: pro ? C.gold + '55' : undefined }}>
+            <Crown size={13} /> {!isMobile && <span style={{ fontSize: 11, fontWeight: 700 }}>{pro ? 'Pro ✓' : 'Pro'}</span>}
           </button>
-          <button onClick={() => setShowAuth(true)} title={account ? account.email : 'Anmelden'} className="control" style={{ padding: '7px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button onClick={() => setShowAuth(true)} title={account ? account.email : 'Anmelden'} className="control" style={{ padding: isMobile ? '7px 9px' : '7px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
             {account
               ? <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'linear-gradient(135deg,#ffd700,#ff6b35)', color: '#0c0c1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800 }}>{(account.name || account.email).slice(0, 1).toUpperCase()}</span>
               : <User size={14} />}
-            <span style={{ fontSize: 11, fontWeight: 700, maxWidth: 84, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{account ? account.name : 'Anmelden'}</span>
+            {!isMobile && <span style={{ fontSize: 11, fontWeight: 700, maxWidth: 84, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{account ? account.name : 'Anmelden'}</span>}
           </button>
           <button onClick={() => setShowSettings(true)} title="Einstellungen" className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center' }}>
             <Cog size={14} />
@@ -163,7 +168,7 @@ function Shell() {
       </nav>
 
       {/* Body */}
-      <main style={{ padding: '16px 20px', maxWidth: 1400, margin: '0 auto' }}>
+      <main style={{ padding: isMobile ? '14px 12px' : '16px 20px', maxWidth: 1400, margin: '0 auto' }}>
         {tab === 'discover' && <Discover onOpen={onOpen} />}
         {tab === 'analytics' && <Suspense fallback={<Loader />}><Analytics onOpen={onOpen} pro={pro} onUpgrade={() => setShowPricing(true)} /></Suspense>}
         {tab === 'watchlist' && <WatchlistView onOpen={onOpen} />}

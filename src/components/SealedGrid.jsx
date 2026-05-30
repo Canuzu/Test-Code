@@ -43,7 +43,7 @@ export default function SealedGrid({ type }) {
       <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 12 }}>
         Versiegelte Produkte · <strong style={{ color: C.textSoft }}>Live-Preis direkt auf Cardmarket</strong> (für Sealed gibt es in unserer Datenquelle keine Preise)
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 12 }}>
         {items.map((p) => <SealedTile key={p.id} p={p} />)}
       </div>
     </>

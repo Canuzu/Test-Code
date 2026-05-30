@@ -27,7 +27,7 @@ export default function PricingModal({ onClose }) {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 14 }}>
           {PLANS.map((plan) => {
             const isProPlan = plan.id === 'pro';
             const price = annual ? plan.annual : plan.monthly;

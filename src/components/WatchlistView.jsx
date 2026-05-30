@@ -24,14 +24,14 @@ export default function WatchlistView({ onOpen }) {
 
   return (
     <div className="fade-in">
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 18 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 10, marginBottom: 18 }}>
         <Stat label="🃏 Karten" value={items.length} color={C.textSoft} />
         <Stat label="Wert beim Merken" value={fmtEur(addedValue, 0)} color={C.blue} />
         <Stat label="Aktueller Marktwert" value={fmtEur(currentValue, 0)} color={C.text} />
         <Stat label="Δ seit Merken" value={`${delta >= 0 ? '+' : ''}${fmtEur(delta, 0)}`} color={delta >= 0 ? C.green : C.red} sub={deltaPct != null ? fmtPct(deltaPct) : undefined} />
         <Stat label="Im Aufwärtstrend" value={`${risers}/${items.length}`} color={C.green2} />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 330px), 1fr))', gap: 14 }}>
         {items.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}
       </div>
     </div>

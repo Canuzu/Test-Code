@@ -107,7 +107,7 @@ export default function AlertsView({ locked, onUpgrade }) {
       {alerts.length === 0 ? (
         <EmptyState icon={<Bell size={52} style={{ opacity: 0.35 }} />} title="Noch keine Alerts" hint="Lege oben einen Alarm an, z. B.: Glurak ex steigt über 200 €." />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10, marginBottom: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 10, marginBottom: 24 }}>
           {alerts.map((a) => {
             const card = cardById.get(a.cardId);
             const price = card?.m?.market;

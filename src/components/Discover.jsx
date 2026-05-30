@@ -173,7 +173,7 @@ export default function Discover({ onOpen }) {
       {mode === 'sealed' && !searching && <SealedGrid type={cat} />}
 
       {loading && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 12 }}>
           {Array.from({ length: 8 }).map((_, i) => <div key={i} className="skeleton" style={{ height: 150 }} />)}
         </div>
       )}
@@ -187,7 +187,7 @@ export default function Discover({ onOpen }) {
                 🌟 Top-Karten
                 <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 500 }}>die 5 stärksten Karten gerade</span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 190px), 1fr))', gap: 16 }}>
                 {highlights.map((h) => (
                   <HighlightCard key={h.card.id} h={h} onOpen={onOpen} />
                 ))}
@@ -268,7 +268,7 @@ export default function Discover({ onOpen }) {
           {listed.length === 0
             ? <EmptyState icon="🔍" title="Keine Karten gefunden" hint="Anderen Suchbegriff oder Filter probieren." />
             : viewMode === 'grid'
-              ? <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: 14 }}>{listed.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}</div>
+              ? <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 330px), 1fr))', gap: 14 }}>{listed.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}</div>
               : <ListView cards={listed} onOpen={onOpen} />}
         </>
       )}
@@ -312,7 +312,7 @@ function HighlightCard({ h, onOpen }) {
 
 function SetTiles({ sets, onSelect }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 12 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 230px), 1fr))', gap: 12 }}>
       {sets.map((s) => (
         <button key={s.id} onClick={() => onSelect(s.id)} className="card-hover fade-in"
           style={{ display: 'flex', gap: 12, textAlign: 'left', background: C.surface, border: `1px solid ${C.line}`, borderRadius: 14, padding: 12, cursor: 'pointer', color: C.text, alignItems: 'center' }}>

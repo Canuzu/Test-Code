@@ -89,7 +89,7 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
       <div style={{ fontSize: 12.5, color: C.textDim, marginBottom: 14 }}>
         📦 Analyse deiner <strong style={{ color: C.textSoft }}>eigenen Sammlung</strong> · {owned.length} verschiedene Karten · {totalQty} Stück gesamt
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 10, marginBottom: 16 }}>
         <Stat label="Karten" value={totalQty} color={C.textSoft} sub={owned.length !== totalQty ? `${owned.length} verschiedene` : undefined} />
         <Stat label="Sammlungswert" value={fmtEur(marketValue, 0)} color={C.blue} sub={`investiert ${fmtEur(invested, 0)}`} />
         <Stat label="Unrealisiert G/V" value={`${pnl >= 0 ? '+' : ''}${fmtEur(pnl, 0)}`} color={pnl >= 0 ? C.green : C.red} />
@@ -97,7 +97,7 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
         <Stat label="Ø Δ30T · Steiger/Faller" value={fmtPct(avgChange30)} color={avgChange30 >= 0 ? C.green : C.red} sub={`${risers} ↑ / ${fallers} ↓`} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14, marginBottom: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 14, marginBottom: 14 }}>
         <div style={panel}>
           <div style={panelTitle}>🏆 Tier-Verteilung</div>
           <ResponsiveContainer width="100%" height={200}>
@@ -154,7 +154,7 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 14 }}>
         <MoverList title="🚀 Größte Gewinner (30T)" cards={topGainers} onOpen={onOpen} />
         <MoverList title="📉 Größte Verlierer (30T)" cards={topLosers} onOpen={onOpen} />
       </div>
@@ -164,7 +164,7 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
         {pro ? (
           <div style={panel}>
             <div style={panelTitle}>👑 Pro-Insight · Konzentration deiner Sammlung</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: 10 }}>
               <Stat label="Top-5 Wertanteil" value={fmtPct((([...owned].sort((a, b) => (b.card.m.market || 0) * b.qty - (a.card.m.market || 0) * a.qty).slice(0, 5).reduce((s, o) => s + (o.card.m.market || 0) * o.qty, 0)) / (marketValue || 1)) * 100, 0, false)} color={C.gold} />
               <Stat label="Premium-Karten (≥100 €)" value={owned.filter((o) => (o.card.m.market || 0) >= 100).reduce((s, o) => s + o.qty, 0)} color={C.orange} />
               <Stat label="S/A-Tier-Anteil" value={fmtPct((owned.filter((o) => o.card.m.tier.l === 'S' || o.card.m.tier.l === 'A').reduce((s, o) => s + o.qty, 0) / totalQty) * 100, 0, false)} color={C.pink} />

@@ -109,7 +109,7 @@ export default function ImportModal({ onClose }) {
             {parsed.headers.length > 0 && (
               <>
                 <div style={{ fontSize: 11, color: C.textFaint, fontWeight: 700, textTransform: 'uppercase', margin: '14px 0 8px' }}>Spalten zuordnen</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 150px), 1fr))', gap: 8 }}>
                   {FIELDS.map(([field, lbl]) => (
                     <label key={field} style={{ fontSize: 10, color: C.textFaint }}>{lbl}
                       <select value={mapping[field] ?? ''} onChange={(e) => setMapping((m) => ({ ...m, [field]: e.target.value === '' ? undefined : Number(e.target.value) }))}

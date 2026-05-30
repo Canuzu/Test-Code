@@ -54,6 +54,11 @@
 
 html, body, #root { height: 100%; }
 
+/* Never allow sideways scrolling / a too-wide layout on phones. `clip` (not
+   `hidden`) keeps the sticky header working because it doesn't create a scroll
+   container. */
+html, body, #root { overflow-x: clip; max-width: 100%; }
+
 body {
   margin: 0;
   background: var(--bg-0);
@@ -62,6 +67,9 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+
+/* Media never forces a row wider than the screen. */
+img, svg, video, canvas { max-width: 100%; }
 
 a { color: inherit; }
 
