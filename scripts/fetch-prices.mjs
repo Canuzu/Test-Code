@@ -36,10 +36,23 @@ const HARD_CAP = 5600; // grow to roughly +5000 cards, then hold
 const SELECT = 'id,name,number,rarity,supertype,subtypes,images,set,cardmarket';
 const headers = API_KEY ? { 'X-Api-Key': API_KEY } : {};
 
-async function getJSON(url) {
-  const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Fetch with retry/backoff. The keyless pokemontcg.io tier is rate-limited, so a
+// plain fetch often 429s and a whole set gets skipped (this is why the crawl can
+// stall on the newest sets). Honour Retry-After and back off so older sets
+// actually come through over the run.
+async function getJSON(url, tries = 5) {
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(url, { headers });
+    if (res.ok) return res.json();
+    const retryable = res.status === 429 || res.status >= 500;
+    if (!retryable || attempt >= tries - 1) throw new Error(`HTTP ${res.status}`);
+    const ra = Number(res.headers.get('retry-after'));
+    const wait = (ra > 0 ? ra * 1000 : Math.min(30000, 1500 * 2 ** attempt)) + Math.floor(Math.random() * 500);
+    console.log(`[fetch-prices] HTTP ${res.status} — retry in ${Math.round(wait / 1000)}s (${attempt + 1}/${tries})`);
+    await sleep(wait);
+  }
 }
 
 // ALL sets, newest → oldest by release date.
