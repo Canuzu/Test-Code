@@ -26,13 +26,13 @@ const BASE = 'https://api.pokemontcg.io/v2';
 const API_KEY = process.env.POKEMONTCG_API_KEY || '';
 const REFRESH_RECENT = 8; // newest sets re-fetched every run for fresh prices
 // Sets added per run, newest→oldest, continuing from the committed snapshot.
-// Raised so the catalogue fills out toward TARGET_TOTAL quickly; the keyless
-// path stays moderate to respect the rate limit (failed sets simply retry next
-// run). An optional POKEMONTCG_API_KEY makes a single run reach the target.
-const BATCH_NEW = API_KEY ? 100 : 40; // additional not-yet-fetched sets per run
-// Stop ADDING new sets once the catalogue reaches ~this size (refresh of the
-// newest sets keeps running). ~6190 already crawled + ~5000 requested → ~11200.
-const HARD_CAP = 11200; // grow by roughly +5000 more cards, then hold
+// With an API key we pull the whole remaining archive in one run; keyless stays
+// moderate to respect the rate limit (failed sets simply retry next run).
+const BATCH_NEW = API_KEY ? 300 : 40; // additional not-yet-fetched sets per run
+// Upper bound on catalogue size. Set well above the full Pokémon archive
+// (~20k priced cards across all sets) so the crawler keeps adding sets until
+// every set is complete, then only refreshes the newest sets.
+const HARD_CAP = 30000; // full archive: never bound out before all sets are in
 const SELECT = 'id,name,number,rarity,supertype,subtypes,images,set,cardmarket';
 const headers = API_KEY ? { 'X-Api-Key': API_KEY } : {};
 
