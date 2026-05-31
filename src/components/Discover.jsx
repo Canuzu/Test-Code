@@ -375,11 +375,15 @@ function WelcomeHero({ game, onBrowse }) {
     { left: '50%', top: '12%', d: '.8s', s: 6 },
   ];
   const isPoke = game === 'pokemon';
+  const isOP = game === 'onepiece';
   return (
     <div className="poke-hero">
       {sparks.map((sp, i) => (
         <span key={i} className="poke-spark" style={{ left: sp.left, top: sp.top, width: sp.s, height: sp.s, animationDelay: sp.d }} />
       ))}
+      {isOP ? (
+        <ThousandSunny />
+      ) : (
       <div className="poke-bounce">
         <div className="poke-wiggle">
           {isPoke ? (
@@ -425,12 +429,68 @@ function WelcomeHero({ game, onBrowse }) {
         </div>
         <div className="poke-shadow" />
       </div>
+      )}
       <div style={{ textAlign: 'center', marginTop: 14, position: 'relative', zIndex: 1 }}>
-        <div style={{ fontSize: 22, fontWeight: 800, background: 'linear-gradient(90deg,#ffd700,#ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{isPoke ? 'Schnapp sie dir alle!' : 'Deine Sammlung im Blick'}</div>
+        <div style={{ fontSize: 22, fontWeight: 800, background: isOP ? 'linear-gradient(90deg,#ffb300,#e23b3b)' : 'linear-gradient(90deg,#ffd700,#ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{isPoke ? 'Schnapp sie dir alle!' : isOP ? 'Setze die Segel! ⚓' : 'Deine Sammlung im Blick'}</div>
         <div style={{ fontSize: 13, color: C.textDim, marginTop: 6, maxWidth: 440 }}>
-          Suche oben gezielt nach einer Karte – oder stöbere unter <strong style={{ color: C.textSoft }}>Singles</strong> Set für Set durch deine Sammlung.
+          {isOP
+            ? <>Stöbere unter <strong style={{ color: C.textSoft }}>Singles</strong> Set für Set durch alle One-Piece-Karten – oder suche oben gezielt nach einer Karte.</>
+            : <>Suche oben gezielt nach einer Karte – oder stöbere unter <strong style={{ color: C.textSoft }}>Singles</strong> Set für Set durch deine Sammlung.</>}
         </div>
-        <button className="btn-primary" style={{ marginTop: 16 }} onClick={onBrowse}>🃏 Sets durchstöbern</button>
+        <button className="btn-primary" style={{ marginTop: 16 }} onClick={onBrowse}>{isOP ? '🏴‍☠️ Sets entern' : '🃏 Sets durchstöbern'}</button>
+      </div>
+    </div>
+  );
+}
+
+// Thousand Sunny gently bobbing on rolling waves — the One Piece hero art.
+// Pure SVG/CSS (no image asset), so it matches the Pokéball animation's spirit.
+function ThousandSunny() {
+  return (
+    <div className="op-scene" role="img" aria-label="Thousand Sunny auf dem Meer">
+      <div className="op-sea">
+        <svg className="op-wave op-wave-back" viewBox="0 0 240 60" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 24 C30 12 60 36 90 24 C120 12 150 36 180 24 C210 12 240 36 240 24 L240 60 L0 60 Z" fill="#1c6aa8" />
+        </svg>
+        <svg className="op-wave op-wave-front" viewBox="0 0 240 60" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 33 C28 23 56 43 92 33 C128 23 160 45 200 33 C222 27 240 38 240 35 L240 60 L0 60 Z" fill="#2f97dd" />
+          <path d="M0 33 C28 23 56 43 92 33 C128 23 160 45 200 33 C222 27 240 38 240 35" fill="none" stroke="#bfe4ff" strokeWidth="1.6" opacity="0.6" />
+        </svg>
+      </div>
+      <div className="op-shadow" />
+      <div className="op-ship">
+        <svg width="138" height="122" viewBox="0 0 140 124" aria-hidden="true">
+          {/* mast + pennant */}
+          <rect x="66" y="18" width="5" height="78" rx="2.5" fill="#7a4a1e" />
+          <path d="M71 19 L86 23 L71 27 Z" fill="#e23b3b" />
+          {/* main sail */}
+          <path d="M66 28 C40 32 30 46 30 55 C30 64 40 78 66 82 Z" fill="#fdfdf6" stroke="#d9d8c4" strokeWidth="1.5" />
+          {/* Jolly Roger: crossbones → skull → straw hat */}
+          <g stroke="#1b1b24" strokeWidth="3" strokeLinecap="round">
+            <line x1="40" y1="60" x2="53" y2="50" />
+            <line x1="40" y1="50" x2="53" y2="60" />
+          </g>
+          <circle cx="46.5" cy="55" r="6.6" fill="#1b1b24" />
+          <circle cx="44.2" cy="54.2" r="1.7" fill="#fff" />
+          <circle cx="48.8" cy="54.2" r="1.7" fill="#fff" />
+          <path d="M46.5 56 l-1.2 2.2 h2.4 z" fill="#fff" />
+          <ellipse cx="46.5" cy="47.5" rx="12.5" ry="3.2" fill="#f3c33b" stroke="#c8951f" strokeWidth="0.8" />
+          <path d="M39 47 Q41 39.5 46.5 39.5 Q52 39.5 54 47 Z" fill="#f3c33b" stroke="#c8951f" strokeWidth="0.8" />
+          <rect x="39.5" y="45" width="14" height="2.4" rx="1.2" fill="#d23b3b" />
+          {/* hull */}
+          <path d="M24 86 L116 86 L109 103 Q105 109 92 109 L48 109 Q35 109 31 103 Z" fill="#f4b733" stroke="#b5791f" strokeWidth="2" />
+          <rect x="22" y="83" width="96" height="5" rx="2.5" fill="#8a5a22" />
+          <circle cx="52" cy="95" r="2.6" fill="#23232e" />
+          <circle cx="70" cy="96" r="2.6" fill="#23232e" />
+          <circle cx="88" cy="95" r="2.6" fill="#23232e" />
+          {/* lion figurehead at the bow */}
+          <circle cx="111" cy="80" r="10" fill="#e86a14" />
+          <circle cx="112" cy="80" r="7.4" fill="#f59b3c" />
+          <ellipse cx="113.5" cy="82" rx="5" ry="4.2" fill="#ffe2b4" />
+          <circle cx="110.8" cy="79.4" r="1.2" fill="#1b1b24" />
+          <circle cx="114.8" cy="79.4" r="1.2" fill="#1b1b24" />
+          <path d="M111 83 Q113.5 86 116 83" stroke="#1b1b24" strokeWidth="1" fill="none" strokeLinecap="round" />
+        </svg>
       </div>
     </div>
   );
