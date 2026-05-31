@@ -7,8 +7,10 @@
 //
 // Required GitHub secrets (Repo → Settings → Secrets and variables → Actions):
 //   CM_APP_TOKEN, CM_APP_SECRET, CM_ACCESS_TOKEN, CM_ACCESS_SECRET
-// Optional env:
-//   CM_GAME_ID (default 6 = Pokémon), CM_SEARCH (comma list of search terms)
+// Optional env (per game, all independent):
+//   Pokémon   : CM_GAME_ID (default 6),  CM_SEARCH
+//   One Piece : CM_GAME_ID_ONEPIECE (auto-resolved from /games if unset),
+//               CM_SEARCH_ONEPIECE
 //
 // Get credentials: cardmarket.com → Account → API → register a dedicated app
 // (a "widget"/dedicated app token grants the access token + secret).
@@ -63,23 +65,57 @@ async function mkmGet(url) {
   return res.json();
 }
 
+// Per-game default search terms (used when the CM_SEARCH* env is unset).
+const DEFAULT_TERMS = {
+  pokemon: 'Charizard,Umbreon,Pikachu,Mew,Rayquaza,Lugia,Blastoise,Venusaur',
+  onepiece: 'Luffy,Zoro,Nami,Sanji,Ace,Shanks,Law,Yamato,Sabo,Kid,Nico Robin,Boa Hancock,Roger,Nika',
+};
+
+// Resolves an MKM idGame by name via the /games endpoint (One Piece has no
+// publicly documented id). Returns the id as a string, or null.
+export async function resolveGameId(nameRe) {
+  try {
+    const data = await mkmGet(`${MKM_BASE}/games`);
+    const games = Array.isArray(data?.game) ? data.game : [];
+    const hit = games.find((g) => nameRe.test(g.name || ''));
+    if (hit) console.log(`[cardmarket] resolved idGame ${hit.idGame} for "${hit.name}"`);
+    return hit ? String(hit.idGame) : null;
+  } catch (e) {
+    console.error(`[cardmarket] /games lookup failed: ${e.message}`);
+    return null;
+  }
+}
+
+// Resolves the idGame to query for a given game: explicit arg → per-game env →
+// /games name lookup → Pokémon default.
+async function gameIdFor(game, explicit) {
+  if (explicit) return String(explicit);
+  if (game === 'onepiece') return process.env.CM_GAME_ID_ONEPIECE || await resolveGameId(/one\s*piece/i);
+  return process.env.CM_GAME_ID || DEFAULT_GAME_ID;
+}
+
 // Fetches a bounded set of priced products via the official API. Defensive: any
-// failure logs and is skipped so the deploy never breaks.
-export async function fetchCardmarket({ limit = 120, perTerm = 6 } = {}) {
+// failure logs and is skipped so the deploy never breaks. `game` selects the TCG
+// ('pokemon' | 'onepiece'); the returned cards are tagged with that game.
+export async function fetchCardmarket({ game = 'pokemon', gameId, terms, limit = 120, perTerm = 6 } = {}) {
   if (!isConfigured()) {
-    console.log('[cardmarket] credentials not set — skipping official API (pokemontcg.io snapshot is used).');
+    console.log('[cardmarket] credentials not set — skipping official API (snapshot prices are used).');
     return [];
   }
-  const gameId = process.env.CM_GAME_ID || DEFAULT_GAME_ID;
-  const terms = (process.env.CM_SEARCH || 'Charizard,Umbreon,Pikachu,Mew,Rayquaza,Lugia,Blastoise,Venusaur')
+  const gid = await gameIdFor(game, gameId);
+  if (!gid) {
+    console.error(`[cardmarket] could not resolve idGame for "${game}" — set CM_GAME_ID_ONEPIECE. Skipping.`);
+    return [];
+  }
+  const termList = (terms || process.env[game === 'onepiece' ? 'CM_SEARCH_ONEPIECE' : 'CM_SEARCH'] || DEFAULT_TERMS[game] || '')
     .split(',').map((s) => s.trim()).filter(Boolean);
 
   const out = [];
   const seen = new Set();
-  for (const term of terms) {
+  for (const term of termList) {
     if (out.length >= limit) break;
     try {
-      const findUrl = `${MKM_BASE}/products/find?search=${enc(term)}&idGame=${gameId}&exact=false`;
+      const findUrl = `${MKM_BASE}/products/find?search=${enc(term)}&idGame=${gid}&exact=false`;
       const found = await mkmGet(findUrl);
       const products = Array.isArray(found?.product) ? found.product : [];
       for (const p of products.slice(0, perTerm)) {
@@ -88,18 +124,18 @@ export async function fetchCardmarket({ limit = 120, perTerm = 6 } = {}) {
         seen.add(p.idProduct);
         try {
           const detail = await mkmGet(`${MKM_BASE}/products/${p.idProduct}`);
-          const card = normalizeProduct(detail?.product);
+          const card = normalizeProduct(detail?.product, { game });
           if (card?.prices?.market != null) out.push(card);
         } catch (e) {
           console.error(`[cardmarket] product ${p.idProduct} failed: ${e.message}`);
         }
       }
-      console.log(`[cardmarket] "${term}" -> ${products.length} products`);
+      console.log(`[cardmarket] (${game}) "${term}" -> ${products.length} products`);
     } catch (e) {
       console.error(`[cardmarket] find "${term}" failed: ${e.message}`);
     }
   }
-  console.log(`[cardmarket] ✓ ${out.length} priced products via official API`);
+  console.log(`[cardmarket] ✓ ${out.length} priced ${game} products via official API`);
   return out;
 }
 

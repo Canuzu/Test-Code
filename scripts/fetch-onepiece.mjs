@@ -15,7 +15,8 @@
 import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { normalize } from '../src/data/providers/onepiece.js';
+import { normalize, SET_META } from '../src/data/providers/onepiece.js';
+import { fetchCardmarket } from './fetch-cardmarket.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/data/onepiece.json');
@@ -99,21 +100,54 @@ async function main() {
     process.exit(0);
   }
 
+  // Optional: official Cardmarket (MKM) API. With the CM_* secrets set, real MKM
+  // prices REPLACE the estimate on every card we can match — by collector code
+  // (e.g. OP01-001), or by set name + number. No-op without credentials.
+  let cmEnriched = 0;
+  try {
+    const cmCards = await fetchCardmarket({ game: 'onepiece', limit: 800, perTerm: 20 });
+    if (cmCards.length) {
+      const nameToCode = new Map(Object.entries(SET_META).map(([code, m]) => [m.name.toLowerCase(), code]));
+      const pad3 = (s) => String(s ?? '').replace(/\D/g, '').padStart(3, '0');
+      for (const cm of cmCards) {
+        let id = cm.code && byId.has(cm.code) ? cm.code : null;
+        if (!id) { // secondary match: MKM expansion name → our set code, + number
+          const setCode = nameToCode.get((cm.set || '').toLowerCase());
+          const num = pad3(cm.number);
+          if (setCode && num !== '000' && byId.has(`${setCode}-${num}`)) id = `${setCode}-${num}`;
+        }
+        if (!id) continue;
+        const base = byId.get(id);
+        base.prices = { ...cm.prices, estimated: false };
+        if (cm.cardmarketUrl) base.cardmarketUrl = cm.cardmarketUrl;
+        base.source = 'cardmarket';
+        cmEnriched++;
+      }
+      console.log(`[fetch-onepiece] Cardmarket: ${cmCards.length} products → ${cmEnriched} cards upgraded to real MKM prices`);
+    }
+  } catch (e) {
+    console.error(`[fetch-onepiece] Cardmarket step failed: ${e.message}`);
+  }
+
   // Newest set first, then by card number within a set.
   const cards = [...byId.values()].sort((a, b) =>
     (b.setReleaseDate || '').localeCompare(a.setReleaseDate || '') ||
     String(a.number).localeCompare(String(b.number), undefined, { numeric: true }));
 
   const completedSets = [...new Set(cards.map((c) => c.setId))];
+  const allReal = cmEnriched >= cards.length;
   await writeSnapshot({
     generatedAt: now.toISOString(),
-    source: 'One Piece Card Game (official art) via punk-records · prices estimated',
-    pricesEstimated: true,
+    source: cmEnriched
+      ? `One Piece Card Game (official art) via punk-records · ${cmEnriched} live Cardmarket prices${allReal ? '' : ', rest estimated'}`
+      : 'One Piece Card Game (official art) via punk-records · prices estimated',
+    pricesEstimated: !allReal,
+    cmEnriched,
     count: cards.length,
     completedSets,
     cards,
   });
-  console.log(`[fetch-onepiece] ✓ wrote ${cards.length} cards · ${completedSets.length} sets · ${okPacks}/${packIds.length} packs ok`);
+  console.log(`[fetch-onepiece] ✓ wrote ${cards.length} cards · ${completedSets.length} sets · ${okPacks}/${packIds.length} packs ok · ${cmEnriched} live MKM prices`);
 }
 
 main().catch((e) => {
