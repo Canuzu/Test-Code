@@ -5,6 +5,7 @@ import { C, conditionColor } from '../lib/theme.js';
 import { fmtEur, fmtPct, fmtDate } from '../lib/format.js';
 import { getTier } from '../lib/metrics.js';
 import { marketLinks, cmUrl } from '../lib/marketLinks.js';
+import { VARIANTS } from '../lib/variants.js';
 import { CardImage, ScoreBadge, Pill, Stat, EmptyState } from './ui.jsx';
 
 const CONDITIONS = ['M', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'];
@@ -182,6 +183,7 @@ export default function PortfolioView({ onImport }) {
                     <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
                       <Pill color={C.blue}>×{qty}</Pill>
                       <Pill color={conditionColor(e.condition)}>{e.condition || 'NM'}</Pill>
+                      {e.variant && e.variant !== 'normal' && <Pill color={VARIANTS[e.variant]?.color || C.purple}>{VARIANTS[e.variant]?.label || e.variant}</Pill>}
                     </div>
                     {/* Lagerort als Drop-Down direkt in der Karte (#14) */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 7 }}>

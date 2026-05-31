@@ -7,20 +7,6 @@ import { enrich } from '../lib/metrics.js';
 import CardTile from './CardTile.jsx';
 import { Stat, EmptyState } from './ui.jsx';
 
-// Same honest foil classification as the Discover filter (no per-card reverse-
-// holo flag in the data): foil rarities = holo, base C/U/R prints = reverse.
-const foilClass = (rarity) => {
-  const x = (rarity || '').toLowerCase();
-  if (!x) return 'normal';
-  if (x.includes('holo') || x.includes('ultra') || x.includes('secret') || x.includes('rainbow')
-    || x.includes('illustration') || x.includes('hyper') || x.includes('shiny') || x.includes('radiant')
-    || x.includes('vmax') || x.includes('vstar') || x.includes('gx') || x.includes('ex')
-    || x.includes('break') || x.includes('prime') || x.includes('legend') || x.includes('prism')
-    || x.includes('amazing') || x.includes('ace') || /\bv\b/.test(x) || x.includes('double rare')) return 'holo';
-  if (x === 'common' || x === 'uncommon' || x === 'rare') return 'reverse';
-  return 'normal';
-};
-
 export default function WatchlistView({ onOpen }) {
   const { watchlist, cards } = useStore();
   const currentById = useMemo(() => new Map(cards.map((c) => [c.id, c.m.market])), [cards]);
@@ -29,14 +15,12 @@ export default function WatchlistView({ onOpen }) {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('added');
   const [filterTrend, setFilterTrend] = useState('all');
-  const [filterFoil, setFilterFoil] = useState('all');
 
   const shown = useMemo(() => {
     const q = search.trim().toLowerCase();
-    let list = items
+    const list = items
       .filter((c) => !q || c.name.toLowerCase().includes(q) || c.nameEn?.toLowerCase().includes(q) || c.set?.toLowerCase().includes(q))
-      .filter((c) => filterTrend === 'all' || c.m.trend === filterTrend)
-      .filter((c) => filterFoil === 'all' || foilClass(c.rarity) === filterFoil);
+      .filter((c) => filterTrend === 'all' || c.m.trend === filterTrend);
     const dir = {
       added: null, // keep insertion order (most recently added last)
       score: (a, b) => b.m.score - a.m.score,
@@ -46,7 +30,7 @@ export default function WatchlistView({ onOpen }) {
       name: (a, b) => a.name.localeCompare(b.name),
     }[sortBy];
     return dir ? [...list].sort(dir) : list;
-  }, [items, search, sortBy, filterTrend, filterFoil]);
+  }, [items, search, sortBy, filterTrend]);
 
   if (items.length === 0) {
     return <EmptyState icon={<Star size={56} style={{ opacity: 0.35 }} />} title="Watchlist ist leer" hint="Füge Karten über »⭐ Merken« in der Entdecken-Ansicht hinzu." />;
@@ -87,12 +71,6 @@ export default function WatchlistView({ onOpen }) {
           <option value="rising">↑ Steigend</option>
           <option value="stable">→ Stabil</option>
           <option value="falling">↓ Fallend</option>
-        </select>
-        <select className="control" value={filterFoil} onChange={(e) => setFilterFoil(e.target.value)} title="Holo / Reverse Holo">
-          <option value="all">Alle Varianten</option>
-          <option value="holo">✨ Holo</option>
-          <option value="reverse">🔄 Reverse Holo</option>
-          <option value="normal">▫️ Normal</option>
         </select>
       </div>
 

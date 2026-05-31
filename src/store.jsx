@@ -265,7 +265,7 @@ export function StoreProvider({ children }) {
   }, [showToast]);
 
   const addToPortfolio = useCallback((card, opts = {}) => {
-    const { price, quantity = 1, condition = 'NM', location = '' } = typeof opts === 'object' ? opts : { price: opts };
+    const { price, quantity = 1, condition = 'NM', location = '', variant = 'normal' } = typeof opts === 'object' ? opts : { price: opts };
     const entry = {
       id: `${card.id}-${Date.now()}`,
       cardId: card.id,
@@ -274,6 +274,7 @@ export function StoreProvider({ children }) {
       quantity: Math.max(1, Number(quantity) || 1),
       condition: condition || 'NM',
       location: (location || '').trim(),
+      variant: variant || 'normal',
       purchaseDate: Date.now(),
     };
     setPortfolio((prev) => [...prev, entry]);

@@ -7,24 +7,8 @@ import { cmUrl } from '../lib/marketLinks.js';
 import CardTile from './CardTile.jsx';
 import SealedGrid from './SealedGrid.jsx';
 import { SEALED_CATEGORIES } from '../data/sealedProducts.js';
+import { foilClass } from '../lib/variants.js';
 import { ChangeBadge, ScoreBadge, EmptyState, CardImage } from './ui.jsx';
-
-// Foil class from the (pokemontcg.io) rarity. Our data has no explicit
-// reverse-holo flag, so this is an honest approximation:
-//  • 'holo'    → genuine foil rarities (Holo / Ultra / Secret / V / VMAX / …)
-//  • 'reverse' → the base Common/Uncommon/Rare prints that ship as reverse-holo
-//  • 'normal'  → everything else (e.g. plain Promo without a foil marker)
-const foilClass = (rarity) => {
-  const x = (rarity || '').toLowerCase();
-  if (!x) return 'normal';
-  if (x.includes('holo') || x.includes('ultra') || x.includes('secret') || x.includes('rainbow')
-    || x.includes('illustration') || x.includes('hyper') || x.includes('shiny') || x.includes('radiant')
-    || x.includes('vmax') || x.includes('vstar') || x.includes('gx') || x.includes('ex')
-    || x.includes('break') || x.includes('prime') || x.includes('legend') || x.includes('prism')
-    || x.includes('amazing') || x.includes('ace') || /\bv\b/.test(x) || x.includes('double rare')) return 'holo';
-  if (x === 'common' || x === 'uncommon' || x === 'rare') return 'reverse';
-  return 'normal';
-};
 
 const PRESETS = [
   { id: 'risers', label: '🚀 Steiger', fn: (c) => c.m.trend === 'rising' && (c.m.change30 ?? 0) > 3 },

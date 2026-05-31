@@ -5,6 +5,7 @@ import { C, riskColor, riskPhrase, riskAdjDative, rarityColor, trendColor, trend
 import { fmtEur, fmtNum, fmtPct, fmtDate, fmtMoney, fmtUsd } from '../lib/format.js';
 import { calcNet, PLATFORM_FEES } from '../lib/fees.js';
 import { marketLinks, cmUrl } from '../lib/marketLinks.js';
+import { VARIANTS, variantsFor, defaultVariant } from '../lib/variants.js';
 import { marketEstimates, arbitrage } from '../lib/markets.js';
 import { gradeEstimates, gradingProfit } from '../lib/grading.js';
 import { newRule } from '../lib/alerts.js';
@@ -37,6 +38,9 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   const [gradeTarget, setGradeTarget] = useState('psa10');
   const [alertDir, setAlertDir] = useState('above');
   const [alertTarget, setAlertTarget] = useState('');
+  // Cardmarket-style print version (Normal / Reverse Holo / Holo) for this card.
+  const cardVariants = variantsFor(card.rarity);
+  const [variant, setVariant] = useState(() => defaultVariant(card.rarity));
 
   // While the fullscreen image is open, lock background scroll and allow Esc to
   // close it. Cleaning up on unmount guarantees scroll is always restored, which
@@ -106,7 +110,31 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
               <ScoreBadge tier={m.tier} score={m.score} size="lg" />
               <span style={{ fontSize: 11, color: C.textFaint }}>{m.tier.n}</span>
             </div>
-            <div style={{ fontWeight: 800, fontSize: 17, lineHeight: 1.25, paddingRight: 32 }}>{card.name}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 32, flexWrap: 'wrap' }}>
+              <span style={{ fontWeight: 800, fontSize: 17, lineHeight: 1.25 }}>{card.name}</span>
+              {/* Cardmarket-style variant picker: small chips beside the name.
+                  A single-version card just shows its variant as a static badge. */}
+              {cardVariants.length > 1 ? (
+                <span style={{ display: 'inline-flex', gap: 3, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 8, padding: 2 }}>
+                  {cardVariants.map((v) => {
+                    const def = VARIANTS[v];
+                    const on = variant === v;
+                    return (
+                      <button key={v} onClick={() => setVariant(v)} title={def.label}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, background: on ? def.color + '26' : 'transparent', color: on ? def.color : C.textFaint }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: def.color, boxShadow: v === 'holo' ? `0 0 5px ${def.color}` : 'none', opacity: on ? 1 : 0.5 }} />
+                        {def.short}
+                      </button>
+                    );
+                  })}
+                </span>
+              ) : (
+                <span title={VARIANTS[variant].label} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, background: VARIANTS[variant].color + '20', color: VARIANTS[variant].color }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: VARIANTS[variant].color, boxShadow: variant === 'holo' ? `0 0 5px ${VARIANTS[variant].color}` : 'none' }} />
+                  {VARIANTS[variant].label}
+                </span>
+              )}
+            </div>
             <div style={{ fontSize: 12, color: C.textDim, marginTop: 3 }}>{card.set}{card.cardType ? ` · ${card.cardType}` : ''}</div>
             <div style={{ marginTop: 8, display: 'flex', gap: 5, flexWrap: 'wrap' }}>
               {card.rarity && <Pill color={rarityColor(card.rarity)}>{card.rarity}</Pill>}
@@ -163,7 +191,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                       style={{ width: '100%', marginTop: 3, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '6px 8px', color: C.text, fontSize: 13, outline: 'none' }} />
                   </label>
                   <button className="btn-primary" style={{ width: '100%', padding: '8px', fontSize: 12 }}
-                    onClick={() => { addToPortfolio(card, { price: buyPrice, quantity: buyQty, condition: buyCond, location: buyLoc }); setShowAdd(false); }}>
+                    onClick={() => { addToPortfolio(card, { price: buyPrice, quantity: buyQty, condition: buyCond, location: buyLoc, variant }); setShowAdd(false); }}>
                     Hinzufügen
                   </button>
                 </div>
