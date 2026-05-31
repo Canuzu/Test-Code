@@ -9,6 +9,7 @@ import Discover from './components/Discover.jsx';
 import WatchlistView from './components/WatchlistView.jsx';
 import PortfolioView from './components/PortfolioView.jsx';
 import LogoMark from './components/LogoMark.jsx';
+import GameMark from './components/GameMark.jsx';
 import GameSelect from './components/GameSelect.jsx';
 import { getGame } from './data/providers/index.js';
 
@@ -161,8 +162,11 @@ function Shell() {
             </div>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontWeight: 800, fontSize: isMobile ? 16 : 19, background: 'linear-gradient(90deg, #ffd700, #ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.2px' }}>Cartograph</div>
-              <div style={{ fontSize: 10.5, color: C.textFaint, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <span>{game.emoji}</span> {game.label}
+              <div style={{ fontSize: 10.5, color: C.textFaint, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ display: 'inline-flex', width: 15, height: 15, borderRadius: 4, alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${game.accent}, ${game.accent2})`, flexShrink: 0 }}>
+                  <GameMark id={game.id} size={11} />
+                </span>
+                {game.label}
               </div>
             </div>
           </button>
