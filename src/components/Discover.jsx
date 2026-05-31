@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useDeferredValue } from 'react';
 import { Search, RefreshCw, AlertCircle, ExternalLink, ChevronLeft } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, trendColor, trendIcon } from '../lib/theme.js';
@@ -36,6 +36,12 @@ export default function Discover({ onOpen }) {
   const [filterTag, setFilterTag] = useState('all');
   const [activePreset, setActivePreset] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
+  const [visible, setVisible] = useState(60); // how many result cards to render (perf)
+
+  // Keep typing snappy: the heavy filter/sort over ~19k cards runs against a
+  // deferred copy of the query, so each keystroke updates the input instantly
+  // and React filters in the background instead of blocking every character.
+  const deferredSearch = useDeferredValue(search);
 
   const allTags = useMemo(() => [...new Set(Object.values(tags).flat())].sort(), [tags]);
 
@@ -49,8 +55,11 @@ export default function Discover({ onOpen }) {
       : 'sealed';
   // A query in the always-visible search bar searches ALL cards (global),
   // regardless of the current category/set, and shows a results listing.
+  // `searching` reflects what's typed (UI), `searchingDeferred` what's filtered.
   const searching = search.trim().length > 0;
-  const listing = searching || mode === 'setdetail';
+  const searchQuery = deferredSearch.trim().toLowerCase();
+  const searchingDeferred = searchQuery.length > 0;
+  const listing = searchingDeferred || mode === 'setdetail';
 
   // ---- 5 highlights (shown as full cards on the Sets home) --------------
   const highlights = useMemo(() => {
@@ -92,9 +101,9 @@ export default function Discover({ onOpen }) {
     if (!listing) return [];
     let list = cards;
     // When actively searching, ignore the set scope so results are global.
-    if (mode === 'setdetail' && !searching) list = list.filter((c) => (c.setId || c.set) === selectedSet);
-    if (search.trim()) {
-      const q = search.toLowerCase();
+    if (mode === 'setdetail' && !searchingDeferred) list = list.filter((c) => (c.setId || c.set) === selectedSet);
+    if (searchQuery) {
+      const q = searchQuery;
       list = list.filter((c) => c.name.toLowerCase().includes(q) || c.nameEn?.toLowerCase().includes(q) || c.set?.toLowerCase().includes(q));
     }
     if (activePreset) {
@@ -123,7 +132,13 @@ export default function Discover({ onOpen }) {
       price_asc: (a, b) => (a.m.market ?? 0) - (b.m.market ?? 0),
     }[sortBy];
     return dir ? [...list].sort(dir) : list;
-  }, [cards, listing, mode, selectedSet, search, activePreset, filterRisk, filterTrend, filterTag, priceRange, sortBy, tags]);
+  }, [cards, listing, mode, selectedSet, searchQuery, searchingDeferred, activePreset, filterRisk, filterTrend, filterTag, priceRange, sortBy, tags]);
+
+  // Cap how many result cards mount at once — rendering thousands of heavy
+  // CardTiles is what makes a broad query lag. Reset the cap whenever the
+  // result set could change.
+  useEffect(() => { setVisible(60); }, [searchQuery, mode, selectedSet, activePreset, filterRisk, filterTrend, filterTag, priceRange, sortBy, viewMode]);
+  const shown = useMemo(() => listed.slice(0, visible), [listed, visible]);
 
   const openSet = sets.find((s) => s.id === selectedSet);
 
@@ -218,7 +233,7 @@ export default function Discover({ onOpen }) {
       )}
 
       {/* Card listing: a set is open, or the Singles tab */}
-      {!loading && listing && (
+      {!loading && listing && (searching || mode === 'setdetail') && (
         <>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
             {mode === 'setdetail' && !searching && (
@@ -273,15 +288,29 @@ export default function Discover({ onOpen }) {
           </div>
 
           <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>
-            {searching ? <>Suchergebnisse für „{search.trim()}"</> : mode === 'setdetail' ? openSet?.name : 'Alle Singles'}
-            <span style={{ color: C.textFaint, fontWeight: 500, marginLeft: 8, fontSize: 12 }}>{listed.length} Karten</span>
+            {searchingDeferred ? <>Suchergebnisse für „{deferredSearch.trim()}"</> : mode === 'setdetail' ? openSet?.name : 'Alle Singles'}
+            <span style={{ color: C.textFaint, fontWeight: 500, marginLeft: 8, fontSize: 12 }}>
+              {listed.length} Karten{shown.length < listed.length ? ` · ${shown.length} angezeigt` : ''}
+            </span>
+            {search !== deferredSearch && <span style={{ color: C.textFaint, fontWeight: 500, marginLeft: 8, fontSize: 12 }}>· sucht…</span>}
           </div>
 
           {listed.length === 0
             ? <EmptyState icon="🔍" title="Keine Karten gefunden" hint="Anderen Suchbegriff oder Filter probieren." />
-            : viewMode === 'grid'
-              ? <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 330px), 1fr))', gap: 14 }}>{listed.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}</div>
-              : <ListView cards={listed} onOpen={onOpen} />}
+            : (
+              <>
+                {viewMode === 'grid'
+                  ? <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 330px), 1fr))', gap: 14 }}>{shown.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}</div>
+                  : <ListView cards={shown} onOpen={onOpen} />}
+                {shown.length < listed.length && (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: 18 }}>
+                    <button className="btn-primary" onClick={() => setVisible((v) => v + 60)}>
+                      Mehr laden ({listed.length - shown.length} weitere)
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
         </>
       )}
     </>
