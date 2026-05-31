@@ -4,7 +4,7 @@ import { enrich } from './lib/metrics.js';
 import { ruleHit, fireNotification } from './lib/alerts.js';
 import { currentAccount, getSession, register as authRegister, login as authLogin, logout as authLogout } from './lib/auth.js';
 import { applyTheme } from './lib/theme.js';
-import { getGame, gameSnapshot } from './data/providers/index.js';
+import { gameSnapshot } from './data/providers/index.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
 import { ONE_PIECE_CARDS } from './data/onePieceCards.js';
 
@@ -48,15 +48,11 @@ export function StoreProvider({ children }) {
   const [buylist, setBuylist] = useState({ rules: null, items: [] });
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [account, setAccount] = useState(null); // local account profile or null (guest)
-  // Active TCG. '' until the user picks one on the landing page. Read once up
-  // front so a returning visitor lands back on their last game (ignored if that
-  // game is no longer enabled).
-  const [activeGame, setActiveGame] = useState(() => {
-    try {
-      const g = localStorage.getItem(ACTIVE_GAME_KEY) || '';
-      return g && getGame(g).enabled ? g : '';
-    } catch { return ''; }
-  });
+  // Active TCG. Always starts as '' so every launch opens on the game-selection
+  // landing page (the "home"), on phone and desktop alike — rather than jumping
+  // straight into the last-played game. selectGame still records the choice for
+  // in-session back/forward navigation.
+  const [activeGame, setActiveGame] = useState('');
 
   const [compareList, setCompareList] = useState([]);
   const [toast, setToast] = useState(null);

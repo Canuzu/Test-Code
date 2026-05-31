@@ -113,6 +113,38 @@
 - Live-Schaltung: Deploy triggert nur auf `main` → für canuzu.github.io muss der
   Branch `claude/magical-planck-nU1th` nach `main` gemergt werden.
 
+## Folge-Batch 4 (One Piece: Startseiten-Animation, Bilder mobil, Start-Seite)
+- [x] I. One-Piece-Startseiten-Animation: **Thousand Sunny, der auf dem Meer
+  schaukelt** (reines SVG/CSS, analog zur Pokéball-Animation). Neue Komponente
+  `ThousandSunny` in `Discover.jsx` (Schiff mit Löwen-Galionsfigur, Jolly-Roger-
+  Segel + Strohhut, animierte Wellen) + CSS `.op-scene/.op-ship/.op-sea/.op-wave*/
+  .op-shadow` und Keyframes `shipBob`/`waveSway` in `index.css` (inkl. reduced-
+  motion). `WelcomeHero` zeigt für `isOP` die Szene + Texte „Setze die Segel! ⚓"
+  / Button „🏴‍☠️ Sets entern".
+- [x] J. Bilder luden mobil nicht zuverlässig: Bandais CDN
+  (`en.onepiece-cardgame.com`) blockt Hotlinking unzuverlässig (v. a. mobile
+  Netze). `CardImage` lädt One-Piece-Bilder jetzt **primär über den `wsrv.nl`-
+  Proxy** (CORS/cache, erreicht Bandai serverseitig), offizielle URL als Fallback,
+  dann Platzhalter.
+- [x] K. App startete (v. a. Handy) direkt im zuletzt gewählten Spiel: `store.jsx`
+  initialisiert `activeGame` jetzt **immer als ''** → jeder Start öffnet die
+  Spiel-Auswahl-Startseite (Handy + Desktop). `getGame`-Import entfernt.
+
+## ⏸️ NÄCHSTER OFFENER PUNKT (hier weitermachen — "wo waren wir?")
+**One Piece — echte Live-Preise, vollständige Abdeckung.** Status:
+- ✅ Offizielle Cardmarket-(MKM-)API ist **fertig verdrahtet** (Folge-Batch 3,
+  CM-Teil): sobald die 4 `CM_*`-Secrets gesetzt sind, ersetzt der Build die
+  Schätzung durch echte MKM-Preise (idGame via `/games` auto-aufgelöst). **Der
+  Nutzer muss nur noch die Secrets im Repo hinterlegen** (cardmarket.com →
+  Account → API; i. d. R. Professional-Account nötig).
+- ⬜ **OFFEN / auf Wunsch des Nutzers umzusetzen:** optionaler **vollständiger
+  Expansions-Crawl** (`/games/{id}/expansions` → `/expansions/{id}/singles` →
+  pro Produkt `priceGuide`), damit **alle ~4.390 Karten** echte Preise bekommen
+  statt nur der per-Suchbegriff gefundenen. Als opt-in (z. B. `CM_ONEPIECE_FULL=1`)
+  in `scripts/fetch-cardmarket.mjs` + Aufruf in `fetch-onepiece.mjs` bauen,
+  defensiv/paginiert/rate-limit-fest. Alternative: kostenpflichtige TCG-Preis-API
+  (JustTCG/apitcg) mit Key.
+
 ## Hinweise / offene Punkte für später
 - Deploy-Workflow triggert nur auf `main` (+ alter Branch). Für Live-Schaltung
   müssen die Änderungen nach `main` gemerged werden (bewusst nicht ohne

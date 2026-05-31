@@ -50,10 +50,14 @@ export function CardImage({ card, height = 150, radius = 10 }) {
     ? `https://images.pokemontcg.io/${card.setId}/${card.number}.png`
     : null;
   const primary = card?.image?.small || card?.image?.large || constructed;
+  // Bandai's One Piece CDN hot-link-blocks unreliably (esp. on mobile networks),
+  // so for One Piece we load through the wsrv.nl proxy FIRST (CORS-friendly,
+  // cached, reaches Bandai server-side) and keep the direct URL as a fallback.
+  const isOP = !!primary && /onepiece-cardgame\.com/i.test(primary);
   const candidates = [];
   if (primary) {
-    candidates.push(primary);
-    if (/onepiece-cardgame\.com/i.test(primary)) candidates.push(proxied(primary));
+    if (isOP) candidates.push(proxied(primary), primary);
+    else candidates.push(primary);
   }
   const src = candidates[stage];
   if (!src) {
