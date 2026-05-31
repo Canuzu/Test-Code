@@ -6,11 +6,12 @@
 // We also narrow by the (English) set name so the result lands on the exact
 // card instead of "all Pikachus".
 //
-// In LIVE mode the app prefers `card.cardmarketUrl` when it is a real
-// cardmarket.com product page (the official MKM API supplies one). The
-// pokemontcg.io snapshot only carries a `prices.pokemontcg.io` redirect, which
-// does NOT reliably land on the right product — so for those we build a precise
-// Cardmarket search instead. Use `cmUrl(card)` everywhere the UI links out.
+// For the exact Cardmarket product page we prefer, in order:
+//   1. a real cardmarket.com URL (official MKM API supplies one), else
+//   2. the pokemontcg.io per-card redirect `prices.pokemontcg.io/cardmarket/<id>`,
+//      which 302-redirects to the EXACT Cardmarket product for that card, else
+//   3. a precise Cardmarket search as a last resort.
+// Use `cmUrl(card)` everywhere the UI links out.
 
 const cleanName = (name) =>
   (name || '')
@@ -40,9 +41,12 @@ export const marketLinks = (card) => {
   };
 };
 
-// Real cardmarket.com product page if we have one, else a precise CM search.
+// Exact Cardmarket product page for a card. Prefers a real cardmarket.com URL,
+// then the pokemontcg.io per-card redirect (lands on the exact product), and
+// only falls back to a name+set search when neither is available.
 export const cmUrl = (card) => {
   const url = card?.cardmarketUrl;
   if (url && /cardmarket\.com/i.test(url)) return url;
+  if (url && /prices\.pokemontcg\.io\/cardmarket\//i.test(url)) return url;
   return marketLinks(card).cardmarket;
 };

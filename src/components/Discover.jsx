@@ -140,6 +140,10 @@ export default function Discover({ onOpen }) {
   useEffect(() => { setVisible(60); }, [searchQuery, mode, selectedSet, activePreset, filterRisk, filterTrend, filterTag, priceRange, sortBy, viewMode]);
   const shown = useMemo(() => listed.slice(0, visible), [listed, visible]);
 
+  // Jump to the top when moving between sub-views (category, opening/closing a
+  // set, or starting a search) so the new list starts at its beginning.
+  useEffect(() => { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); }, [cat, selectedSet, searchingDeferred]);
+
   const openSet = sets.find((s) => s.id === selectedSet);
 
   const switchCat = (id) => { setCat(id); setSelectedSet(null); setSearch(''); setActivePreset(null); };

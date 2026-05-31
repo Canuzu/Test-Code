@@ -21,12 +21,19 @@ const SETS = [
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 const PRODUCT_TYPES = {
-  // `suffix` is the display label; `cmTerm` is the clean term used for the
-  // Cardmarket search (parentheticals/extra words there only hurt the match).
+  // `suffix` is the German display label. `cmTerm` MUST match Cardmarket's
+  // (English) sealed-product catalogue, otherwise the search returns nothing:
+  // e.g. Cardmarket lists "Elite Trainer Box", never the German "Top-Trainer-Box".
   booster: { label: 'Booster', suffix: 'Booster Pack', cmTerm: 'Booster', emoji: '📦', grad: ['#3b82f6', '#1e3a8a'] },
-  display: { label: 'Display', suffix: 'Display (36 Booster)', cmTerm: 'Display', emoji: '🗃️', grad: ['#f59e0b', '#b45309'] },
-  etb: { label: 'Top-Trainer-Box', suffix: 'Top-Trainer-Box', cmTerm: 'Top-Trainer-Box', emoji: '🎁', grad: ['#c084fc', '#7c3aed'] },
+  display: { label: 'Display', suffix: 'Display (36 Booster)', cmTerm: 'Booster Box', emoji: '🗃️', grad: ['#f59e0b', '#b45309'] },
+  etb: { label: 'Top-Trainer-Box', suffix: 'Top-Trainer-Box', cmTerm: 'Elite Trainer Box', emoji: '🎁', grad: ['#c084fc', '#7c3aed'] },
 };
+
+// Cardmarket product search using the English set + product term. The term must
+// match Cardmarket's catalogue ("Elite Trainer Box", "Booster Box") so the
+// result lands on the actual sealed product instead of an empty page.
+const cmSealedUrl = (setEn, cmTerm) =>
+  `https://www.cardmarket.com/de/Pokemon/Products/Search?searchString=${encodeURIComponent(`${setEn} ${cmTerm}`)}`;
 
 export const SEALED = SETS.flatMap(({ set, setEn, year, setId }) =>
   Object.entries(PRODUCT_TYPES).map(([type, def]) => ({
@@ -39,7 +46,7 @@ export const SEALED = SETS.flatMap(({ set, setEn, year, setId }) =>
     set,
     year,
     logo: `https://images.pokemontcg.io/${setId}/logo.png`,
-    cardmarketUrl: `https://www.cardmarket.com/de/Pokemon/Products/Search?searchString=${encodeURIComponent(`${setEn} ${def.cmTerm}`)}`,
+    cardmarketUrl: cmSealedUrl(setEn, def.cmTerm),
   })),
 );
 

@@ -101,6 +101,15 @@ function Shell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, modal, showCompare, showSettings, showImport, showPricing, showAuth]);
 
+  // Scroll back to the top whenever the tab changes (incl. browser back/forward,
+  // which sets `tab` via popstate). Without this the new view inherits the old
+  // scroll position and lands "randomly" in the middle of the page. The card
+  // modal is a fixed overlay with its own scroll, so we deliberately don't
+  // touch the page scroll there — closing a card keeps your place in the list.
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [tab]);
+
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
   const game = getGame(settings.game);
   const pro = isPro(settings);
