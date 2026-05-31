@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { Star } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Star, Search } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C } from '../lib/theme.js';
 import { fmtEur, fmtPct } from '../lib/format.js';
@@ -7,10 +7,46 @@ import { enrich } from '../lib/metrics.js';
 import CardTile from './CardTile.jsx';
 import { Stat, EmptyState } from './ui.jsx';
 
+// Same honest foil classification as the Discover filter (no per-card reverse-
+// holo flag in the data): foil rarities = holo, base C/U/R prints = reverse.
+const foilClass = (rarity) => {
+  const x = (rarity || '').toLowerCase();
+  if (!x) return 'normal';
+  if (x.includes('holo') || x.includes('ultra') || x.includes('secret') || x.includes('rainbow')
+    || x.includes('illustration') || x.includes('hyper') || x.includes('shiny') || x.includes('radiant')
+    || x.includes('vmax') || x.includes('vstar') || x.includes('gx') || x.includes('ex')
+    || x.includes('break') || x.includes('prime') || x.includes('legend') || x.includes('prism')
+    || x.includes('amazing') || x.includes('ace') || /\bv\b/.test(x) || x.includes('double rare')) return 'holo';
+  if (x === 'common' || x === 'uncommon' || x === 'rare') return 'reverse';
+  return 'normal';
+};
+
 export default function WatchlistView({ onOpen }) {
   const { watchlist, cards } = useStore();
   const currentById = useMemo(() => new Map(cards.map((c) => [c.id, c.m.market])), [cards]);
   const items = useMemo(() => watchlist.map(enrich), [watchlist]);
+
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('added');
+  const [filterTrend, setFilterTrend] = useState('all');
+  const [filterFoil, setFilterFoil] = useState('all');
+
+  const shown = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let list = items
+      .filter((c) => !q || c.name.toLowerCase().includes(q) || c.nameEn?.toLowerCase().includes(q) || c.set?.toLowerCase().includes(q))
+      .filter((c) => filterTrend === 'all' || c.m.trend === filterTrend)
+      .filter((c) => filterFoil === 'all' || foilClass(c.rarity) === filterFoil);
+    const dir = {
+      added: null, // keep insertion order (most recently added last)
+      score: (a, b) => b.m.score - a.m.score,
+      change30: (a, b) => (b.m.change30 ?? -999) - (a.m.change30 ?? -999),
+      price_desc: (a, b) => (b.m.market ?? 0) - (a.m.market ?? 0),
+      price_asc: (a, b) => (a.m.market ?? 0) - (b.m.market ?? 0),
+      name: (a, b) => a.name.localeCompare(b.name),
+    }[sortBy];
+    return dir ? [...list].sort(dir) : list;
+  }, [items, search, sortBy, filterTrend, filterFoil]);
 
   if (items.length === 0) {
     return <EmptyState icon={<Star size={56} style={{ opacity: 0.35 }} />} title="Watchlist ist leer" hint="Füge Karten über »⭐ Merken« in der Entdecken-Ansicht hinzu." />;
@@ -31,9 +67,42 @@ export default function WatchlistView({ onOpen }) {
         <Stat label="Δ seit Merken" value={`${delta >= 0 ? '+' : ''}${fmtEur(delta, 0)}`} color={delta >= 0 ? C.green : C.red} sub={deltaPct != null ? fmtPct(deltaPct) : undefined} />
         <Stat label="Im Aufwärtstrend" value={`${risers}/${items.length}`} color={C.green2} />
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 330px), 1fr))', gap: 14 }}>
-        {items.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}
+
+      {/* Search + filters */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14 }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+          <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.textFaint }} />
+          <input className="control" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="In der Watchlist suchen…" style={{ width: '100%', padding: '9px 10px 9px 32px' }} />
+        </div>
+        <select className="control" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="added">↕ Zuletzt gemerkt</option>
+          <option value="score">↕ Score</option>
+          <option value="change30">↕ Veränderung 30T</option>
+          <option value="price_desc">↕ Preis ↓</option>
+          <option value="price_asc">↕ Preis ↑</option>
+          <option value="name">↕ Name A–Z</option>
+        </select>
+        <select className="control" value={filterTrend} onChange={(e) => setFilterTrend(e.target.value)}>
+          <option value="all">Alle Trends</option>
+          <option value="rising">↑ Steigend</option>
+          <option value="stable">→ Stabil</option>
+          <option value="falling">↓ Fallend</option>
+        </select>
+        <select className="control" value={filterFoil} onChange={(e) => setFilterFoil(e.target.value)} title="Holo / Reverse Holo">
+          <option value="all">Alle Varianten</option>
+          <option value="holo">✨ Holo</option>
+          <option value="reverse">🔄 Reverse Holo</option>
+          <option value="normal">▫️ Normal</option>
+        </select>
       </div>
+
+      <div style={{ fontSize: 12, color: C.textFaint, marginBottom: 12 }}>{shown.length} von {items.length} Karten</div>
+
+      {shown.length === 0
+        ? <EmptyState icon="🔍" title="Keine Karten gefunden" hint="Anderen Suchbegriff oder Filter probieren." />
+        : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 330px), 1fr))', gap: 14 }}>
+            {shown.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}
+          </div>}
     </div>
   );
 }

@@ -34,9 +34,16 @@ function SealedTile({ p }) {
 
 // Sealed products (booster/display/etb). No live price from our data source, so
 // each tile links to the current Cardmarket price instead of showing a number.
-export default function SealedGrid({ type }) {
-  const items = SEALED.filter((p) => p.type === type).sort((a, b) => b.year - a.year);
-  if (items.length === 0) return <EmptyState icon="📦" title="Keine Produkte" hint="Für diese Kategorie sind noch keine Produkte hinterlegt." />;
+// `query` scopes the search to this sealed category (set name or product type).
+export default function SealedGrid({ type, query = '' }) {
+  const q = query.trim().toLowerCase();
+  const items = SEALED
+    .filter((p) => p.type === type)
+    .filter((p) => !q || p.set.toLowerCase().includes(q) || p.name.toLowerCase().includes(q) || p.typeLabel.toLowerCase().includes(q))
+    .sort((a, b) => b.year - a.year);
+  if (items.length === 0) {
+    return <EmptyState icon="📦" title={q ? 'Kein Produkt gefunden' : 'Keine Produkte'} hint={q ? 'Anderen Suchbegriff probieren.' : 'Für diese Kategorie sind noch keine Produkte hinterlegt.'} />;
+  }
 
   return (
     <>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Info, TrendingUp, Calculator, Tag as TagIcon, Globe, Award, Receipt, Maximize2, Package } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, riskColor, riskPhrase, riskAdjDative, rarityColor, trendColor, trendIcon, trendLabel } from '../lib/theme.js';
@@ -23,6 +23,9 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   const [tab, setTab] = useState(initialTab === 'buy' ? 'overview' : initialTab);
   const [showAdd, setShowAdd] = useState(initialTab === 'buy'); // inline "add to collection" form
   const [zoom, setZoom] = useState(false); // fullscreen image lightbox
+  const [heroIdx, setHeroIdx] = useState(0); // which hero candidate is in use
+  const [heroLoaded, setHeroLoaded] = useState(false); // show spinner until ready
+  const openZoom = () => { setHeroIdx(0); setHeroLoaded(false); setZoom(true); };
   const [noteText, setNoteText] = useState(notes[card.id] || '');
   const [newTag, setNewTag] = useState('');
   const [buyPrice, setBuyPrice] = useState(String(card.prices.low ?? card.prices.market ?? ''));
@@ -35,11 +38,31 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   const [alertDir, setAlertDir] = useState('above');
   const [alertTarget, setAlertTarget] = useState('');
 
+  // While the fullscreen image is open, lock background scroll and allow Esc to
+  // close it. Cleaning up on unmount guarantees scroll is always restored, which
+  // prevents the "page frozen" feeling after zooming (#5).
+  useEffect(() => {
+    if (!zoom) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => { if (e.key === 'Escape') setZoom(false); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [zoom]);
+
   const m = card.m;
   const p = card.prices;
   const links = marketLinks(card);
-  const heroSrc = card.image?.large || card.image?.small
-    || (card.setId && card.number ? `https://images.pokemontcg.io/${card.setId}/${card.number}_hires.png` : null);
+  // Ordered candidates for the fullscreen image. Vintage cards often lack a
+  // `_hires` asset, so we fall back: large → constructed hires → small →
+  // constructed small. The lightbox steps through these on each load error so a
+  // missing hi-res file never leaves a blank zoom (e.g. Dark Typhlosion).
+  const heroCandidates = [
+    card.image?.large,
+    card.setId && card.number ? `https://images.pokemontcg.io/${card.setId}/${card.number}_hires.png` : null,
+    card.image?.small,
+    card.setId && card.number ? `https://images.pokemontcg.io/${card.setId}/${card.number}.png` : null,
+  ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
   const cardTags = tags[card.id] || [];
   const markets = marketEstimates(card, settings);
   const arb = arbitrage(card, settings);
@@ -71,7 +94,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
         {/* Header */}
         <div style={{ padding: '18px 20px 0', display: 'flex', gap: 14 }}>
           {/* Zoomable artwork: click the image or the ⤢ arrows for fullscreen */}
-          <button onClick={() => setZoom(true)} title="Bild vergrößern" className="zoomable-img"
+          <button onClick={openZoom} title="Bild vergrößern" className="zoomable-img"
             style={{ position: 'relative', padding: 0, border: 'none', background: 'none', cursor: 'zoom-in', flexShrink: 0, lineHeight: 0 }}>
             <CardImage card={card} height={120} />
             <span style={{ position: 'absolute', bottom: 6, right: 6, background: '#000000aa', color: '#fff', borderRadius: 6, padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 4px #00000080' }}>
@@ -388,15 +411,34 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
       </div>
     </div>
 
-    {/* Fullscreen image lightbox (#23) — opened from the ⤢ arrows on the card */}
+    {/* Fullscreen image lightbox — opened from the ⤢ arrows on the card. Robust
+        against missing hi-res files (#4): on each load error it advances to the
+        next candidate; a spinner shows until one loads. No entry animation and a
+        plain overlay keep it light so repeated open/close can't jank (#5). */}
     {zoom && (
-      <div onClick={() => setZoom(false)} className="fade-in"
-        style={{ position: 'fixed', inset: 0, background: '#000000ee', zIndex: 130, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, cursor: 'zoom-out' }}>
-        <button onClick={() => setZoom(false)} title="Schließen" style={{ position: 'absolute', top: 16, right: 16, background: '#ffffff1f', border: 'none', color: '#fff', width: 38, height: 38, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={18} /></button>
-        {heroSrc
-          ? <img src={heroSrc} alt={card.name} referrerPolicy="no-referrer" onClick={(e) => e.stopPropagation()}
-              style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: 14, boxShadow: '0 12px 50px #000000aa', cursor: 'default' }} />
-          : <div style={{ color: '#fff', fontSize: 14 }}>Kein Bild verfügbar</div>}
+      <div onClick={() => setZoom(false)}
+        style={{ position: 'fixed', inset: 0, background: '#000000f2', zIndex: 130, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, cursor: 'zoom-out' }}>
+        <button onClick={() => setZoom(false)} title="Schließen" style={{ position: 'absolute', top: 16, right: 16, background: '#ffffff1f', border: 'none', color: '#fff', width: 38, height: 38, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}><X size={18} /></button>
+        {!heroLoaded && heroIdx < heroCandidates.length && (
+          <div style={{ position: 'absolute', width: 34, height: 34, border: '3px solid #ffffff22', borderTopColor: C.gold, borderRadius: '50%' }} className="spin" />
+        )}
+        {heroIdx < heroCandidates.length ? (
+          <img
+            key={heroCandidates[heroIdx]}
+            src={heroCandidates[heroIdx]}
+            alt={card.name}
+            referrerPolicy="no-referrer"
+            onClick={(e) => e.stopPropagation()}
+            onLoad={() => setHeroLoaded(true)}
+            onError={() => { setHeroLoaded(false); setHeroIdx((i) => i + 1); }}
+            style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: 14, boxShadow: '0 12px 50px #000000aa', cursor: 'default', opacity: heroLoaded ? 1 : 0, transition: 'opacity 0.15s' }}
+          />
+        ) : (
+          <div style={{ color: '#fff', fontSize: 14, textAlign: 'center', maxWidth: 280 }}>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>🃏</div>
+            Für diese Karte ist gerade kein Bild verfügbar.
+          </div>
+        )}
         <div style={{ position: 'absolute', bottom: 18, left: 0, right: 0, textAlign: 'center', color: '#ffffffcc', fontSize: 13, fontWeight: 600, pointerEvents: 'none' }}>{card.name} · {card.set}</div>
       </div>
     )}

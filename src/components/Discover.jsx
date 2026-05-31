@@ -9,6 +9,23 @@ import SealedGrid from './SealedGrid.jsx';
 import { SEALED_CATEGORIES } from '../data/sealedProducts.js';
 import { ChangeBadge, ScoreBadge, EmptyState, CardImage } from './ui.jsx';
 
+// Foil class from the (pokemontcg.io) rarity. Our data has no explicit
+// reverse-holo flag, so this is an honest approximation:
+//  • 'holo'    → genuine foil rarities (Holo / Ultra / Secret / V / VMAX / …)
+//  • 'reverse' → the base Common/Uncommon/Rare prints that ship as reverse-holo
+//  • 'normal'  → everything else (e.g. plain Promo without a foil marker)
+const foilClass = (rarity) => {
+  const x = (rarity || '').toLowerCase();
+  if (!x) return 'normal';
+  if (x.includes('holo') || x.includes('ultra') || x.includes('secret') || x.includes('rainbow')
+    || x.includes('illustration') || x.includes('hyper') || x.includes('shiny') || x.includes('radiant')
+    || x.includes('vmax') || x.includes('vstar') || x.includes('gx') || x.includes('ex')
+    || x.includes('break') || x.includes('prime') || x.includes('legend') || x.includes('prism')
+    || x.includes('amazing') || x.includes('ace') || /\bv\b/.test(x) || x.includes('double rare')) return 'holo';
+  if (x === 'common' || x === 'uncommon' || x === 'rare') return 'reverse';
+  return 'normal';
+};
+
 const PRESETS = [
   { id: 'risers', label: '🚀 Steiger', fn: (c) => c.m.trend === 'rising' && (c.m.change30 ?? 0) > 3 },
   { id: 'bargain', label: '💰 Unter €25', fn: (c) => (c.m.market ?? 0) < 25 },
@@ -36,6 +53,7 @@ export default function Discover({ onOpen }) {
   const [priceRange, setPriceRange] = useState('all');
   const [filterRisk, setFilterRisk] = useState('all');
   const [filterTrend, setFilterTrend] = useState('all');
+  const [filterFoil, setFilterFoil] = useState('all'); // all | holo | reverse | normal
   const [filterTag, setFilterTag] = useState('all');
   const [activePreset, setActivePreset] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
@@ -56,13 +74,18 @@ export default function Discover({ onOpen }) {
   const mode = cat === 'start' ? 'home'
     : cat === 'singles' ? (selectedSet ? 'setdetail' : 'setlist')
       : 'sealed';
-  // A query in the always-visible search bar searches ALL cards (global),
-  // regardless of the current category/set, and shows a results listing.
+  // The search box stays SCOPED to where you are:
+  //  • inside an open set (setdetail) → searches only that set
+  //  • Singles set-list / Start       → searches all singles (whole catalogue)
+  // It no longer always jumps to the global singles list from a sealed tab etc.
   // `searching` reflects what's typed (UI), `searchingDeferred` what's filtered.
   const searching = search.trim().length > 0;
   const searchQuery = deferredSearch.trim().toLowerCase();
   const searchingDeferred = searchQuery.length > 0;
-  const listing = searchingDeferred || mode === 'setdetail';
+  const inSet = mode === 'setdetail';
+  // Show the card listing when a set is open, or when searching in a card scope
+  // (Start / Singles). Sealed tabs keep their own product grid + search.
+  const listing = inSet || (searchingDeferred && (cat === 'start' || cat === 'singles'));
 
   // ---- 5 highlights (shown as full cards on the Sets home) --------------
   const highlights = useMemo(() => {
@@ -103,8 +126,9 @@ export default function Discover({ onOpen }) {
   const listed = useMemo(() => {
     if (!listing) return [];
     let list = cards;
-    // When actively searching, ignore the set scope so results are global.
-    if (mode === 'setdetail' && !searchingDeferred) list = list.filter((c) => (c.setId || c.set) === selectedSet);
+    // Keep the set scope even while searching inside an open set (#1): a query
+    // then filters within that set instead of jumping to the global list.
+    if (inSet) list = list.filter((c) => (c.setId || c.set) === selectedSet);
     if (searchQuery) {
       const q = searchQuery;
       list = list.filter((c) => c.name.toLowerCase().includes(q) || c.nameEn?.toLowerCase().includes(q) || c.set?.toLowerCase().includes(q));
@@ -116,6 +140,7 @@ export default function Discover({ onOpen }) {
     list = list
       .filter((c) => filterRisk === 'all' || c.m.risk === filterRisk)
       .filter((c) => filterTrend === 'all' || c.m.trend === filterTrend)
+      .filter((c) => filterFoil === 'all' || foilClass(c.rarity) === filterFoil)
       .filter((c) => filterTag === 'all' || (tags[c.id] || []).includes(filterTag))
       .filter((c) => {
         const mk = c.m.market ?? 0;
@@ -135,12 +160,12 @@ export default function Discover({ onOpen }) {
       price_asc: (a, b) => (a.m.market ?? 0) - (b.m.market ?? 0),
     }[sortBy];
     return dir ? [...list].sort(dir) : list;
-  }, [cards, listing, mode, selectedSet, searchQuery, searchingDeferred, activePreset, filterRisk, filterTrend, filterTag, priceRange, sortBy, tags]);
+  }, [cards, listing, inSet, selectedSet, searchQuery, activePreset, filterRisk, filterTrend, filterFoil, filterTag, priceRange, sortBy, tags]);
 
   // Cap how many result cards mount at once — rendering thousands of heavy
   // CardTiles is what makes a broad query lag. Reset the cap whenever the
   // result set could change.
-  useEffect(() => { setVisible(60); }, [searchQuery, mode, selectedSet, activePreset, filterRisk, filterTrend, filterTag, priceRange, sortBy, viewMode]);
+  useEffect(() => { setVisible(60); }, [searchQuery, mode, selectedSet, activePreset, filterRisk, filterTrend, filterFoil, filterTag, priceRange, sortBy, viewMode]);
   const shown = useMemo(() => listed.slice(0, visible), [listed, visible]);
 
   // Jump to the top when moving between sub-views (category, opening/closing a
@@ -151,16 +176,24 @@ export default function Discover({ onOpen }) {
 
   const switchCat = (id) => { setCat(id); setSelectedSet(null); setSearch(''); setActivePreset(null); };
 
+  // Scope of the search box, so the placeholder/behaviour match where you are.
+  const scope = inSet ? 'set' : (cat === 'booster' || cat === 'display' || cat === 'etb') ? 'sealed' : 'singles';
+  const searchPlaceholder = scope === 'set'
+    ? `In „${openSet?.name || 'diesem Set'}" suchen…`
+    : scope === 'sealed'
+      ? `${TABS.find((t) => t.id === cat)?.label || 'Produkte'} durchsuchen…`
+      : 'Karte suchen – über alle Sets (z. B. Glurak, Pikachu, Nachtara)…';
+
   return (
     <>
-      {/* Always-visible global search bar (directly on the start page) */}
+      {/* Search bar — scoped to the current view (set / sealed category / all singles) */}
       <div style={{ position: 'relative', marginBottom: 14 }}>
         <Search size={18} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.textFaint }} />
         <input
           className="control"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Karte suchen – über alle Sets (z. B. Glurak, Pikachu, Nachtara)…"
+          placeholder={searchPlaceholder}
           style={{ width: '100%', padding: '13px 42px 13px 42px', fontSize: 15, borderRadius: 12 }}
         />
         {searching && (
@@ -169,8 +202,10 @@ export default function Discover({ onOpen }) {
         )}
       </div>
 
-      {/* Category tabs: Sets · Singles · Booster · Displays · Top-Trainer-Box */}
-      <div style={{ display: searching ? 'none' : 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 16, borderBottom: `1px solid ${C.lineStrong}` }}>
+      {/* Category tabs: Start · Singles · Booster · Displays · Top-Trainer-Box.
+          Hidden only while searching inside an open set (that view has its own
+          back button); otherwise they stay so the search scope is always clear. */}
+      <div style={{ display: inSet ? 'none' : 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 16, borderBottom: `1px solid ${C.lineStrong}` }}>
         {TABS.map((t) => {
           const Ic = CAT_ICON[t.id] || LayoutGrid;
           return (
@@ -183,7 +218,7 @@ export default function Discover({ onOpen }) {
       </div>
 
       {/* Source line */}
-      {!searching && (
+      {!searching && !inSet && (
         <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 14 }}>
           {source === 'snapshot' && <>🟢 Aktuelle Marktdaten (Cardmarket EU) · Stand {fmtRelative(lastUpdated)} · täglich aktualisiert · </>}
           {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
@@ -199,7 +234,7 @@ export default function Discover({ onOpen }) {
         </div>
       )}
 
-      {mode === 'sealed' && !searching && <SealedGrid type={cat} />}
+      {mode === 'sealed' && <SealedGrid type={cat} query={searchQuery} />}
 
       {loading && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 12 }}>
@@ -208,7 +243,7 @@ export default function Discover({ onOpen }) {
       )}
 
       {/* Start: a cool Pokémon animation (replaces the big set list) + Top-Karten */}
-      {!loading && mode === 'home' && !searching && (
+      {!loading && mode === 'home' && !searchingDeferred && (
         <>
           <PokemonHero onBrowse={() => switchCat('singles')} />
           {highlights.length > 0 && (
@@ -229,7 +264,7 @@ export default function Discover({ onOpen }) {
 
       {/* Singles: choose a set first — its individual cards load only on click,
           so the page never has to render hundreds of cards at once. */}
-      {!loading && mode === 'setlist' && !searching && (
+      {!loading && mode === 'setlist' && !searchingDeferred && (
         <>
           <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
             🗂️ Sets
@@ -242,11 +277,11 @@ export default function Discover({ onOpen }) {
         </>
       )}
 
-      {/* Card listing: a set is open, or the Singles tab */}
-      {!loading && listing && (searching || mode === 'setdetail') && (
+      {/* Card listing: a set is open, or searching within Start/Singles */}
+      {!loading && listing && (
         <>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
-            {mode === 'setdetail' && !searching && (
+            {inSet && (
               <button onClick={() => { setSelectedSet(null); setSearch(''); setActivePreset(null); }} style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '8px 12px', borderRadius: 8, border: `1px solid ${C.lineStrong}`, background: C.surface, color: C.textSoft, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
                 <ChevronLeft size={14} /> Sets
               </button>
@@ -273,6 +308,12 @@ export default function Discover({ onOpen }) {
               <option value="stable">→ Stabil</option>
               <option value="falling">↓ Fallend</option>
             </select>
+            <select className="control" value={filterFoil} onChange={(e) => setFilterFoil(e.target.value)} title="Holo / Reverse Holo">
+              <option value="all">Alle Varianten</option>
+              <option value="holo">✨ Holo</option>
+              <option value="reverse">🔄 Reverse Holo</option>
+              <option value="normal">▫️ Normal</option>
+            </select>
             {allTags.length > 0 && (
               <select className="control" value={filterTag} onChange={(e) => setFilterTag(e.target.value)}>
                 <option value="all">Alle Tags</option>
@@ -298,7 +339,9 @@ export default function Discover({ onOpen }) {
           </div>
 
           <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>
-            {searchingDeferred ? <>Suchergebnisse für „{deferredSearch.trim()}"</> : mode === 'setdetail' ? openSet?.name : 'Alle Singles'}
+            {inSet
+              ? <>{openSet?.name}{searchingDeferred ? <> · „{deferredSearch.trim()}"</> : null}</>
+              : searchingDeferred ? <>Suchergebnisse für „{deferredSearch.trim()}"</> : 'Alle Singles'}
             <span style={{ color: C.textFaint, fontWeight: 500, marginLeft: 8, fontSize: 12 }}>
               {listed.length} Karten{shown.length < listed.length ? ` · ${shown.length} angezeigt` : ''}
             </span>
