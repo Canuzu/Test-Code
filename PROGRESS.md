@@ -68,6 +68,51 @@
 - G ✓: Kontrast erhöht in `theme.js` (DARK+LIGHT) und `index.css` (synchron): hellere/dunklere Sekundärtexte (textSoft/Dim/Faint/Ghost) + etwas stärkere Linien. Akzente & Layout unverändert.
 - E ✓: `src/lib/auth.js` (lokale Konten, PBKDF2-SHA256 via Web Crypto, Registry/Session in localStorage) + Storage-Namespace in `storage.js` (`setNamespace`; Gast='' = bisherige Daten) + Store: `loadAll()` (Profil-Swap), `account`/`login`/`register`/`logout`, Namespace beim Mount aus Session. `src/components/AuthModal.jsx` + Account-Button im Header. Headless verifiziert: Datentrennung PASS (A=1, Gast=0, A-Re-Login=1), 0 App-Fehler.
 
+## Folge-Batch 3 (One Piece voll ausgebaut – wie Pokémon)
+- [x] H. One Piece: **alle Sets & Karten** mit **offiziellem Artwork** + Preisen,
+  voll funktionsfähig wie die Pokémon-Seite (Discover/Sets/Singles, Sammlung,
+  Watchlist, Analyse, Buylist, Alerts, Sealed, Markt-Links).
+
+### Folge-Batch 3 — Details
+- Datenquelle: offener Datensatz **buhbbl/punk-records** (offizielle One-Piece-TCG-
+  Daten, über GitHub raw ausgeliefert – im Deploy **und** lokal erreichbar, anders
+  als die Cloudflare-geblockten TCG-APIs). Enthält jedes engl. Set + Karte inkl.
+  offizieller Bild-URLs.
+- `scripts/fetch-onepiece.mjs`: holt `packs.json` + alle `data/<pack>.json`,
+  **dedupliziert per Karten-ID** (Karten werden über viele Decks/Booster
+  nachgedruckt), normalisiert über den Provider, sortiert neu→alt, schreibt
+  `public/data/onepiece.json` (**4.392 Karten, 53 Sets**). Robust: hält bei Fehler
+  den bestehenden Snapshot, exit 0. In Deploy-Workflow eingehängt (Schritt vor
+  `npm run build`).
+- `src/data/providers/onepiece.js`: `meta`, `SET_META` (Code→Name+Release-Datum
+  für OP01–16, EB01–04, PRB01–02, ST01–30, P), `prettyName` ("Monkey.D.Luffy" →
+  "Monkey D. Luffy"), Farb-/Kategorie-Mapping (DE), `normalize` (→ App-Card-Shape,
+  inkl. Cardmarket-OnePiece-Link je Karte) und ein **deterministisches
+  Preismodell** `estimatePrices` (FNV-Hash-Seeds → stabile Snapshots): Basis nach
+  Rarität, ×2,8–5 für Alt-Arts (`_pN`), Set-Alter-Faktor, Streuung; daraus
+  market/low/trend/avg1/avg7/avg30 passend zu `metrics.js` (Score/Tier/Change/
+  Marge rechnen sauber, kein NaN). Preise klar als **Schätzung** gekennzeichnet.
+- `src/data/onePieceCards.js`: gebündelter Offline-Fallback neu generiert (56
+  echte Karten quer über 16 neueste Sets, echte Bilder/Preise) statt der alten
+  16 Demo-Karten.
+- Bilder robust: `CardImage` lädt offizielle CDN mit `no-referrer` (hebelt
+  Referer-Hotlinkschutz aus) → Fallback über `wsrv.nl`-Proxy (gegen Bandais
+  IP-Hotlinkschutz) → sauberer Platzhalter. (Bestätigt durch optcg-api-Quelle.)
+- Spielbewusst gemacht: `marketLinks.js` (Cardmarket **OnePiece** /TCGplayer-Line/
+  eBay-Keyword je `card.game`), `sealedProducts.js` (`sealedFor`/
+  `sealedCategoriesFor`: One-Piece-Booster/Display/**Starter-Decks** aus
+  Set-Metadaten, Cardmarket-Links, Set-Artwork), `SealedGrid`/`Discover`
+  (Kategorien, Icons, Such-Scope/-Platzhalter, Quellen-Zeile, Sealed-Grid),
+  `App.jsx`-Footer (One-Piece-Hinweis: echte Karten/Bilder, Preise geschätzt),
+  Registry-Metadaten (Provider aktiv, Tagline/Blurb), `metrics.js`-rarityWeight
+  (One-Piece-Raritäten: Leader/Super Rare/Secret/Treasure korrekt gewichtet).
+- SW-Cache `kwde-v3`→`kwde-v4`; `data/*.json`-Snapshots jetzt network-first (nicht
+  nur cards.json), damit One-Piece-Daten frisch geladen werden. Build grün
+  (2404 Module), `enrich()` über alle 4.392 Karten ohne NaN (Tiers S:147 A:482
+  B:1296 C:1571 D:878 F:18).
+- Live-Schaltung: Deploy triggert nur auf `main` → für canuzu.github.io muss der
+  Branch `claude/magical-planck-nU1th` nach `main` gemergt werden.
+
 ## Hinweise / offene Punkte für später
 - Deploy-Workflow triggert nur auf `main` (+ alter Branch). Für Live-Schaltung
   müssen die Änderungen nach `main` gemerged werden (bewusst nicht ohne

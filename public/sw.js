@@ -1,11 +1,11 @@
 // Service worker for offline support (PWA).
 // Strategy:
 //   - navigations  → network-first, fall back to the cached app shell (offline);
-//   - data/cards.json → network-first (always try fresh prices), cache fallback;
+//   - data/*.json snapshots → network-first (always try fresh prices), cache fallback;
 //   - other same-origin assets → cache-first, then network (hashed, immutable);
-//   - cross-origin (card images on images.pokemontcg.io) → left untouched.
+//   - cross-origin card images (pokemontcg.io / onepiece-cardgame.com) → left untouched.
 
-const CACHE = 'kwde-v3';
+const CACHE = 'kwde-v4';
 const SHELL = ['./', './index.html'];
 
 self.addEventListener('install', (event) => {
@@ -39,7 +39,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.pathname.endsWith('/data/cards.json')) {
+  if (url.pathname.includes('/data/') && url.pathname.endsWith('.json')) {
     event.respondWith(
       fetch(req).then((res) => { putInCache(req, res.clone()); return res; })
         .catch(() => caches.match(req)),

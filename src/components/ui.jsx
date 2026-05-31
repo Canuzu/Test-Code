@@ -34,15 +34,29 @@ export function Spark({ series, width = 96, height = 30, strokeWidth = 2 }) {
   );
 }
 
-// Card artwork with graceful fallback if the image is missing or blocked.
+// Card artwork with a graceful, multi-source fallback chain:
+//   1. the card's own image (pokemontcg.io for Pokémon, the official One Piece
+//      CDN for One Piece), requested with no-referrer so Referer-based hot-link
+//      protection doesn't block it;
+//   2. for One Piece (Bandai's CDN occasionally IP-blocks hot-linkers) a retry
+//      through wsrv.nl, a CORS-friendly image proxy that re-serves it;
+//   3. a clean placeholder tile if everything fails.
+const proxied = (u) => `https://wsrv.nl/?url=${encodeURIComponent(u)}&output=png&w=600&maxage=30d`;
+
 export function CardImage({ card, height = 150, radius = 10 }) {
-  const [broken, setBroken] = useState(false);
-  // Try image.small → image.large → CDN URL constructed from setId/number.
-  const constructed = (card?.setId && card?.number)
+  const [stage, setStage] = useState(0);
+  // Try image.small → image.large → a constructed pokemontcg.io CDN URL.
+  const constructed = (card?.setId && card?.number && card?.game !== 'onepiece')
     ? `https://images.pokemontcg.io/${card.setId}/${card.number}.png`
     : null;
-  const src = card?.image?.small || card?.image?.large || constructed;
-  if (!src || broken) {
+  const primary = card?.image?.small || card?.image?.large || constructed;
+  const candidates = [];
+  if (primary) {
+    candidates.push(primary);
+    if (/onepiece-cardgame\.com/i.test(primary)) candidates.push(proxied(primary));
+  }
+  const src = candidates[stage];
+  if (!src) {
     return (
       <div style={{ height, width: height * 0.72, borderRadius: radius, background: 'linear-gradient(160deg,#23234a,#161630)', border: `1px solid ${C.lineStrong}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, flexShrink: 0 }}>
         <span style={{ fontSize: 26 }}>🃏</span>
@@ -54,8 +68,9 @@ export function CardImage({ card, height = 150, radius = 10 }) {
     <img
       src={src}
       alt={card?.name || 'Karte'}
+      loading="lazy"
       referrerPolicy="no-referrer"
-      onError={() => setBroken(true)}
+      onError={() => setStage((s) => s + 1)}
       style={{ height, width: 'auto', borderRadius: radius, display: 'block', flexShrink: 0, boxShadow: '0 4px 14px #00000060' }}
     />
   );

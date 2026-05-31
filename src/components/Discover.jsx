@@ -1,12 +1,12 @@
 import { useMemo, useState, useEffect, useDeferredValue } from 'react';
-import { Search, RefreshCw, AlertCircle, ExternalLink, ChevronLeft, Sparkles, LayoutGrid, Package, Boxes, Gift } from 'lucide-react';
+import { Search, RefreshCw, AlertCircle, ExternalLink, ChevronLeft, Sparkles, LayoutGrid, Package, Boxes, Gift, Layers } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, trendColor, trendIcon } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtRelative } from '../lib/format.js';
 import { cmUrl } from '../lib/marketLinks.js';
 import CardTile from './CardTile.jsx';
 import SealedGrid from './SealedGrid.jsx';
-import { SEALED_CATEGORIES } from '../data/sealedProducts.js';
+import { sealedCategoriesFor } from '../data/sealedProducts.js';
 import { foilClass } from '../lib/variants.js';
 import { ChangeBadge, ScoreBadge, EmptyState, CardImage } from './ui.jsx';
 
@@ -19,14 +19,8 @@ const PRESETS = [
   { id: 'top', label: '🏆 Nur S/A', fn: (c) => c.m.score >= 76 },
 ];
 
-const TABS = [
-  { id: 'start', label: 'Start' },
-  { id: 'singles', label: 'Singles' },
-  ...SEALED_CATEGORIES,
-];
-
 // Cohesive line icons per category (matches the lucide nav in the header).
-const CAT_ICON = { start: Sparkles, singles: LayoutGrid, booster: Package, display: Boxes, etb: Gift };
+const CAT_ICON = { start: Sparkles, singles: LayoutGrid, booster: Package, display: Boxes, etb: Gift, starter: Layers };
 
 export default function Discover({ onOpen }) {
   const { cards, loading, error, source, lastUpdated, fetchCards, loadSample, tags, activeGame } = useStore();
@@ -49,6 +43,14 @@ export default function Discover({ onOpen }) {
   const deferredSearch = useDeferredValue(search);
 
   const allTags = useMemo(() => [...new Set(Object.values(tags).flat())].sort(), [tags]);
+
+  // Category tabs are per-game (Pokémon: Booster/Display/ETB · One Piece:
+  // Booster/Display/Starter Decks).
+  const TABS = useMemo(() => [
+    { id: 'start', label: 'Start' },
+    { id: 'singles', label: 'Singles' },
+    ...sealedCategoriesFor(activeGame),
+  ], [activeGame]);
 
   // Mode:
   //  • 'home'      → Start tab: welcome animation + Top-Karten (no big card list)
@@ -161,12 +163,15 @@ export default function Discover({ onOpen }) {
   const switchCat = (id) => { setCat(id); setSelectedSet(null); setSearch(''); setActivePreset(null); };
 
   // Scope of the search box, so the placeholder/behaviour match where you are.
-  const scope = inSet ? 'set' : (cat === 'booster' || cat === 'display' || cat === 'etb') ? 'sealed' : 'singles';
+  const scope = inSet ? 'set' : mode === 'sealed' ? 'sealed' : 'singles';
+  const singlesHint = activeGame === 'onepiece'
+    ? 'z. B. Luffy, Zoro, Shanks'
+    : 'z. B. Glurak, Pikachu, Nachtara';
   const searchPlaceholder = scope === 'set'
     ? `In „${openSet?.name || 'diesem Set'}" suchen…`
     : scope === 'sealed'
       ? `${TABS.find((t) => t.id === cat)?.label || 'Produkte'} durchsuchen…`
-      : 'Karte suchen – über alle Sets (z. B. Glurak, Pikachu, Nachtara)…';
+      : `Karte suchen – über alle Sets (${singlesHint})…`;
 
   return (
     <>
@@ -204,7 +209,9 @@ export default function Discover({ onOpen }) {
       {/* Source line */}
       {!searching && !inSet && (
         <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 14 }}>
-          {source === 'snapshot' && <>🟢 Aktuelle Marktdaten (Cardmarket EU) · Stand {fmtRelative(lastUpdated)} · täglich aktualisiert · </>}
+          {source === 'snapshot' && (activeGame === 'onepiece'
+            ? <>🟢 Alle Sets · offizielle Bilder · Preise geschätzt (Cardmarket-Link je Karte) · Stand {fmtRelative(lastUpdated)} · </>
+            : <>🟢 Aktuelle Marktdaten (Cardmarket EU) · Stand {fmtRelative(lastUpdated)} · täglich aktualisiert · </>)}
           {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
           {source === 'sample' && <>🃏 Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}
           {cards.length} Karten in {sets.length} Sets
@@ -218,7 +225,7 @@ export default function Discover({ onOpen }) {
         </div>
       )}
 
-      {mode === 'sealed' && <SealedGrid type={cat} query={searchQuery} />}
+      {mode === 'sealed' && <SealedGrid type={cat} query={searchQuery} game={activeGame} />}
 
       {loading && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 12 }}>

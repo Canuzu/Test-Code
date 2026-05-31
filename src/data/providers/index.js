@@ -5,6 +5,7 @@
 // landing page. Adding a new TCG = add an entry here (+ a sample dataset, and
 // later a provider/snapshot). `enabled: false` shows it as "coming soon".
 import * as pokemon from './pokemon.js';
+import * as onepiece from './onepiece.js';
 
 export const GAMES = [
   {
@@ -26,11 +27,11 @@ export const GAMES = [
     label: 'One Piece',
     emoji: '🏴‍☠️',
     enabled: true,
-    provider: null, // live prices later via the official Cardmarket API
+    provider: onepiece,
     accent: '#e23b3b',
     accent2: '#ffb300',
-    tagline: 'Beispieldaten · Live-Preise folgen',
-    blurb: 'One Piece Card Game — Struktur steht; echte Preise kommen per Cardmarket-API.',
+    tagline: 'Alle Sets · 4.300+ Karten · offizielle Bilder',
+    blurb: 'Vollständiges One-Piece-Archiv: jedes Set & jede Karte mit offiziellem Artwork. Preise als Schätzung (Cardmarket-Link je Karte) bis zur MKM-API.',
     snapshot: 'data/onepiece.json',
   },
   {

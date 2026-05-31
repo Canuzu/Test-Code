@@ -39,6 +39,8 @@ jobs:
           CM_ACCESS_SECRET: ${{ secrets.CM_ACCESS_SECRET }}
           CM_GAME_ID: ${{ vars.CM_GAME_ID }}
           CM_SEARCH: ${{ vars.CM_SEARCH }}
+      - name: Build One Piece catalogue (all sets/cards + official art, server-side)
+        run: node scripts/fetch-onepiece.mjs
       - name: Persist grown card snapshot (newest→oldest, incremental)
         if: github.ref == 'refs/heads/main'
         continue-on-error: true # branch protection etc. must not break the deploy
