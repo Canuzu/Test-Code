@@ -5,10 +5,10 @@ import { C } from './lib/theme.js';
 import { isPro } from './lib/pro.js';
 import { fmtNum } from './lib/format.js';
 import { useIsMobile } from './lib/useMediaQuery.js';
-import { getGame } from './data/providers/index.js';
 import Discover from './components/Discover.jsx';
 import WatchlistView from './components/WatchlistView.jsx';
 import PortfolioView from './components/PortfolioView.jsx';
+import LogoMark from './components/LogoMark.jsx';
 
 // Heavy / on-demand views are code-split so the charting library (recharts)
 // and modals are not part of the initial bundle.
@@ -121,7 +121,6 @@ function Shell() {
   // Logo / site name → fresh start page: switch to Discover and remount it (via
   // key) so its internal state (open set, search) resets to the welcome view.
   const goHome = () => { setTab('discover'); setDiscoverKey((k) => k + 1); scrollTop(); };
-  const game = getGame(settings.game);
   const pro = isPro(settings);
   const isMobile = useIsMobile();
   const badge = { watchlist: watchlist.length, portfolio: portfolio.length, alerts: alerts.filter((a) => a.active).length };
@@ -140,10 +139,11 @@ function Shell() {
             </div>
           )}
           <button onClick={goHome} title="Zur Startseite" style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 11, background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', minWidth: 0, color: 'inherit', textAlign: 'left' }}>
-            <div style={{ width: isMobile ? 32 : 38, height: isMobile ? 32 : 38, flexShrink: 0, borderRadius: '50%', background: 'linear-gradient(135deg, #ffd700, #ff6b35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? 16 : 19, boxShadow: '0 0 18px #ffd70044' }}>{game.emoji}</div>
+            <div style={{ width: isMobile ? 36 : 42, height: isMobile ? 36 : 42, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', filter: 'drop-shadow(0 0 14px #ffd70044)' }}>
+              <LogoMark size={isMobile ? 36 : 42} />
+            </div>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontWeight: 800, fontSize: isMobile ? 15 : 17, background: 'linear-gradient(90deg, #ffd700, #ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>KartenwertDE</div>
-              {!isMobile && <div style={{ fontSize: 10, color: C.textFaint }}>Live-Preistracker · Cardmarket EU · {game.label}</div>}
+              <div style={{ fontWeight: 800, fontSize: isMobile ? 16 : 19, background: 'linear-gradient(90deg, #ffd700, #ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.2px' }}>Cartograph</div>
             </div>
           </button>
         </div>

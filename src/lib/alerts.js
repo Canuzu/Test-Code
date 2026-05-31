@@ -37,7 +37,7 @@ export const fireNotification = (evt) => {
   if (!canNotify() || Notification.permission !== 'granted') return;
   const dir = evt.direction === 'above' ? 'über' : 'unter';
   try {
-    new Notification('🔔 Preis-Alert · KartenwertDE', {
+    new Notification('🔔 Preis-Alert · Cartograph', {
       body: `${evt.name}: ${Number(evt.price).toFixed(2)} € (${dir} ${evt.target} €)`,
       tag: evt.ruleId,
       icon: `${import.meta.env.BASE_URL}icons/icon-192.png`,

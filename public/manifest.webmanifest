@@ -1,6 +1,6 @@
 {
-  "name": "KartenwertDE — TCG Preistracker",
-  "short_name": "KartenwertDE",
+  "name": "Cartograph — TCG Preistracker",
+  "short_name": "Cartograph",
   "description": "Live-Preistracker für Pokémon-Karten (Cardmarket EU): interaktive Charts, Buylist, Grading, Lagerbestand und Preis-Alerts.",
   "lang": "de",
   "dir": "ltr",

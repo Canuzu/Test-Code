@@ -1,4 +1,4 @@
-# KartenwertDE — TCG Live-Preistracker (deutscher Markt)
+# Cartograph — TCG Live-Preistracker (deutscher Markt)
 
 Eine Website zum Live-Tracking von Trading-Card-Preisen mit Fokus auf den
 **deutschen/europäischen Markt** (Cardmarket EU). Sie zeigt übersichtlich
