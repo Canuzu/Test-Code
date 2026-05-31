@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Settings as Cog, GitCompare, Sun, Moon, Crown, Smartphone, ArrowLeft, ArrowRight, User } from 'lucide-react';
+import { Settings as Cog, GitCompare, Sun, Moon, Crown, Smartphone, ArrowLeft, ArrowRight, User, Compass, Star, Album, ChartLine, ClipboardList, Bell } from 'lucide-react';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
 import { isPro } from './lib/pro.js';
@@ -30,13 +30,15 @@ function Loader() {
   );
 }
 
+// Cohesive line-icon set (lucide) instead of platform emoji, so the nav matches
+// the icon language already used elsewhere in the header.
 const TABS = [
-  { id: 'discover', label: '🔍 Entdecken', icon: '🔍', short: 'Suchen' },
-  { id: 'watchlist', label: '⭐ Watchlist', icon: '⭐', short: 'Merken' },
-  { id: 'portfolio', label: '📦 Sammlung', icon: '📦', short: 'Bestand' },
-  { id: 'analytics', label: '📊 Analyse', icon: '📊', short: 'Analyse' },
-  { id: 'buylist', label: '🧾 Buylist', icon: '🧾', short: 'Buylist' },
-  { id: 'alerts', label: '🔔 Alerts', icon: '🔔', short: 'Alerts' },
+  { id: 'discover', label: 'Entdecken', short: 'Suchen', Icon: Compass },
+  { id: 'watchlist', label: 'Watchlist', short: 'Merken', Icon: Star },
+  { id: 'portfolio', label: 'Sammlung', short: 'Bestand', Icon: Album },
+  { id: 'analytics', label: 'Analyse', short: 'Analyse', Icon: ChartLine },
+  { id: 'buylist', label: 'Buylist', short: 'Buylist', Icon: ClipboardList },
+  { id: 'alerts', label: 'Alerts', short: 'Alerts', Icon: Bell },
 ];
 
 function Shell() {
@@ -49,6 +51,7 @@ function Shell() {
   const [showPricing, setShowPricing] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [installEvt, setInstallEvt] = useState(null);
+  const [discoverKey, setDiscoverKey] = useState(0); // bump to reset Discover to its start page
 
   // PWA install prompt: capture the event so we can offer an install button.
   useEffect(() => {
@@ -111,6 +114,13 @@ function Shell() {
   }, [tab]);
 
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
+  const scrollTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  // Tapping a nav item always returns to the top — even when re-tapping the tab
+  // you're already on (the [tab] effect only fires when the value changes).
+  const goTab = (id) => { setTab(id); scrollTop(); };
+  // Logo / site name → fresh start page: switch to Discover and remount it (via
+  // key) so its internal state (open set, search) resets to the welcome view.
+  const goHome = () => { setTab('discover'); setDiscoverKey((k) => k + 1); scrollTop(); };
   const game = getGame(settings.game);
   const pro = isPro(settings);
   const isMobile = useIsMobile();
@@ -129,11 +139,13 @@ function Shell() {
               <button onClick={() => window.history.forward()} title="Vor" className="control" style={{ padding: '7px 8px', display: 'flex', alignItems: 'center' }}><ArrowRight size={15} /></button>
             </div>
           )}
-          <div style={{ width: isMobile ? 32 : 38, height: isMobile ? 32 : 38, flexShrink: 0, borderRadius: '50%', background: 'linear-gradient(135deg, #ffd700, #ff6b35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? 16 : 19, boxShadow: '0 0 18px #ffd70044' }}>{game.emoji}</div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: isMobile ? 15 : 17, background: 'linear-gradient(90deg, #ffd700, #ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>KartenwertDE</div>
-            {!isMobile && <div style={{ fontSize: 10, color: C.textFaint }}>Live-Preistracker · Cardmarket EU · {game.label}</div>}
-          </div>
+          <button onClick={goHome} title="Zur Startseite" style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 11, background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', minWidth: 0, color: 'inherit', textAlign: 'left' }}>
+            <div style={{ width: isMobile ? 32 : 38, height: isMobile ? 32 : 38, flexShrink: 0, borderRadius: '50%', background: 'linear-gradient(135deg, #ffd700, #ff6b35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: isMobile ? 16 : 19, boxShadow: '0 0 18px #ffd70044' }}>{game.emoji}</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 800, fontSize: isMobile ? 15 : 17, background: 'linear-gradient(90deg, #ffd700, #ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>KartenwertDE</div>
+              {!isMobile && <div style={{ fontSize: 10, color: C.textFaint }}>Live-Preistracker · Cardmarket EU · {game.label}</div>}
+            </div>
+          </button>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 5 : 10, flexShrink: 0 }}>
@@ -169,8 +181,8 @@ function Shell() {
       {/* Tab nav (desktop / tablet — replaced by a bottom bar on phones) */}
       <nav className="desktop-nav" style={{ display: 'flex', background: C.bg1, borderBottom: `1px solid ${C.lineStrong}`, padding: '0 16px', overflowX: 'auto', position: 'sticky', top: 63, zIndex: 49 }}>
         {TABS.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '12px 18px', border: 'none', background: 'none', color: tab === t.id ? C.gold : C.textFaint, borderBottom: tab === t.id ? `2px solid ${C.gold}` : '2px solid transparent', cursor: 'pointer', fontWeight: tab === t.id ? 700 : 500, fontSize: 13, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
-            {t.label}
+          <button key={t.id} onClick={() => goTab(t.id)} style={{ padding: '12px 18px', border: 'none', background: 'none', color: tab === t.id ? C.gold : C.textFaint, borderBottom: tab === t.id ? `2px solid ${C.gold}` : '2px solid transparent', cursor: 'pointer', fontWeight: tab === t.id ? 700 : 500, fontSize: 13, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 7 }}>
+            <t.Icon size={16} strokeWidth={tab === t.id ? 2.5 : 2} /> {t.label}
             {badge[t.id] > 0 && <span style={{ background: tab === t.id ? '#ffd70022' : '#ffffff10', color: tab === t.id ? C.gold : C.textFaint, padding: '1px 6px', borderRadius: 10, fontSize: 10, fontWeight: 700 }}>{badge[t.id]}</span>}
           </button>
         ))}
@@ -178,7 +190,7 @@ function Shell() {
 
       {/* Body */}
       <main style={{ padding: isMobile ? '14px 12px' : '16px 20px', maxWidth: 1400, margin: '0 auto' }}>
-        {tab === 'discover' && <Discover onOpen={onOpen} />}
+        {tab === 'discover' && <Discover key={discoverKey} onOpen={onOpen} />}
         {tab === 'analytics' && <Suspense fallback={<Loader />}><Analytics onOpen={onOpen} pro={pro} onUpgrade={() => setShowPricing(true)} /></Suspense>}
         {tab === 'watchlist' && <WatchlistView onOpen={onOpen} />}
         {tab === 'portfolio' && <PortfolioView onImport={() => (pro ? setShowImport(true) : setShowPricing(true))} />}
@@ -201,9 +213,9 @@ function Shell() {
       {/* Mobile bottom navigation */}
       <nav className="bottom-nav">
         {TABS.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{ color: tab === t.id ? C.gold : C.textFaint }}>
-            <span style={{ fontSize: 18, lineHeight: 1, position: 'relative' }}>
-              {t.icon}
+          <button key={t.id} onClick={() => goTab(t.id)} style={{ color: tab === t.id ? C.gold : C.textFaint }}>
+            <span style={{ lineHeight: 1, position: 'relative', display: 'inline-flex' }}>
+              <t.Icon size={21} strokeWidth={tab === t.id ? 2.5 : 2} />
               {badge[t.id] > 0 && <span style={{ position: 'absolute', top: -5, right: -10, background: C.red, color: '#fff', fontSize: 8, fontWeight: 800, borderRadius: 8, padding: '0 4px', lineHeight: '13px' }}>{badge[t.id]}</span>}
             </span>
             <span style={{ fontSize: 9.5, fontWeight: tab === t.id ? 700 : 600 }}>{t.short}</span>

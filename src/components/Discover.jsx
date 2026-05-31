@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useDeferredValue } from 'react';
-import { Search, RefreshCw, AlertCircle, ExternalLink, ChevronLeft } from 'lucide-react';
+import { Search, RefreshCw, AlertCircle, ExternalLink, ChevronLeft, Sparkles, LayoutGrid, Package, Boxes, Gift } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, trendColor, trendIcon } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtRelative } from '../lib/format.js';
@@ -19,10 +19,13 @@ const PRESETS = [
 ];
 
 const TABS = [
-  { id: 'start', label: 'Start', emoji: '🏠' },
-  { id: 'singles', label: 'Singles', emoji: '🃏' },
+  { id: 'start', label: 'Start' },
+  { id: 'singles', label: 'Singles' },
   ...SEALED_CATEGORIES,
 ];
+
+// Cohesive line icons per category (matches the lucide nav in the header).
+const CAT_ICON = { start: Sparkles, singles: LayoutGrid, booster: Package, display: Boxes, etb: Gift };
 
 export default function Discover({ onOpen }) {
   const { cards, loading, error, source, lastUpdated, fetchCards, loadSample, tags } = useStore();
@@ -168,12 +171,15 @@ export default function Discover({ onOpen }) {
 
       {/* Category tabs: Sets · Singles · Booster · Displays · Top-Trainer-Box */}
       <div style={{ display: searching ? 'none' : 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 16, borderBottom: `1px solid ${C.lineStrong}` }}>
-        {TABS.map((t) => (
-          <button key={t.id} onClick={() => switchCat(t.id)}
-            style={{ padding: '9px 16px', border: 'none', background: 'none', color: cat === t.id ? C.gold : C.textFaint, borderBottom: cat === t.id ? `2px solid ${C.gold}` : '2px solid transparent', cursor: 'pointer', fontWeight: cat === t.id ? 700 : 500, fontSize: 13.5, marginBottom: -1, display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
-            <span>{t.emoji}</span>{t.label}
-          </button>
-        ))}
+        {TABS.map((t) => {
+          const Ic = CAT_ICON[t.id] || LayoutGrid;
+          return (
+            <button key={t.id} onClick={() => switchCat(t.id)}
+              style={{ padding: '9px 16px', border: 'none', background: 'none', color: cat === t.id ? C.gold : C.textFaint, borderBottom: cat === t.id ? `2px solid ${C.gold}` : '2px solid transparent', cursor: 'pointer', fontWeight: cat === t.id ? 700 : 500, fontSize: 13.5, marginBottom: -1, display: 'flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap' }}>
+              <Ic size={16} strokeWidth={cat === t.id ? 2.5 : 2} /> {t.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Source line */}
