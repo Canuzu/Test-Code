@@ -9,6 +9,8 @@ import Discover from './components/Discover.jsx';
 import WatchlistView from './components/WatchlistView.jsx';
 import PortfolioView from './components/PortfolioView.jsx';
 import LogoMark from './components/LogoMark.jsx';
+import GameSelect from './components/GameSelect.jsx';
+import { getGame } from './data/providers/index.js';
 
 // Heavy / on-demand views are code-split so the charting library (recharts)
 // and modals are not part of the initial bundle.
@@ -42,7 +44,7 @@ const TABS = [
 ];
 
 function Shell() {
-  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, alerts, account } = useStore();
+  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, alerts, account, activeGame, selectGame, leaveGame } = useStore();
   const [tab, setTab] = useState('discover');
   const [modal, setModal] = useState(null); // { card, tab }
   const [showCompare, setShowCompare] = useState(false);
@@ -118,13 +120,18 @@ function Shell() {
   // Tapping a nav item always returns to the top — even when re-tapping the tab
   // you're already on (the [tab] effect only fires when the value changes).
   const goTab = (id) => { setTab(id); scrollTop(); };
-  // Logo / site name → fresh start page: switch to Discover and remount it (via
-  // key) so its internal state (open set, search) resets to the welcome view.
-  const goHome = () => { setTab('discover'); setDiscoverKey((k) => k + 1); scrollTop(); };
+  // Logo / site name → back to the game-selection landing page.
+  const goHome = () => { setTab('discover'); setDiscoverKey((k) => k + 1); leaveGame(); };
+  // Pick a game from the landing page, then start on its Discover view.
+  const pickGame = (id) => { selectGame(id); setTab('discover'); setDiscoverKey((k) => k + 1); scrollTop(); };
   const pro = isPro(settings);
   const isMobile = useIsMobile();
+  const game = getGame(activeGame || 'pokemon');
   const badge = { watchlist: watchlist.length, portfolio: portfolio.length, alerts: alerts.filter((a) => a.active).length };
   const avgScore = cards.length ? fmtNum(cards.reduce((s, c) => s + c.m.score, 0) / cards.length, 0) : '–';
+
+  // No game chosen yet → the game-selection landing page is the whole screen.
+  if (!activeGame) return <GameSelect onPick={pickGame} />;
 
   return (
     <div style={{ minHeight: '100vh', background: `linear-gradient(160deg, ${C.appGrad1} 0%, ${C.appGrad2} 100%)`, color: C.text }}>
@@ -138,12 +145,15 @@ function Shell() {
               <button onClick={() => window.history.forward()} title="Vor" className="control" style={{ padding: '7px 8px', display: 'flex', alignItems: 'center' }}><ArrowRight size={15} /></button>
             </div>
           )}
-          <button onClick={goHome} title="Zur Startseite" style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 11, background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', minWidth: 0, color: 'inherit', textAlign: 'left' }}>
+          <button onClick={goHome} title="Zur Spiel-Auswahl" style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 11, background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', minWidth: 0, color: 'inherit', textAlign: 'left' }}>
             <div style={{ width: isMobile ? 36 : 42, height: isMobile ? 36 : 42, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', filter: 'drop-shadow(0 0 14px #ffd70044)' }}>
               <LogoMark size={isMobile ? 36 : 42} />
             </div>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontWeight: 800, fontSize: isMobile ? 16 : 19, background: 'linear-gradient(90deg, #ffd700, #ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.2px' }}>Cartograph</div>
+              <div style={{ fontSize: 10.5, color: C.textFaint, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span>{game.emoji}</span> {game.label}
+              </div>
             </div>
           </button>
         </div>
@@ -199,7 +209,9 @@ function Shell() {
       </main>
 
       <footer style={{ borderTop: `1px solid ${C.lineStrong}`, padding: '16px 20px', marginTop: 40, textAlign: 'center', fontSize: 10.5, color: C.textGhost, maxWidth: 900, margin: '40px auto 0', lineHeight: 1.6 }}>
-        ⚠️ <strong>Hinweis:</strong> Preisdaten von Cardmarket (EU) via pokemontcg.io – können verzögert oder unvollständig sein.
+        ⚠️ <strong>Hinweis:</strong> {activeGame === 'pokemon'
+          ? 'Preisdaten von Cardmarket (EU) via pokemontcg.io – können verzögert oder unvollständig sein.'
+          : `${game.label}: derzeit Beispieldaten – echte Cardmarket-Preise folgen. `}
         Keine Anlageberatung. TCG-Investments sind volatil; investiere nur, was du entbehren kannst.
         Investment-Score & Beliebtheit sind berechnete Heuristiken, keine garantierten Prognosen.
       </footer>

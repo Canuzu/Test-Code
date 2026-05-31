@@ -29,7 +29,7 @@ const TABS = [
 const CAT_ICON = { start: Sparkles, singles: LayoutGrid, booster: Package, display: Boxes, etb: Gift };
 
 export default function Discover({ onOpen }) {
-  const { cards, loading, error, source, lastUpdated, fetchCards, loadSample, tags } = useStore();
+  const { cards, loading, error, source, lastUpdated, fetchCards, loadSample, tags, activeGame } = useStore();
   const [cat, setCat] = useState('start');
   const [selectedSet, setSelectedSet] = useState(null);
   const [search, setSearch] = useState('');
@@ -229,7 +229,7 @@ export default function Discover({ onOpen }) {
       {/* Start: a cool Pokémon animation (replaces the big set list) + Top-Karten */}
       {!loading && mode === 'home' && !searchingDeferred && (
         <>
-          <PokemonHero onBrowse={() => switchCat('singles')} />
+          <WelcomeHero game={activeGame} onBrowse={() => switchCat('singles')} />
           {highlights.length > 0 && (
             <div style={{ marginBottom: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -354,10 +354,10 @@ export default function Discover({ onOpen }) {
   );
 }
 
-// Cool, self-contained Pokémon animation for the start page: a bouncing Poké
-// Ball that does the classic "catch" wiggle, a glowing centre button, floating
-// sparkles and a CTA into the set browser. Pure CSS/SVG — no network/assets.
-function PokemonHero({ onBrowse }) {
+// Self-contained welcome animation for a game's start page. Pokémon gets its
+// classic bouncing, wiggling Poké Ball; other games get a tasteful animated
+// card fan so the hero fits the game without per-game art assets.
+function WelcomeHero({ game, onBrowse }) {
   const sparks = [
     { left: '12%', top: '24%', d: '0s', s: 9 },
     { left: '84%', top: '30%', d: '.5s', s: 7 },
@@ -365,6 +365,7 @@ function PokemonHero({ onBrowse }) {
     { left: '18%', top: '64%', d: '1.6s', s: 6 },
     { left: '50%', top: '12%', d: '.8s', s: 6 },
   ];
+  const isPoke = game === 'pokemon';
   return (
     <div className="poke-hero">
       {sparks.map((sp, i) => (
@@ -372,35 +373,51 @@ function PokemonHero({ onBrowse }) {
       ))}
       <div className="poke-bounce">
         <div className="poke-wiggle">
-          <svg width="148" height="148" viewBox="0 0 100 100" className="poke-ball" role="img" aria-label="Pokéball">
-            <defs>
-              <linearGradient id="pbTop" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ff6b6b" /><stop offset="100%" stopColor="#e01f1f" />
-              </linearGradient>
-              <linearGradient id="pbBot" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ffffff" /><stop offset="100%" stopColor="#dde2ef" />
-              </linearGradient>
-              <radialGradient id="pbBtn" cx="50%" cy="45%" r="60%">
-                <stop offset="0%" stopColor="#ffffff" /><stop offset="65%" stopColor="#ffe9a6" /><stop offset="100%" stopColor="#d9a521" />
-              </radialGradient>
-              <clipPath id="pbClip"><circle cx="50" cy="50" r="46" /></clipPath>
-            </defs>
-            <g clipPath="url(#pbClip)">
-              <rect x="0" y="0" width="100" height="50" fill="url(#pbTop)" />
-              <rect x="0" y="50" width="100" height="50" fill="url(#pbBot)" />
-              <rect x="0" y="44" width="100" height="12" fill="#16161d" />
-              <ellipse cx="34" cy="28" rx="13" ry="9" fill="#ffffff" opacity="0.22" />
-            </g>
-            <circle cx="50" cy="50" r="46" fill="none" stroke="#16161d" strokeWidth="4" />
-            <circle cx="50" cy="50" r="15" fill="#16161d" />
-            <circle cx="50" cy="50" r="11" fill="#ffffff" />
-            <circle cx="50" cy="50" r="7" fill="url(#pbBtn)" className="poke-btn" />
-          </svg>
+          {isPoke ? (
+            <svg width="148" height="148" viewBox="0 0 100 100" className="poke-ball" role="img" aria-label="Pokéball">
+              <defs>
+                <linearGradient id="pbTop" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ff6b6b" /><stop offset="100%" stopColor="#e01f1f" />
+                </linearGradient>
+                <linearGradient id="pbBot" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ffffff" /><stop offset="100%" stopColor="#dde2ef" />
+                </linearGradient>
+                <radialGradient id="pbBtn" cx="50%" cy="45%" r="60%">
+                  <stop offset="0%" stopColor="#ffffff" /><stop offset="65%" stopColor="#ffe9a6" /><stop offset="100%" stopColor="#d9a521" />
+                </radialGradient>
+                <clipPath id="pbClip"><circle cx="50" cy="50" r="46" /></clipPath>
+              </defs>
+              <g clipPath="url(#pbClip)">
+                <rect x="0" y="0" width="100" height="50" fill="url(#pbTop)" />
+                <rect x="0" y="50" width="100" height="50" fill="url(#pbBot)" />
+                <rect x="0" y="44" width="100" height="12" fill="#16161d" />
+                <ellipse cx="34" cy="28" rx="13" ry="9" fill="#ffffff" opacity="0.22" />
+              </g>
+              <circle cx="50" cy="50" r="46" fill="none" stroke="#16161d" strokeWidth="4" />
+              <circle cx="50" cy="50" r="15" fill="#16161d" />
+              <circle cx="50" cy="50" r="11" fill="#ffffff" />
+              <circle cx="50" cy="50" r="7" fill="url(#pbBtn)" className="poke-btn" />
+            </svg>
+          ) : (
+            <svg width="150" height="150" viewBox="0 0 120 120" role="img" aria-label="Karten">
+              <defs>
+                <linearGradient id="cf1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ffd700" /><stop offset="1" stopColor="#ff6b35" /></linearGradient>
+              </defs>
+              {/* fanned cards */}
+              <g transform="translate(60 64)">
+                <g transform="rotate(-22)"><rect x="-26" y="-38" width="52" height="74" rx="8" fill="#171733" stroke="url(#cf1)" strokeWidth="3" opacity="0.7" /></g>
+                <g transform="rotate(0)"><rect x="-26" y="-40" width="52" height="78" rx="8" fill="#1b1b3a" stroke="url(#cf1)" strokeWidth="3.5" /></g>
+                <g transform="rotate(22)"><rect x="-26" y="-38" width="52" height="74" rx="8" fill="#171733" stroke="url(#cf1)" strokeWidth="3" opacity="0.7" /></g>
+                {/* curve on the centre card */}
+                <path d="M-16 24 L-6 14 L2 18 L12 -2 L20 -12 M11 -10 L20 -12 L17.5 -3.5" fill="none" stroke="url(#cf1)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              </g>
+            </svg>
+          )}
         </div>
         <div className="poke-shadow" />
       </div>
       <div style={{ textAlign: 'center', marginTop: 14, position: 'relative', zIndex: 1 }}>
-        <div style={{ fontSize: 22, fontWeight: 800, background: 'linear-gradient(90deg,#ffd700,#ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Schnapp sie dir alle!</div>
+        <div style={{ fontSize: 22, fontWeight: 800, background: 'linear-gradient(90deg,#ffd700,#ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{isPoke ? 'Schnapp sie dir alle!' : 'Deine Sammlung im Blick'}</div>
         <div style={{ fontSize: 13, color: C.textDim, marginTop: 6, maxWidth: 440 }}>
           Suche oben gezielt nach einer Karte – oder stöbere unter <strong style={{ color: C.textSoft }}>Singles</strong> Set für Set durch deine Sammlung.
         </div>

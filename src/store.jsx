@@ -1,20 +1,33 @@
 import { createContext, useContext, useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef } from 'react';
-import { store, KEYS, setNamespace } from './lib/storage.js';
+import { store, KEYS, setNamespace, setGameNamespace } from './lib/storage.js';
 import { enrich } from './lib/metrics.js';
 import { ruleHit, fireNotification } from './lib/alerts.js';
 import { currentAccount, getSession, register as authRegister, login as authLogin, logout as authLogout } from './lib/auth.js';
 import { applyTheme } from './lib/theme.js';
-import { getGame } from './data/providers/index.js';
+import { getGame, gameSnapshot } from './data/providers/index.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
+import { ONE_PIECE_CARDS } from './data/onePieceCards.js';
 
 const StoreContext = createContext(null);
 export const useStore = () => useContext(StoreContext);
 
 const DEFAULT_SETTINGS = { game: 'pokemon', apiKey: '', platform: 'cardmarket', includeShipping: true, theme: 'dark', fxEurUsd: 1.08, pro: false, buyRules: null };
 
-// Static daily snapshot produced by scripts/fetch-prices.mjs at deploy time.
-// Same-origin, so no browser CORS limits (unlike calling the API directly).
-const SNAPSHOT_URL = `${import.meta.env.BASE_URL}data/cards.json`;
+// The last-selected game persists at the account level (outside the per-game
+// namespace) so reopening the app returns you to the same TCG. '' = no game
+// chosen yet → show the game-selection landing page.
+const ACTIVE_GAME_KEY = 'kwde_active_game';
+
+// Per-game bundled sample dataset (used until a live snapshot loads).
+const SAMPLES = { pokemon: SAMPLE_CARDS, onepiece: ONE_PIECE_CARDS };
+const sampleFor = (g) => SAMPLES[g] || [];
+
+// Static daily snapshot for a game, produced at deploy time and served
+// same-origin (no browser CORS limits). null = no snapshot yet (sample only).
+const snapshotUrl = (g) => {
+  const path = gameSnapshot(g);
+  return path ? `${import.meta.env.BASE_URL}${path}` : null;
+};
 
 export function StoreProvider({ children }) {
   const [rawCards, setRawCards] = useState([]);
@@ -34,6 +47,15 @@ export function StoreProvider({ children }) {
   const [buylist, setBuylist] = useState({ rules: null, items: [] });
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [account, setAccount] = useState(null); // local account profile or null (guest)
+  // Active TCG. '' until the user picks one on the landing page. Read once up
+  // front so a returning visitor lands back on their last game (ignored if that
+  // game is no longer enabled).
+  const [activeGame, setActiveGame] = useState(() => {
+    try {
+      const g = localStorage.getItem(ACTIVE_GAME_KEY) || '';
+      return g && getGame(g).enabled ? g : '';
+    } catch { return ''; }
+  });
 
   const [compareList, setCompareList] = useState([]);
   const [toast, setToast] = useState(null);
@@ -78,29 +100,60 @@ export function StoreProvider({ children }) {
     firingRef.current = {}; // reset alert debounce when switching profiles
   }, []);
 
+  // Loads the card dataset for `g`: cached snapshot if present, else the bundled
+  // sample, then pulls the fresh same-origin snapshot in the background.
+  const loadGameData = useCallback((g) => {
+    const cache = store.get(KEYS.cards);
+    if (cache && Array.isArray(cache.cards) && cache.cards.length) {
+      setRawCards(cache.cards);
+      setSource('cache');
+      setLastUpdated(cache.ts ? new Date(cache.ts) : null);
+    } else {
+      setRawCards(sampleFor(g));
+      setSource('sample');
+      setLastUpdated(null);
+    }
+    loadSnapshot({ silent: true, game: g });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ---- load persisted state once, then auto-refresh if stale ------------
   useEffect(() => {
     // Point storage at the signed-in account's namespace (guest = '' = the
     // original keys, so existing data is preserved).
     setNamespace(getSession() || '');
     setAccount(currentAccount());
-    loadAll();
 
-    const cache = store.get(KEYS.cards);
-    if (cache && Array.isArray(cache.cards) && cache.cards.length) {
-      setRawCards(cache.cards);
-      setSource('cache');
-      if (cache.ts) setLastUpdated(new Date(cache.ts));
+    if (activeGame) {
+      // Returning visitor with a chosen game: load that game's profile + data.
+      setGameNamespace(activeGame);
+      loadAll();
+      loadGameData(activeGame);
     } else {
-      setRawCards(SAMPLE_CARDS);
-      setSource('sample');
+      // No game chosen yet → landing page. Still load account-level settings
+      // (theme/pro) from the Pokémon/base namespace so the UI looks right.
+      setGameNamespace('pokemon');
+      loadAll();
     }
-
-    // Always pull the freshly-deployed snapshot (same-origin JSON, no CORS).
-    // Silent: on failure (offline / opened from file://) we keep the cached
-    // or sample data shown above.
-    loadSnapshot({ silent: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Pick a game from the landing page (or switch games): re-key storage to that
+  // game's namespace, load its profile + dataset, and remember the choice.
+  const selectGame = useCallback((g) => {
+    if (!g) return;
+    setGameNamespace(g);
+    setActiveGame(g);
+    try { localStorage.setItem(ACTIVE_GAME_KEY, g); } catch { /* ignore */ }
+    setSettings((prev) => ({ ...prev, game: g }));
+    loadAll();
+    loadGameData(g);
+  }, [loadAll, loadGameData]);
+
+  // Return to the game-selection landing page (does not erase any data).
+  const leaveGame = useCallback(() => {
+    setActiveGame('');
+    try { localStorage.removeItem(ACTIVE_GAME_KEY); } catch { /* ignore */ }
   }, []);
 
   // ---- persistence ------------------------------------------------------
@@ -151,19 +204,21 @@ export function StoreProvider({ children }) {
   const setBuylistRules = useCallback((updater) => setBuylist((bl) => ({ ...bl, rules: typeof updater === 'function' ? updater(bl.rules) : updater })), []);
 
   // ---- local accounts ---------------------------------------------------
+  // setNamespace only swaps the ACCOUNT part of the storage namespace; the
+  // active game segment is preserved, so each account still keeps per-game data.
   const login = useCallback(async (creds) => {
     const res = await authLogin(creds);
-    if (res.ok) { setNamespace(res.account.id); setAccount(res.account); loadAll(); showToast(`👤 Angemeldet: ${res.account.name}`); }
+    if (res.ok) { setNamespace(res.account.id); setAccount(res.account); loadAll(); if (activeGame) loadGameData(activeGame); showToast(`👤 Angemeldet: ${res.account.name}`); }
     return res;
-  }, [loadAll, showToast]);
+  }, [loadAll, loadGameData, activeGame, showToast]);
   const register = useCallback(async (creds) => {
     const res = await authRegister(creds);
-    if (res.ok) { setNamespace(res.account.id); setAccount(res.account); loadAll(); showToast(`✅ Konto erstellt: ${res.account.name}`); }
+    if (res.ok) { setNamespace(res.account.id); setAccount(res.account); loadAll(); if (activeGame) loadGameData(activeGame); showToast(`✅ Konto erstellt: ${res.account.name}`); }
     return res;
-  }, [loadAll, showToast]);
+  }, [loadAll, loadGameData, activeGame, showToast]);
   const logout = useCallback(() => {
-    authLogout(); setNamespace(''); setAccount(null); loadAll(); showToast('Abgemeldet · Gast-Profil');
-  }, [loadAll, showToast]);
+    authLogout(); setNamespace(''); setAccount(null); loadAll(); if (activeGame) loadGameData(activeGame); showToast('Abgemeldet · Gast-Profil');
+  }, [loadAll, loadGameData, activeGame, showToast]);
 
   // Evaluate alerts whenever fresh prices or the rules change. Fires once per
   // rule on the false→true transition (firingRef debounces repeats) and emits an
@@ -214,13 +269,18 @@ export function StoreProvider({ children }) {
   const getPriceHistory = useCallback((cardId) => priceHistory[cardId] || [], [priceHistory]);
 
   // ---- data fetching ----------------------------------------------------
-  // Loads the static daily snapshot baked into the site at deploy time.
-  // `silent` = background load on mount (no error banner; keep current data).
-  const loadSnapshot = useCallback(async ({ silent = false } = {}) => {
+  // Loads the static daily snapshot baked into the site at deploy time, for the
+  // given game (defaults to the active one). `silent` = background load on mount
+  // (no error banner; keep current data). Games without a snapshot (e.g. One
+  // Piece for now) simply keep their bundled sample data.
+  const loadSnapshot = useCallback(async ({ silent = false, game } = {}) => {
+    const g = game || activeGame || 'pokemon';
+    const url = snapshotUrl(g);
+    if (!url) { if (!silent) showToast('Für dieses Spiel gibt es noch keine Live-Daten – Beispieldaten aktiv.'); return false; }
     setLoading(true);
     if (!silent) setError(null);
     try {
-      const res = await fetch(SNAPSHOT_URL, { cache: 'no-cache' });
+      const res = await fetch(url, { cache: 'no-cache' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const list = Array.isArray(data?.cards) ? data.cards : [];
@@ -239,14 +299,14 @@ export function StoreProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [showToast, accumulateHistory]);
+  }, [showToast, accumulateHistory, activeGame]);
 
   const loadSample = useCallback(() => {
-    setRawCards(SAMPLE_CARDS);
+    setRawCards(sampleFor(activeGame || 'pokemon'));
     setSource('sample');
     setError(null);
     showToast('🃏 Beispieldaten geladen');
-  }, [showToast]);
+  }, [showToast, activeGame]);
 
   const fetchCards = useCallback(() => loadSnapshot({ silent: false }), [loadSnapshot]);
 
@@ -388,6 +448,7 @@ export function StoreProvider({ children }) {
     alerts, alertLog, addAlert, removeAlert, toggleAlert, updateAlert, clearAlertLog,
     buylist, inBuylist, addToBuylist, removeFromBuylist, setBuylistItems, setBuylistRules,
     account, login, register, logout,
+    activeGame, selectGame, leaveGame,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

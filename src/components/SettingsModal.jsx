@@ -5,7 +5,7 @@ import { PLATFORM_FEES } from '../lib/fees.js';
 import { GAMES } from '../data/providers/index.js';
 
 export default function SettingsModal({ onClose }) {
-  const { settings, updateSettings, watchlist, portfolio, tags, showToast } = useStore();
+  const { settings, updateSettings, watchlist, portfolio, tags, showToast, activeGame, selectGame } = useStore();
   const label = { fontSize: 11, color: C.textFaint, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' };
 
   return (
@@ -20,17 +20,17 @@ export default function SettingsModal({ onClose }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
             {GAMES.map((g) => (
               <button key={g.id} disabled={!g.enabled}
-                onClick={() => { updateSettings({ game: g.id }); showToast(`Spiel: ${g.label}`); }}
+                onClick={() => { if (g.id !== activeGame) { selectGame(g.id); showToast(`Spiel: ${g.label}`); onClose(); } }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 8, textAlign: 'left',
-                  border: `1px solid ${settings.game === g.id ? C.gold : C.lineStrong}`,
-                  background: settings.game === g.id ? '#ffd70015' : C.bg1,
+                  border: `1px solid ${activeGame === g.id ? C.gold : C.lineStrong}`,
+                  background: activeGame === g.id ? '#ffd70015' : C.bg1,
                   color: g.enabled ? C.text : C.textFaint, cursor: g.enabled ? 'pointer' : 'not-allowed', opacity: g.enabled ? 1 : 0.6,
                 }}>
                 <span style={{ fontSize: 16 }}>{g.emoji}</span>
                 <div>
                   <div style={{ fontSize: 12.5, fontWeight: 700 }}>{g.label}</div>
-                  <div style={{ fontSize: 9.5, color: C.textFaint }}>{g.enabled ? 'aktiv' : 'kommt bald'}</div>
+                  <div style={{ fontSize: 9.5, color: C.textFaint }}>{!g.enabled ? 'kommt bald' : activeGame === g.id ? 'aktiv' : 'wechseln'}</div>
                 </div>
               </button>
             ))}

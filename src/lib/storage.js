@@ -1,13 +1,29 @@
 // Thin localStorage wrapper (replaces the artifact-only window.storage from the
 // template). JSON in / JSON out, and safe if storage is unavailable.
 //
-// All app data is stored under PREFIX + <namespace> + key. The namespace lets a
-// local user account keep its own data: guest = '' (the original, un-namespaced
-// keys, so existing data is preserved), a logged-in account = `acct_<id>_`.
+// All app data is stored under PREFIX + <namespace> + key. The namespace has two
+// parts: the signed-in account, and the active game (TCG). A logged-in account
+// keeps its own data; each game keeps its own watchlist/collection/etc.
+//   guest + Pokémon  → ''            (the original, un-namespaced keys — so all
+//                                     existing Pokémon data is preserved as-is)
+//   guest + One Piece → 'onepiece_'
+//   account + game    → 'acct_<id>_<game>_'
+// Pokémon intentionally uses the bare namespace for backwards compatibility.
 const PREFIX = 'kwde_';
-let ns = '';
+let acct = '';
+let game = '';
 
-export const setNamespace = (n) => { ns = n ? `${n}_` : ''; };
+const compose = () => {
+  // Pokémon = the historical default → no game segment (keeps old keys valid).
+  const g = game && game !== 'pokemon' ? `${game}_` : '';
+  return `${acct}${g}`;
+};
+let ns = compose();
+
+// Account part of the namespace (kept across game switches).
+export const setNamespace = (n) => { acct = n ? `${n}_` : ''; ns = compose(); };
+// Game part of the namespace.
+export const setGameNamespace = (g) => { game = g || ''; ns = compose(); };
 export const getNamespace = () => ns;
 const fullKey = (key) => `${PREFIX}${ns}${key}`;
 

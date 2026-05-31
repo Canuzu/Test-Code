@@ -8,7 +8,8 @@ dist-ssr
 .vite
 npm-debug.log*
 
-# Generated at build time by scripts/fetch-prices.mjs — but the card snapshot is
-# committed and grown incrementally by the deploy workflow, so keep that one.
+# Generated at build time by scripts/fetch-prices.mjs — but the card snapshots
+# are committed and grown incrementally by the deploy workflow, so keep those.
 public/data/*
 !public/data/cards.json
+!public/data/onepiece.json
