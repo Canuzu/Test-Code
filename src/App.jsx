@@ -225,7 +225,9 @@ function Shell() {
       <footer style={{ borderTop: `1px solid ${C.lineStrong}`, padding: '16px 20px', marginTop: 40, textAlign: 'center', fontSize: 10.5, color: C.textGhost, maxWidth: 900, margin: '40px auto 0', lineHeight: 1.6 }}>
         ⚠️ <strong>Hinweis:</strong> {activeGame === 'pokemon'
           ? 'Preisdaten von Cardmarket (EU) via pokemontcg.io – können verzögert oder unvollständig sein.'
-          : `${game.label}: derzeit Beispieldaten – echte Cardmarket-Preise folgen. `}
+          : activeGame === 'onepiece'
+            ? 'One Piece: alle Sets & Karten mit offiziellem Artwork. Preise sind transparente Schätzungen (Rarität/Alter) – der echte Tagespreis steht je Karte direkt auf Cardmarket (verlinkt). '
+            : `${game.label}: derzeit Beispieldaten – echte Cardmarket-Preise folgen. `}
         Keine Anlageberatung. TCG-Investments sind volatil; investiere nur, was du entbehren kannst.
         Investment-Score & Beliebtheit sind berechnete Heuristiken, keine garantierten Prognosen.
       </footer>

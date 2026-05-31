@@ -54,10 +54,13 @@ export const deriveRisk = (card) => {
 
 const rarityWeight = (rarity) => {
   const x = (rarity || '').toLowerCase();
-  if (x.includes('illustration') || x.includes('special') || x.includes('hyper') || x.includes('secret') || x.includes('crown')) return 4;
+  // Top tier: Pokémon special/secret/illustration + One Piece Treasure Rare.
+  if (x.includes('treasure') || x.includes('illustration') || x.includes('special') || x.includes('hyper') || x.includes('secret') || x.includes('crown')) return 4;
   if (x.includes('ultra') || x.includes('vmax') || x.includes('vstar') || x.includes('full art') || x.includes('alt')) return 3.2;
+  if (x.includes('super rare')) return 2.8; // One Piece SR
   if (x.includes(' ex') || x.endsWith('ex') || x.includes(' gx') || x.includes('amazing')) return 2.6;
   if (x.includes('holo') || x.includes('double rare')) return 2;
+  if (x.includes('leader')) return 2; // One Piece Leader (staple, sought-after)
   if (x.includes('rare')) return 1.5;
   if (x.includes('uncommon')) return 0.8;
   return 0.4;

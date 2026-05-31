@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { C } from '../lib/theme.js';
-import { SEALED } from '../data/sealedProducts.js';
+import { sealedFor } from '../data/sealedProducts.js';
 import { EmptyState } from './ui.jsx';
 
 function SealedTile({ p }) {
@@ -35,9 +35,9 @@ function SealedTile({ p }) {
 // Sealed products (booster/display/etb). No live price from our data source, so
 // each tile links to the current Cardmarket price instead of showing a number.
 // `query` scopes the search to this sealed category (set name or product type).
-export default function SealedGrid({ type, query = '' }) {
+export default function SealedGrid({ type, query = '', game = 'pokemon' }) {
   const q = query.trim().toLowerCase();
-  const items = SEALED
+  const items = sealedFor(game)
     .filter((p) => p.type === type)
     .filter((p) => !q || p.set.toLowerCase().includes(q) || p.name.toLowerCase().includes(q) || p.typeLabel.toLowerCase().includes(q))
     .sort((a, b) => b.year - a.year);

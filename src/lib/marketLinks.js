@@ -23,20 +23,29 @@ const cleanName = (name) =>
 // English, search-friendly card name (Cardmarket/PSA catalogues are English).
 const englishName = (card) => cleanName(card?.nameEn || card?.baseName || card?.name);
 
+// Per-game catalogue slugs so each link lands in the right game's listings.
+// Cardmarket and TCGplayer use distinct URL segments per game; eBay just needs a
+// game keyword in the query.
+const VENUE = {
+  pokemon: { cm: 'Pokemon', tcgLine: 'pokemon', tcgPath: 'pokemon', ebay: 'pokemon card' },
+  onepiece: { cm: 'OnePiece', tcgLine: 'one-piece-card-game', tcgPath: 'one-piece-card-game', ebay: 'one piece card game' },
+};
+
 export const marketLinks = (card) => {
   const name = englishName(card);
   if (!name) return {};
+  const v = VENUE[card?.game] || VENUE.pokemon;
   const set = (card?.set || '').trim();
   const number = (card?.number || '').trim();
 
   const nameSet = `${name} ${set}`.trim();                 // narrow by set
-  const ebayTerms = [name, set, number, 'pokemon card'].filter(Boolean).join(' ');
+  const ebayTerms = [name, set, number, v.ebay].filter(Boolean).join(' ');
 
   const enc = encodeURIComponent;
   return {
-    cardmarket: `https://www.cardmarket.com/de/Pokemon/Products/Search?searchString=${enc(nameSet)}&perSite=20`,
+    cardmarket: `https://www.cardmarket.com/de/${v.cm}/Products/Search?searchString=${enc(nameSet)}&perSite=20`,
     ebay: `https://www.ebay.de/sch/i.html?_nkw=${enc(ebayTerms)}&_sacat=0`,
-    tcgplayer: `https://www.tcgplayer.com/search/pokemon/product?productLineName=pokemon&q=${enc(nameSet)}&view=grid`,
+    tcgplayer: `https://www.tcgplayer.com/search/${v.tcgPath}/product?productLineName=${v.tcgLine}&q=${enc(nameSet)}&view=grid`,
     psa: `https://www.psacard.com/pop/search?q=${enc(nameSet)}`,
   };
 };

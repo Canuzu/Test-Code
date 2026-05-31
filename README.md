@@ -50,8 +50,10 @@ echte Live-Preise statt KI-Schätzungen, `localStorage` statt Artifact-Storage.
 - **PWA / Mobile**: installierbar, offline-fähig (Service-Worker), mobile
   Bottom-Navigation, App-Icons.
 - **Offizielle Cardmarket-API** als optionale Preisquelle (siehe unten).
-- **Erweiterbar**: Provider-Architektur — Magic, Yu-Gi-Oh!, One Piece lassen sich
-  später als eigener Provider ergänzen (`src/data/providers/`).
+- **Mehrere TCGs**: Spiel-Auswahl-Startseite mit eigener Sammlung/Watchlist/Alerts
+  je Spiel. **Pokémon** (live, Cardmarket EU) und **One Piece** (alle Sets &
+  Karten mit offiziellem Artwork) sind ausgebaut; Magic & Yu-Gi-Oh! sind als
+  Provider vorbereitet (`src/data/providers/`).
 - **Beispieldaten** sind eingebaut, damit die App auch ohne Netzwerk sofort läuft.
 
 > Hinweis: eBay-/TCGplayer-Preise, Slab-Werte und der ältere Teil des
@@ -128,6 +130,27 @@ inklusive echter Bilder und exakter Cardmarket-Produktlinks.
 
 Lokal kann der Snapshot mit `node scripts/fetch-prices.mjs` erzeugt werden
 (braucht Internetzugang zur API).
+
+## One Piece Card Game (vollständiger Katalog)
+
+One Piece ist genauso ausgebaut wie Pokémon – **jedes englische Set und jede
+Karte** inklusive **offiziellem Artwork**. Quelle ist der offene, versionierte
+Datensatz [punk-records](https://github.com/buhbbl/punk-records) (von der
+offiziellen One-Piece-TCG-Seite gescrapt, über GitHub ausgeliefert).
+`scripts/fetch-onepiece.mjs` holt ihn zur Build-Zeit, dedupliziert die über viele
+Decks/Booster nachgedruckten Karten und schreibt **`public/data/onepiece.json`**
+(~4.300 Karten, 53 Sets). Bilder werden mit `no-referrer` direkt von der
+offiziellen CDN geladen, mit automatischem Fallback über den Bild-Proxy
+`wsrv.nl`, falls Bandai Hotlinking blockt.
+
+**Preise:** Für One Piece gibt es keine freie Live-Preis-API (die offizielle
+Seite listet keine Preise; Cardmarket/TCGPlayer brauchen Zugangsdaten). Bis die
+**offizielle Cardmarket-API** (`scripts/fetch-cardmarket.mjs`, `CM_*`-Secrets,
+`CM_GAME_ID` auf die One-Piece-ID setzen) angebunden ist, sind die Preise eine
+**transparente, deterministische Schätzung** aus Seltenheit, Alt-Art-Status und
+Set-Alter – klar als Schätzung gekennzeichnet, mit einem **Cardmarket-Link je
+Karte** für den echten Tagespreis. Das Card-Format ist identisch zu Pokémon, also
+funktionieren Sammlung, Charts, Alerts und Analyse unverändert.
 
 ## Technik
 

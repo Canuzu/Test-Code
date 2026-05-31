@@ -2,6 +2,11 @@
 // pokemontcg.io has no sealed-product prices, so these are NOT live-priced —
 // each tile links straight to the current Cardmarket price instead of showing
 // a fabricated number. Tiles use the official set logo as the image.
+//
+// Sealed products are per-game: `sealedFor(game)` / `sealedCategoriesFor(game)`
+// return the Pokémon set below or the One Piece set generated from set metadata.
+
+import { SET_META } from './providers/onepiece.js';
 
 const SETS = [
   { set: 'Prismatische Entwicklungen', setEn: 'Prismatic Evolutions', year: 2025, setId: 'sv8pt5' },
@@ -55,3 +60,42 @@ export const SEALED_CATEGORIES = [
   { id: 'display', label: 'Displays', emoji: '🗃️' },
   { id: 'etb', label: 'Top-Trainer-Box', emoji: '🎁' },
 ];
+
+// ---- One Piece sealed --------------------------------------------------------
+// Generated from the set metadata: every booster/extra/premium set gets a
+// Booster + Display tile, and every deck gets a Starter-Deck tile. There is no
+// One Piece sealed price feed either, so each tile links to the live Cardmarket
+// price; the artwork is the set's first card (a stable official image URL).
+const enc = encodeURIComponent;
+const cmOpUrl = (term) => `https://www.cardmarket.com/de/OnePiece/Products/Search?searchString=${enc(term)}`;
+const opCardImg = (code) => `https://en.onepiece-cardgame.com/images/cardlist/card/${code}-001.png`;
+const opYear = (code) => parseInt((SET_META[code]?.releaseDate || '').slice(0, 4), 10) || 0;
+const opSort = (codes) => [...codes].sort((a, b) => (SET_META[b].releaseDate || '').localeCompare(SET_META[a].releaseDate || ''));
+
+const OP_BOOSTER_CODES = opSort(Object.keys(SET_META).filter((c) => /^(OP|EB|PRB)\d+$/.test(c)));
+const OP_STARTER_CODES = opSort(Object.keys(SET_META).filter((c) => /^ST\d+$/.test(c)));
+
+export const ONE_PIECE_SEALED = [
+  ...OP_BOOSTER_CODES.flatMap((code) => {
+    const name = SET_META[code].name;
+    const year = opYear(code);
+    return [
+      { id: `op-booster-${code}`, type: 'booster', typeLabel: 'Booster', emoji: '📦', grad: ['#e23b3b', '#7a1010'], name: `${name} Booster`, set: name, year, logo: opCardImg(code), cardmarketUrl: cmOpUrl(`${name} Booster`) },
+      { id: `op-display-${code}`, type: 'display', typeLabel: 'Display', emoji: '🗃️', grad: ['#ffb300', '#a86d00'], name: `${name} Display`, set: name, year, logo: opCardImg(code), cardmarketUrl: cmOpUrl(`${name} Display`) },
+    ];
+  }),
+  ...OP_STARTER_CODES.map((code) => {
+    const name = SET_META[code].name;
+    return { id: `op-starter-${code}`, type: 'starter', typeLabel: 'Starter Deck', emoji: '🎴', grad: ['#448aff', '#1e3a8a'], name: `${name} [${code}]`, set: name, year: opYear(code), logo: opCardImg(code), cardmarketUrl: cmOpUrl(`${name} ${code}`) };
+  }),
+];
+
+export const ONE_PIECE_SEALED_CATEGORIES = [
+  { id: 'booster', label: 'Booster', emoji: '📦' },
+  { id: 'display', label: 'Displays', emoji: '🗃️' },
+  { id: 'starter', label: 'Starter Decks', emoji: '🎴' },
+];
+
+// Per-game accessors used by the UI.
+export const sealedFor = (game) => (game === 'onepiece' ? ONE_PIECE_SEALED : SEALED);
+export const sealedCategoriesFor = (game) => (game === 'onepiece' ? ONE_PIECE_SEALED_CATEGORIES : SEALED_CATEGORIES);
