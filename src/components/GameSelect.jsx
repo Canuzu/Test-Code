@@ -4,6 +4,7 @@
 import { C } from '../lib/theme.js';
 import { GAMES } from '../data/providers/index.js';
 import LogoMark from './LogoMark.jsx';
+import GameMark from './GameMark.jsx';
 
 export default function GameSelect({ onPick }) {
   return (
@@ -34,8 +35,8 @@ export default function GameSelect({ onPick }) {
             {/* accent glow */}
             <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(120% 100% at 0% 0%, ${g.accent}22, transparent 55%)`, pointerEvents: 'none' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative' }}>
-              <div style={{ width: 56, height: 56, flexShrink: 0, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30, background: `linear-gradient(135deg, ${g.accent}, ${g.accent2})`, boxShadow: `0 4px 18px ${g.accent}44` }}>
-                {g.emoji}
+              <div style={{ width: 56, height: 56, flexShrink: 0, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${g.accent}, ${g.accent2})`, boxShadow: `0 4px 18px ${g.accent}44` }}>
+                <GameMark id={g.id} size={34} />
               </div>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontSize: 17, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}>

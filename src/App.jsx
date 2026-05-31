@@ -73,17 +73,25 @@ function Shell() {
   cardsRef.current = cards;
   const isPopping = useRef(false);
   const firstNav = useRef(true);
+  // selectGame/leaveGame come from the store; refs keep the popstate handler
+  // (registered once) pointed at the current functions without re-subscribing.
+  const navActions = useRef({});
   const navView = {
+    game: activeGame,
     tab,
     modal: modal ? { id: modal.card.id, tab: modal.tab } : null,
     showCompare, showSettings, showImport, showPricing, showAuth,
   };
 
   useEffect(() => {
-    window.history.replaceState({ __kw: { tab: 'discover' } }, '');
+    window.history.replaceState({ __kw: { game: activeGame, tab: 'discover' } }, '');
     const onPop = (e) => {
       const v = e.state?.__kw || {};
       isPopping.current = true;
+      // Game-selection ↔ tracker is part of history too, so Back/Forward move
+      // between the landing page and the game (not straight out of the app).
+      const { select, leave } = navActions.current;
+      if (v.game) select?.(v.game); else leave?.();
       setTab(v.tab || 'discover');
       setShowCompare(!!v.showCompare);
       setShowSettings(!!v.showSettings);
@@ -104,7 +112,7 @@ function Shell() {
     if (isPopping.current) { isPopping.current = false; return; }
     window.history.pushState({ __kw: navView }, '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, modal, showCompare, showSettings, showImport, showPricing, showAuth]);
+  }, [activeGame, tab, modal, showCompare, showSettings, showImport, showPricing, showAuth]);
 
   // Scroll back to the top whenever the tab changes (incl. browser back/forward,
   // which sets `tab` via popstate). Without this the new view inherits the old
@@ -124,6 +132,8 @@ function Shell() {
   const goHome = () => { setTab('discover'); setDiscoverKey((k) => k + 1); leaveGame(); };
   // Pick a game from the landing page, then start on its Discover view.
   const pickGame = (id) => { selectGame(id); setTab('discover'); setDiscoverKey((k) => k + 1); scrollTop(); };
+  // Keep the once-registered popstate handler pointed at the live store actions.
+  navActions.current = { select: selectGame, leave: leaveGame };
   const pro = isPro(settings);
   const isMobile = useIsMobile();
   const game = getGame(activeGame || 'pokemon');
