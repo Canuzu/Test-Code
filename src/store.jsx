@@ -32,6 +32,7 @@ const snapshotUrl = (g) => {
 export function StoreProvider({ children }) {
   const [rawCards, setRawCards] = useState([]);
   const [source, setSource] = useState(null); // 'live' | 'sample' | 'cache'
+  const [snapshotInfo, setSnapshotInfo] = useState(null); // { cmEnriched, pricesEstimated }
   const [lastUpdated, setLastUpdated] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -288,6 +289,7 @@ export function StoreProvider({ children }) {
       const ts = data.generatedAt ? new Date(data.generatedAt).getTime() : Date.now();
       setRawCards(list);
       setSource('snapshot');
+      setSnapshotInfo({ cmEnriched: data.cmEnriched || 0, pricesEstimated: !!data.pricesEstimated });
       setLastUpdated(new Date(ts));
       store.set(KEYS.cards, { cards: list, ts });
       accumulateHistory(list, ts);
@@ -435,7 +437,7 @@ export function StoreProvider({ children }) {
   }, [cardById]);
 
   const value = {
-    cards, source, lastUpdated, loading, error,
+    cards, source, snapshotInfo, lastUpdated, loading, error,
     watchlist, portfolio, sold, notes, tags, settings, compareList, toast,
     theme, toggleTheme,
     fetchCards, loadSample,

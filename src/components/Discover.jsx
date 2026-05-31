@@ -23,7 +23,7 @@ const PRESETS = [
 const CAT_ICON = { start: Sparkles, singles: LayoutGrid, booster: Package, display: Boxes, etb: Gift, starter: Layers };
 
 export default function Discover({ onOpen }) {
-  const { cards, loading, error, source, lastUpdated, fetchCards, loadSample, tags, activeGame } = useStore();
+  const { cards, loading, error, source, snapshotInfo, lastUpdated, fetchCards, loadSample, tags, activeGame } = useStore();
   const [cat, setCat] = useState('start');
   const [selectedSet, setSelectedSet] = useState(null);
   const [search, setSearch] = useState('');
@@ -210,7 +210,9 @@ export default function Discover({ onOpen }) {
       {!searching && !inSet && (
         <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 14 }}>
           {source === 'snapshot' && (activeGame === 'onepiece'
-            ? <>🟢 Alle Sets · offizielle Bilder · Preise geschätzt (Cardmarket-Link je Karte) · Stand {fmtRelative(lastUpdated)} · </>
+            ? (snapshotInfo?.cmEnriched
+              ? <>🟢 Alle Sets · offizielle Bilder · {fmtNum(snapshotInfo.cmEnriched)} Live-Preise (Cardmarket){snapshotInfo.pricesEstimated ? ', Rest geschätzt' : ''} · Stand {fmtRelative(lastUpdated)} · </>
+              : <>🟢 Alle Sets · offizielle Bilder · Preise geschätzt (Cardmarket-Link je Karte) · Stand {fmtRelative(lastUpdated)} · </>)
             : <>🟢 Aktuelle Marktdaten (Cardmarket EU) · Stand {fmtRelative(lastUpdated)} · täglich aktualisiert · </>)}
           {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
           {source === 'sample' && <>🃏 Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}

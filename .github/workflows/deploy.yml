@@ -41,6 +41,17 @@ jobs:
           CM_SEARCH: ${{ vars.CM_SEARCH }}
       - name: Build One Piece catalogue (all sets/cards + official art, server-side)
         run: node scripts/fetch-onepiece.mjs
+        env:
+          # Same official Cardmarket (MKM) credentials as Pokémon. When set, real
+          # MKM prices replace the estimate on matched One Piece cards; otherwise
+          # the build keeps the transparent estimate. The One Piece idGame is
+          # auto-resolved from MKM /games (override with CM_GAME_ID_ONEPIECE).
+          CM_APP_TOKEN: ${{ secrets.CM_APP_TOKEN }}
+          CM_APP_SECRET: ${{ secrets.CM_APP_SECRET }}
+          CM_ACCESS_TOKEN: ${{ secrets.CM_ACCESS_TOKEN }}
+          CM_ACCESS_SECRET: ${{ secrets.CM_ACCESS_SECRET }}
+          CM_GAME_ID_ONEPIECE: ${{ vars.CM_GAME_ID_ONEPIECE }}
+          CM_SEARCH_ONEPIECE: ${{ vars.CM_SEARCH_ONEPIECE }}
       - name: Persist grown card snapshot (newest→oldest, incremental)
         if: github.ref == 'refs/heads/main'
         continue-on-error: true # branch protection etc. must not break the deploy

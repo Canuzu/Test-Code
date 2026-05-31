@@ -144,13 +144,31 @@ offiziellen CDN geladen, mit automatischem Fallback über den Bild-Proxy
 `wsrv.nl`, falls Bandai Hotlinking blockt.
 
 **Preise:** Für One Piece gibt es keine freie Live-Preis-API (die offizielle
-Seite listet keine Preise; Cardmarket/TCGPlayer brauchen Zugangsdaten). Bis die
-**offizielle Cardmarket-API** (`scripts/fetch-cardmarket.mjs`, `CM_*`-Secrets,
-`CM_GAME_ID` auf die One-Piece-ID setzen) angebunden ist, sind die Preise eine
-**transparente, deterministische Schätzung** aus Seltenheit, Alt-Art-Status und
-Set-Alter – klar als Schätzung gekennzeichnet, mit einem **Cardmarket-Link je
-Karte** für den echten Tagespreis. Das Card-Format ist identisch zu Pokémon, also
-funktionieren Sammlung, Charts, Alerts und Analyse unverändert.
+Seite listet keine Preise; Cardmarket/TCGPlayer brauchen Zugangsdaten). Ohne
+Zugangsdaten sind die Preise eine **transparente, deterministische Schätzung**
+aus Seltenheit, Alt-Art-Status und Set-Alter – klar als Schätzung gekennzeichnet,
+mit einem **Cardmarket-Link je Karte** für den echten Tagespreis. Das Card-Format
+ist identisch zu Pokémon, also funktionieren Sammlung, Charts, Alerts und Analyse
+unverändert.
+
+### Echte Live-Preise via offizielle Cardmarket-API (opt-in)
+
+Sind die vier **`CM_*`-Secrets** gesetzt (`CM_APP_TOKEN`, `CM_APP_SECRET`,
+`CM_ACCESS_TOKEN`, `CM_ACCESS_SECRET` – dieselben wie für Pokémon), ersetzt der
+Build die Schätzung **automatisch durch echte MKM-Preise** auf jeder Karte, die
+er zuordnen kann (per Sammelnummer wie `OP01-001` oder Set-Name + Nummer). Die
+One-Piece-Spiel-ID wird dabei **automatisch aus dem MKM-`/games`-Endpoint
+aufgelöst** – nichts weiter nötig. Optionale *Variables* (Repo → Settings →
+Secrets and variables → Actions → *Variables*):
+
+- `CM_GAME_ID_ONEPIECE` – nur falls die Auto-Auflösung mal abweicht (feste idGame).
+- `CM_SEARCH_ONEPIECE` – Komma-Liste zusätzlicher Suchbegriffe, um die Abdeckung
+  zu verbreitern (Default deckt die gefragtesten Karten ab; jeder Begriff zieht
+  weitere echte Preise nach).
+
+Karten mit echtem Preis tragen `source: "cardmarket"` (Schätzungen
+`estimated: true`); die Discover-Kopfzeile zeigt dann „*N* Live-Preise
+(Cardmarket)". Lokaler Signatur-/Credential-Test: `node scripts/fetch-cardmarket.mjs`.
 
 ## Technik
 

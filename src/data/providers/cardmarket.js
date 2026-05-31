@@ -21,7 +21,24 @@ export const meta = {
 export const MKM_BASE = 'https://api.cardmarket.com/ws/v2.0/output.json';
 
 // MKM game ids: 1 = Magic, 3 = Yu-Gi-Oh!, 6 = Pokémon (override via CM_GAME_ID).
+// One Piece has no publicly documented id; it is resolved at build time from the
+// MKM /games endpoint (see scripts/fetch-cardmarket.mjs › resolveGameId).
 export const DEFAULT_GAME_ID = '6';
+
+// Per-game display defaults used when normalising MKM products.
+const GAME_CARDTYPE = { pokemon: 'Pokémon', onepiece: 'One Piece' };
+
+// Extracts a One Piece collector code (e.g. "OP01-001", "ST10-003", "EB01-012")
+// from any of an MKM product's text fields, so a real MKM price can be matched
+// onto the catalogue card with that id. Returns the UPPERCASE base code (without
+// a parallel suffix) or null when none is present.
+export const cardCodeOf = (product) => {
+  if (!product) return null;
+  const hay = [product.number, product.name, product.enName, product.website]
+    .filter(Boolean).join(' ');
+  const m = hay.match(/\b([A-Z]{2,4}\d{2})-(\d{2,3})\b/i);
+  return m ? `${m[1].toUpperCase()}-${m[2]}` : null;
+};
 
 const n = (v) => {
   const x = typeof v === 'string' ? parseFloat(v) : v;
@@ -33,8 +50,10 @@ const img = (raw) => {
   return raw.startsWith('//') ? `https:${raw}` : raw;
 };
 
-// Maps an MKM product (with priceGuide) to our common Card shape.
-export const normalizeProduct = (product) => {
+// Maps an MKM product (with priceGuide) to our common Card shape. `game`
+// tags which TCG the product belongs to (so One Piece products are normalised
+// as One Piece, not Pokémon).
+export const normalizeProduct = (product, { game = 'pokemon' } = {}) => {
   if (!product) return null;
   const pg = product.priceGuide || {};
   const loc = Array.isArray(product.localization) ? product.localization : [];
@@ -44,7 +63,7 @@ export const normalizeProduct = (product) => {
   const trend = n(pg.TREND) ?? n(pg.SELL) ?? n(pg.AVG);
   return {
     id: `cm-${product.idProduct}`,
-    game: 'pokemon',
+    game,
     name,
     baseName: product.enName || name,
     nameEn: product.enName || name,
@@ -52,8 +71,9 @@ export const normalizeProduct = (product) => {
     setId: product.expansion?.idExpansion ? `mkm-${product.expansion.idExpansion}` : '',
     series: '',
     number: product.number || '',
+    code: cardCodeOf(product), // e.g. "OP01-001" when present (used to match)
     rarity: product.rarity || '',
-    cardType: 'Pokémon',
+    cardType: GAME_CARDTYPE[game] || '',
     year: null,
     image: { small: image, large: image },
     prices: {
