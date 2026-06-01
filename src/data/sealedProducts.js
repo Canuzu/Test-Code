@@ -96,6 +96,53 @@ export const ONE_PIECE_SEALED_CATEGORIES = [
   { id: 'starter', label: 'Starter Decks', emoji: '🎴' },
 ];
 
-// Per-game accessors used by the UI.
-export const sealedFor = (game) => (game === 'onepiece' ? ONE_PIECE_SEALED : SEALED);
-export const sealedCategoriesFor = (game) => (game === 'onepiece' ? ONE_PIECE_SEALED_CATEGORIES : SEALED_CATEGORIES);
+// ---- Magic / Yu-Gi-Oh sealed (data-driven) -----------------------------------
+// These games have hundreds of sets, so instead of a static list we derive
+// Booster + Display tiles from the sets present in the loaded catalogue. The
+// tile artwork is the set's priciest card; each links to the live Cardmarket
+// price for that set's sealed product.
+const CM_GAME_PATH = { magic: 'Magic', yugioh: 'YuGiOh' };
+const GAME_GRAD = { magic: [['#8b5cf6', '#4c1d95'], ['#3b82f6', '#1e3a8a']], yugioh: [['#f59e0b', '#92400e'], ['#b45309', '#78350f']] };
+
+const sealedFromCards = (game, cards) => {
+  const path = CM_GAME_PATH[game];
+  if (!path || !Array.isArray(cards) || !cards.length) return [];
+  // Group cards by set, remember newest release + top card (for artwork).
+  const sets = new Map();
+  for (const c of cards) {
+    const key = c.setId || c.set;
+    if (!key || !c.set) continue;
+    let g = sets.get(key);
+    if (!g) { g = { name: c.set, year: c.year || 0, date: c.setReleaseDate || '', top: c }; sets.set(key, g); }
+    if ((c.prices?.market ?? 0) > (g.top?.prices?.market ?? 0)) g.top = c;
+    if (c.setReleaseDate && c.setReleaseDate > g.date) g.date = c.setReleaseDate;
+    if (c.year && c.year > g.year) g.year = c.year;
+  }
+  const grad = GAME_GRAD[game] || GAME_GRAD.magic;
+  const sorted = [...sets.values()].sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.year - a.year).slice(0, 80);
+  return sorted.flatMap((s) => {
+    const logo = s.top?.image?.small || s.top?.image?.large || null;
+    return [
+      { id: `${game}-booster-${s.name}`, type: 'booster', typeLabel: 'Booster', emoji: '📦', grad: grad[0], name: `${s.name} Booster`, set: s.name, year: s.year, logo, cardmarketUrl: `https://www.cardmarket.com/de/${path}/Products/Search?searchString=${enc(`${s.name} Booster`)}` },
+      { id: `${game}-display-${s.name}`, type: 'display', typeLabel: 'Display', emoji: '🗃️', grad: grad[1], name: `${s.name} Display`, set: s.name, year: s.year, logo, cardmarketUrl: `https://www.cardmarket.com/de/${path}/Products/Search?searchString=${enc(`${s.name} Display`)}` },
+    ];
+  });
+};
+
+const DATA_DRIVEN_CATEGORIES = [
+  { id: 'booster', label: 'Booster', emoji: '📦' },
+  { id: 'display', label: 'Displays', emoji: '🗃️' },
+];
+
+// Per-game accessors used by the UI. `cards` is only needed for the data-driven
+// games (Magic / Yu-Gi-Oh); Pokémon & One Piece use their curated static lists.
+export const sealedFor = (game, cards) => {
+  if (game === 'onepiece') return ONE_PIECE_SEALED;
+  if (game === 'magic' || game === 'yugioh') return sealedFromCards(game, cards);
+  return SEALED;
+};
+export const sealedCategoriesFor = (game) => {
+  if (game === 'onepiece') return ONE_PIECE_SEALED_CATEGORIES;
+  if (game === 'magic' || game === 'yugioh') return DATA_DRIVEN_CATEGORIES;
+  return SEALED_CATEGORIES;
+};

@@ -7,6 +7,8 @@ import { applyTheme } from './lib/theme.js';
 import { gameSnapshot } from './data/providers/index.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
 import { ONE_PIECE_CARDS } from './data/onePieceCards.js';
+import { YUGIOH_CARDS } from './data/yugiohCards.js';
+import { MAGIC_CARDS } from './data/magicCards.js';
 
 const StoreContext = createContext(null);
 export const useStore = () => useContext(StoreContext);
@@ -19,7 +21,7 @@ const DEFAULT_SETTINGS = { game: 'pokemon', apiKey: '', platform: 'cardmarket', 
 const ACTIVE_GAME_KEY = 'kwde_active_game';
 
 // Per-game bundled sample dataset (used until a live snapshot loads).
-const SAMPLES = { pokemon: SAMPLE_CARDS, onepiece: ONE_PIECE_CARDS };
+const SAMPLES = { pokemon: SAMPLE_CARDS, onepiece: ONE_PIECE_CARDS, yugioh: YUGIOH_CARDS, magic: MAGIC_CARDS };
 const sampleFor = (g) => SAMPLES[g] || [];
 
 // Static daily snapshot for a game, produced at deploy time and served

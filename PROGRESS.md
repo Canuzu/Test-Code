@@ -145,6 +145,34 @@
   defensiv/paginiert/rate-limit-fest. Alternative: kostenpflichtige TCG-Preis-API
   (JustTCG/apitcg) mit Key.
 
+## Folge-Batch 5 (Magic & Yu-Gi-Oh! aktiviert – wie Pokémon/One Piece)
+- [x] L. **Yu-Gi-Oh!** voll ausgebaut: Quelle YGOJSON (`iconmaster5326/YGOJSON`,
+  Branch `v1/aggregate`, via raw.githubusercontent — im Deploy & lokal erreichbar).
+  `scripts/fetch-yugioh.mjs` flacht jede Karte auf ihr frühestes TCG-Set +
+  repräsentative Rarität ab, deutsche Namen, offizielle Bilder → `public/data/
+  yugioh.json` (**14.334 Karten, ~285 echte Sets**). Provider `yugioh.js`
+  (Rarität-Label-Map, deterministisches Preismodell wie One Piece). Preise =
+  Schätzung (Cardmarket-Link je Karte).
+- [x] M. **Magic** voll ausgebaut: Quelle Scryfall-Bulk (`default_cards`).
+  `scripts/fetch-magic.mjs` läuft im Deploy (Scryfall blockt Browser-CORS), nimmt
+  Karten mit **echtem Cardmarket-EUR-Preis** (`prices.eur`), neueste Sets zuerst,
+  Cap `MAGIC_HARD_CAP=16000` → `public/data/magic.json`. Provider `magic.js`
+  (normalisiert Scryfall inkl. doppelseitiger Karten, echte EUR-Preise). **Echte
+  Live-Preise, keine Schätzung.** Bis zum ersten Deploy greift ein kleiner
+  Sample-Fallback (`magicCards.js`); committeter Platzhalter-Snapshot vorhanden.
+- Registry: beide `enabled:true` mit Provider, Tagline/Blurb, Snapshot-Pfad.
+  Samples in Store (`yugiohCards.js` aus echten Daten, `magicCards.js` kuratiert).
+  `.gitignore` lässt yugioh.json + magic.json durch. Deploy-Workflow baut beide
+  Kataloge und committet alle 4 Snapshots zurück (`[skip ci]`).
+- Spielbewusst erweitert: `marketLinks` (Cardmarket Magic/YuGiOh, eBay/TCGplayer),
+  `metrics.rarityWeight` (Mythic/Ghost/Starlight/Collector/Ultimate), Sealed
+  **datengetrieben** für Magic/YGO (`sealedFromCards` aus geladenen Sets →
+  Booster/Display + Cardmarket-Link, Set-Artwork = teuerste Karte), Discover
+  Quellen-Zeile (`snapshotLabel`) + WelcomeHero-Texte je Spiel, App-Footer-Hinweis.
+  `GameMark` hatte bereits Magic-/YGO-Icons. Build grün, enrich() NaN-frei.
+- ⏸️ Magic-Snapshot wird erst beim Deploy real befüllt (Scryfall im Sandbox
+  geblockt) — YGO ist bereits vollständig vorgeneriert & committet.
+
 ## Hinweise / offene Punkte für später
 - Deploy-Workflow triggert nur auf `main` (+ alter Branch). Für Live-Schaltung
   müssen die Änderungen nach `main` gemerged werden (bewusst nicht ohne

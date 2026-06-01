@@ -29,6 +29,8 @@ const englishName = (card) => cleanName(card?.nameEn || card?.baseName || card?.
 const VENUE = {
   pokemon: { cm: 'Pokemon', tcgLine: 'pokemon', tcgPath: 'pokemon', ebay: 'pokemon card' },
   onepiece: { cm: 'OnePiece', tcgLine: 'one-piece-card-game', tcgPath: 'one-piece-card-game', ebay: 'one piece card game' },
+  magic: { cm: 'Magic', tcgLine: 'magic', tcgPath: 'magic', ebay: 'mtg magic card' },
+  yugioh: { cm: 'YuGiOh', tcgLine: 'yugioh', tcgPath: 'yugioh', ebay: 'yugioh card' },
 };
 
 export const marketLinks = (card) => {
