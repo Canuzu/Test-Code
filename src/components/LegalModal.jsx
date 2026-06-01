@@ -88,12 +88,14 @@ export default function LegalModal({ tab = 'imprint', onClose }) {
             Art. 6 Abs. 1 lit. f DSGVO (ansprechende Darstellung der Inhalte).
           </p>
           <p style={{ margin: '0 0 8px' }}>
-            <strong>Lokale Speicherung:</strong> Deine Sammlung, Watchlist, Alerts,
-            Konten und Einstellungen werden ausschließlich <strong>lokal in deinem
-            Browser</strong> (localStorage) gespeichert – sie verlassen dein Gerät
-            nicht und werden nicht an uns übertragen. Es findet <strong>kein
-            Tracking, keine Analyse und keine Werbung</strong> statt; es werden keine
-            Cookies zu Marketingzwecken gesetzt.
+            <strong>Lokale Speicherung & Cookies:</strong> Deine Sammlung, Watchlist,
+            Alerts, Konten und Einstellungen werden ausschließlich <strong>lokal in
+            deinem Browser</strong> (localStorage) gespeichert – sie verlassen dein
+            Gerät nicht und werden nicht an uns übertragen. <strong>Diese Website
+            setzt keine Cookies</strong> – weder eigene noch von Dritten – und es
+            findet <strong>kein Tracking, keine Analyse und keine Werbung</strong>
+            statt. Ein Cookie-Banner ist daher nicht erforderlich; die lokale
+            Speicherung ist für den Betrieb technisch notwendig und einwilligungsfrei.
           </p>
           <p style={{ margin: 0 }}>
             <strong>Deine Rechte:</strong> Auskunft, Berichtigung, Löschung,
@@ -104,8 +106,9 @@ export default function LegalModal({ tab = 'imprint', onClose }) {
         </Section>
 
         <div style={{ fontSize: 10.5, color: C.textGhost, borderTop: `1px solid ${C.lineStrong}`, paddingTop: 12, lineHeight: 1.6 }}>
-          ⚠️ Vorlage ohne Rechtsberatung. Vor der Veröffentlichung die [[Platzhalter]]
-          mit echten Angaben ersetzen; im Zweifel rechtlich prüfen lassen.
+          Stand: Juni 2026 · ⚠️ Vorlage ohne Rechtsberatung. Vor der Veröffentlichung
+          die [[Platzhalter]] mit echten Angaben ersetzen; im Zweifel rechtlich
+          prüfen lassen.
         </div>
       </div>
     </div>

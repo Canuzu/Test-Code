@@ -35,13 +35,18 @@ export function Spark({ series, width = 96, height = 30, strokeWidth = 2 }) {
 }
 
 // Card artwork with a graceful, multi-source fallback chain:
-//   1. the card's own image (pokemontcg.io for Pokémon, the official One Piece
-//      CDN for One Piece), requested with no-referrer so Referer-based hot-link
-//      protection doesn't block it;
-//   2. for One Piece (Bandai's CDN occasionally IP-blocks hot-linkers) a retry
-//      through wsrv.nl, a CORS-friendly image proxy that re-serves it;
+//   1. for hosts that hot-link-block or aren't CORS-friendly (Bandai's One Piece
+//      CDN, the Yu-Gi-Oh! hosts ygoprodeck / yugipedia) we load through the
+//      wsrv.nl image proxy FIRST, with the direct URL as a fallback;
+//   2. otherwise the card's own image (pokemontcg.io, Scryfall) loaded directly
+//      with no-referrer so Referer-based hot-link protection doesn't block it;
 //   3. a clean placeholder tile if everything fails.
 const proxied = (u, w) => `https://wsrv.nl/?url=${encodeURIComponent(u)}&output=png${w ? `&w=${w}` : ''}&maxage=30d`;
+// Hosts known to block hot-linking / lack CORS → must go through the proxy.
+const NEEDS_PROXY = /onepiece-cardgame\.com|ygoprodeck\.com|yugipedia\.com/i;
+// Collapse accidental double slashes in the path (some Yu-Gi-Oh! image URLs
+// arrive as ".../com//f/fd/...") without touching the "https://" scheme.
+const cleanUrl = (u) => (u ? u.replace(/([^:])\/{2,}/g, '$1/') : u);
 
 export function CardImage({ card, height = 150, radius = 10 }) {
   const [stage, setStage] = useState(0);
@@ -49,14 +54,14 @@ export function CardImage({ card, height = 150, radius = 10 }) {
   const constructed = (card?.setId && card?.number && card?.game !== 'onepiece')
     ? `https://images.pokemontcg.io/${card.setId}/${card.number}.png`
     : null;
-  const primary = card?.image?.small || card?.image?.large || constructed;
-  // Bandai's One Piece CDN hot-link-blocks unreliably (esp. on mobile networks),
-  // so for One Piece we load through the wsrv.nl proxy FIRST (CORS-friendly,
-  // cached, reaches Bandai server-side) and keep the direct URL as a fallback.
-  const isOP = !!primary && /onepiece-cardgame\.com/i.test(primary);
+  const primary = cleanUrl(card?.image?.small || card?.image?.large || constructed);
+  // One Piece (Bandai) and Yu-Gi-Oh! (ygoprodeck / yugipedia) hot-link-block
+  // unreliably, so we load those through the wsrv.nl proxy FIRST (CORS-friendly,
+  // cached, reaches the origin server-side) and keep the direct URL as fallback.
+  const needsProxy = !!primary && NEEDS_PROXY.test(primary);
   const candidates = [];
   if (primary) {
-    if (isOP) candidates.push(proxied(primary, 600), primary);
+    if (needsProxy) candidates.push(proxied(primary, 600), primary);
     else candidates.push(primary);
   }
   const src = candidates[stage];

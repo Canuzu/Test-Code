@@ -59,15 +59,15 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   const links = marketLinks(card);
   // Ordered candidates for the fullscreen image. Vintage Pokémon cards often
   // lack a `_hires` asset, so we fall back: large → constructed hires → small →
-  // constructed small. For One Piece, Bandai's CDN hot-link-blocks the direct
-  // URL (the zoom would hang forever), so we route through the wsrv.nl proxy
-  // FIRST and keep the direct URL only as a last resort. The lightbox steps
-  // through these on each load error so a blocked/missing file never leaves a
-  // blank, endlessly-spinning zoom.
-  const opLarge = card.image?.large || card.image?.small;
-  const isOP = !!opLarge && /onepiece-cardgame\.com/i.test(opLarge);
-  const heroCandidates = (isOP
-    ? [`https://wsrv.nl/?url=${encodeURIComponent(opLarge)}&output=png&maxage=30d`, opLarge]
+  // constructed small. For One Piece (Bandai) and Yu-Gi-Oh! (ygoprodeck /
+  // yugipedia) the direct URL hot-link-blocks (the zoom would hang forever), so
+  // we route through the wsrv.nl proxy FIRST and keep the direct URL only as a
+  // last resort. The lightbox steps through these on each load error so a
+  // blocked/missing file never leaves a blank, endlessly-spinning zoom.
+  const heroDirect = (card.image?.large || card.image?.small || '').replace(/([^:])\/{2,}/g, '$1/');
+  const heroProxied = !!heroDirect && /onepiece-cardgame\.com|ygoprodeck\.com|yugipedia\.com/i.test(heroDirect);
+  const heroCandidates = (heroProxied
+    ? [`https://wsrv.nl/?url=${encodeURIComponent(heroDirect)}&output=png&maxage=30d`, heroDirect]
     : [
         card.image?.large,
         card.setId && card.number ? `https://images.pokemontcg.io/${card.setId}/${card.number}_hires.png` : null,

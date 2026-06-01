@@ -56,6 +56,9 @@ jobs:
         run: node scripts/fetch-yugioh.mjs
       - name: Build Magic catalogue (Scryfall, real Cardmarket EUR prices)
         run: node scripts/fetch-magic.mjs
+      - name: Smoke-test catalogues (non-blocking — surfaces empty/broken data)
+        continue-on-error: true
+        run: node scripts/smoke-data.mjs
       - name: Persist grown card snapshots (incremental)
         if: github.ref == 'refs/heads/main'
         continue-on-error: true # branch protection etc. must not break the deploy
