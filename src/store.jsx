@@ -4,6 +4,8 @@ import { enrich } from './lib/metrics.js';
 import { ruleHit, fireNotification } from './lib/alerts.js';
 import { restore as authRestore, register as authRegister, login as authLogin, logout as authLogout, cloudEnabled } from './lib/authBackend.js';
 import * as cloud from './lib/cloudSync.js';
+import { planIsPro, billingEnabled } from './lib/pro.js';
+import * as billing from './lib/billing.js';
 import { applyTheme } from './lib/theme.js';
 import { gameSnapshot } from './data/providers/index.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
@@ -51,6 +53,8 @@ export function StoreProvider({ children }) {
   const [buylist, setBuylist] = useState({ rules: null, items: [] });
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [account, setAccount] = useState(null); // local account profile or null (guest)
+  const [plan, setPlan] = useState('free');     // server-side billing plan ('free' | 'pro')
+  const pro = planIsPro(plan);                  // free-for-all until billing is configured
   // Active TCG. Always starts as '' so every launch opens on the game-selection
   // landing page (the "home"), on phone and desktop alike — rather than jumping
   // straight into the last-played game. selectGame still records the choice for
@@ -130,6 +134,7 @@ export function StoreProvider({ children }) {
       setNamespace(acct?.id || '');
       setGameNamespace(activeGame || 'pokemon');
       if (acct?.uid) { await cloud.pull(acct.id, acct.uid); cloud.start(acct.id, acct.uid); }
+      if (billingEnabled && acct?.uid) setPlan(await billing.fetchPlan());
       setAccount(acct || null);
       loadAll();
       if (activeGame) loadGameData(activeGame);
@@ -211,6 +216,7 @@ export function StoreProvider({ children }) {
   const enterAccount = useCallback(async (account) => {
     setNamespace(account.id);
     if (account.uid) { await cloud.pull(account.id, account.uid); cloud.start(account.id, account.uid); }
+    if (billingEnabled && account.uid) setPlan(await billing.fetchPlan());
     setAccount(account);
     loadAll();
     if (activeGame) loadGameData(activeGame);
@@ -227,8 +233,24 @@ export function StoreProvider({ children }) {
     return res;
   }, [enterAccount, showToast]);
   const logout = useCallback(async () => {
-    await authLogout(); cloud.stop(); setNamespace(''); setAccount(null); loadAll(); if (activeGame) loadGameData(activeGame); showToast('Abgemeldet · Gast-Profil');
+    await authLogout(); cloud.stop(); setNamespace(''); setAccount(null); setPlan('free'); loadAll(); if (activeGame) loadGameData(activeGame); showToast('Abgemeldet · Gast-Profil');
   }, [loadAll, loadGameData, activeGame, showToast]);
+
+  // Re-check the plan from the server (e.g. after returning from Stripe Checkout).
+  const refreshPlan = useCallback(async () => {
+    if (billingEnabled) setPlan(await billing.fetchPlan());
+  }, []);
+  // Returning from Checkout: ?billing=success → confirm + refresh once the
+  // webhook has flipped the plan; then strip the query param from the URL.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const b = q.get('billing');
+    if (!b) return;
+    if (b === 'success') { showToast('🎉 Danke! Pro wird aktiviert …'); setTimeout(refreshPlan, 3500); }
+    q.delete('billing');
+    window.history.replaceState({}, '', window.location.pathname + (q.toString() ? `?${q}` : '') + window.location.hash);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Evaluate alerts whenever fresh prices or the rules change. Fires once per
   // rule on the false→true transition (firingRef debounces repeats) and emits an
@@ -459,6 +481,7 @@ export function StoreProvider({ children }) {
     alerts, alertLog, addAlert, removeAlert, toggleAlert, updateAlert, clearAlertLog,
     buylist, inBuylist, addToBuylist, removeFromBuylist, setBuylistItems, setBuylistRules,
     account, login, register, logout, cloudEnabled,
+    pro, plan, billingEnabled, refreshPlan,
     activeGame, selectGame, leaveGame,
   };
 

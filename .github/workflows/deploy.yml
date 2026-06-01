@@ -74,11 +74,14 @@ jobs:
           fi
       - run: npm run build
         env:
-          # Backend (Phase 1) activation — empty = local-only mode (unchanged).
-          # Set these as repo Variables to ship real Supabase accounts + sync;
-          # no code change needed. See docs/BACKEND.md.
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          # Backend activation — all empty = local-only, free, unchanged. Set the
+          # matching repo Variables to ship the features; no code change needed.
+          # See docs/BACKEND.md.
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}           # Phase 1: accounts + sync
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_STRIPE_PRICE_ID: ${{ vars.VITE_STRIPE_PRICE_ID }}    # Phase 2: Stripe billing
+          VITE_STRIPE_PRICE_LABEL: ${{ vars.VITE_STRIPE_PRICE_LABEL }}
+          VITE_LIVE_PRICES: ${{ vars.VITE_LIVE_PRICES }}            # Phase 3: live prices
       - uses: actions/configure-pages@v5
         with:
           enablement: true

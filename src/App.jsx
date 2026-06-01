@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import { Settings as Cog, GitCompare, Sun, Moon, Crown, Smartphone, ArrowLeft, ArrowRight, User, Compass, Star, Album, ChartLine, ClipboardList, Bell } from 'lucide-react';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
-import { isPro } from './lib/pro.js';
 import { fmtNum } from './lib/format.js';
 import { useIsMobile } from './lib/useMediaQuery.js';
 import Discover from './components/Discover.jsx';
@@ -88,7 +87,7 @@ const TABS = [
 ];
 
 function Shell() {
-  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, alerts, account, activeGame, selectGame, leaveGame } = useStore();
+  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, alerts, account, activeGame, selectGame, leaveGame, pro, billingEnabled } = useStore();
   const [tab, setTab] = useState('discover');
   const [modal, setModal] = useState(null); // { card, tab }
   const [showCompare, setShowCompare] = useState(false);
@@ -179,7 +178,6 @@ function Shell() {
   const pickGame = (id) => { selectGame(id); setTab('discover'); setDiscoverKey((k) => k + 1); scrollTop(); };
   // Keep the once-registered popstate handler pointed at the live store actions.
   navActions.current = { select: selectGame, leave: leaveGame };
-  const pro = isPro(settings);
   const isMobile = useIsMobile();
   const game = getGame(activeGame || 'pokemon');
   const badge = { watchlist: watchlist.length, portfolio: portfolio.length, alerts: alerts.filter((a) => a.active).length };
@@ -238,8 +236,8 @@ function Shell() {
               <Smartphone size={13} /> {!isMobile && <span style={{ fontSize: 11, fontWeight: 700 }}>App</span>}
             </button>
           )}
-          <button onClick={() => setShowPricing(true)} title="Alle Funktionen kostenlos" className="control" style={{ padding: isMobile ? '7px 9px' : '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: C.gold, borderColor: C.gold + '55' }}>
-            <Crown size={13} /> {!isMobile && <span style={{ fontSize: 11, fontWeight: 700 }}>Gratis</span>}
+          <button onClick={() => setShowPricing(true)} title={billingEnabled ? (pro ? 'Pro aktiv' : 'Auf Pro upgraden') : 'Alle Funktionen kostenlos'} className="control" style={{ padding: isMobile ? '7px 9px' : '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: C.gold, borderColor: C.gold + '55' }}>
+            <Crown size={13} /> {!isMobile && <span style={{ fontSize: 11, fontWeight: 700 }}>{billingEnabled ? (pro ? 'Pro ✓' : 'Pro') : 'Gratis'}</span>}
           </button>
           <button onClick={() => setShowAuth(true)} title={account ? account.email : 'Anmelden'} className="control" style={{ padding: isMobile ? '7px 9px' : '7px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
             {account

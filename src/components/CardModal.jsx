@@ -9,6 +9,7 @@ import { VARIANTS, variantsFor, defaultVariant } from '../lib/variants.js';
 import { marketEstimates, arbitrage } from '../lib/markets.js';
 import { gradeEstimates, gradingProfit } from '../lib/grading.js';
 import { newRule } from '../lib/alerts.js';
+import { livePricesEnabled, refreshCard } from '../lib/livePrices.js';
 import { CardImage, Pill, ChangeBadge, ScoreBadge, Spark } from './ui.jsx';
 import PriceChart from './PriceChart.jsx';
 
@@ -30,6 +31,8 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   const [noteText, setNoteText] = useState(notes[card.id] || '');
   const [newTag, setNewTag] = useState('');
   const [buyPrice, setBuyPrice] = useState(String(card.prices.low ?? card.prices.market ?? ''));
+  const [live, setLive] = useState(null);       // on-demand live price (Phase 3)
+  const [liveBusy, setLiveBusy] = useState(false);
   const [buyQty, setBuyQty] = useState('1');
   const [buyCond, setBuyCond] = useState('NM');
   const [buyLoc, setBuyLoc] = useState('');
@@ -218,6 +221,19 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                 ))}
               </div>
 
+              {livePricesEnabled && (
+                <div style={{ marginBottom: 14, textAlign: 'center' }}>
+                  <button className="control" disabled={liveBusy} style={{ padding: '7px 12px', fontSize: 12 }}
+                    onClick={async () => { setLiveBusy(true); const r = await refreshCard(card); setLive(r || { market: null }); setLiveBusy(false); }}>
+                    {liveBusy ? 'Lädt…' : '🔄 Live-Preis aktualisieren'}
+                  </button>
+                  {live && (
+                    <div style={{ fontSize: 12, color: live.market != null ? C.green : C.textFaint, marginTop: 6 }}>
+                      {live.market != null ? `🟢 Live: ${fmtEur(live.market)} (Cardmarket)` : 'Für dieses Spiel gibt es keinen Live-Preis (transparente Schätzung).'}
+                    </div>
+                  )}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: 10, marginBottom: 14, alignItems: 'center', background: C.bg1, borderRadius: 10, padding: 12 }}>
                 <Spark series={labeled.map((x, i) => ({ i, v: x.v }))} width={120} height={44} />
                 <div style={{ display: 'flex', gap: 16 }}>
