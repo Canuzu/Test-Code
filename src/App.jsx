@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import { Settings as Cog, GitCompare, Sun, Moon, Crown, Smartphone, ArrowLeft, ArrowRight, User, Compass, Star, Album, ChartLine, ClipboardList, Bell } from 'lucide-react';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
@@ -15,15 +15,57 @@ import { getGame } from './data/providers/index.js';
 
 // Heavy / on-demand views are code-split so the charting library (recharts)
 // and modals are not part of the initial bundle.
-const Analytics = lazy(() => import('./components/Analytics.jsx'));
-const CardModal = lazy(() => import('./components/CardModal.jsx'));
-const CompareModal = lazy(() => import('./components/CompareModal.jsx'));
-const SettingsModal = lazy(() => import('./components/SettingsModal.jsx'));
-const BuylistView = lazy(() => import('./components/BuylistView.jsx'));
-const AlertsView = lazy(() => import('./components/AlertsView.jsx'));
-const ImportModal = lazy(() => import('./components/ImportModal.jsx'));
-const PricingModal = lazy(() => import('./components/PricingModal.jsx'));
-const AuthModal = lazy(() => import('./components/AuthModal.jsx'));
+//
+// lazyChunk wraps import() so that a FAILED dynamic import (the classic cause of
+// a white screen right after a deploy: the cached index.html points at an old
+// chunk hash that no longer exists) triggers exactly one full reload to pull the
+// fresh asset, instead of leaving the user on a blank page.
+const lazyChunk = (importer) => lazy(() => importer().catch((err) => {
+  const KEY = 'kwde_chunk_reloaded_at';
+  const last = Number(sessionStorage.getItem(KEY) || 0);
+  if (Date.now() - last > 10000) {            // avoid reload loops
+    sessionStorage.setItem(KEY, String(Date.now()));
+    window.location.reload();
+    return new Promise(() => {});             // hold render until the reload happens
+  }
+  throw err;                                  // already retried → let the boundary show a message
+}));
+
+const Analytics = lazyChunk(() => import('./components/Analytics.jsx'));
+const CardModal = lazyChunk(() => import('./components/CardModal.jsx'));
+const CompareModal = lazyChunk(() => import('./components/CompareModal.jsx'));
+const SettingsModal = lazyChunk(() => import('./components/SettingsModal.jsx'));
+const BuylistView = lazyChunk(() => import('./components/BuylistView.jsx'));
+const AlertsView = lazyChunk(() => import('./components/AlertsView.jsx'));
+const ImportModal = lazyChunk(() => import('./components/ImportModal.jsx'));
+const PricingModal = lazyChunk(() => import('./components/PricingModal.jsx'));
+const AuthModal = lazyChunk(() => import('./components/AuthModal.jsx'));
+
+// Catches any render error inside the lazy modals so a single broken view shows
+// a recoverable message instead of blanking the whole app (white screen).
+class ModalBoundary extends Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error) { console.error('[modal] render error:', error); }
+  render() {
+    if (this.state.error) {
+      return (
+        <div onClick={this.props.onClose} style={{ position: 'fixed', inset: 0, background: '#000000bb', backdropFilter: 'blur(6px)', zIndex: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, padding: 24, maxWidth: 380, textAlign: 'center' }}>
+            <div style={{ fontSize: 40, marginBottom: 10 }}>⚠️</div>
+            <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>Diese Ansicht konnte nicht geladen werden</div>
+            <div style={{ fontSize: 13, color: C.textDim, marginBottom: 16 }}>Bitte versuche es erneut oder lade die Seite neu.</div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+              <button onClick={this.props.onClose} style={{ padding: '8px 14px', borderRadius: 8, border: `1px solid ${C.lineStrong}`, background: C.bg1, color: C.textSoft, cursor: 'pointer', fontWeight: 700, fontSize: 12 }}>Schließen</button>
+              <button className="btn-primary" onClick={() => window.location.reload()}>Neu laden</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function Loader() {
   return (
@@ -251,14 +293,16 @@ function Shell() {
         ))}
       </nav>
 
-      <Suspense fallback={<Loader />}>
-        {modal && <CardModal card={modal.card} initialTab={modal.tab} onClose={() => setModal(null)} />}
-        {showCompare && <CompareModal onClose={() => setShowCompare(false)} />}
-        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
-        {showImport && <ImportModal onClose={() => setShowImport(false)} />}
-        {showPricing && <PricingModal onClose={() => setShowPricing(false)} />}
-        {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
-      </Suspense>
+      <ModalBoundary onClose={() => { setModal(null); setShowCompare(false); setShowSettings(false); setShowImport(false); setShowPricing(false); setShowAuth(false); }}>
+        <Suspense fallback={<Loader />}>
+          {modal && <CardModal card={modal.card} initialTab={modal.tab} onClose={() => setModal(null)} />}
+          {showCompare && <CompareModal onClose={() => setShowCompare(false)} />}
+          {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+          {showImport && <ImportModal onClose={() => setShowImport(false)} />}
+          {showPricing && <PricingModal onClose={() => setShowPricing(false)} />}
+          {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+        </Suspense>
+      </ModalBoundary>
 
       {toast && (
         <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 10, padding: '10px 18px', fontSize: 13, color: C.text, boxShadow: '0 4px 24px #00000070', zIndex: 200, animation: 'slideUp 0.25s ease' }}>
