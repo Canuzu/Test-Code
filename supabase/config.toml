@@ -1,7 +1,7 @@
-# Supabase CLI config. Replace the project ref below, or just run
-#   supabase link --project-ref <dein-ref>
-# (Project ref = Supabase Dashboard → Project Settings → General → "Reference ID".)
-project_id = "your-project-ref"
+# Supabase CLI config. Project ref set below — connect with:
+#   supabase login && supabase link --project-ref svrmotfalixquiznrofi
+# (Reference ID: Supabase Dashboard → Project Settings → General.)
+project_id = "svrmotfalixquiznrofi"
 
 # Edge Functions — JWT verification per function (so you don't need
 # --no-verify-jwt on deploy):
