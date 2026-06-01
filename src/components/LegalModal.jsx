@@ -97,6 +97,14 @@ export default function LegalModal({ tab = 'imprint', onClose }) {
             statt. Ein Cookie-Banner ist daher nicht erforderlich; die lokale
             Speicherung ist für den Betrieb technisch notwendig und einwilligungsfrei.
           </p>
+          <p style={{ margin: '0 0 8px' }}>
+            <strong>Konto & Zahlung (optional):</strong> Falls Konten aktiviert sind,
+            verarbeitet <em>Supabase</em> (Auth/Datenbank) deine E-Mail und die
+            synchronisierten Sammlungsdaten als Auftragsverarbeiter; bei einem
+            kostenpflichtigen Abo wickelt <em>Stripe</em> die Zahlung ab – es werden
+            keine Kartendaten auf dieser Seite gespeichert. Rechtsgrundlage:
+            Vertragserfüllung (Art. 6 Abs. 1 lit. b DSGVO).
+          </p>
           <p style={{ margin: 0 }}>
             <strong>Deine Rechte:</strong> Auskunft, Berichtigung, Löschung,
             Einschränkung, Widerspruch und Datenübertragbarkeit (Art. 15–21 DSGVO)

@@ -61,9 +61,11 @@ RLS-Policy überall: `user_id = auth.uid()`.
 ## Phasen
 1. **Auth + Cloud-Sync** — ✅ **implementiert** (Code liegt vor, siehe Aktivierung
    unten). Lokales Konto bleibt Fallback, wenn nicht konfiguriert.
-2. **Stripe-Billing** (Checkout + Portal + Webhook) flippt `profiles.plan`; danach
-   liest `src/lib/pro.js` `isPro()` wieder den Plan statt hart `true`. — offen.
-3. **Live-Preis-Proxy** + Caching/Cron als Aufwertung der Snapshots. — offen.
+2. **Stripe-Billing** — ✅ **implementiert**. Checkout + Customer Portal +
+   Webhook flippen `profiles.plan`; `pro.js` `planIsPro()` liest den Plan, sobald
+   `VITE_STRIPE_PRICE_ID` gesetzt ist (sonst alles frei).
+3. **Live-Preise on-demand** — ✅ **implementiert**. `prices`-Edge-Function +
+   „Live aktualisieren"-Button im Karten-Dialog (gegated über `VITE_LIVE_PRICES`).
 
 ## Aktivierung von Phase 1 (Auth + Cloud-Sync)
 
@@ -102,6 +104,48 @@ last-write-wins per `updated_at` (Login zieht den Cloud-Stand). Echtes Live-Merg
 `user_state`, hängt am `setWriteHook` aus `storage.js`) · Integration in
 `store.jsx` (login/register/logout + Session-Restore). Alles gegated über
 `isConfigured`.
+
+## Aktivierung von Phase 2 (Stripe-Billing)
+
+Voraussetzung: Phase 1 läuft. Solange `VITE_STRIPE_PRICE_ID` leer ist, bleibt
+alles kostenlos und ungegated.
+
+1. **Migration** `supabase/migrations/0002_billing.sql` ausführen (Stripe-Spalten).
+2. **Stripe** (Test-Modus zuerst): Produkt + wiederkehrenden Preis anlegen →
+   `price_…`-ID notieren.
+3. **Edge Functions deployen** (Supabase CLI):
+   ```
+   supabase functions deploy create-checkout
+   supabase functions deploy customer-portal
+   supabase functions deploy stripe-webhook --no-verify-jwt
+   ```
+4. **Function-Secrets** setzen:
+   ```
+   supabase secrets set STRIPE_SECRET_KEY=sk_test_… STRIPE_PRICE_ID=price_… \
+     STRIPE_WEBHOOK_SECRET=whsec_… APP_URL=https://<deine-domain>/
+   ```
+   (`SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_ANON_KEY` werden
+   automatisch injiziert.)
+5. **Webhook** in Stripe anlegen → Endpoint = URL der `stripe-webhook`-Function;
+   Events mindestens: `checkout.session.completed`,
+   `customer.subscription.created/updated/deleted`. Das `whsec_…` aus Schritt 4.
+6. **Frontend scharf schalten**: Repo-Variables `VITE_STRIPE_PRICE_ID` (und
+   optional `VITE_STRIPE_PRICE_LABEL`, z. B. „9 € / Monat") setzen → neu deployen.
+   Ab jetzt sind `PRO_FEATURES` (Buylist, Alerts, Import, Pro-Analytics) ein Abo;
+   der „Pro abonnieren"-Button im Preis-Dialog startet echtes Stripe-Checkout, der
+   Webhook setzt `plan='pro'`, Rückkehr `?billing=success` aktualisiert den Status.
+
+> **Achtung:** Sobald `VITE_STRIPE_PRICE_ID` gesetzt ist, sind die Pro-Features
+> nicht mehr gratis. Erst aktivieren, wenn du wirklich monetarisieren willst.
+
+## Aktivierung von Phase 3 (Live-Preise)
+
+1. `supabase functions deploy prices --no-verify-jwt`
+   (optional `supabase secrets set POKEMONTCG_API_KEY=…` für höhere Limits).
+2. Repo-Variable `VITE_LIVE_PRICES=true` setzen → neu deployen.
+3. Im Karten-Dialog erscheint „🔄 Live-Preis aktualisieren". Quellen: Magic
+   (Scryfall, echte Cardmarket-EUR), Pokémon (pokemontcg.io). One Piece / Yu-Gi-Oh!
+   sind Schätzungen → kein Live-Preis.
 
 ## Recht (wichtig)
 Mit Accounts ändert sich der Datenschutz: Supabase wird **Auftragsverarbeiter**
