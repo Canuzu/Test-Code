@@ -73,15 +73,10 @@ jobs:
             echo "card snapshots unchanged this run"
           fi
       - run: npm run build
-        env:
-          # Backend activation — all empty = local-only, free, unchanged. Set the
-          # matching repo Variables to ship the features; no code change needed.
-          # See docs/BACKEND.md.
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}           # Phase 1: accounts + sync
-          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
-          VITE_STRIPE_PRICE_ID: ${{ vars.VITE_STRIPE_PRICE_ID }}    # Phase 2: Stripe billing
-          VITE_STRIPE_PRICE_LABEL: ${{ vars.VITE_STRIPE_PRICE_LABEL }}
-          VITE_LIVE_PRICES: ${{ vars.VITE_LIVE_PRICES }}            # Phase 3: live prices
+        # Build-time config (Supabase URL + anon key; later Stripe/live-prices) is
+        # read from the committed .env.production — every value there is public-safe
+        # (anon key is RLS-protected). Real secrets live only in Supabase function
+        # secrets, never here.
       - uses: actions/configure-pages@v5
         with:
           enablement: true
