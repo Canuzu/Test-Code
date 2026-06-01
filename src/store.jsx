@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef } from 'react';
-import { store, KEYS, setNamespace, setGameNamespace } from './lib/storage.js';
+import { store, KEYS, setNamespace, setGameNamespace, setWriteHook } from './lib/storage.js';
 import { enrich } from './lib/metrics.js';
 import { ruleHit, fireNotification } from './lib/alerts.js';
-import { currentAccount, getSession, register as authRegister, login as authLogin, logout as authLogout } from './lib/auth.js';
+import { restore as authRestore, register as authRegister, login as authLogin, logout as authLogout, cloudEnabled } from './lib/authBackend.js';
+import * as cloud from './lib/cloudSync.js';
 import { applyTheme } from './lib/theme.js';
 import { gameSnapshot } from './data/providers/index.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
@@ -118,22 +119,22 @@ export function StoreProvider({ children }) {
 
   // ---- load persisted state once, then auto-refresh if stale ------------
   useEffect(() => {
-    // Point storage at the signed-in account's namespace (guest = '' = the
-    // original keys, so existing data is preserved).
-    setNamespace(getSession() || '');
-    setAccount(currentAccount());
-
-    if (activeGame) {
-      // Returning visitor with a chosen game: load that game's profile + data.
-      setGameNamespace(activeGame);
+    // Cloud sync writes through this hook on every persisted set() (a no-op until
+    // a user signs in and cloud.start() arms it).
+    setWriteHook(cloud.note);
+    (async () => {
+      // Restore the signed-in account (Supabase session, or local) and point
+      // storage at its namespace (guest = '' = the original keys, so existing
+      // data is preserved). For a cloud account, pull its data first.
+      const acct = await authRestore();
+      setNamespace(acct?.id || '');
+      setGameNamespace(activeGame || 'pokemon');
+      if (acct?.uid) { await cloud.pull(acct.id, acct.uid); cloud.start(acct.id, acct.uid); }
+      setAccount(acct || null);
       loadAll();
-      loadGameData(activeGame);
-    } else {
-      // No game chosen yet → landing page. Still load account-level settings
-      // (theme/pro) from the Pokémon/base namespace so the UI looks right.
-      setGameNamespace('pokemon');
-      loadAll();
-    }
+      if (activeGame) loadGameData(activeGame);
+    })();
+    return () => setWriteHook(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -205,18 +206,28 @@ export function StoreProvider({ children }) {
   // ---- local accounts ---------------------------------------------------
   // setNamespace only swaps the ACCOUNT part of the storage namespace; the
   // active game segment is preserved, so each account still keeps per-game data.
+  // On a cloud login we pull the account's data from Supabase BEFORE loading
+  // state, then arm write-through sync; local accounts skip both (no uid).
+  const enterAccount = useCallback(async (account) => {
+    setNamespace(account.id);
+    if (account.uid) { await cloud.pull(account.id, account.uid); cloud.start(account.id, account.uid); }
+    setAccount(account);
+    loadAll();
+    if (activeGame) loadGameData(activeGame);
+  }, [loadAll, loadGameData, activeGame]);
   const login = useCallback(async (creds) => {
     const res = await authLogin(creds);
-    if (res.ok) { setNamespace(res.account.id); setAccount(res.account); loadAll(); if (activeGame) loadGameData(activeGame); showToast(`👤 Angemeldet: ${res.account.name}`); }
+    if (res.ok && res.account) { await enterAccount(res.account); showToast(`👤 Angemeldet: ${res.account.name}`); }
     return res;
-  }, [loadAll, loadGameData, activeGame, showToast]);
+  }, [enterAccount, showToast]);
   const register = useCallback(async (creds) => {
     const res = await authRegister(creds);
-    if (res.ok) { setNamespace(res.account.id); setAccount(res.account); loadAll(); if (activeGame) loadGameData(activeGame); showToast(`✅ Konto erstellt: ${res.account.name}`); }
+    if (res.pending) { showToast('📧 Konto erstellt – bitte bestätige deine E-Mail, dann anmelden.'); return res; }
+    if (res.ok && res.account) { await enterAccount(res.account); showToast(`✅ Konto erstellt: ${res.account.name}`); }
     return res;
-  }, [loadAll, loadGameData, activeGame, showToast]);
-  const logout = useCallback(() => {
-    authLogout(); setNamespace(''); setAccount(null); loadAll(); if (activeGame) loadGameData(activeGame); showToast('Abgemeldet · Gast-Profil');
+  }, [enterAccount, showToast]);
+  const logout = useCallback(async () => {
+    await authLogout(); cloud.stop(); setNamespace(''); setAccount(null); loadAll(); if (activeGame) loadGameData(activeGame); showToast('Abgemeldet · Gast-Profil');
   }, [loadAll, loadGameData, activeGame, showToast]);
 
   // Evaluate alerts whenever fresh prices or the rules change. Fires once per
@@ -447,7 +458,7 @@ export function StoreProvider({ children }) {
     getPriceHistory,
     alerts, alertLog, addAlert, removeAlert, toggleAlert, updateAlert, clearAlertLog,
     buylist, inBuylist, addToBuylist, removeFromBuylist, setBuylistItems, setBuylistRules,
-    account, login, register, logout,
+    account, login, register, logout, cloudEnabled,
     activeGame, selectGame, leaveGame,
   };
 

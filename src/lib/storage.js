@@ -27,6 +27,12 @@ export const setGameNamespace = (g) => { game = g || ''; ns = compose(); };
 export const getNamespace = () => ns;
 const fullKey = (key) => `${PREFIX}${ns}${key}`;
 
+// Optional write-through hook (used by cloud sync). Called with the full
+// localStorage key + raw value after every successful set(). No-op by default,
+// so the storage layer stays dependency-free and unchanged when sync is off.
+let writeHook = null;
+export const setWriteHook = (fn) => { writeHook = fn || null; };
+
 export const store = {
   get(key, fallback = null) {
     try {
@@ -38,7 +44,9 @@ export const store = {
   },
   set(key, value) {
     try {
-      localStorage.setItem(fullKey(key), JSON.stringify(value));
+      const fk = fullKey(key);
+      localStorage.setItem(fk, JSON.stringify(value));
+      if (writeHook) { try { writeHook(fk, value); } catch { /* sync must never break a local write */ } }
       return true;
     } catch {
       return false;

@@ -59,10 +59,49 @@ RLS-Policy überall: `user_id = auth.uid()`.
   vorgesehen). Bleibt progressive Verbesserung über den Snapshots.
 
 ## Phasen
-1. **Auth + Cloud-Sync** (Sammlung/Watchlist/Alerts). `isPro` liest `profiles.plan`
-   (Default free). → größter Nutzen, kein Geldfluss.
-2. **Stripe-Billing** (Checkout + Portal + Webhook) flippt den Plan.
-3. **Live-Preis-Proxy** + Caching/Cron als Aufwertung der Snapshots.
+1. **Auth + Cloud-Sync** — ✅ **implementiert** (Code liegt vor, siehe Aktivierung
+   unten). Lokales Konto bleibt Fallback, wenn nicht konfiguriert.
+2. **Stripe-Billing** (Checkout + Portal + Webhook) flippt `profiles.plan`; danach
+   liest `src/lib/pro.js` `isPro()` wieder den Plan statt hart `true`. — offen.
+3. **Live-Preis-Proxy** + Caching/Cron als Aufwertung der Snapshots. — offen.
+
+## Aktivierung von Phase 1 (Auth + Cloud-Sync)
+
+Der Code ist da und **opt-in**: ohne die zwei Env-Vars läuft die App rein lokal
+(lokales Konto, kein Sync) — das Supabase-SDK wird dann nicht einmal ausgeliefert
+(Dead-Code-Elimination). So schaltest du es scharf:
+
+1. **Supabase-Projekt** anlegen (Region möglichst EU, z. B. Frankfurt).
+2. **Migration** ausführen: Dashboard → SQL Editor → Inhalt von
+   `supabase/migrations/0001_init.sql` einfügen → Run. (Legt `profiles` +
+   `user_state` mit Row-Level-Security + Profil-Trigger an.)
+3. **Auth** → Email-Provider aktivieren. E-Mail-Bestätigung: an = sicher
+   (Nutzer bestätigt per Mail), aus = sofortiger Login (gut zum Testen).
+4. **Keys** aus Project Settings → API holen (`Project URL`, `anon` key) und
+   setzen:
+   - lokal: `.env.example` → `.env.local` kopieren und beide Werte eintragen.
+   - Deploy: in GitHub → Settings → Secrets and variables → Actions →
+     **Variables** `VITE_SUPABASE_URL` und `VITE_SUPABASE_ANON_KEY` anlegen.
+     `deploy.yml` reicht sie bereits an den Build durch — **kein Code-Change**.
+5. Neu deployen. Der „Anmelden"-Dialog ist jetzt echtes Supabase-Auth; Sammlung/
+   Watchlist/Alerts/Settings synchronisieren geräteübergreifend.
+
+**Datenschutz nicht vergessen:** mit aktivem Backend Supabase als Auftrags-
+verarbeiter (AVV/EU-Region) + Account-Daten in `LegalModal` ergänzen.
+
+### Was synchronisiert (und was nicht)
+Synchronisiert: Watchlist, Portfolio/Sammlung, Verkäufe, Notizen, Tags, Alerts,
+Buylist, Einstellungen. Bewusst **lokal**: der Karten-Snapshot-Cache und die
+Preis-Historie (groß bzw. lokal regenerierbar). Konfliktregel Phase 1:
+last-write-wins per `updated_at` (Login zieht den Cloud-Stand). Echtes Live-Merge
+über Realtime ist ein späterer Schritt.
+
+### Architektur im Code
+`src/lib/supabase.js` (lazy Client + `isConfigured`) · `authBackend.js`
+(Supabase **oder** lokal, gleiche Signaturen) · `cloudSync.js` (pull/push über
+`user_state`, hängt am `setWriteHook` aus `storage.js`) · Integration in
+`store.jsx` (login/register/logout + Session-Restore). Alles gegated über
+`isConfigured`.
 
 ## Recht (wichtig)
 Mit Accounts ändert sich der Datenschutz: Supabase wird **Auftragsverarbeiter**
