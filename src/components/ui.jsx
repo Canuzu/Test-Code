@@ -41,7 +41,7 @@ export function Spark({ series, width = 96, height = 30, strokeWidth = 2 }) {
 //   2. for One Piece (Bandai's CDN occasionally IP-blocks hot-linkers) a retry
 //      through wsrv.nl, a CORS-friendly image proxy that re-serves it;
 //   3. a clean placeholder tile if everything fails.
-const proxied = (u) => `https://wsrv.nl/?url=${encodeURIComponent(u)}&output=png&w=600&maxage=30d`;
+const proxied = (u, w) => `https://wsrv.nl/?url=${encodeURIComponent(u)}&output=png${w ? `&w=${w}` : ''}&maxage=30d`;
 
 export function CardImage({ card, height = 150, radius = 10 }) {
   const [stage, setStage] = useState(0);
@@ -56,7 +56,7 @@ export function CardImage({ card, height = 150, radius = 10 }) {
   const isOP = !!primary && /onepiece-cardgame\.com/i.test(primary);
   const candidates = [];
   if (primary) {
-    if (isOP) candidates.push(proxied(primary), primary);
+    if (isOP) candidates.push(proxied(primary, 600), primary);
     else candidates.push(primary);
   }
   const src = candidates[stage];
@@ -77,6 +77,37 @@ export function CardImage({ card, height = 150, radius = 10 }) {
       onError={() => setStage((s) => s + 1)}
       style={{ height, width: 'auto', borderRadius: radius, display: 'block', flexShrink: 0, boxShadow: '0 4px 14px #00000060' }}
     />
+  );
+}
+
+// Full-resolution artwork for the zoom overlay. Uses the same proxy fallback as
+// CardImage plus a spinner — so a hot-link-blocked One Piece (Bandai) image never
+// hangs forever — and a clear message if the image truly can't be fetched.
+export function ZoomImage({ card }) {
+  const [stage, setStage] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  const base = card?.image?.large || card?.image?.small || null;
+  const isOP = !!base && /onepiece-cardgame\.com/i.test(base);
+  const candidates = base ? (isOP ? [proxied(base), base] : [base]) : [];
+  const src = candidates[stage];
+  if (!src) {
+    return <div style={{ color: '#fff', fontSize: 14, opacity: 0.85 }}>🃏 Bild nicht verfügbar</div>;
+  }
+  return (
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 80, minHeight: 80 }}>
+      {!loaded && (
+        <div className="spin" style={{ position: 'absolute', width: 42, height: 42, border: '3px solid #ffffff33', borderTopColor: '#fff', borderRadius: '50%' }} />
+      )}
+      <img
+        key={src}
+        src={src}
+        alt={card?.name || 'Karte'}
+        referrerPolicy="no-referrer"
+        onLoad={() => setLoaded(true)}
+        onError={() => { setLoaded(false); setStage((s) => s + 1); }}
+        style={{ maxWidth: '92vw', maxHeight: '92vh', borderRadius: 12, boxShadow: '0 10px 60px #000', display: loaded ? 'block' : 'none' }}
+      />
+    </div>
   );
 }
 
