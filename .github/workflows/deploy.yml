@@ -73,6 +73,12 @@ jobs:
             echo "card snapshots unchanged this run"
           fi
       - run: npm run build
+        env:
+          # Backend (Phase 1) activation — empty = local-only mode (unchanged).
+          # Set these as repo Variables to ship real Supabase accounts + sync;
+          # no code change needed. See docs/BACKEND.md.
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
       - uses: actions/configure-pages@v5
         with:
           enablement: true

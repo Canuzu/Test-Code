@@ -4,7 +4,7 @@ import { useStore } from '../store.jsx';
 import { C } from '../lib/theme.js';
 
 export default function AuthModal({ onClose }) {
-  const { account, login, register, logout } = useStore();
+  const { account, login, register, logout, cloudEnabled } = useStore();
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -40,7 +40,8 @@ export default function AuthModal({ onClose }) {
               </div>
             </div>
             <div style={{ fontSize: 12, color: C.textSoft, lineHeight: 1.6, marginBottom: 16 }}>
-              Du bist angemeldet. Watchlist, Sammlung, Buylist, Alerts und Einstellungen werden für dieses Konto separat gespeichert.
+              Du bist angemeldet. Watchlist, Sammlung, Buylist, Alerts und Einstellungen werden für dieses Konto gespeichert
+              {cloudEnabled ? ' und geräteübergreifend synchronisiert.' : ' (separat je Konto, nur in diesem Browser).'}
             </div>
             <button onClick={() => { logout(); onClose(); }} className="control" style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 11, color: C.red, borderColor: '#ff525240' }}>
               <LogOut size={15} /> Abmelden
@@ -78,7 +79,9 @@ export default function AuthModal({ onClose }) {
 
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, fontSize: 10.5, color: C.textGhost, marginTop: 14, lineHeight: 1.6 }}>
               <ShieldCheck size={14} style={{ flexShrink: 0, marginTop: 1 }} />
-              <span>Lokales Konto: Daten und Passwort (PBKDF2-gehasht) bleiben nur in diesem Browser — kein Server. Für echte Konten über Geräte hinweg wird später ein Backend angebunden.</span>
+              <span>{cloudEnabled
+                ? 'Sicheres Konto über Supabase: Anmeldung serverseitig, deine Sammlung wird verschlüsselt übertragen und geräteübergreifend synchronisiert.'
+                : 'Lokales Konto: Daten und Passwort (PBKDF2-gehasht) bleiben nur in diesem Browser — kein Server. Für echte Konten über Geräte hinweg wird später ein Backend angebunden.'}</span>
             </div>
           </>
         )}
