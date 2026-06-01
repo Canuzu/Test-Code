@@ -40,6 +40,7 @@ const AlertsView = lazyChunk(() => import('./components/AlertsView.jsx'));
 const ImportModal = lazyChunk(() => import('./components/ImportModal.jsx'));
 const PricingModal = lazyChunk(() => import('./components/PricingModal.jsx'));
 const AuthModal = lazyChunk(() => import('./components/AuthModal.jsx'));
+const LegalModal = lazyChunk(() => import('./components/LegalModal.jsx'));
 
 // Catches any render error inside the lazy modals so a single broken view shows
 // a recoverable message instead of blanking the whole app (white screen).
@@ -95,6 +96,7 @@ function Shell() {
   const [showImport, setShowImport] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
+  const [showLegal, setShowLegal] = useState(false);
   const [installEvt, setInstallEvt] = useState(null);
   const [discoverKey, setDiscoverKey] = useState(0); // bump to reset Discover to its start page
 
@@ -184,7 +186,14 @@ function Shell() {
   const avgScore = cards.length ? fmtNum(cards.reduce((s, c) => s + c.m.score, 0) / cards.length, 0) : '–';
 
   // No game chosen yet → the game-selection landing page is the whole screen.
-  if (!activeGame) return <GameSelect onPick={pickGame} />;
+  if (!activeGame) return (
+    <>
+      <GameSelect onPick={pickGame} onLegal={() => setShowLegal(true)} />
+      <Suspense fallback={null}>
+        {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
+      </Suspense>
+    </>
+  );
 
   return (
     <div style={{ minHeight: '100vh', background: `linear-gradient(160deg, ${C.appGrad1} 0%, ${C.appGrad2} 100%)`, color: C.text }}>
@@ -229,8 +238,8 @@ function Shell() {
               <Smartphone size={13} /> {!isMobile && <span style={{ fontSize: 11, fontWeight: 700 }}>App</span>}
             </button>
           )}
-          <button onClick={() => setShowPricing(true)} title={pro ? 'Pro aktiv' : 'Pro freischalten'} className="control" style={{ padding: isMobile ? '7px 9px' : '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: pro ? C.gold : C.textSoft, borderColor: pro ? C.gold + '55' : undefined }}>
-            <Crown size={13} /> {!isMobile && <span style={{ fontSize: 11, fontWeight: 700 }}>{pro ? 'Pro ✓' : 'Pro'}</span>}
+          <button onClick={() => setShowPricing(true)} title="Alle Funktionen kostenlos" className="control" style={{ padding: isMobile ? '7px 9px' : '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: C.gold, borderColor: C.gold + '55' }}>
+            <Crown size={13} /> {!isMobile && <span style={{ fontSize: 11, fontWeight: 700 }}>Gratis</span>}
           </button>
           <button onClick={() => setShowAuth(true)} title={account ? account.email : 'Anmelden'} className="control" style={{ padding: isMobile ? '7px 9px' : '7px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
             {account
@@ -276,6 +285,11 @@ function Shell() {
                 : `${game.label}: derzeit Beispieldaten – echte Cardmarket-Preise folgen. `}
         Keine Anlageberatung. TCG-Investments sind volatil; investiere nur, was du entbehren kannst.
         Der Investment-Score ist eine berechnete Heuristik, keine garantierte Prognose.
+        <div style={{ marginTop: 12, display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => setShowLegal(true)} style={{ background: 'none', border: 'none', color: C.textFaint, cursor: 'pointer', fontSize: 10.5, textDecoration: 'underline', padding: 0 }}>Impressum & Datenschutz</button>
+          <span style={{ color: C.textGhost }}>·</span>
+          <span>Inoffizielles Fan-Projekt – alle Marken & Kartenbilder gehören ihren Rechteinhabern.</span>
+        </div>
       </footer>
 
       {compareList.length > 0 && (
@@ -297,7 +311,7 @@ function Shell() {
         ))}
       </nav>
 
-      <ModalBoundary onClose={() => { setModal(null); setShowCompare(false); setShowSettings(false); setShowImport(false); setShowPricing(false); setShowAuth(false); }}>
+      <ModalBoundary onClose={() => { setModal(null); setShowCompare(false); setShowSettings(false); setShowImport(false); setShowPricing(false); setShowAuth(false); setShowLegal(false); }}>
         <Suspense fallback={<Loader />}>
           {modal && <CardModal card={modal.card} initialTab={modal.tab} onClose={() => setModal(null)} />}
           {showCompare && <CompareModal onClose={() => setShowCompare(false)} />}
@@ -305,6 +319,7 @@ function Shell() {
           {showImport && <ImportModal onClose={() => setShowImport(false)} />}
           {showPricing && <PricingModal onClose={() => setShowPricing(false)} />}
           {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+          {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
         </Suspense>
       </ModalBoundary>
 

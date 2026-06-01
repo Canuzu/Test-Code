@@ -1,10 +1,10 @@
-// Subscription tiers + feature gating.
+// Feature tiers.
 //
-// Real recurring billing needs a backend (Stripe/Paddle) — a static site can't
-// hold a payment secret or verify a subscription. So this models the Free/Pro
-// structure and gates the Pro features in the UI; the "unlock" is a local demo
-// flag (settings.pro). When a billing backend is added, it only has to set that
-// same flag after a verified checkout. The upgrade path is documented in README.
+// The app currently has NO payment backend, so advertising a paid plan would be
+// misleading. Until real billing exists, EVERY feature is free for everyone:
+// `isPro` returns true, so nothing is gated. The Free/"all-access" structure and
+// feature list are kept for the info screen, and for the day a billing backend
+// is wired (it would then gate on settings.pro again — see README).
 
 export const PRO_FEATURES = {
   buylist: 'Buylist + PDF-Druck',
@@ -14,38 +14,19 @@ export const PRO_FEATURES = {
   team: 'Team-Zugang',
 };
 
-export const isPro = (settings) => !!settings?.pro;
+// All features are free while there is no billing backend. (Was: !!settings?.pro)
+export const isPro = () => true;
 export const requiresPro = (feature) => feature in PRO_FEATURES;
 
-export const PLANS = [
-  {
-    id: 'free',
-    name: 'Kostenlos',
-    monthly: 0,
-    annual: 0,
-    tagline: 'Für Sammler & Einstieg',
-    features: [
-      'Live-Preise (Cardmarket EU)',
-      'Interaktive Preis-Charts',
-      'Watchlist & Sammlung',
-      'Marktplatz-Vergleich & Grading-Schätzung',
-      'CSV-Export',
-    ],
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    monthly: 19,
-    annual: 15, // per month, billed yearly (€180)
-    tagline: 'Für Händler & Läden',
-    badge: 'Beliebt',
-    features: [
-      'Alles aus Kostenlos',
-      '🧾 Buylist mit PDF-Druck & Regeln',
-      '🔔 Preis-Alerts (in-app & Push)',
-      '📥 Massenimport (CSV & Barcode)',
-      '📊 Erweiterte Analytics',
-      '👥 Team-Zugang (Vorbereitung)',
-    ],
-  },
+// Everything the app offers — shown on the (free) info screen.
+export const ALL_FEATURES = [
+  'Live-/Marktpreise & interaktive Preis-Charts',
+  'Watchlist, Sammlung & Inventar-Verwaltung',
+  'Marktplatz-Vergleich & Grading-Schätzung',
+  '🧾 Buylist mit PDF-Druck & Regeln',
+  '🔔 Preis-Alerts (in-app & Push)',
+  '📥 Massenimport (CSV & Barcode)',
+  '📊 Erweiterte Analytics',
+  'CSV-Export',
 ];
+
