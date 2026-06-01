@@ -283,7 +283,6 @@ export default function Discover({ onOpen }) {
               <option value="score">↕ Score</option>
               <option value="change30">↕ Veränderung 30T</option>
               <option value="change7">↕ Veränderung 7T</option>
-              <option value="popularity">↕ Beliebtheit</option>
               <option value="margin">↕ Marge</option>
               <option value="price_desc">↕ Preis ↓</option>
               <option value="price_asc">↕ Preis ↑</option>

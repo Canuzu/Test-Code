@@ -229,7 +229,7 @@ function Shell() {
             ? 'One Piece: alle Sets & Karten mit offiziellem Artwork. Preise sind transparente Schätzungen (Rarität/Alter) – der echte Tagespreis steht je Karte direkt auf Cardmarket (verlinkt). '
             : `${game.label}: derzeit Beispieldaten – echte Cardmarket-Preise folgen. `}
         Keine Anlageberatung. TCG-Investments sind volatil; investiere nur, was du entbehren kannst.
-        Investment-Score & Beliebtheit sind berechnete Heuristiken, keine garantierten Prognosen.
+        Der Investment-Score ist eine berechnete Heuristik, keine garantierte Prognose.
       </footer>
 
       {compareList.length > 0 && (
