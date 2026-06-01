@@ -6,6 +6,8 @@
 // later a provider/snapshot). `enabled: false` shows it as "coming soon".
 import * as pokemon from './pokemon.js';
 import * as onepiece from './onepiece.js';
+import * as magic from './magic.js';
+import * as yugioh from './yugioh.js';
 
 export const GAMES = [
   {
@@ -38,25 +40,25 @@ export const GAMES = [
     id: 'magic',
     label: 'Magic: The Gathering',
     emoji: '🔮',
-    enabled: false,
-    provider: null,
+    enabled: true,
+    provider: magic,
     accent: '#8b5cf6',
     accent2: '#3b82f6',
-    tagline: 'Bald verfügbar',
-    blurb: 'In Vorbereitung.',
-    snapshot: null,
+    tagline: 'Cardmarket EU · Live-Preise · alle Sets',
+    blurb: 'Magic-Archiv mit echten Cardmarket-EUR-Preisen, offiziellem Artwork (Scryfall), Charts, Sammlung & Alerts.',
+    snapshot: 'data/magic.json',
   },
   {
     id: 'yugioh',
     label: 'Yu-Gi-Oh!',
     emoji: '🐉',
-    enabled: false,
-    provider: null,
+    enabled: true,
+    provider: yugioh,
     accent: '#f59e0b',
     accent2: '#b45309',
-    tagline: 'Bald verfügbar',
-    blurb: 'In Vorbereitung.',
-    snapshot: null,
+    tagline: 'Alle Sets · 14.000+ Karten · offizielle Bilder',
+    blurb: 'Vollständiges Yu-Gi-Oh!-Archiv mit offiziellem Artwork & deutschen Namen. Preise als Schätzung (Cardmarket-Link je Karte).',
+    snapshot: 'data/yugioh.json',
   },
 ];
 

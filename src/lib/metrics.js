@@ -54,14 +54,17 @@ export const deriveRisk = (card) => {
 
 const rarityWeight = (rarity) => {
   const x = (rarity || '').toLowerCase();
-  // Top tier: Pokémon special/secret/illustration + One Piece Treasure Rare.
-  if (x.includes('treasure') || x.includes('illustration') || x.includes('special') || x.includes('hyper') || x.includes('secret') || x.includes('crown')) return 4;
-  if (x.includes('ultra') || x.includes('vmax') || x.includes('vstar') || x.includes('full art') || x.includes('alt')) return 3.2;
-  if (x.includes('super rare')) return 2.8; // One Piece SR
+  // Top tier: Pokémon special/secret/illustration, One Piece Treasure, YGO
+  // ghost/starlight/collector, Magic mythic chase.
+  if (x.includes('treasure') || x.includes('illustration') || x.includes('special') || x.includes('hyper') || x.includes('secret') || x.includes('crown')
+    || x.includes('ghost') || x.includes('starlight') || x.includes('collector')) return 4;
+  if (x.includes('ultra') || x.includes('vmax') || x.includes('vstar') || x.includes('full art') || x.includes('alt')
+    || x.includes('ultimate') || x.includes('mythic')) return 3.2;
+  if (x.includes('super rare')) return 2.8; // One Piece / YGO SR
   if (x.includes(' ex') || x.endsWith('ex') || x.includes(' gx') || x.includes('amazing')) return 2.6;
   if (x.includes('holo') || x.includes('double rare')) return 2;
   if (x.includes('leader')) return 2; // One Piece Leader (staple, sought-after)
-  if (x.includes('rare')) return 1.5;
+  if (x.includes('rare')) return 1.5; // covers Magic/YGO "Rare"
   if (x.includes('uncommon')) return 0.8;
   return 0.4;
 };

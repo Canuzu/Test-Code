@@ -22,6 +22,15 @@ const PRESETS = [
 // Cohesive line icons per category (matches the lucide nav in the header).
 const CAT_ICON = { start: Sparkles, singles: LayoutGrid, booster: Package, display: Boxes, etb: Gift, starter: Layers };
 
+// Honest one-line provenance per game for the snapshot source line.
+function snapshotLabel(game, info) {
+  if (game === 'pokemon') return 'Aktuelle Marktdaten (Cardmarket EU) · täglich aktualisiert';
+  if (game === 'magic') return 'Live-Preise (Cardmarket EU via Scryfall) · alle Sets · offizielles Artwork';
+  if (game === 'onepiece' && info?.cmEnriched) return `Alle Sets · offizielle Bilder · ${fmtNum(info.cmEnriched)} Live-Preise (Cardmarket)${info.pricesEstimated ? ', Rest geschätzt' : ''}`;
+  // One Piece (no live yet) + Yu-Gi-Oh: full catalogue, estimated prices.
+  return 'Alle Sets · offizielle Bilder · Preise geschätzt (Cardmarket-Link je Karte)';
+}
+
 export default function Discover({ onOpen }) {
   const { cards, loading, error, source, snapshotInfo, lastUpdated, fetchCards, loadSample, tags, activeGame } = useStore();
   const [cat, setCat] = useState('start');
@@ -209,11 +218,7 @@ export default function Discover({ onOpen }) {
       {/* Source line */}
       {!searching && !inSet && (
         <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 14 }}>
-          {source === 'snapshot' && (activeGame === 'onepiece'
-            ? (snapshotInfo?.cmEnriched
-              ? <>🟢 Alle Sets · offizielle Bilder · {fmtNum(snapshotInfo.cmEnriched)} Live-Preise (Cardmarket){snapshotInfo.pricesEstimated ? ', Rest geschätzt' : ''} · Stand {fmtRelative(lastUpdated)} · </>
-              : <>🟢 Alle Sets · offizielle Bilder · Preise geschätzt (Cardmarket-Link je Karte) · Stand {fmtRelative(lastUpdated)} · </>)
-            : <>🟢 Aktuelle Marktdaten (Cardmarket EU) · Stand {fmtRelative(lastUpdated)} · täglich aktualisiert · </>)}
+          {source === 'snapshot' && <>🟢 {snapshotLabel(activeGame, snapshotInfo)} · Stand {fmtRelative(lastUpdated)} · </>}
           {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
           {source === 'sample' && <>🃏 Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}
           {cards.length} Karten in {sets.length} Sets
@@ -227,7 +232,7 @@ export default function Discover({ onOpen }) {
         </div>
       )}
 
-      {mode === 'sealed' && <SealedGrid type={cat} query={searchQuery} game={activeGame} />}
+      {mode === 'sealed' && <SealedGrid type={cat} query={searchQuery} game={activeGame} cards={cards} />}
 
       {loading && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 12 }}>
@@ -375,6 +380,13 @@ function WelcomeHero({ game, onBrowse }) {
   ];
   const isPoke = game === 'pokemon';
   const isOP = game === 'onepiece';
+  const HERO = {
+    pokemon: { grad: 'linear-gradient(90deg,#ffd700,#ff6b35)', title: 'Schnapp sie dir alle!', btn: '🃏 Sets durchstöbern' },
+    onepiece: { grad: 'linear-gradient(90deg,#ffb300,#e23b3b)', title: 'Setze die Segel! ⚓', btn: '🏴‍☠️ Sets entern' },
+    magic: { grad: 'linear-gradient(90deg,#8b5cf6,#3b82f6)', title: 'Tappe ins Mana! 🔮', btn: '🔮 Sets erkunden' },
+    yugioh: { grad: 'linear-gradient(90deg,#f59e0b,#b45309)', title: "It's time to D-D-Duel! 🐉", btn: '🐉 Sets erkunden' },
+  };
+  const hero = HERO[game] || HERO.pokemon;
   return (
     <div className="poke-hero">
       {sparks.map((sp, i) => (
@@ -430,13 +442,11 @@ function WelcomeHero({ game, onBrowse }) {
       </div>
       )}
       <div style={{ textAlign: 'center', marginTop: 14, position: 'relative', zIndex: 1 }}>
-        <div style={{ fontSize: 22, fontWeight: 800, background: isOP ? 'linear-gradient(90deg,#ffb300,#e23b3b)' : 'linear-gradient(90deg,#ffd700,#ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{isPoke ? 'Schnapp sie dir alle!' : isOP ? 'Setze die Segel! ⚓' : 'Deine Sammlung im Blick'}</div>
+        <div style={{ fontSize: 22, fontWeight: 800, background: hero.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{hero.title}</div>
         <div style={{ fontSize: 13, color: C.textDim, marginTop: 6, maxWidth: 440 }}>
-          {isOP
-            ? <>Stöbere unter <strong style={{ color: C.textSoft }}>Singles</strong> Set für Set durch alle One-Piece-Karten – oder suche oben gezielt nach einer Karte.</>
-            : <>Suche oben gezielt nach einer Karte – oder stöbere unter <strong style={{ color: C.textSoft }}>Singles</strong> Set für Set durch deine Sammlung.</>}
+          Suche oben gezielt nach einer Karte – oder stöbere unter <strong style={{ color: C.textSoft }}>Singles</strong> Set für Set durch alle Karten.
         </div>
-        <button className="btn-primary" style={{ marginTop: 16 }} onClick={onBrowse}>{isOP ? '🏴‍☠️ Sets entern' : '🃏 Sets durchstöbern'}</button>
+        <button className="btn-primary" style={{ marginTop: 16 }} onClick={onBrowse}>{hero.btn}</button>
       </div>
     </div>
   );

@@ -52,18 +52,22 @@ jobs:
           CM_ACCESS_SECRET: ${{ secrets.CM_ACCESS_SECRET }}
           CM_GAME_ID_ONEPIECE: ${{ vars.CM_GAME_ID_ONEPIECE }}
           CM_SEARCH_ONEPIECE: ${{ vars.CM_SEARCH_ONEPIECE }}
-      - name: Persist grown card snapshot (newest→oldest, incremental)
+      - name: Build Yu-Gi-Oh! catalogue (all sets/cards + official art, server-side)
+        run: node scripts/fetch-yugioh.mjs
+      - name: Build Magic catalogue (Scryfall, real Cardmarket EUR prices)
+        run: node scripts/fetch-magic.mjs
+      - name: Persist grown card snapshots (incremental)
         if: github.ref == 'refs/heads/main'
         continue-on-error: true # branch protection etc. must not break the deploy
         run: |
-          if [ -n "$(git status --porcelain public/data/cards.json)" ]; then
+          if [ -n "$(git status --porcelain public/data/*.json)" ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add public/data/cards.json
-            git commit -m "data: grow card snapshot (newest→oldest) [skip ci]"
+            git add public/data/cards.json public/data/onepiece.json public/data/yugioh.json public/data/magic.json
+            git commit -m "data: refresh card snapshots [skip ci]"
             git push
           else
-            echo "card snapshot unchanged this run"
+            echo "card snapshots unchanged this run"
           fi
       - run: npm run build
       - uses: actions/configure-pages@v5

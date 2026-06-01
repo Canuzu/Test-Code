@@ -13,3 +13,5 @@ npm-debug.log*
 public/data/*
 !public/data/cards.json
 !public/data/onepiece.json
+!public/data/yugioh.json
+!public/data/magic.json

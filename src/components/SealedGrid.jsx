@@ -35,9 +35,9 @@ function SealedTile({ p }) {
 // Sealed products (booster/display/etb). No live price from our data source, so
 // each tile links to the current Cardmarket price instead of showing a number.
 // `query` scopes the search to this sealed category (set name or product type).
-export default function SealedGrid({ type, query = '', game = 'pokemon' }) {
+export default function SealedGrid({ type, query = '', game = 'pokemon', cards }) {
   const q = query.trim().toLowerCase();
-  const items = sealedFor(game)
+  const items = sealedFor(game, cards)
     .filter((p) => p.type === type)
     .filter((p) => !q || p.set.toLowerCase().includes(q) || p.name.toLowerCase().includes(q) || p.typeLabel.toLowerCase().includes(q))
     .sort((a, b) => b.year - a.year);
