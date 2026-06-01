@@ -1,0 +1,21 @@
+# Supabase CLI config. Replace the project ref below, or just run
+#   supabase link --project-ref <dein-ref>
+# (Project ref = Supabase Dashboard → Project Settings → General → "Reference ID".)
+project_id = "your-project-ref"
+
+# Edge Functions — JWT verification per function (so you don't need
+# --no-verify-jwt on deploy):
+#   • checkout/portal are called by the logged-in app → require a valid JWT.
+#   • the Stripe webhook is called by Stripe (no Supabase JWT) → must be public.
+#   • prices is a public read proxy → public.
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.customer-portal]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.prices]
+verify_jwt = false
