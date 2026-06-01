@@ -554,11 +554,11 @@ function SetTiles({ sets, onSelect }) {
 
 function ListView({ cards, onOpen }) {
   const { inWatchlist, toggleWatchlist } = useStore();
-  const cols = '52px 2.2fr 0.9fr 0.7fr 0.7fr 0.7fr 0.6fr 70px';
+  const cols = '52px 2.2fr 0.9fr 0.7fr 0.7fr 0.7fr 70px';
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: cols, gap: 8, padding: '6px 12px', fontSize: 10, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase' }}>
-        <div>Score</div><div>Karte</div><div style={{ textAlign: 'right' }}>Markt</div><div style={{ textAlign: 'right' }}>7T</div><div style={{ textAlign: 'right' }}>30T</div><div style={{ textAlign: 'right' }}>Marge</div><div style={{ textAlign: 'center' }}>Bel.</div><div></div>
+        <div>Score</div><div>Karte</div><div style={{ textAlign: 'right' }}>Markt</div><div style={{ textAlign: 'right' }}>7T</div><div style={{ textAlign: 'right' }}>30T</div><div style={{ textAlign: 'right' }}>Marge</div><div></div>
       </div>
       {cards.map((c) => (
         <div key={c.id} onClick={() => onOpen(c, 'overview')} className="card-hover"
@@ -575,7 +575,6 @@ function ListView({ cards, onOpen }) {
           <div style={{ textAlign: 'right' }}><ChangeBadge value={c.m.change7} size={11} /></div>
           <div style={{ textAlign: 'right' }}><ChangeBadge value={c.m.change30} size={11} /></div>
           <div style={{ textAlign: 'right', fontSize: 12, color: C.blue, fontWeight: 700 }}>{fmtNum(c.m.margin, 0)} %</div>
-          <div style={{ textAlign: 'center', fontSize: 11, color: C.gold }}>{fmtNum(c.m.popularity, 1)}</div>
           <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
             <button onClick={() => toggleWatchlist(c)} title="Merken" style={{ padding: '4px 7px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, background: inWatchlist(c.id) ? '#ff525215' : '#ffd70015', color: inWatchlist(c.id) ? C.red : C.gold }}>{inWatchlist(c.id) ? '✕' : '⭐'}</button>
             <a href={cmUrl(c)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} title="Cardmarket" style={{ padding: '4px 7px', borderRadius: 5, background: '#0066cc22', color: C.blue, display: 'inline-flex', alignItems: 'center' }}><ExternalLink size={11} /></a>

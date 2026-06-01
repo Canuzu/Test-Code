@@ -1,7 +1,7 @@
 import { Receipt } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, riskColor, riskLabel, rarityColor } from '../lib/theme.js';
-import { fmtEur, fmtNum } from '../lib/format.js';
+import { fmtEur } from '../lib/format.js';
 import { CardImage, Pill, ScoreBadge } from './ui.jsx';
 
 // Standard preview tile (shown BEFORE opening a card). Kept deliberately light:
@@ -68,17 +68,6 @@ export default function CardTile({ card, onOpen }) {
             <div style={{ fontSize: 11, color: C.textFaint }}>Marktpreis</div>
             <div style={{ fontSize: 25, fontWeight: 800, color: C.text, lineHeight: 1.1 }}>{fmtEur(m.market)}</div>
           </div>
-        </div>
-      </div>
-
-      {/* Popularity (a quick quality read; %/curve/margin moved into the modal) */}
-      <div style={{ marginTop: 13 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span style={{ fontSize: 10.5, color: C.textFaint }}>⭐ Beliebtheit</span>
-          <span style={{ fontSize: 10.5, color: C.gold, fontWeight: 700 }}>{fmtNum(m.popularity, 1)}/10</span>
-        </div>
-        <div style={{ height: 6, background: '#ffffff10', borderRadius: 3, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${(m.popularity || 0) * 10}%`, background: 'linear-gradient(90deg,#ffd700,#ff6b35)' }} />
         </div>
       </div>
 
