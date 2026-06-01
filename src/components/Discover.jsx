@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useDeferredValue } from 'react';
+import { fold } from '../lib/localize.js';
 import { Search, RefreshCw, AlertCircle, ExternalLink, ChevronLeft, Sparkles, LayoutGrid, Package, Boxes, Gift, Layers } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, trendColor, trendIcon } from '../lib/theme.js';
@@ -45,6 +46,7 @@ export default function Discover({ onOpen }) {
   const [activePreset, setActivePreset] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
   const [visible, setVisible] = useState(60); // how many result cards to render (perf)
+  const [searchFocus, setSearchFocus] = useState(false);
 
   // Keep typing snappy: the heavy filter/sort over ~19k cards runs against a
   // deferred copy of the query, so each keystroke updates the input instantly
@@ -77,6 +79,13 @@ export default function Discover({ onOpen }) {
   const searching = search.trim().length > 0;
   const searchQuery = deferredSearch.trim().toLowerCase();
   const searchingDeferred = searchQuery.length > 0;
+
+  // Autocomplete across ALL sets of the active game (bilingual DE+EN).
+  const searchSuggestions = useMemo(() => {
+    const q = fold(deferredSearch);
+    if (q.length < 2) return [];
+    return cards.filter((c) => (c.searchText || fold(`${c.name} ${c.nameEn || ''} ${c.baseName || ''} ${c.set || ''}`)).includes(q)).slice(0, 7);
+  }, [deferredSearch, cards]);
   const inSet = mode === 'setdetail';
   // Show the card listing when a set is open, or when searching in a card scope
   // (Start / Singles). Sealed tabs keep their own product grid + search.
@@ -125,8 +134,8 @@ export default function Discover({ onOpen }) {
     // then filters within that set instead of jumping to the global list.
     if (inSet) list = list.filter((c) => (c.setId || c.set) === selectedSet);
     if (searchQuery) {
-      const q = searchQuery;
-      list = list.filter((c) => c.name.toLowerCase().includes(q) || c.nameEn?.toLowerCase().includes(q) || c.set?.toLowerCase().includes(q));
+      const q = fold(searchQuery);
+      list = list.filter((c) => (c.searchText || fold(`${c.name} ${c.nameEn || ''} ${c.baseName || ''} ${c.set || ''}`)).includes(q));
     }
     if (activePreset) {
       const p = PRESETS.find((x) => x.id === activePreset);
@@ -145,8 +154,11 @@ export default function Discover({ onOpen }) {
         if (priceRange === '500+') return mk >= 500;
         return true;
       });
+    const relKey = (c) => c.setReleaseDate || (c.year ? `${c.year}-00-00` : '');
     const dir = {
       score: (a, b) => b.m.score - a.m.score,
+      date_new: (a, b) => relKey(b).localeCompare(relKey(a)) || (b.m.market ?? 0) - (a.m.market ?? 0),
+      date_old: (a, b) => relKey(a).localeCompare(relKey(b)) || (b.m.market ?? 0) - (a.m.market ?? 0),
       change30: (a, b) => (b.m.change30 ?? -999) - (a.m.change30 ?? -999),
       change7: (a, b) => (b.m.change7 ?? -999) - (a.m.change7 ?? -999),
       popularity: (a, b) => b.m.popularity - a.m.popularity,
@@ -191,12 +203,29 @@ export default function Discover({ onOpen }) {
           className="control"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          onFocus={() => setSearchFocus(true)}
+          onBlur={() => setTimeout(() => setSearchFocus(false), 150)}
           placeholder={searchPlaceholder}
           style={{ width: '100%', padding: '13px 42px 13px 42px', fontSize: 15, borderRadius: 12 }}
         />
         {searching && (
           <button onClick={() => setSearch('')} title="Suche zurücksetzen"
             style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: '#ffffff12', border: 'none', color: C.textSoft, width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+        )}
+        {searchFocus && searchSuggestions.length > 0 && (
+          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 40, marginTop: 6, background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 12, overflow: 'hidden', boxShadow: '0 10px 30px #00000070' }}>
+            {searchSuggestions.map((c) => (
+              <button key={c.id} onMouseDown={() => onOpen(c, 'overview')}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', textAlign: 'left', padding: '8px 12px', border: 'none', borderBottom: `1px solid ${C.line}`, background: 'transparent', color: C.text, cursor: 'pointer' }}>
+                <CardImage card={c} height={36} radius={3} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</div>
+                  <div style={{ fontSize: 11, color: C.textFaint, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.nameEn && c.nameEn !== c.name ? `${c.nameEn} · ` : ''}{c.set}</div>
+                </div>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: C.gold }}>{fmtEur(c.m.market)}</span>
+              </button>
+            ))}
+          </div>
         )}
       </div>
 
@@ -286,6 +315,8 @@ export default function Discover({ onOpen }) {
             )}
             <select className="control" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
               <option value="score">↕ Score</option>
+              <option value="date_new">↕ Neueste zuerst</option>
+              <option value="date_old">↕ Älteste zuerst</option>
               <option value="change30">↕ Veränderung 30T</option>
               <option value="change7">↕ Veränderung 7T</option>
               <option value="margin">↕ Marge</option>

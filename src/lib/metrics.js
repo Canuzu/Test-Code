@@ -5,6 +5,8 @@
 // From those we compute genuine value change (Wertsteigerung/-senkung), a deal
 // margin, a transparent popularity index and a composite investment score.
 
+import { localizeCard } from './localize.js';
+
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 const num = (v) => (typeof v === 'number' && !Number.isNaN(v) ? v : null);
 
@@ -135,8 +137,11 @@ export const getTier = (s) => {
   return { l: 'F', c: '#666688', n: 'Schwach' };
 };
 
-// Attaches every derived metric to a card so the UI never recomputes.
-export const enrich = (card) => {
+// Attaches every derived metric to a card so the UI never recomputes. Also
+// localises the name (consistent German for Pokémon + a bilingual searchText for
+// every game) so search & display don't depend on the flaky build translation.
+export const enrich = (raw) => {
+  const card = localizeCard(raw, raw?.game);
   const p = card.prices || {};
   const market = marketPrice(p);
   const change7 = change(p, 7);

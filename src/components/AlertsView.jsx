@@ -4,6 +4,7 @@ import { useStore } from '../store.jsx';
 import { C } from '../lib/theme.js';
 import { fmtEur, fmtRelative } from '../lib/format.js';
 import { newRule, ruleHit, canNotify, notifyPermission, requestNotifyPermission } from '../lib/alerts.js';
+import { fold } from '../lib/localize.js';
 import { CardImage, EmptyState } from './ui.jsx';
 
 export default function AlertsView({ locked, onUpgrade }) {
@@ -24,9 +25,9 @@ export default function AlertsView({ locked, onUpgrade }) {
 
   const cardById = useMemo(() => new Map(cards.map((c) => [c.id, c])), [cards]);
   const suggestions = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = fold(search);
     if (!q) return [];
-    return cards.filter((c) => c.name.toLowerCase().includes(q) || c.set?.toLowerCase().includes(q)).slice(0, 6);
+    return cards.filter((c) => (c.searchText || fold(`${c.name} ${c.nameEn || ''} ${c.baseName || ''} ${c.set || ''}`)).includes(q)).slice(0, 6);
   }, [search, cards]);
 
   if (locked) {

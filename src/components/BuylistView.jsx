@@ -4,6 +4,7 @@ import { useStore } from '../store.jsx';
 import { C, conditionColor } from '../lib/theme.js';
 import { fmtEur, fmtDate } from '../lib/format.js';
 import { CONDITIONS, withDefaults, offerFor } from '../lib/buylist.js';
+import { fold } from '../lib/localize.js';
 import { CardImage, EmptyState } from './ui.jsx';
 
 const exportCSV = (resolved, rules) => {
@@ -43,10 +44,10 @@ export default function BuylistView({ locked, onUpgrade }) {
   const totalCards = resolved.reduce((s, r) => s + r.qty, 0);
 
   const suggestions = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = fold(search);
     if (!q) return [];
     const have = new Set(items.map((i) => i.id));
-    return cards.filter((c) => !have.has(c.id) && (c.name.toLowerCase().includes(q) || c.set?.toLowerCase().includes(q))).slice(0, 8);
+    return cards.filter((c) => !have.has(c.id) && (c.searchText || fold(`${c.name} ${c.nameEn || ''} ${c.baseName || ''} ${c.set || ''}`)).includes(q)).slice(0, 8);
   }, [search, cards, items]);
 
   const addCard = (card) => { setItems((p) => p.some((i) => i.id === card.id) ? p : [...p, { id: card.id, condition: 'NM', qty: 1 }]); setSearch(''); };
