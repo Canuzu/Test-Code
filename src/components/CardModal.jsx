@@ -57,16 +57,24 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   const m = card.m;
   const p = card.prices;
   const links = marketLinks(card);
-  // Ordered candidates for the fullscreen image. Vintage cards often lack a
-  // `_hires` asset, so we fall back: large → constructed hires → small →
-  // constructed small. The lightbox steps through these on each load error so a
-  // missing hi-res file never leaves a blank zoom (e.g. Dark Typhlosion).
-  const heroCandidates = [
-    card.image?.large,
-    card.setId && card.number ? `https://images.pokemontcg.io/${card.setId}/${card.number}_hires.png` : null,
-    card.image?.small,
-    card.setId && card.number ? `https://images.pokemontcg.io/${card.setId}/${card.number}.png` : null,
-  ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+  // Ordered candidates for the fullscreen image. Vintage Pokémon cards often
+  // lack a `_hires` asset, so we fall back: large → constructed hires → small →
+  // constructed small. For One Piece, Bandai's CDN hot-link-blocks the direct
+  // URL (the zoom would hang forever), so we route through the wsrv.nl proxy
+  // FIRST and keep the direct URL only as a last resort. The lightbox steps
+  // through these on each load error so a blocked/missing file never leaves a
+  // blank, endlessly-spinning zoom.
+  const opLarge = card.image?.large || card.image?.small;
+  const isOP = !!opLarge && /onepiece-cardgame\.com/i.test(opLarge);
+  const heroCandidates = (isOP
+    ? [`https://wsrv.nl/?url=${encodeURIComponent(opLarge)}&output=png&maxage=30d`, opLarge]
+    : [
+        card.image?.large,
+        card.setId && card.number ? `https://images.pokemontcg.io/${card.setId}/${card.number}_hires.png` : null,
+        card.image?.small,
+        card.setId && card.number ? `https://images.pokemontcg.io/${card.setId}/${card.number}.png` : null,
+      ]
+  ).filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
   const cardTags = tags[card.id] || [];
   const markets = marketEstimates(card, settings);
   const arb = arbitrage(card, settings);
@@ -197,12 +205,11 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                 </div>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6, marginBottom: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 14 }}>
                 {[
                   ['Marktpreis', fmtEur(m.market), C.text],
                   ['Günstigste', fmtEur(p.low), C.blue],
                   ['Ø Verkauf', fmtEur(p.averageSell), C.textSoft],
-                  ['Beliebtheit', `${fmtNum(m.popularity, 1)}/10`, C.gold],
                 ].map(([l, v, col]) => (
                   <div key={l} style={{ textAlign: 'center', padding: '9px 4px', background: '#ffffff08', borderRadius: 8 }}>
                     <div style={{ fontSize: 10, color: C.textFaint, marginBottom: 2 }}>{l}</div>
@@ -222,9 +229,6 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
               <div style={{ background: C.bg1, borderRadius: 10, padding: 12, marginBottom: 14 }}>
                 <div style={sectionLabel}>📊 Einschätzung</div>
                 <div style={{ fontSize: 13, color: '#dcdcec', lineHeight: 1.6 }}>{thesis(card)}</div>
-                <div style={{ fontSize: 11, color: C.textFaint, marginTop: 8 }}>
-                  Beliebtheit ist ein berechneter Index (Seltenheit, Preisniveau, Momentum) – kein gemessenes Verkaufsvolumen.
-                </div>
               </div>
 
               <div>
@@ -480,7 +484,7 @@ function thesis(card) {
   const dir = m.change30 == null ? null : m.change30 > 2 ? 'gestiegen' : m.change30 < -2 ? 'gefallen' : 'stabil geblieben';
   const parts = [];
   if (dir) parts.push(`Der Preis ist über 30 Tage ${dir}${m.change30 != null ? ` (${fmtPct(m.change30)})` : ''}.`);
-  parts.push(`Beliebtheits-Index ${fmtNum(m.popularity, 1)}/10 bei ${riskAdjDative(m.risk)} Risiko.`);
+  parts.push(`Einstufung bei ${riskAdjDative(m.risk)} Risiko.`);
   if (m.margin != null) parts.push(`Zwischen günstigstem Angebot und Trend liegen ${fmtPct(m.margin)} Spielraum.`);
   parts.push(`Investment-Score ${m.score}/100 (Tier ${m.tier.l}).`);
   return parts.join(' ');

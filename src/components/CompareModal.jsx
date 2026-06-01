@@ -1,7 +1,7 @@
 import { X } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, riskLabel, trendIcon, trendLabel } from '../lib/theme.js';
-import { fmtEur, fmtPct, fmtNum } from '../lib/format.js';
+import { fmtEur, fmtPct } from '../lib/format.js';
 import { ScoreBadge } from './ui.jsx';
 import { cmUrl } from '../lib/marketLinks.js';
 
@@ -13,7 +13,6 @@ const ROWS = [
   { label: 'Veränderung 7T', get: (c) => c.m.change7, fmt: (v) => fmtPct(v), best: 'max' },
   { label: 'Veränderung 30T', get: (c) => c.m.change30, fmt: (v) => fmtPct(v), best: 'max' },
   { label: 'Marge Low→Trend', get: (c) => c.m.margin, fmt: (v) => fmtPct(v), best: 'max' },
-  { label: 'Beliebtheit', get: (c) => c.m.popularity, fmt: (v) => `${fmtNum(v, 1)}/10`, best: 'max' },
   { label: 'Trend', get: (c) => c.m.trend, fmt: (v) => `${trendIcon(v)} ${trendLabel(v)}`, best: null },
   { label: 'Risiko', get: (c) => c.m.risk, fmt: (v) => riskLabel(v), best: null },
   { label: 'Seltenheit', get: (c) => c.rarity, fmt: (v) => v || '–', best: null },
