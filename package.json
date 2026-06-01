@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "build:single": "SINGLE=1 vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "smoke": "node scripts/smoke-data.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.439.0",

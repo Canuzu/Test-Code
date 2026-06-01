@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0a18" />
     <meta name="referrer" content="no-referrer" />
+
+    <!-- Perf: warm up connections to the image hosts hit on first paint. -->
+    <link rel="preconnect" href="https://wsrv.nl" crossorigin />
+    <link rel="preconnect" href="https://images.pokemontcg.io" crossorigin />
+    <link rel="dns-prefetch" href="https://cards.scryfall.io" />
+    <link rel="dns-prefetch" href="https://images.ygoprodeck.com" />
+    <link rel="dns-prefetch" href="https://en.onepiece-cardgame.com" />
+
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -18,9 +26,28 @@
     />
     <meta
       name="description"
-      content="Cartograph - Live-Preistracker fuer Pokemon Trading Cards mit Fokus auf den deutschen Markt (Cardmarket EU): Preisentwicklung, Investment-Score, Sammlung und Portfolio."
+      content="Cartograph – Live-Preistracker für Sammelkarten (Pokémon, Magic, One Piece, Yu-Gi-Oh!) mit Fokus auf den europäischen Markt (Cardmarket EU): Preisentwicklung, Charts, Investment-Score, Sammlung & Portfolio."
     />
-    <title>Cartograph - TCG Live-Preistracker</title>
+
+    <!-- Social preview (Open Graph + Twitter). Scrapers require ABSOLUTE URLs;
+         if you switch to a custom domain, update the origin in the 5 URLs below. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Cartograph" />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:title" content="Cartograph – TCG Live-Preistracker" />
+    <meta property="og:description" content="Live-Preise & Charts für Pokémon-, Magic-, One-Piece- und Yu-Gi-Oh!-Karten (Cardmarket EU). Sammlung, Watchlist & Alerts – kostenlos." />
+    <meta property="og:url" content="https://canuzu.github.io/Test-Code/" />
+    <meta property="og:image" content="https://canuzu.github.io/Test-Code/icons/icon-512.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="Cartograph – TCG Preistracker" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Cartograph – TCG Live-Preistracker" />
+    <meta name="twitter:description" content="Live-Preise & Charts für Pokémon, Magic, One Piece & Yu-Gi-Oh! (Cardmarket EU). Kostenlos." />
+    <meta name="twitter:image" content="https://canuzu.github.io/Test-Code/icons/icon-512.png" />
+
+    <title>Cartograph – TCG Live-Preistracker</title>
   </head>
   <body>
     <div id="root"></div>
