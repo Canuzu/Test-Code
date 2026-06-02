@@ -17,9 +17,19 @@
 // for "Glurak", "Charizard" or "Glurak ex" all hit — for EVERY game.
 
 import { POKEDEX_DE } from '../data/pokedexDe.js';
+import { TRAINER_DE } from '../data/trainersDe.js';
 import GENERATED from '../data/pokedexDe.generated.json';
 
 const DICT_GAMES = { pokemon: true };
+
+// Full-name lookup for Trainer/Item/Energy cards (case-insensitive, tolerates a
+// leading "Basic " on energies, e.g. "Basic Fire Energy").
+const TRAINER_LC = {};
+for (const [k, v] of Object.entries(TRAINER_DE)) TRAINER_LC[k.toLowerCase()] = v;
+const trainerGerman = (en) => {
+  const lc = (en || '').toLowerCase();
+  return TRAINER_LC[lc] || TRAINER_LC[lc.replace(/^basic\s+/, '')] || null;
+};
 
 // Slugify a card-name token the same way the build keyed deNames.
 const slugify = (s) => (s || '')
@@ -67,9 +77,14 @@ export const localizeCard = (card, game = 'pokemon') => {
 
   if (DICT_GAMES[g] && en) {
     const translated = en.replace(MATCHER, (m) => toGerman(m));
-    if (translated !== en) name = translated;                 // species mapped → German
-    else if (card.name && card.nameEn && card.name !== card.nameEn) name = card.name; // keep existing German
-    else name = en;                                           // unknown species → English
+    if (translated !== en) {
+      name = translated;                                      // species mapped → German
+    } else {
+      const t = trainerGerman(en);                            // Trainer/Item/Energy full name
+      if (t) name = t;
+      else if (card.name && card.nameEn && card.name !== card.nameEn) name = card.name; // keep existing German
+      else name = en;                                         // unknown → English
+    }
   }
 
   const searchText = fold([name, en, card.baseName, card.set, card.number].filter(Boolean).join(' '));
