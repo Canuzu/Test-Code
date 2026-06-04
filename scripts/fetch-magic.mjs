@@ -73,6 +73,37 @@ async function main() {
     process.exit(0);
   }
 
+  // --- German names overlay (Scryfall lang:de). Magic is officially printed in
+  //     German; the English pass above gives full coverage, this pass swaps the
+  //     display name to German where an exact printing exists. Matched by set
+  //     code + collector number (the SAME card across languages), so a match is
+  //     always the correct German name. Fail-safe: any error keeps English. ---
+  try {
+    const de = new Map();
+    let durl = `https://api.scryfall.com/cards/search?order=released&dir=desc&unique=prints&q=${encodeURIComponent('game:paper lang:de')}`;
+    let dpages = 0;
+    while (durl && dpages < 600) {
+      const page = await getJSON(durl);
+      dpages++;
+      for (const raw of page.data || []) {
+        const nm = raw.printed_name;
+        if (nm && raw.set && raw.collector_number != null) {
+          de.set(`${String(raw.set).toLowerCase()}/${String(raw.collector_number).toLowerCase()}`, nm);
+        }
+      }
+      durl = page.has_more ? page.next_page : null;
+      if (durl) await sleep(110);
+    }
+    let overlaid = 0;
+    for (const c of out) {
+      const nm = de.get(`${String(c.setId).toLowerCase()}/${String(c.number).toLowerCase()}`);
+      if (nm && nm !== c.name) { c.nameEn = c.nameEn || c.name; c.name = nm; overlaid++; }
+    }
+    console.log(`[fetch-magic] German overlay: ${de.size} DE names · ${overlaid}/${out.length} cards localised · ${dpages} pages`);
+  } catch (e) {
+    console.error(`[fetch-magic] German overlay skipped (${e.message}) — English names kept.`);
+  }
+
   if (out.length === 0) {
     console.error('[fetch-magic] nothing priced — keeping existing snapshot.');
     process.exit(0);
