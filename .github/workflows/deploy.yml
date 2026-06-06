@@ -77,6 +77,15 @@ jobs:
         # read from the committed .env.production — every value there is public-safe
         # (anon key is RLS-protected). Real secrets live only in Supabase function
         # secrets, never here.
+      - name: Build Beastlings Quest into /creature-quest subpath
+        # Eigenständiges Spielprojekt (React + Vite, base './'), wird unter
+        # <pages>/creature-quest/ ausgeliefert, ohne die Karten-App zu berühren.
+        run: |
+          cd creature-quest
+          npm ci
+          npm run build
+          mkdir -p ../dist/creature-quest
+          cp -r dist/* ../dist/creature-quest/
       - uses: actions/configure-pages@v5
         with:
           enablement: true
