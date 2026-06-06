@@ -1,4 +1,4 @@
-import PixelSprite from './PixelSprite.jsx';
+import CreatureSprite from './CreatureSprite.jsx';
 import { TYPES } from '../data/types.js';
 import { getSpecies, maxHp, maxStats, xpForNext } from '../engine/creatures.js';
 
@@ -18,7 +18,7 @@ export default function PartyScreen({ party, box, onClose, onLead }) {
         const mx = maxHp(p);
         return (
           <div key={p.uid} className="row" style={{ alignItems: 'flex-start' }}>
-            <PixelSprite id={p.speciesId} type={sp.type} body={sp.body} size={56} />
+            <CreatureSprite id={p.speciesId} type={sp.type} body={sp.body} size={56} />
             <div style={{ flex: 1 }}>
               <div className="small">
                 {i === 0 ? '⭐ ' : ''}{sp.name} <span className="tiny">Lv{p.level}</span>

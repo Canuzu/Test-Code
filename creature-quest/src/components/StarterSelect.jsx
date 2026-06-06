@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import PixelSprite from './PixelSprite.jsx';
+import CreatureSprite from './CreatureSprite.jsx';
 import { CREATURES, STARTER_IDS } from '../data/creatures.js';
 import { TYPES } from '../data/types.js';
 
@@ -31,7 +31,7 @@ export default function StarterSelect({ onChoose }) {
                 gap: 6,
               }}
             >
-              <PixelSprite id={c.id} type={c.type} body={c.body} size={72} />
+              <CreatureSprite id={c.id} type={c.type} body={c.body} size={96} />
               <span className="small">{c.name}</span>
               <span className="type-pill" style={{ background: t.color }}>
                 {t.icon} {t.name}
