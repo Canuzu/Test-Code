@@ -6,7 +6,8 @@
   "description": "Ein eigenstaendiges Monster-Sammel-Adventure im Stil klassischer Taschenmonster-RPGs - eigene Kreaturen, eigene Welt.",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "sprites": "node scripts/gen-sprites.mjs",
+    "build": "node scripts/gen-sprites.mjs && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
