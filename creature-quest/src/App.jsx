@@ -5,10 +5,13 @@ import Overworld from './components/Overworld.jsx';
 import BattleScreen from './components/BattleScreen.jsx';
 import PartyScreen from './components/PartyScreen.jsx';
 import DexScreen from './components/DexScreen.jsx';
+import Shop from './components/Shop.jsx';
+import Bag from './components/Bag.jsx';
 import { WARPS, START, ZONES, tileAt, isBlocked, TILE } from './data/world.js';
-import { createInstance, healFull, getSpecies } from './engine/creatures.js';
+import { createInstance, healFull, getSpecies, maxHp } from './engine/creatures.js';
 import { pickWeighted, mulberry32, randInt } from './engine/rng.js';
 import { saveGame, loadGame, hasSave, clearSave } from './engine/save.js';
+import { ITEMS, STARTER_BAG, STARTER_MONEY } from './data/items.js';
 
 const ENCOUNTER_RATE = 0.22;
 
@@ -19,9 +22,10 @@ export default function App() {
   const [box, setBox] = useState([]);
   const [dexSeen, setDexSeen] = useState(new Set());
   const [dexCaught, setDexCaught] = useState(new Set());
-  const [balls, setBalls] = useState(10);
+  const [bag, setBag] = useState({ ...STARTER_BAG });
+  const [money, setMoney] = useState(STARTER_MONEY);
   const [enemy, setEnemy] = useState(null);
-  const [overlay, setOverlay] = useState(null); // null | party | dex | menu
+  const [overlay, setOverlay] = useState(null); // null | party | dex | menu | shop | bag
   const [toast, setToast] = useState(null);
   const [canContinue, setCanContinue] = useState(false);
 
@@ -37,14 +41,15 @@ export default function App() {
   // ---- Speichern / Laden ----
   const persist = useCallback((over = {}) => {
     saveGame({
-      player, party, box, dexSeen, dexCaught, balls, ...over,
+      player, party, box, dexSeen, dexCaught, bag, money, ...over,
     });
-  }, [player, party, box, dexSeen, dexCaught, balls]);
+  }, [player, party, box, dexSeen, dexCaught, bag, money]);
 
   function startNewGame() {
     setParty([]); setBox([]);
     setDexSeen(new Set()); setDexCaught(new Set());
-    setBalls(10);
+    setBag({ ...STARTER_BAG });
+    setMoney(STARTER_MONEY);
     setPlayer({ zone: START.zone, x: START.x, y: START.y, facing: 'down' });
     setScreen('starter');
   }
@@ -57,7 +62,8 @@ export default function App() {
     setBox(s.box);
     setDexSeen(s.dexSeen);
     setDexCaught(s.dexCaught);
-    setBalls(s.balls);
+    setBag(s.bag);
+    setMoney(s.money);
     setScreen('world');
   }
 
@@ -68,7 +74,11 @@ export default function App() {
     const caught = new Set([speciesId]);
     setParty(newParty); setDexSeen(seen); setDexCaught(caught);
     setScreen('world');
-    saveGame({ player: { zone: START.zone, x: START.x, y: START.y, facing: 'down' }, party: newParty, box: [], dexSeen: seen, dexCaught: caught, balls: 10 });
+    saveGame({
+      player: { zone: START.zone, x: START.x, y: START.y, facing: 'down' },
+      party: newParty, box: [], dexSeen: seen, dexCaught: caught,
+      bag: { ...STARTER_BAG }, money: STARTER_MONEY,
+    });
     setCanContinue(true);
     showToast(`${getSpecies(starter).name} schließt sich dir an!`);
   }
@@ -105,7 +115,7 @@ export default function App() {
   }, [screen, overlay]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function saveAfterMove(np) {
-    saveGame({ player: np, party, box, dexSeen, dexCaught, balls });
+    saveGame({ player: np, party, box, dexSeen, dexCaught, bag, money });
   }
 
   function triggerEncounter(zoneKey) {
@@ -139,6 +149,8 @@ export default function App() {
   // ---- Kampf-Ergebnis ----
   function endBattle(result) {
     const newParty = [...party];
+    let newMoney = money;
+    let loseReset = false;
     if (result.type === 'catch') {
       const caught = result.enemy;
       if (newParty.length < 6) newParty.push(caught);
@@ -150,19 +162,64 @@ export default function App() {
       newParty.forEach(healFull);
       setParty(newParty);
       setPlayer({ zone: START.zone, x: START.x, y: START.y, facing: 'down' });
+      loseReset = true;
       showToast('Du wurdest besiegt – erschöpft kehrst du zur Heimatwiese zurück.');
+    } else if (result.type === 'win') {
+      const reward = result.enemy ? result.enemy.level * 6 + 10 : 0;
+      newMoney = money + reward;
+      setMoney(newMoney);
+      setParty(newParty);
+      if (reward) showToast(`Sieg! +${reward} Taler 💰`);
     } else {
-      setParty(newParty); // win / flee: HP/EP-Änderungen übernehmen
+      setParty(newParty); // flee: HP-Änderungen übernehmen
     }
     setEnemy(null);
     setScreen('world');
     // nach kurzer Verzögerung speichern (State hat sich gesetzt)
     setTimeout(() => saveGame({
-      player: result.type === 'lose' ? { zone: START.zone, x: START.x, y: START.y, facing: 'down' } : player,
+      player: loseReset ? { zone: START.zone, x: START.x, y: START.y, facing: 'down' } : player,
       party: newParty, box, dexSeen,
       dexCaught: result.type === 'catch' ? new Set([...dexCaught, result.enemy.speciesId]) : dexCaught,
-      balls,
+      bag, money: newMoney,
     }), 0);
+  }
+
+  function consumeItem(id) {
+    setBag((b) => {
+      const n = { ...b };
+      n[id] = Math.max(0, (n[id] || 0) - 1);
+      if (n[id] === 0) delete n[id];
+      return n;
+    });
+  }
+
+  function buyItem(id) {
+    const it = ITEMS[id];
+    if (money < it.price) return;
+    setMoney((m) => m - it.price);
+    setBag((b) => ({ ...b, [id]: (b[id] || 0) + 1 }));
+    showToast(`${it.name} gekauft!`);
+  }
+
+  function useBagItem(id, partyIdx) {
+    const it = ITEMS[id];
+    if (!it || (bag[id] || 0) <= 0) return;
+    setParty((prev) => {
+      const np = [...prev];
+      const target = np[partyIdx];
+      if (it.kind === 'heal') {
+        if (target.curHp <= 0 || target.curHp >= maxHp(target)) return prev;
+        target.curHp = Math.min(maxHp(target), target.curHp + it.amount);
+      } else if (it.kind === 'revive') {
+        if (target.curHp > 0) return prev;
+        target.curHp = Math.max(1, Math.round(maxHp(target) * it.ratio));
+      } else {
+        return prev;
+      }
+      return np;
+    });
+    consumeItem(id);
+    showToast(`${it.name} eingesetzt.`);
   }
 
   function leadParty(i) {
@@ -198,8 +255,8 @@ export default function App() {
         <BattleScreen
           enemy={enemy}
           party={party}
-          balls={balls}
-          onUseBall={() => setBalls((b) => Math.max(0, b - 1))}
+          bag={bag}
+          onConsume={consumeItem}
           onEnd={endBattle}
         />
       </div>
@@ -215,7 +272,6 @@ export default function App() {
         px={player.x}
         py={player.y}
         facing={player.facing}
-        balls={balls}
         partyCount={party.length}
         onDir={tryDir}
         onOpenParty={() => setOverlay('party')}
@@ -229,15 +285,22 @@ export default function App() {
       {overlay === 'dex' && (
         <DexScreen dexSeen={dexSeen} dexCaught={dexCaught} onClose={() => setOverlay(null)} />
       )}
+      {overlay === 'shop' && (
+        <Shop money={money} bag={bag} onBuy={buyItem} onClose={() => setOverlay(null)} />
+      )}
+      {overlay === 'bag' && (
+        <Bag bag={bag} party={party} onUse={useBagItem} onClose={() => setOverlay(null)} />
+      )}
       {overlay === 'menu' && (
         <div className="overlay">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span className="title-big" style={{ fontSize: 14 }}>Menü</span>
             <button className="btn" onClick={() => setOverlay(null)}>✕</button>
           </div>
-          <div className="tiny">Fangkugeln: {balls} · Team: {party.length} · Box: {box.length}</div>
+          <div className="tiny">💰 {money} Taler · Team: {party.length} · Box: {box.length}</div>
+          <button className="btn" onClick={() => setOverlay('bag')}>🎒 Beutel</button>
+          <button className="btn" onClick={() => setOverlay('shop')}>🛒 Naturladen</button>
           <button className="btn good" onClick={() => { persist(); showToast('Spiel gespeichert.'); setOverlay(null); }}>💾 Spiel speichern</button>
-          <button className="btn" onClick={() => { setBalls((b) => b + 5); showToast('+5 Fangkugeln (Startgeschenk).'); }}>🎁 Fangkugeln auffüllen (+5)</button>
           <button className="btn" onClick={() => { persist(); setOverlay(null); setScreen('title'); }}>🏠 Zum Titelbildschirm</button>
           <button
             className="btn"

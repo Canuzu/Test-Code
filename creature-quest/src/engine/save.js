@@ -12,13 +12,14 @@ export function hasSave() {
 export function saveGame(state) {
   try {
     const data = {
-      version: 1,
+      version: 2,
       player: state.player,
       party: state.party,
       box: state.box,
       dexSeen: [...state.dexSeen],
       dexCaught: [...state.dexCaught],
-      balls: state.balls,
+      bag: state.bag,
+      money: state.money,
       playtime: state.playtime || 0,
     };
     localStorage.setItem(KEY, JSON.stringify(data));
@@ -34,13 +35,17 @@ export function loadGame() {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
     const d = JSON.parse(raw);
+    // Abwärtskompatibel: altes Format kannte nur "balls".
+    let bag = d.bag;
+    if (!bag) bag = { fangkugel: d.balls ?? 10 };
     return {
       player: d.player,
       party: d.party || [],
       box: d.box || [],
       dexSeen: new Set(d.dexSeen || []),
       dexCaught: new Set(d.dexCaught || []),
-      balls: d.balls ?? 10,
+      bag,
+      money: d.money ?? 250,
       playtime: d.playtime || 0,
     };
   } catch (e) {

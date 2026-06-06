@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import PixelSprite from './PixelSprite.jsx';
 import { MOVES } from '../data/moves.js';
 import { TYPES } from '../data/types.js';
+import { ITEMS } from '../data/items.js';
 import {
   performMove, enemyChooseMove, attemptCapture, fleeChance, speedOf, resetBuffs,
 } from '../engine/battle.js';
@@ -31,9 +32,9 @@ function HpBox({ inst, showXp }) {
   );
 }
 
-export default function BattleScreen({ enemy, party, balls, onEnd, onUseBall }) {
+export default function BattleScreen({ enemy, party, bag, onEnd, onConsume }) {
   const [active, setActive] = useState(() => party.findIndex((p) => p.curHp > 0));
-  const [phase, setPhase] = useState('msg'); // msg | menu | move | team
+  const [phase, setPhase] = useState('msg'); // msg | menu | move | team | bag
   const [mandatorySwitch, setMandatory] = useState(false);
   const [msg, setMsg] = useState([`Ein wildes ${getSpecies(enemy).name} erscheint!`]);
   const [outcome, setOutcome] = useState({ type: 'continue' });
@@ -114,20 +115,48 @@ export default function BattleScreen({ enemy, party, balls, onEnd, onUseBall }) 
     enqueue(lines, out);
   }
 
-  function throwBall() {
-    if (balls <= 0) { enqueue(['Du hast keine Fangkugeln mehr!'], { type: 'continue' }); return; }
-    onUseBall();
-    const lines = ['Du wirfst eine Fangkugel…'];
-    if (attemptCapture(enemy)) {
-      lines.push(`${getSpecies(enemy).name} wurde gefangen!`);
-      enqueue(lines, { type: 'catch' });
-    } else {
-      lines.push(`Oh nein! ${getSpecies(enemy).name} hat sich befreit!`);
-      const r = performMove(enemy, me, enemyChooseMove(enemy));
-      lines.push(...r.log);
-      let out = { type: 'continue' };
-      if (me.curHp <= 0) { lines.push(`${getSpecies(me).name} wurde besiegt!`); out = resolveFaint(active); }
-      enqueue(lines, out);
+  // Gegnerischer Konter nach einer Aktion, die die Runde verbraucht.
+  function enemyCounter(lines) {
+    const r = performMove(enemy, me, enemyChooseMove(enemy));
+    lines.push(...r.log);
+    if (me.curHp <= 0) { lines.push(`${getSpecies(me).name} wurde besiegt!`); return resolveFaint(active); }
+    return { type: 'continue' };
+  }
+
+  function useItem(id) {
+    const it = ITEMS[id];
+    if (!it || (bag[id] || 0) <= 0) return;
+
+    // Beleber nur sinnvoll, wenn jemand besiegt ist – vor dem Verbrauch prüfen.
+    if (it.kind === 'revive') {
+      const idx = party.findIndex((p) => p.curHp <= 0);
+      if (idx < 0) { enqueue(['Niemand ist besiegt.'], { type: 'continue' }); return; }
+      onConsume(id);
+      party[idx].curHp = Math.max(1, Math.round(maxHp(party[idx]) * it.ratio));
+      const lines = [`Du setzt ${it.name} ein – ${getSpecies(party[idx]).name} ist wieder bei Kräften!`];
+      enqueue(lines, enemyCounter(lines));
+      return;
+    }
+
+    onConsume(id);
+
+    if (it.kind === 'ball') {
+      const lines = [`Du wirfst ${it.name}…`];
+      if (attemptCapture(enemy, it.ballBonus)) {
+        lines.push(`${getSpecies(enemy).name} wurde gefangen!`);
+        enqueue(lines, { type: 'catch' });
+      } else {
+        lines.push(`Oh nein! ${getSpecies(enemy).name} hat sich befreit!`);
+        enqueue(lines, enemyCounter(lines));
+      }
+      return;
+    }
+
+    if (it.kind === 'heal') {
+      const before = me.curHp;
+      me.curHp = Math.min(maxHp(me), me.curHp + it.amount);
+      const lines = [`Du setzt ${it.name} ein – ${getSpecies(me).name} erhält ${me.curHp - before} HP.`];
+      enqueue(lines, enemyCounter(lines));
     }
   }
 
@@ -195,7 +224,7 @@ export default function BattleScreen({ enemy, party, balls, onEnd, onUseBall }) 
             <div className="log">Was soll {meSp.name} tun?</div>
             <div className="action-grid">
               <button className="btn primary" onClick={() => setPhase('move')}>⚔️ Kämpfen</button>
-              <button className="btn" onClick={throwBall}>🎯 Fangkugel ({balls})</button>
+              <button className="btn" onClick={() => setPhase('bag')}>🎒 Beutel</button>
               <button className="btn" onClick={() => setPhase('team')}>👥 Team</button>
               <button className="btn" onClick={flee}>🏃 Flucht</button>
             </div>
@@ -219,6 +248,27 @@ export default function BattleScreen({ enemy, party, balls, onEnd, onUseBall }) 
               <button className="btn" style={{ gridColumn: '1 / -1' }} onClick={() => setPhase('menu')}>↩ Zurück</button>
             </div>
           </>
+        )}
+
+        {phase === 'bag' && (
+          <div style={{ padding: 8 }}>
+            <div className="log">Welchen Gegenstand?</div>
+            <div className="action-grid">
+              {Object.keys(bag).filter((id) => (bag[id] || 0) > 0).map((id) => {
+                const it = ITEMS[id];
+                return (
+                  <button key={id} className="btn" onClick={() => useItem(id)}>
+                    {it.icon} {it.name} ×{bag[id]}
+                    <div className="tiny">{it.kind === 'ball' ? 'Fangen' : it.kind === 'heal' ? `+${it.amount} HP` : 'Beleben'}</div>
+                  </button>
+                );
+              })}
+              {Object.keys(bag).filter((id) => (bag[id] || 0) > 0).length === 0 && (
+                <div className="tiny" style={{ gridColumn: '1 / -1' }}>Dein Beutel ist leer.</div>
+              )}
+              <button className="btn" style={{ gridColumn: '1 / -1' }} onClick={() => setPhase('menu')}>↩ Zurück</button>
+            </div>
+          </div>
         )}
 
         {phase === 'team' && (

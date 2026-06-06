@@ -21,6 +21,9 @@ eigenem Namen (keine fremden Marken). Läuft direkt im Browser
 - 🎯 **Fangen** mit Fangkugeln (Chance abhängig von Rest-HP, Seltenheit & Level).
 - 📈 **EP & Level-Aufstieg**, neue Attacken lernen, automatische Entwicklung.
 - 📖 **Beastdex** (gesehen / gefangen), 👥 **Team-Verwaltung** (+ Lager-Box).
+- 🎒 **Beutel & Items**: Tränke (Heilen), Beleber, drei Fangkugel-Stufen mit
+  unterschiedlicher Fangchance – nutzbar im Kampf und außerhalb.
+- 🛒 **Naturladen & Geld**: Siege bringen Taler, dafür kaufst du Items.
 - 💾 **Auto-Speichern** im Browser (`localStorage`) – Fortschritt bleibt erhalten.
 - 🎨 **Prozedurale Pixel-Sprites**: jede Kreatur bekommt einen eindeutigen,
   reproduzierbaren 16×16-Sprite (Palette nach Typ).
