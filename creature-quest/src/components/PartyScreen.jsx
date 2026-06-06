@@ -13,6 +13,7 @@ export default function PartyScreen({ party, box, onClose, onLead }) {
       {party.map((p, i) => {
         const sp = getSpecies(p);
         const t = TYPES[sp.type];
+        const t2 = sp.type2 ? TYPES[sp.type2] : null;
         const st = maxStats(p);
         const mx = maxHp(p);
         return (
@@ -23,6 +24,7 @@ export default function PartyScreen({ party, box, onClose, onLead }) {
                 {i === 0 ? '⭐ ' : ''}{sp.name} <span className="tiny">Lv{p.level}</span>
               </div>
               <span className="type-pill" style={{ background: t.color }}>{t.icon} {t.name}</span>
+              {t2 && <span className="type-pill" style={{ background: t2.color, marginLeft: 4 }}>{t2.icon} {t2.name}</span>}
               <div className="tiny" style={{ marginTop: 4 }}>
                 HP {Math.max(0, p.curHp)}/{mx} · ATK {st.atk} · DEF {st.def} · SPD {st.spd}
               </div>

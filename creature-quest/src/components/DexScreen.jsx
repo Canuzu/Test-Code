@@ -20,6 +20,7 @@ export default function DexScreen({ dexSeen, dexCaught, onClose }) {
           const isCaught = dexCaught.has(id);
           const isSeen = dexSeen.has(id) || isCaught;
           const t = TYPES[c.type];
+          const t2 = c.type2 ? TYPES[c.type2] : null;
           return (
             <div key={id} className="dex-cell" style={{ borderColor: isCaught ? t.color : 'var(--line)' }}>
               <div style={{ display: 'flex', justifyContent: 'center', filter: isCaught ? 'none' : 'brightness(0)' }}>
@@ -30,6 +31,9 @@ export default function DexScreen({ dexSeen, dexCaught, onClose }) {
               <div style={{ marginTop: 4 }}>
                 {isCaught ? c.name : isSeen ? '???' : '—'}
               </div>
+              {isCaught && t2 && (
+                <div className="tiny">{t.icon}{t2.icon}</div>
+              )}
               <div className="tiny">#{String(id).padStart(2, '0')}</div>
             </div>
           );
