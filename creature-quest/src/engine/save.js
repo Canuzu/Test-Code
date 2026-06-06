@@ -12,13 +12,15 @@ export function hasSave() {
 export function saveGame(state) {
   try {
     const data = {
-      version: 1,
+      version: 2,
       player: state.player,
       party: state.party,
       box: state.box,
       dexSeen: [...state.dexSeen],
       dexCaught: [...state.dexCaught],
       balls: state.balls,
+      playerName: state.playerName || '',
+      defeatedTrainers: [...(state.defeatedTrainers || [])],
       playtime: state.playtime || 0,
     };
     localStorage.setItem(KEY, JSON.stringify(data));
@@ -41,6 +43,8 @@ export function loadGame() {
       dexSeen: new Set(d.dexSeen || []),
       dexCaught: new Set(d.dexCaught || []),
       balls: d.balls ?? 10,
+      playerName: d.playerName || '',
+      defeatedTrainers: new Set(d.defeatedTrainers || []),
       playtime: d.playtime || 0,
     };
   } catch (e) {

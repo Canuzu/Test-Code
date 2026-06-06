@@ -1,6 +1,6 @@
 // Kampf-Engine: Schaden, Treffer, Status-Effekte, Fangen.
 import { MOVES } from '../data/moves.js';
-import { typeMultiplier, effectivenessLabel } from '../data/types.js';
+import { combinedMultiplier, speciesTypes, effectivenessLabel } from '../data/types.js';
 import { maxStats, maxHp, getSpecies } from './creatures.js';
 
 // Kampf-Buffs liegen direkt auf der Instanz (atkMul/defMul), Standard 1.
@@ -49,11 +49,11 @@ export function performMove(user, target, moveId) {
   const lvl = user.level;
   const a = atkOf(user);
   const d = defOf(target);
-  const userType = getSpecies(user).type;
-  const targetType = getSpecies(target).type;
+  const userTypes = speciesTypes(getSpecies(user));
+  const targetTypes = speciesTypes(getSpecies(target));
 
-  const stab = move.type === userType ? 1.5 : 1;
-  const mult = typeMultiplier(move.type, targetType);
+  const stab = userTypes.includes(move.type) ? 1.5 : 1;
+  const mult = combinedMultiplier(move.type, targetTypes);
   const crit = Math.random() < 0.0625 ? 1.5 : 1;
   const variance = 0.85 + Math.random() * 0.15;
 

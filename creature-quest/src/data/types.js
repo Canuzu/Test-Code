@@ -26,6 +26,17 @@ export function typeMultiplier(atkType, defType) {
   return row[defType] ?? 1;
 }
 
+// Liefert die Typen einer Spezies als Array (1 oder 2 Einträge, für Doppeltypen).
+export function speciesTypes(sp) {
+  return sp.type2 ? [sp.type, sp.type2] : [sp.type];
+}
+
+// Gesamteffektivität einer Attacke gegen eine (ggf. doppeltypige) Spezies:
+// Multiplikatoren beider Verteidigertypen werden multipliziert.
+export function combinedMultiplier(atkType, defTypes) {
+  return defTypes.reduce((acc, t) => acc * typeMultiplier(atkType, t), 1);
+}
+
 // Liefert eine kurze Beschreibung der Effektivität (für Kampf-Log).
 export function effectivenessLabel(mult) {
   if (mult >= 2) return 'Sehr effektiv!';

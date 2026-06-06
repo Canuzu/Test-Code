@@ -42,6 +42,36 @@ const ZONES = {
       { id: 20, weight: 3, min: 2, max: 4 }, // Quappling
       { id: 29, weight: 2, min: 3, max: 5 }, // Perlmuschel
     ],
+    npcs: [
+      {
+        id: 'wiese_wanderer',
+        x: 12, y: 1,
+        facing: 'down',
+        name: 'Wanderer Elias',
+        kind: 'talk',
+        lines: [
+          'Frischer Wind heut, was? Gut zum Reisen.',
+          'Im hohen Gras – den gestreiften Flächen – triffst du wilde Kreaturen.',
+          'Pass auf: Manche Wege führen weiter als du denkst…',
+        ],
+      },
+      {
+        id: 'wiese_jungtrainer',
+        x: 5, y: 9,
+        facing: 'up',
+        name: 'Jungtrainer Bo',
+        kind: 'trainer',
+        color: '#4d7cc6',
+        lines: ['He, du da! Lust auf ein kleines Kräftemessen?'],
+        team: [
+          { speciesId: 13, level: 6 },
+          { speciesId: 28, level: 7 },
+        ],
+        victoryLines: ['Wow, du bist richtig stark! Das war knapp…'],
+        defeatLines: ['Hehe, geübt verliert man auch mal! Komm bald wieder!'],
+        postLines: ['Dein Team ist beeindruckend. Bis zum nächsten Mal!'],
+      },
+    ],
   },
 
   wald: {
@@ -134,4 +164,19 @@ export function tileAt(zoneKey, x, y) {
   const row = z.rows[y];
   if (x < 0 || x >= row.length) return 'T';
   return row[x];
+}
+
+// NPC an einer bestimmten Position im Gebiet (oder null).
+export function npcAt(zoneKey, x, y) {
+  const z = ZONES[zoneKey];
+  if (!z || !z.npcs) return null;
+  return z.npcs.find((n) => n.x === x && n.y === y) || null;
+}
+
+const FACING_OFFSET = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+
+// Tile, dem der Spieler gerade zugewandt ist (für Interaktionen).
+export function facingTile(player) {
+  const [dx, dy] = FACING_OFFSET[player.facing] || [0, 1];
+  return { x: player.x + dx, y: player.y + dy };
 }

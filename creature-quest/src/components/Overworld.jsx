@@ -18,7 +18,10 @@ function tileStyle(ch) {
 
 const WARP_ARROW = { '<': '◄', '>': '►', '^': '▲', 'v': '▼' };
 
-export default function Overworld({ zone, px, py, facing, onDir, onOpenParty, onOpenDex, onMenu, balls, partyCount }) {
+const NPC_COLOR = { talk: '#8e6fc4', trainer: '#c0392b' };
+const NPC_ICON = { talk: '💬', trainer: '⚔️' };
+
+export default function Overworld({ zone, px, py, facing, onDir, onInteract, onOpenParty, onOpenDex, onMenu, balls, partyCount }) {
   const z = ZONES[zone];
   const mapW = ZONE_WIDTH * TILE_PX;
   const mapH = ZONE_HEIGHT * TILE_PX;
@@ -56,6 +59,23 @@ export default function Overworld({ zone, px, py, facing, onDir, onOpenParty, on
             )),
           )}
 
+          {/* NPCs */}
+          {(z.npcs || []).map((n) => (
+            <div
+              key={n.id}
+              className="npc-marker"
+              style={{
+                left: n.x * TILE_PX + 3,
+                top: n.y * TILE_PX + 1,
+                width: TILE_PX - 6,
+                height: TILE_PX - 6,
+                background: n.color || NPC_COLOR[n.kind] || NPC_COLOR.talk,
+              }}
+            >
+              {NPC_ICON[n.kind] || '💬'}
+            </div>
+          ))}
+
           {/* Spieler-Avatar */}
           <div
             style={{
@@ -79,7 +99,7 @@ export default function Overworld({ zone, px, py, facing, onDir, onOpenParty, on
         <button className="btn" onClick={() => onDir(0, -1)}>▲</button>
         <div className="spacer" />
         <button className="btn" onClick={() => onDir(-1, 0)}>◄</button>
-        <div className="btn" style={{ pointerEvents: 'none', opacity: 0.5 }}>•</div>
+        <button className="btn" onClick={onInteract} title="Sprechen / Interagieren">✓</button>
         <button className="btn" onClick={() => onDir(1, 0)}>►</button>
         <div className="spacer" />
         <button className="btn" onClick={() => onDir(0, 1)}>▼</button>

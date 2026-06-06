@@ -16,6 +16,7 @@ function hpColor(ratio) {
 function HpBox({ inst, showXp }) {
   const sp = getSpecies(inst);
   const t = TYPES[sp.type];
+  const t2 = sp.type2 ? TYPES[sp.type2] : null;
   const mx = maxHp(inst);
   const ratio = Math.max(0, inst.curHp / mx);
   return (
@@ -24,31 +25,44 @@ function HpBox({ inst, showXp }) {
         <span>{sp.name}</span>
         <span>Lv{inst.level}</span>
       </div>
-      <span className="type-pill" style={{ background: t.color, marginTop: 2 }}>{t.icon}{t.name}</span>
+      <div style={{ display: 'flex', gap: 4, marginTop: 2 }}>
+        <span className="type-pill" style={{ background: t.color }}>{t.icon}{t.name}</span>
+        {t2 && <span className="type-pill" style={{ background: t2.color }}>{t2.icon}{t2.name}</span>}
+      </div>
       <div className="hpbar-bg"><div className="hpbar-fill" style={{ width: `${ratio * 100}%`, background: hpColor(ratio) }} /></div>
       {showXp && <div style={{ fontSize: 8, marginTop: 3, color: 'var(--ink-dim)' }}>HP {Math.max(0, inst.curHp)}/{mx}</div>}
     </div>
   );
 }
 
-export default function BattleScreen({ enemy, party, balls, onEnd, onUseBall }) {
-  const [active, setActive] = useState(() => party.findIndex((p) => p.curHp > 0));
-  const [phase, setPhase] = useState('msg'); // msg | menu | move | team
-  const [mandatorySwitch, setMandatory] = useState(false);
-  const [msg, setMsg] = useState([`Ein wildes ${getSpecies(enemy).name} erscheint!`]);
-  const [outcome, setOutcome] = useState({ type: 'continue' });
-  const [, forceTick] = useState(0); // erzwingt Re-Render nach HP-Änderung
+// enemyTeam: Array von Instanzen; trainer: NPC-Objekt (null bei Wildkampf).
+export default function BattleScreen({ enemyTeam, trainer, party, balls, playerName, onEnd, onUseBall }) {
+  const isTrainer = !!trainer;
 
-  // Buffs zu Kampfbeginn zurücksetzen
+  const [enemyIdx, setEnemyIdx] = useState(0);
+  const [active, setActive] = useState(() => party.findIndex((p) => p.curHp > 0));
+  const [phase, setPhase] = useState('msg');
+  const [mandatorySwitch, setMandatory] = useState(false);
+  const [msg, setMsg] = useState(() => {
+    const foe = enemyTeam[0];
+    const foeName = getSpecies(foe).name;
+    return isTrainer
+      ? [`${trainer.name} fordert dich heraus!`, `Los, ${foeName}!`]
+      : [`Ein wildes ${foeName} erscheint!`];
+  });
+  const [outcome, setOutcome] = useState({ type: 'continue' });
+  const [, forceTick] = useState(0);
+
+  const foe = enemyTeam[enemyIdx];
+
   useEffect(() => {
     party.forEach(resetBuffs);
-    resetBuffs(enemy);
+    enemyTeam.forEach(resetBuffs);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const me = party[active];
 
-  // Nachrichten automatisch weiterschalten
   useEffect(() => {
     if (phase !== 'msg') return;
     if (msg.length === 0) {
@@ -70,10 +84,18 @@ export default function BattleScreen({ enemy, party, balls, onEnd, onUseBall }) 
   function applyOutcome() {
     switch (outcome.type) {
       case 'continue': setPhase('menu'); break;
-      case 'win': onEnd({ type: 'win', enemy }); break;
-      case 'catch': onEnd({ type: 'catch', enemy }); break;
-      case 'flee': onEnd({ type: 'flee' }); break;
-      case 'lose': onEnd({ type: 'lose' }); break;
+      case 'win':      onEnd({ type: 'win', enemy: foe }); break;
+      case 'trainer_win': onEnd({ type: 'trainer_win' }); break;
+      case 'next_enemy': {
+        const next = outcome.nextIdx;
+        setEnemyIdx(next);
+        const nextSp = getSpecies(enemyTeam[next]);
+        enqueue([`${trainer?.name ?? 'Trainer'} schickt ${nextSp.name}!`], { type: 'continue' });
+        break;
+      }
+      case 'catch':    onEnd({ type: 'catch', enemy: foe }); break;
+      case 'flee':     onEnd({ type: 'flee' }); break;
+      case 'lose':     onEnd({ type: 'lose' }); break;
       case 'forceSwitch': setMandatory(true); setPhase('team'); break;
       default: setPhase('menu');
     }
@@ -84,18 +106,25 @@ export default function BattleScreen({ enemy, party, balls, onEnd, onUseBall }) 
     return other ? { type: 'forceSwitch' } : { type: 'lose' };
   }
 
-  function resolveWin(meInst, foe, lines) {
+  function resolveEnemyFaint(meInst, deadFoe, lines) {
     const nameBefore = getSpecies(meInst).name;
-    const ev = gainXp(meInst, xpReward(foe));
+    const ev = gainXp(meInst, xpReward(deadFoe));
     if (ev.gained) lines.push(`${nameBefore} erhält ${ev.gained} EP.`);
     for (const lv of ev.levels) lines.push(`${nameBefore} erreicht Level ${lv}!`);
     for (const mv of ev.learned) lines.push(`${nameBefore} erlernt ${MOVES[mv].name}!`);
     if (ev.evolved) lines.push(`Was?! ${ev.evolved.from} entwickelt sich zu ${ev.evolved.to}!`);
+
+    if (isTrainer) {
+      const nextIdx = enemyIdx + 1;
+      if (nextIdx < enemyTeam.length) {
+        return { type: 'next_enemy', nextIdx };
+      }
+      return { type: 'trainer_win' };
+    }
     return { type: 'win' };
   }
 
   function playerAttack(moveId) {
-    const foe = enemy;
     const lines = [];
     const order = speedOf(me) >= speedOf(foe) ? ['me', 'foe'] : ['foe', 'me'];
     let out = { type: 'continue' };
@@ -104,26 +133,38 @@ export default function BattleScreen({ enemy, party, balls, onEnd, onUseBall }) 
       if (who === 'me') {
         const r = performMove(me, foe, moveId);
         lines.push(...r.log);
-        if (foe.curHp <= 0) { lines.push(`${getSpecies(foe).name} wurde besiegt!`); out = resolveWin(me, foe, lines); break; }
+        if (foe.curHp <= 0) {
+          lines.push(`${getSpecies(foe).name} wurde besiegt!`);
+          out = resolveEnemyFaint(me, foe, lines);
+          break;
+        }
       } else {
         const r = performMove(foe, me, enemyChooseMove(foe));
         lines.push(...r.log);
-        if (me.curHp <= 0) { lines.push(`${getSpecies(me).name} wurde besiegt!`); out = resolveFaint(active); break; }
+        if (me.curHp <= 0) {
+          lines.push(`${getSpecies(me).name} wurde besiegt!`);
+          out = resolveFaint(active);
+          break;
+        }
       }
     }
     enqueue(lines, out);
   }
 
   function throwBall() {
+    if (isTrainer) {
+      enqueue(['Trainer-Kreaturen können nicht gefangen werden!'], { type: 'continue' });
+      return;
+    }
     if (balls <= 0) { enqueue(['Du hast keine Fangkugeln mehr!'], { type: 'continue' }); return; }
     onUseBall();
     const lines = ['Du wirfst eine Fangkugel…'];
-    if (attemptCapture(enemy)) {
-      lines.push(`${getSpecies(enemy).name} wurde gefangen!`);
+    if (attemptCapture(foe)) {
+      lines.push(`${getSpecies(foe).name} wurde gefangen!`);
       enqueue(lines, { type: 'catch' });
     } else {
-      lines.push(`Oh nein! ${getSpecies(enemy).name} hat sich befreit!`);
-      const r = performMove(enemy, me, enemyChooseMove(enemy));
+      lines.push(`Oh nein! ${getSpecies(foe).name} hat sich befreit!`);
+      const r = performMove(foe, me, enemyChooseMove(foe));
       lines.push(...r.log);
       let out = { type: 'continue' };
       if (me.curHp <= 0) { lines.push(`${getSpecies(me).name} wurde besiegt!`); out = resolveFaint(active); }
@@ -141,8 +182,7 @@ export default function BattleScreen({ enemy, party, balls, onEnd, onUseBall }) 
       enqueue(lines, { type: 'continue' });
       return;
     }
-    // Freiwilliger Wechsel: Gegner greift an
-    const r = performMove(enemy, party[i], enemyChooseMove(enemy));
+    const r = performMove(foe, party[i], enemyChooseMove(foe));
     lines.push(...r.log);
     let out = { type: 'continue' };
     if (party[i].curHp <= 0) { lines.push(`${getSpecies(party[i]).name} wurde besiegt!`); out = resolveFaint(i); }
@@ -150,11 +190,15 @@ export default function BattleScreen({ enemy, party, balls, onEnd, onUseBall }) 
   }
 
   function flee() {
-    if (Math.random() < fleeChance(me, enemy)) {
+    if (isTrainer) {
+      enqueue(['Vor einem Trainer kann man nicht fliehen!'], { type: 'continue' });
+      return;
+    }
+    if (Math.random() < fleeChance(me, foe)) {
       enqueue(['Du bist sicher entkommen!'], { type: 'flee' });
     } else {
       const lines = ['Flucht gescheitert!'];
-      const r = performMove(enemy, me, enemyChooseMove(enemy));
+      const r = performMove(foe, me, enemyChooseMove(foe));
       lines.push(...r.log);
       let out = { type: 'continue' };
       if (me.curHp <= 0) { lines.push(`${getSpecies(me).name} wurde besiegt!`); out = resolveFaint(active); }
@@ -162,16 +206,22 @@ export default function BattleScreen({ enemy, party, balls, onEnd, onUseBall }) 
     }
   }
 
-  const enemySp = getSpecies(enemy);
+  const foeSp = getSpecies(foe);
   const meSp = getSpecies(me);
 
   return (
     <div className="battle">
+      {isTrainer && (
+        <div style={{ background: '#1a0a00', borderBottom: '2px solid var(--line)', padding: '4px 12px', fontSize: 9, color: 'var(--accent)' }}>
+          ⚔️ Trainerkampf gegen {trainer.name} · Kreatur {enemyIdx + 1}/{enemyTeam.length}
+        </div>
+      )}
+
       <div className="battle-field">
         <div className="enemy-slot">
-          <HpBox inst={enemy} showXp />
+          <HpBox inst={foe} showXp />
           <div style={{ marginTop: 6 }}>
-            <PixelSprite id={enemy.speciesId} type={enemySp.type} body={enemySp.body} size={96} />
+            <PixelSprite id={foe.speciesId} type={foeSp.type} body={foeSp.body} size={96} />
           </div>
         </div>
         <div className="player-slot">
@@ -195,9 +245,11 @@ export default function BattleScreen({ enemy, party, balls, onEnd, onUseBall }) 
             <div className="log">Was soll {meSp.name} tun?</div>
             <div className="action-grid">
               <button className="btn primary" onClick={() => setPhase('move')}>⚔️ Kämpfen</button>
-              <button className="btn" onClick={throwBall}>🎯 Fangkugel ({balls})</button>
+              <button className="btn" onClick={throwBall} disabled={isTrainer} style={{ opacity: isTrainer ? 0.4 : 1 }}>
+                🎯 {isTrainer ? 'Kein Fangen' : `Fangkugel (${balls})`}
+              </button>
               <button className="btn" onClick={() => setPhase('team')}>👥 Team</button>
-              <button className="btn" onClick={flee}>🏃 Flucht</button>
+              <button className="btn" onClick={flee}>{isTrainer ? '❌ Flucht' : '🏃 Flucht'}</button>
             </div>
           </>
         )}
