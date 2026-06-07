@@ -83,6 +83,7 @@ jobs:
         run: |
           cd creature-quest
           npm ci
+          node scripts/download-sprites.mjs
           npm run build
           mkdir -p ../dist/creature-quest
           cp -r dist/* ../dist/creature-quest/
