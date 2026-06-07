@@ -13,6 +13,17 @@ function hpColor(ratio) {
   return '#f82800';
 }
 
+// Visual effect per move type: flying projectile glyph + impact colour.
+const FX = {
+  normal:  { glyph: '✦',  color: '#eceadf' },
+  feuer:   { glyph: '🔥', color: '#ff7043' },
+  wasser:  { glyph: '💧', color: '#42a5f5' },
+  pflanze: { glyph: '🍃', color: '#66bb6a' },
+  elektro: { glyph: '⚡', color: '#ffca28' },
+  erde:    { glyph: '🪨', color: '#a1887f' },
+  luft:    { glyph: '🌀', color: '#90caf9' },
+};
+
 function HpBar({ inst, showNums }) {
   const sp = getSpecies(inst);
   const mx = maxHp(inst);
@@ -52,6 +63,10 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
   });
   const [outcome, setOutcome] = useState({ type: 'continue' });
   const [hitFlash, setHitFlash] = useState(null); // 'enemy' | 'player'
+  const [lunge, setLunge]   = useState(null);     // attacker side currently lunging
+  const [fx, setFx]         = useState(null);     // { defender, type, key } – flying effect
+  const [shake, setShake]   = useState(false);    // screen shake on impact
+  const [fainting, setFainting] = useState(null); // side whose sprite is collapsing
   const [, forceTick] = useState(0);
 
   const foe = enemyTeam[enemyIdx];
@@ -64,6 +79,10 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
     enemyTeam.forEach(resetBuffs);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // A freshly sent-in creature is standing again, not fainted.
+  useEffect(() => { setFainting((f) => (f === 'enemy'  ? null : f)); }, [enemyIdx]);
+  useEffect(() => { setFainting((f) => (f === 'player' ? null : f)); }, [active]);
 
   useEffect(() => {
     if (phase !== 'msg') return;
@@ -120,13 +139,29 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
     return { type: 'win' };
   }
 
-  function flash(side) {
-    setHitFlash(side);
-    setTimeout(() => setHitFlash(null), 280);
+  // Plays the collected hit events one after another: attacker lunges, a
+  // type-coloured projectile flies at the defender, then impact flash + shake,
+  // and finally a collapse if the defender fainted.
+  function playHits(hits) {
+    hits.forEach((h, i) => {
+      setTimeout(() => {
+        setLunge(h.attacker);
+        setTimeout(() => setLunge((l) => (l === h.attacker ? null : l)), 260);
+        if (h.damage > 0) {
+          setFx({ defender: h.defender, type: FX[h.type] ? h.type : 'normal', key: Date.now() + i });
+          setShake(true);
+          setTimeout(() => setHitFlash(h.defender), 300);
+          setTimeout(() => { setHitFlash(null); setShake(false); }, 640);
+          setTimeout(() => setFx(null), 700);
+        }
+        if (h.faint) setTimeout(() => setFainting(h.faint), h.damage > 0 ? 360 : 60);
+      }, i * 720);
+    });
   }
 
   function playerAttack(moveId) {
     const lines = [];
+    const hits = [];
     const order = speedOf(me) >= speedOf(foe) ? ['me', 'foe'] : ['foe', 'me'];
     let out = { type: 'continue' };
     for (const who of order) {
@@ -134,16 +169,28 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
       if (who === 'me') {
         const r = performMove(me, foe, moveId);
         lines.push(...r.log);
-        if (r.damage > 0) flash('enemy');
+        hits.push({ attacker: 'player', defender: 'enemy', type: MOVES[moveId].type, damage: r.damage, faint: foe.curHp <= 0 ? 'enemy' : null });
         if (foe.curHp <= 0) { lines.push(`${foeSp.name} wurde besiegt!`); out = resolveEnemyFaint(me, foe, lines); break; }
       } else {
-        const r = performMove(foe, me, enemyChooseMove(foe));
+        const mid = enemyChooseMove(foe);
+        const r = performMove(foe, me, mid);
         lines.push(...r.log);
-        if (r.damage > 0) flash('player');
+        hits.push({ attacker: 'enemy', defender: 'player', type: MOVES[mid].type, damage: r.damage, faint: me.curHp <= 0 ? 'player' : null });
         if (me.curHp <= 0) { lines.push(`${meSp.name} wurde besiegt!`); out = resolveFaint(active); break; }
       }
     }
+    playHits(hits);
     enqueue(lines, out);
+  }
+
+  // The foe's retaliation, shared by ball/switch/flee. Mutates lines, returns outcome.
+  function foeRetaliate(target, targetIdx, lines, hits) {
+    const mid = enemyChooseMove(foe);
+    const r = performMove(foe, target, mid);
+    lines.push(...r.log);
+    hits.push({ attacker: 'enemy', defender: 'player', type: MOVES[mid].type, damage: r.damage, faint: target.curHp <= 0 ? 'player' : null });
+    if (target.curHp <= 0) { lines.push(`${getSpecies(target).name} wurde besiegt!`); return resolveFaint(targetIdx); }
+    return { type: 'continue' };
   }
 
   function throwBall() {
@@ -156,11 +203,9 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
       enqueue(lines, { type: 'catch' });
     } else {
       lines.push(`${foeSp.name} hat sich befreit!`);
-      const r = performMove(foe, me, enemyChooseMove(foe));
-      lines.push(...r.log);
-      if (r.damage > 0) flash('player');
-      let out = { type: 'continue' };
-      if (me.curHp <= 0) { lines.push(`${meSp.name} wurde besiegt!`); out = resolveFaint(active); }
+      const hits = [];
+      const out = foeRetaliate(me, active, lines, hits);
+      playHits(hits);
       enqueue(lines, out);
     }
   }
@@ -172,11 +217,9 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
     setActive(i);
     setMandatory(false);
     if (forced) { enqueue(lines, { type: 'continue' }); return; }
-    const r = performMove(foe, party[i], enemyChooseMove(foe));
-    lines.push(...r.log);
-    if (r.damage > 0) flash('player');
-    let out = { type: 'continue' };
-    if (party[i].curHp <= 0) { lines.push(`${getSpecies(party[i]).name} wurde besiegt!`); out = resolveFaint(i); }
+    const hits = [];
+    const out = foeRetaliate(party[i], i, lines, hits);
+    playHits(hits);
     enqueue(lines, out);
   }
 
@@ -186,11 +229,9 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
       enqueue(['Du bist entkommen!'], { type: 'flee' });
     } else {
       const lines = ['Flucht gescheitert!'];
-      const r = performMove(foe, me, enemyChooseMove(foe));
-      lines.push(...r.log);
-      if (r.damage > 0) flash('player');
-      let out = { type: 'continue' };
-      if (me.curHp <= 0) { lines.push(`${meSp.name} wurde besiegt!`); out = resolveFaint(active); }
+      const hits = [];
+      const out = foeRetaliate(me, active, lines, hits);
+      playHits(hits);
       enqueue(lines, out);
     }
   }
@@ -210,17 +251,28 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
       )}
 
       {/* ── Battle field ── */}
-      <div className="battle-scene">
+      <div className={`battle-scene${shake ? ' shake' : ''}`}>
         {/* sky / ground split */}
         <div className="battle-bg" />
+        {/* drifting clouds for depth */}
+        <div className="battle-clouds" aria-hidden>
+          <span className="bcloud b1" /><span className="bcloud b2" /><span className="bcloud b3" />
+        </div>
+        <div className="battle-sun" aria-hidden />
 
         {/* enemy side */}
         <div className="enemy-side">
           <HpBar inst={foe} showNums={false} />
           <div className="enemy-sprite-wrap">
             <div className={`enemy-platform`} />
-            <div className={hitFlash === 'enemy' ? 'sprite-flash' : ''}>
-              <CreatureSprite id={foe.speciesId} type={foeSp.type} body={foeSp.body} size={128} />
+            <div key={`enemy-${enemyIdx}`} className="sprite-stack sprite-enter">
+              <div className={lunge === 'enemy' ? 'lunge-enemy' : ''}>
+                <div className={`sprite-breath${fainting === 'enemy' ? ' is-faint' : ''}`}>
+                  <div className={hitFlash === 'enemy' ? 'sprite-flash' : ''}>
+                    <CreatureSprite id={foe.speciesId} type={foeSp.type} body={foeSp.body} size={128} />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -229,12 +281,32 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
         <div className="player-side">
           <div className="player-sprite-wrap">
             <div className="player-platform" />
-            <div className={hitFlash === 'player' ? 'sprite-flash' : ''}>
-              <CreatureSprite id={me.speciesId} type={meSp.type} body={meSp.body} size={144} flip />
+            <div key={`me-${me.uid}`} className="sprite-stack sprite-enter-back">
+              <div className={lunge === 'player' ? 'lunge-player' : ''}>
+                <div className={`sprite-breath${fainting === 'player' ? ' is-faint' : ''}`}>
+                  <div className={hitFlash === 'player' ? 'sprite-flash' : ''}>
+                    <CreatureSprite id={me.speciesId} type={meSp.type} body={meSp.body} size={144} flip />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <HpBar inst={me} showNums />
         </div>
+
+        {/* ── Attack effect layer ── */}
+        {fx && (
+          <>
+            <div key={fx.key} className={`fx-layer fx-to-${fx.defender}`}>
+              <div className="fx-proj" style={{ color: FX[fx.type].color }}>{FX[fx.type].glyph}</div>
+            </div>
+            <div
+              key={`burst-${fx.key}`}
+              className={`fx-burst fx-burst-${fx.defender}`}
+              style={{ background: `radial-gradient(circle, ${FX[fx.type].color} 0%, ${FX[fx.type].color}00 70%)` }}
+            />
+          </>
+        )}
       </div>
 
       {/* ── Bottom UI ── */}

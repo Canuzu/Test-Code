@@ -45,13 +45,18 @@ const NPC_COLOR   = { talk: '#7c50c8', trainer: '#c03030' };
 const NPC_ICON    = { talk: '💬', trainer: '⚔️' };
 const WARP_ARROW  = { '<': '◄', '>': '►', '^': '▲', 'v': '▼' };
 
-function TileCell({ ch }) {
+// Which tiles get an ambient animation, keyed by map character.
+const TILE_ANIM = { '~': 'cell-water', '"': 'cell-grass', 'F': 'cell-grass', 'T': 'cell-tree' };
+
+function TileCell({ ch, delay }) {
   const isWarp = TILE.WARPS.has(ch);
   const imgUrl = !isWarp ? TILE_MAP[ch] : null;
   const fallback = isWarp ? WARP_COLOR : (TILE_FALLBACK[ch] || '#5a9e30');
+  const animCls = !isWarp ? (TILE_ANIM[ch] || '') : '';
 
   return (
     <div
+      className={animCls}
       style={{
         width: TILE_PX,
         height: TILE_PX,
@@ -60,6 +65,7 @@ function TileCell({ ch }) {
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         imageRendering: 'pixelated',
+        animationDelay: animCls ? `${delay}ms` : undefined,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -193,9 +199,16 @@ export default function Overworld({
           >
             {visibleRows.flatMap((row, ry) =>
               row.slice(camX, camX + VIEW_COLS).split('').map((ch, rx) => (
-                <TileCell key={`${rx}-${ry}`} ch={ch} />
+                <TileCell key={`${rx}-${ry}`} ch={ch} delay={((rx * 7 + ry * 13) % 10) * 150} />
               ))
             )}
+          </div>
+
+          {/* Drifting clouds for depth (behind actors) */}
+          <div className="ow-clouds" aria-hidden>
+            <span className="ow-cloud c1" />
+            <span className="ow-cloud c2" />
+            <span className="ow-cloud c3" />
           </div>
 
           {/* NPCs */}
@@ -219,7 +232,10 @@ export default function Overworld({
                   fontSize: 14,
                 }}
               >
-                {NPC_ICON[n.kind] || '💬'}
+                <div className="ow-shadow" />
+                <div className="ow-actor" style={{ animationDelay: `${(n.x + n.y) % 5 * 200}ms` }}>
+                  {NPC_ICON[n.kind] || '💬'}
+                </div>
               </div>
             );
           })}
@@ -236,8 +252,14 @@ export default function Overworld({
               zIndex: 5,
             }}
           >
-            <PlayerSprite facing={facing} />
+            <div className="ow-shadow" />
+            <div className="ow-actor">
+              <PlayerSprite facing={facing} />
+            </div>
           </div>
+
+          {/* Depth vignette + top light */}
+          <div className="ow-vignette" aria-hidden />
 
           {/* Mini position indicator (top-right corner) */}
           <div style={{

@@ -95,7 +95,14 @@ function ol(px, oc, skipFlame = false) {
 }
 
 function save(id, px) {
-  fs.writeFileSync(path.join(OUT, `creature-${id}.png`), toPng(px));
+  const dest = path.join(OUT, `creature-${id}.png`);
+  // Never clobber a real (AI-downloaded) sprite. In CI download-sprites.mjs
+  // runs first; here we only fill in the procedural fallback where missing.
+  if (fs.existsSync(dest) && fs.statSync(dest).size > 1000) {
+    process.stdout.write(`  • creature-${id}.png (kept downloaded)\n`);
+    return;
+  }
+  fs.writeFileSync(dest, toPng(px));
   process.stdout.write(`  ✓ creature-${id}.png\n`);
 }
 
