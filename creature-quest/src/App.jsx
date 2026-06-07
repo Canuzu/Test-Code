@@ -12,6 +12,7 @@ import { WARPS, START, ZONES, tileAt, isBlocked, TILE, npcAt, facingTile } from 
 import { createInstance, healFull, getSpecies } from './engine/creatures.js';
 import { pickWeighted, mulberry32, randInt } from './engine/rng.js';
 import { saveGame, loadGame, hasSave, clearSave } from './engine/save.js';
+import { playMusic, resumeAudio, sfx, setEnabled, isEnabled } from './engine/audio.js';
 
 const ENCOUNTER_RATE = 0.22;
 
@@ -39,6 +40,7 @@ export default function App() {
 
   const [canContinue, setCanContinue] = useState(false);
   const [fadeKey, setFadeKey] = useState(0); // bumps on each screen change to replay fade-in
+  const [soundOn, setSoundOn] = useState(isEnabled());
 
   const encounterRng = useRef(mulberry32(Date.now() >>> 0));
 
@@ -46,6 +48,24 @@ export default function App() {
 
   // Replay a quick fade-in whenever the screen changes (DS-style transitions).
   useEffect(() => { setFadeKey((k) => k + 1); }, [screen]);
+
+  // ---- Hintergrundmusik je nach Screen/Zone ----
+  useEffect(() => {
+    if (screen === 'title') playMusic('title');
+    else if (screen === 'gender' || screen === 'name' || screen === 'starter') playMusic('title');
+    else if (screen === 'battle') playMusic(trainerData ? 'trainer' : 'battle');
+    else if (screen === 'world') {
+      const town = ZONES[player.zone]?.town;
+      playMusic(town ? 'town' : (player.zone || 'wiese'));
+    }
+  }, [screen, trainerData, player.zone]);
+
+  function toggleSound() {
+    const next = !soundOn;
+    setSoundOn(next);
+    setEnabled(next);
+    if (next) { resumeAudio(); playMusic(screen === 'title' ? 'title' : (player.zone || 'wiese')); }
+  }
 
   const showToast = (txt) => {
     setToast(txt);
@@ -61,6 +81,7 @@ export default function App() {
   }, [player, party, box, dexSeen, dexCaught, balls, playerName, defeatedTrainers]);
 
   function startNewGame() {
+    resumeAudio();
     setParty([]); setBox([]);
     setDexSeen(new Set()); setDexCaught(new Set());
     setBalls(10);
@@ -76,6 +97,7 @@ export default function App() {
   }
 
   function continueGame() {
+    resumeAudio();
     const s = loadGame();
     if (!s) { startNewGame(); return; }
     setPlayer(s.player);
@@ -191,6 +213,7 @@ export default function App() {
     const pick = pickWeighted(encounterRng.current, z.encounters);
     const level = randInt(encounterRng.current, pick.min, pick.max);
     const foe = createInstance(pick.id, level);
+    sfx('encounter');
     setDexSeen((prev) => new Set(prev).add(pick.id));
     setEnemyTeam([foe]);
     setTrainerData(null);
@@ -385,7 +408,7 @@ export default function App() {
           {playerName && <div className="small">Trainer: {playerName}</div>}
           <div className="tiny">Fangkugeln: {balls} · Team: {party.length} · Box: {box.length}</div>
           <button className="btn good" onClick={() => { persist(); showToast('Spiel gespeichert.'); setOverlay(null); }}>💾 Spiel speichern</button>
-          <button className="btn" onClick={() => { setBalls((b) => b + 5); showToast('+5 Fangkugeln (Startgeschenk).'); }}>🎁 Fangkugeln auffüllen (+5)</button>
+          <button className="btn" onClick={toggleSound}>{soundOn ? '🔊 Sound: An' : '🔈 Sound: Aus'}</button>
           <button className="btn" onClick={() => { persist(); setOverlay(null); setScreen('title'); }}>🏠 Zum Titelbildschirm</button>
           <button
             className="btn"

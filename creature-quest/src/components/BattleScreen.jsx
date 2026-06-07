@@ -7,6 +7,7 @@ import {
   performMove, enemyChooseMove, attemptCapture, fleeChance, speedOf, resetBuffs, tickStatus,
 } from '../engine/battle.js';
 import { gainXp, xpReward, getSpecies, maxHp, xpForNext } from '../engine/creatures.js';
+import { sfx } from '../engine/audio.js';
 
 // Battle background images (downloaded by CI into assets/battle-bg/)
 const BG_IMGS = import.meta.glob('../assets/battle-bg/*.png', { eager: true, import: 'default' });
@@ -176,6 +177,7 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
     const nameBefore = getSpecies(meInst).name;
     const ev = gainXp(meInst, xpReward(deadFoe));
     if (ev.gained) lines.push(`${nameBefore} erhält ${ev.gained} EP.`);
+    if (ev.levels.length) setTimeout(() => sfx('levelUp'), 300);
     for (const lv of ev.levels) lines.push(`${nameBefore} erreicht Level ${lv}!`);
     for (const mv of ev.learned) lines.push(`${nameBefore} erlernt ${MOVES[mv].name}!`);
     if (ev.evolved) lines.push(`${ev.evolved.from} entwickelt sich zu ${ev.evolved.to}!`);
@@ -197,11 +199,11 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
         if (h.damage > 0) {
           setFx({ defender: h.defender, type: FX[h.type] ? h.type : 'normal', key: Date.now() + i });
           setShake(true);
-          setTimeout(() => setHitFlash(h.defender), 300);
+          setTimeout(() => { sfx(h.super ? 'superHit' : 'hit'); setHitFlash(h.defender); }, 300);
           setTimeout(() => { setHitFlash(null); setShake(false); }, 640);
           setTimeout(() => setFx(null), 700);
         }
-        if (h.faint) setTimeout(() => setFainting(h.faint), h.damage > 0 ? 360 : 60);
+        if (h.faint) setTimeout(() => { sfx('faint'); setFainting(h.faint); }, h.damage > 0 ? 360 : 60);
       }, i * 720);
     });
   }
@@ -216,13 +218,13 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
       if (who === 'me') {
         const r = performMove(me, foe, moveId);
         lines.push(...r.log);
-        if (!r.skipped) hits.push({ attacker: 'player', defender: 'enemy', type: MOVES[moveId].type, damage: r.damage, faint: foe.curHp <= 0 ? 'enemy' : null });
+        if (!r.skipped) hits.push({ attacker: 'player', defender: 'enemy', type: MOVES[moveId].type, damage: r.damage, super: r.mult > 1, faint: foe.curHp <= 0 ? 'enemy' : null });
         if (foe.curHp <= 0) { lines.push(`${foeSp.name} wurde besiegt!`); out = resolveEnemyFaint(me, foe, lines); break; }
       } else {
         const mid = enemyChooseMove(foe);
         const r = performMove(foe, me, mid);
         lines.push(...r.log);
-        if (!r.skipped) hits.push({ attacker: 'enemy', defender: 'player', type: MOVES[mid].type, damage: r.damage, faint: me.curHp <= 0 ? 'player' : null });
+        if (!r.skipped) hits.push({ attacker: 'enemy', defender: 'player', type: MOVES[mid].type, damage: r.damage, super: r.mult > 1, faint: me.curHp <= 0 ? 'player' : null });
         if (me.curHp <= 0) { lines.push(`${meSp.name} wurde besiegt!`); out = resolveFaint(active); break; }
       }
     }
@@ -255,8 +257,10 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
     if (isTrainer) { enqueue(['Trainer-Kreaturen können nicht gefangen werden!'], { type: 'continue' }); return; }
     if (balls <= 0) { enqueue(['Keine Fangkugeln mehr!'], { type: 'continue' }); return; }
     onUseBall();
+    sfx('ball');
     const lines = ['Du wirfst eine Fangkugel…'];
     if (attemptCapture(foe)) {
+      sfx('catch');
       lines.push(`${foeSp.name} wurde gefangen!`);
       enqueue(lines, { type: 'catch' });
     } else {
