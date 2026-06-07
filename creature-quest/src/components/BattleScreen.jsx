@@ -1,11 +1,23 @@
 import { useEffect, useState } from 'react';
 import CreatureSprite from './CreatureSprite.jsx';
+import { charImgUrl } from './GenderSelect.jsx';
 import { MOVES } from '../data/moves.js';
 import { TYPES } from '../data/types.js';
 import {
   performMove, enemyChooseMove, attemptCapture, fleeChance, speedOf, resetBuffs,
 } from '../engine/battle.js';
 import { gainXp, xpReward, getSpecies, maxHp } from '../engine/creatures.js';
+
+// Battle background images (downloaded by CI into assets/battle-bg/)
+const BG_IMGS = import.meta.glob('../assets/battle-bg/*.png', { eager: true, import: 'default' });
+function battleBgUrl(name) {
+  for (const [p, url] of Object.entries(BG_IMGS))
+    if (p.includes(`/${name}.`)) return url;
+  return null;
+}
+
+// Zone → background key mapping
+const ZONE_BG = { wiese: 'meadow', wald: 'forest', hoehle: 'cave' };
 
 function hpColor(ratio) {
   if (ratio > 0.5) return '#48c840';
@@ -47,7 +59,7 @@ function HpBar({ inst, showNums }) {
   );
 }
 
-export default function BattleScreen({ enemyTeam, trainer, party, balls, playerName, onEnd, onUseBall }) {
+export default function BattleScreen({ enemyTeam, trainer, party, balls, playerName, gender = 'boy', zone = 'wiese', onEnd, onUseBall }) {
   const isTrainer = !!trainer;
 
   const [enemyIdx, setEnemyIdx] = useState(0);
@@ -63,10 +75,11 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
   });
   const [outcome, setOutcome] = useState({ type: 'continue' });
   const [hitFlash, setHitFlash] = useState(null); // 'enemy' | 'player'
-  const [lunge, setLunge]   = useState(null);     // attacker side currently lunging
-  const [fx, setFx]         = useState(null);     // { defender, type, key } – flying effect
-  const [shake, setShake]   = useState(false);    // screen shake on impact
-  const [fainting, setFainting] = useState(null); // side whose sprite is collapsing
+  const [lunge, setLunge]   = useState(null);
+  const [fx, setFx]         = useState(null);
+  const [shake, setShake]   = useState(false);
+  const [fainting, setFainting] = useState(null);
+  const [trainerOut, setTrainerOut] = useState(false); // trainer portrait exits once battle starts
   const [, forceTick] = useState(0);
 
   const foe = enemyTeam[enemyIdx];
@@ -80,9 +93,16 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // A freshly sent-in creature is standing again, not fainted.
+  // A freshly sent-in creature is standing again.
   useEffect(() => { setFainting((f) => (f === 'enemy'  ? null : f)); }, [enemyIdx]);
   useEffect(() => { setFainting((f) => (f === 'player' ? null : f)); }, [active]);
+
+  // Once the intro messages clear and battle enters menu, animate trainer portrait out.
+  useEffect(() => {
+    if (isTrainer && phase === 'menu' && !trainerOut) {
+      setTrainerOut(true);
+    }
+  }, [isTrainer, phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (phase !== 'msg') return;
@@ -239,6 +259,11 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
   const skipMsg = () => msg.length && setMsg((m) => m.slice(1));
 
   const foeType = TYPES[foeSp.type];
+  const bgKey = ZONE_BG[zone] || 'meadow';
+  const bgUrl = battleBgUrl(bgKey);
+  const trainerSpriteKey = trainer?.sprite || 'trainer-generic';
+  const trainerImgUrl = charImgUrl(trainerSpriteKey);
+  const showTrainerPortrait = isTrainer && !trainerOut;
 
   return (
     <div className="battle-wrap">
@@ -251,25 +276,40 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
       )}
 
       {/* ── Battle field ── */}
-      <div className={`battle-scene${shake ? ' shake' : ''}`}>
-        {/* sky / ground split */}
-        <div className="battle-bg" />
-        {/* drifting clouds for depth */}
+      <div className={`battle-scene${shake ? ' shake' : ''}`} style={bgUrl ? {
+        backgroundImage: `url(${bgUrl})`,
+        backgroundSize: 'cover', backgroundPosition: 'center bottom',
+      } : undefined}>
+        {/* gradient overlay so the scene stays readable even with bg image */}
+        <div className="battle-bg-overlay" />
+        {/* drifting clouds */}
         <div className="battle-clouds" aria-hidden>
           <span className="bcloud b1" /><span className="bcloud b2" /><span className="bcloud b3" />
         </div>
-        <div className="battle-sun" aria-hidden />
+        {!bgUrl && <div className="battle-sun" aria-hidden />}
 
         {/* enemy side */}
         <div className="enemy-side">
           <HpBar inst={foe} showNums={false} />
           <div className="enemy-sprite-wrap">
-            <div className={`enemy-platform`} />
-            <div key={`enemy-${enemyIdx}`} className="sprite-stack sprite-enter">
+            <div className="enemy-platform" />
+            {/* Trainer portrait (shown during intro messages) */}
+            {showTrainerPortrait && (
+              <div className="trainer-portrait-wrap trainer-enter">
+                {trainerImgUrl
+                  ? <img src={trainerImgUrl} alt={trainer.name} className="trainer-portrait-img" draggable="false" />
+                  : <div className="trainer-portrait-fallback">⚔️</div>}
+              </div>
+            )}
+            {/* Pokémon sprite (hidden while trainer portrait is shown) */}
+            <div key={`enemy-${enemyIdx}`}
+              className={`sprite-stack ${showTrainerPortrait ? 'hidden-sprite' : 'sprite-enter'}`}>
               <div className={lunge === 'enemy' ? 'lunge-enemy' : ''}>
                 <div className={`sprite-breath${fainting === 'enemy' ? ' is-faint' : ''}`}>
                   <div className={hitFlash === 'enemy' ? 'sprite-flash' : ''}>
-                    <CreatureSprite id={foe.speciesId} type={foeSp.type} body={foeSp.body} size={128} />
+                    <div style={{ mixBlendMode: 'multiply' }}>
+                      <CreatureSprite id={foe.speciesId} type={foeSp.type} body={foeSp.body} size={128} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -285,7 +325,9 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
               <div className={lunge === 'player' ? 'lunge-player' : ''}>
                 <div className={`sprite-breath${fainting === 'player' ? ' is-faint' : ''}`}>
                   <div className={hitFlash === 'player' ? 'sprite-flash' : ''}>
-                    <CreatureSprite id={me.speciesId} type={meSp.type} body={meSp.body} size={144} flip />
+                    <div style={{ mixBlendMode: 'multiply' }}>
+                      <CreatureSprite id={me.speciesId} type={meSp.type} body={meSp.body} size={144} flip />
+                    </div>
                   </div>
                 </div>
               </div>

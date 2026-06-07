@@ -21,6 +21,7 @@ export function saveGame(state) {
       balls: state.balls,
       playerName: state.playerName || '',
       defeatedTrainers: [...(state.defeatedTrainers || [])],
+      gender: state.gender || 'boy',
       playtime: state.playtime || 0,
     };
     localStorage.setItem(KEY, JSON.stringify(data));
@@ -45,6 +46,7 @@ export function loadGame() {
       balls: d.balls ?? 10,
       playerName: d.playerName || '',
       defeatedTrainers: new Set(d.defeatedTrainers || []),
+      gender: d.gender || 'boy',
       playtime: d.playtime || 0,
     };
   } catch (e) {

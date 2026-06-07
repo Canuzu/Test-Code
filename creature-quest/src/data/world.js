@@ -18,6 +18,7 @@ export function isBlocked(ch) {
 const ZONES = {
   wiese: {
     name: 'Heimatwiese',
+    battleBg: 'meadow',
     music: '#7cb342',
     rows: [
       'TTTTTTTTTTTTTTTT',
@@ -49,6 +50,7 @@ const ZONES = {
         facing: 'down',
         name: 'Wanderer Elias',
         kind: 'talk',
+        sprite: 'npc-elder',
         lines: [
           'Frischer Wind heut, was? Gut zum Reisen.',
           'Im hohen Gras – den gestreiften Flächen – triffst du wilde Kreaturen.',
@@ -61,6 +63,7 @@ const ZONES = {
         facing: 'up',
         name: 'Jungtrainer Bo',
         kind: 'trainer',
+        sprite: 'trainer-generic',
         color: '#4d7cc6',
         lines: ['He, du da! Lust auf ein kleines Kräftemessen?'],
         team: [
@@ -76,6 +79,7 @@ const ZONES = {
 
   wald: {
     name: 'Flüsterwald',
+    battleBg: 'forest',
     music: '#2e7d32',
     rows: [
       'TTTTTTTTTTTTTTTT',
@@ -104,6 +108,7 @@ const ZONES = {
 
   hoehle: {
     name: 'Kristallhöhle',
+    battleBg: 'cave',
     music: '#5d4037',
     rows: [
       'TTTTTTTTTTTTTTTT',

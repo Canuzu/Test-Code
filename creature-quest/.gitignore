@@ -8,3 +8,5 @@ dist/
 # gen-sprites.mjs. Never commit them so they can't shadow the AI download.
 src/assets/sprites/*.png
 src/assets/tiles/*.png
+src/assets/characters/
+src/assets/battle-bg/

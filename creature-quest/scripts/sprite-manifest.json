@@ -1,5 +1,5 @@
 {
-  "_comment": "AI-generated sprite/tile CDN URLs. Downloaded by download-sprites.mjs during CI build.",
+  "_comment": "AI-generated sprite/tile/character CDN URLs. Downloaded by download-sprites.mjs during CI build.",
   "sprites": {
     "1":  "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_085242_c094b85e-fe48-43fe-a306-facb9e4a6988.png",
     "2":  "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_091607_f63e4b49-2eb7-4d12-a166-9e747783dc73.png",
@@ -45,5 +45,20 @@
     "tile-sand":       "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_091808_137422e2-0839-4565-8623-46f472676a0e.png",
     "tile-flower":     "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_091640_818f2369-7ce6-48c7-85b7-0727092f3e44.png"
   },
-  "player": "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_091643_bbc1d0f7-25e1-474a-8bd7-8a65356ef9ad.png"
+  "player": "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_091643_bbc1d0f7-25e1-474a-8bd7-8a65356ef9ad.png",
+  "characters": {
+    "player-boy":      "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_105122_31f74131-b6c5-4ed8-8291-d9236f44ce7b.jpeg",
+    "player-girl":     "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_105123_2d4cd22e-1210-4e94-96c2-5b3bff897620.png",
+    "prof-ascher":     "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_105125_92f48d0f-6868-4a20-b842-224818754953.png",
+    "joran":           "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_105127_99fd470d-36ca-40e6-a06a-e5626883c573.png",
+    "magister":        "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_105129_59214074-478d-4697-b1c5-dcb569004bc4.png",
+    "trainer-generic": "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_105132_802c09f9-4f69-4e30-9114-348249462516.png",
+    "npc-elder":       "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_105132_97990fb2-57f5-4527-b804-5c9d45212f6a.png",
+    "npc-merchant":    "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_105134_ea191935-a8f2-4df2-9f51-c83f08f1dc47.png"
+  },
+  "battle-bg": {
+    "meadow": "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_105127_b0838fb2-9d62-48f6-91f9-036d3810782d.png",
+    "forest": "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_105128_de0e32a6-9e37-4021-abe4-5865b7e6f386.png",
+    "cave":   "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_105130_7fde4f71-738c-44fb-9682-a61d0643bf16.png"
+  }
 }

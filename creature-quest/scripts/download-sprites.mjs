@@ -16,8 +16,10 @@ if (!fs.existsSync(manifestPath)) {
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const SPRITE_DIR = path.join(__dirname, '../src/assets/sprites');
 const TILE_DIR   = path.join(__dirname, '../src/assets/tiles');
-fs.mkdirSync(SPRITE_DIR, { recursive: true });
-fs.mkdirSync(TILE_DIR,   { recursive: true });
+const CHAR_DIR   = path.join(__dirname, '../src/assets/characters');
+const BG_DIR     = path.join(__dirname, '../src/assets/battle-bg');
+for (const d of [SPRITE_DIR, TILE_DIR, CHAR_DIR, BG_DIR])
+  fs.mkdirSync(d, { recursive: true });
 
 function download(url, dest) {
   return new Promise((resolve, reject) => {
@@ -34,10 +36,7 @@ function download(url, dest) {
       }
       res.pipe(file);
       file.on('finish', () => {
-        file.close(() => {
-          fs.renameSync(tmp, dest);
-          resolve('downloaded');
-        });
+        file.close(() => { fs.renameSync(tmp, dest); resolve('downloaded'); });
       });
     });
     req.on('error', (e) => { file.destroy(); try { fs.unlinkSync(tmp); } catch {} reject(e); });
@@ -45,34 +44,41 @@ function download(url, dest) {
   });
 }
 
+// Derive local filename: strip query string, keep extension from URL
+function localExt(url) {
+  const base = url.split('?')[0];
+  return base.endsWith('.jpeg') ? '.jpeg' : '.png';
+}
+
 let ok = 0, skip = 0, fail = 0;
 
-console.log('Downloading creature sprites…');
-for (const [id, url] of Object.entries(manifest.sprites || {})) {
-  const dest = path.join(SPRITE_DIR, `creature-${id}.png`);
+async function dl(url, dest) {
   try {
     const r = await download(url, dest);
-    if (r === 'cached') { skip++; } else { ok++; console.log(`  ↓ creature-${id}.png`); }
-  } catch (e) { fail++; console.warn(`  ✗ creature-${id}: ${e.message}`); }
+    if (r === 'cached') { skip++; } else { ok++; console.log(`  ↓ ${path.basename(dest)}`); }
+  } catch (e) { fail++; console.warn(`  ✗ ${path.basename(dest)}: ${e.message}`); }
 }
 
+console.log('Downloading creature sprites…');
+for (const [id, url] of Object.entries(manifest.sprites || {}))
+  await dl(url, path.join(SPRITE_DIR, `creature-${id}.png`));
+
 console.log('Downloading tiles…');
-for (const [name, url] of Object.entries(manifest.tiles || {})) {
-  const dest = path.join(TILE_DIR, `${name}.png`);
-  try {
-    const r = await download(url, dest);
-    if (r === 'cached') { skip++; } else { ok++; console.log(`  ↓ ${name}.png`); }
-  } catch (e) { fail++; console.warn(`  ✗ ${name}: ${e.message}`); }
-}
+for (const [name, url] of Object.entries(manifest.tiles || {}))
+  await dl(url, path.join(TILE_DIR, `${name}.png`));
 
 if (manifest.player) {
   console.log('Downloading player sprite…');
-  const dest = path.join(SPRITE_DIR, 'player.png');
-  try {
-    const r = await download(manifest.player, dest);
-    if (r === 'cached') { skip++; } else { ok++; console.log(`  ↓ player.png`); }
-  } catch (e) { fail++; console.warn(`  ✗ player: ${e.message}`); }
+  await dl(manifest.player, path.join(SPRITE_DIR, 'player.png'));
 }
+
+console.log('Downloading character sprites…');
+for (const [name, url] of Object.entries(manifest.characters || {}))
+  await dl(url, path.join(CHAR_DIR, `${name}${localExt(url)}`));
+
+console.log('Downloading battle backgrounds…');
+for (const [name, url] of Object.entries(manifest['battle-bg'] || {}))
+  await dl(url, path.join(BG_DIR, `${name}.png`));
 
 console.log(`Done: ${ok} downloaded, ${skip} cached, ${fail} failed.`);
 if (fail > 0 && ok + skip === 0) process.exit(1);
