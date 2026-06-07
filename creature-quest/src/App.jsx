@@ -356,7 +356,7 @@ export default function App() {
       if (trainerData) {
         setDialogue({ name: trainerData.name, lines: trainerData.defeatLines || ['…'] });
       } else {
-        showToast('Du wurdest besiegt – erschöpft kehrst du zur Heimatwiese zurück.');
+        showToast('Du wurdest besiegt – im Pokécenter von Ahornfeld kommst du wieder zu Kräften.');
       }
     } else {
       setParty(newParty);
