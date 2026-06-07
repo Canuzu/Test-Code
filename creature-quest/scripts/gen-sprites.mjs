@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const W = 48, H = 48, SCALE = 4;
-const OUT = path.join(__dirname, '../public/sprites');
+const OUT = path.join(__dirname, '../src/assets/sprites');
 fs.mkdirSync(OUT, { recursive: true });
 
 // ── PNG encoder ──────────────────────────────────────────────────────
