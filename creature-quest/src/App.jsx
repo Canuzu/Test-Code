@@ -5,6 +5,7 @@ import NameEntry from './components/NameEntry.jsx';
 import StarterSelect from './components/StarterSelect.jsx';
 import Overworld from './components/Overworld.jsx';
 import BattleScreen from './components/BattleScreen.jsx';
+import EvolutionScreen from './components/EvolutionScreen.jsx';
 import PartyScreen from './components/PartyScreen.jsx';
 import DexScreen from './components/DexScreen.jsx';
 import BagScreen from './components/BagScreen.jsx';
@@ -21,7 +22,8 @@ import { playMusic, resumeAudio, sfx, setEnabled, isEnabled } from './engine/aud
 const ENCOUNTER_RATE = 0.22;
 
 export default function App() {
-  const [screen, setScreen] = useState('title'); // title | gender | name | starter | world | battle
+  const [screen, setScreen] = useState('title'); // title | gender | name | starter | world | battle | evolve
+  const [pendingEvolutions, setPendingEvolutions] = useState([]); // [{fromName, toSpeciesId}]
   const [player, setPlayer] = useState({ zone: START.zone, x: START.x, y: START.y, facing: 'down' });
   const [playerName, setPlayerName] = useState('');
   const [gender, setGender] = useState('boy');
@@ -321,23 +323,27 @@ export default function App() {
       if (npc) {
         const newDefeated = new Set([...defeatedTrainers, npc.id]);
         setDefeatedTrainers(newDefeated);
-        // Preisgeld
         if (npc.prize) { setMoney((m) => m + npc.prize); lines.push(`Du erhältst ${npc.prize} ₽!`); }
-        // Orden
         if (npc.badge && !badges.has(npc.badge)) {
           newBadges = new Set([...badges, npc.badge]);
           setBadges(newBadges);
           sfx('badge');
-          lines.push(`Du erhältst den ${npc.badgeName || npc.badge}-Orden! 🏅`);
+          lines.push(`Du erhältst den ${npc.badgeName || npc.badge}! 🏅`);
         }
-        // Rivalen-Fortschritt
         if (npc.rival) { newRival = rivalStage + 1; setRivalStage(newRival); }
-        setDialogue({ name: npc.name, lines });
         saveGame({ player, party: newParty, box, dexSeen, dexCaught, bag: result.bag || bag, money: money + (npc.prize || 0), badges: newBadges, playerName, defeatedTrainers: newDefeated, rivalStage: newRival, gender });
       }
       setParty(newParty);
       setEnemyTeam(null); setTrainerData(null);
-      setScreen('world');
+      // Show evolutions first, then victory dialogue
+      if (result.pendingEvolutions?.length) {
+        setPendingEvolutions(result.pendingEvolutions);
+        setScreen('evolve');
+        setTimeout(() => setDialogue({ name: npc?.name || '…', lines }), 100);
+      } else {
+        if (npc) setDialogue({ name: npc.name, lines });
+        setScreen('world');
+      }
       return;
     }
 
@@ -363,7 +369,15 @@ export default function App() {
     }
 
     setEnemyTeam(null); setTrainerData(null);
-    setScreen('world');
+
+    // Show evolution screens before returning to world
+    if (result.pendingEvolutions?.length) {
+      setPendingEvolutions(result.pendingEvolutions);
+      setScreen('evolve');
+    } else {
+      setScreen('world');
+    }
+
     const finalPlayer = result.type === 'lose'
       ? { zone: START.zone, x: START.x, y: START.y, facing: 'down' }
       : player;
@@ -372,6 +386,15 @@ export default function App() {
       dexCaught: result.type === 'catch' ? new Set([...dexCaught, result.enemy.speciesId]) : dexCaught,
       bag: result.bag || bag, money, badges, playerName, defeatedTrainers, rivalStage, gender,
     }), 0);
+  }
+
+  // Advance through pending evolution queue
+  function advanceEvolution() {
+    setPendingEvolutions((prev) => {
+      const rest = prev.slice(1);
+      if (rest.length === 0) setScreen('world');
+      return rest;
+    });
   }
 
   function leadParty(i) {
@@ -450,6 +473,19 @@ export default function App() {
           gender={gender}
           zone={player.zone}
           onEnd={endBattle}
+        />
+      </div>
+    );
+  }
+
+  if (screen === 'evolve' && pendingEvolutions.length > 0) {
+    const ev = pendingEvolutions[0];
+    return (
+      <div className="app">
+        <EvolutionScreen
+          fromName={ev.fromName}
+          toSpeciesId={ev.toSpeciesId}
+          onDone={advanceEvolution}
         />
       </div>
     );

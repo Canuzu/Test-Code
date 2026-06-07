@@ -66,6 +66,25 @@ export function performMove(user, target, moveId) {
     } else if (move.effect === 'raise_def') {
       user.defMul = Math.min(2, (user.defMul || 1) + 0.3);
       log.push(`${uName} setzt ${move.name} ein – Verteidigung steigt!`);
+    } else if (move.effect === 'sleep') {
+      const tName = getSpecies(target).name;
+      if (!target.status) {
+        target.status = 'sleep';
+        target.sleepTurns = 2 + Math.floor(Math.random() * 3);
+        log.push(`${uName} setzt ${move.name} ein!`);
+        log.push(`${tName} schläft ein!`);
+      } else {
+        log.push(`${uName} setzt ${move.name} ein – ${tName} ist bereits betroffen!`);
+      }
+    } else if (move.effect === 'poison') {
+      const tName = getSpecies(target).name;
+      if (!target.status) {
+        target.status = 'poison';
+        log.push(`${uName} setzt ${move.name} ein!`);
+        log.push(`${tName} wurde vergiftet!`);
+      } else {
+        log.push(`${uName} setzt ${move.name} ein – ${tName} ist bereits betroffen!`);
+      }
     } else {
       log.push(`${uName} setzt ${move.name} ein.`);
     }
@@ -89,6 +108,12 @@ export function performMove(user, target, moveId) {
   dmg = Math.max(1, dmg);
 
   target.curHp = Math.max(0, target.curHp - dmg);
+
+  // Drain: heile Benutzer um 50% des verursachten Schadens
+  if (move.effect === 'drain') {
+    const heal = Math.max(1, Math.floor(dmg / 2));
+    user.curHp = Math.min(maxHp(user), user.curHp + heal);
+  }
 
   log.push(`${uName} setzt ${move.name} ein!`);
   if (crit > 1) log.push('Ein Volltreffer!');

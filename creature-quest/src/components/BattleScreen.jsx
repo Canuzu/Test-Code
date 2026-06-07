@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import CreatureSprite from './CreatureSprite.jsx';
 import { charImgUrl } from './GenderSelect.jsx';
 import { MOVES } from '../data/moves.js';
@@ -19,8 +19,6 @@ function battleBgUrl(name) {
   return null;
 }
 
-// Zone → background key mapping
-const ZONE_BG = { wiese: 'meadow', wald: 'forest', hoehle: 'cave' };
 
 function hpColor(ratio) {
   if (ratio > 0.5) return '#48c840';
@@ -37,6 +35,10 @@ const FX = {
   elektro: { glyph: '⚡', color: '#ffca28' },
   erde:    { glyph: '🪨', color: '#a1887f' },
   luft:    { glyph: '🌀', color: '#90caf9' },
+  geist:   { glyph: '👻', color: '#9b59b6' },
+  psycho:  { glyph: '🔮', color: '#e91e63' },
+  eis:     { glyph: '❄️', color: '#80deea' },
+  drache:  { glyph: '🐉', color: '#7c4dff' },
 };
 
 const STATUS_BADGE = {
@@ -44,6 +46,15 @@ const STATUS_BADGE = {
   paralysis: { label: 'PAR', color: '#806000', bg: '#ffe878' },
   poison:    { label: 'PSN', color: '#7030a0', bg: '#e8c0f0' },
   sleep:     { label: 'SLP', color: '#404080', bg: '#c0c0e8' },
+  freeze:    { label: 'EIS', color: '#006060', bg: '#c0f0f0' },
+};
+
+// Zone → background key mapping (extended for all zones)
+const ZONE_BG_MAP = {
+  wiese: 'meadow', wald: 'forest', hoehle: 'cave',
+  sandtal: 'meadow', wuestenstadt: 'meadow', kueste: 'meadow',
+  havenfeld: 'meadow', nebelberge: 'cave', bergpass: 'cave',
+  hochland: 'cave', siegeshalle: 'cave',
 };
 
 function HpBar({ inst, showNums, showXp }) {
@@ -111,6 +122,7 @@ export default function BattleScreen({ enemyTeam, trainer, party, bag: bagProp, 
   const [trainerOut, setTrainerOut] = useState(false); // trainer portrait exits once battle starts
   const [encounterFlash, setEncounterFlash] = useState(true);
   const [, forceTick] = useState(0);
+  const pendingEvolsRef = useRef([]);
 
   const foe = enemyTeam[enemyIdx];
   const foeSp = getSpecies(foe);
@@ -154,8 +166,8 @@ export default function BattleScreen({ enemyTeam, trainer, party, bag: bagProp, 
   function applyOutcome() {
     switch (outcome.type) {
       case 'continue': setPhase('menu'); break;
-      case 'win':      onEnd({ type: 'win', enemy: foe, party, bag }); break;
-      case 'trainer_win': onEnd({ type: 'trainer_win', party, bag }); break;
+      case 'win':      onEnd({ type: 'win', enemy: foe, party, bag, pendingEvolutions: pendingEvolsRef.current }); break;
+      case 'trainer_win': onEnd({ type: 'trainer_win', party, bag, pendingEvolutions: pendingEvolsRef.current }); break;
       case 'next_enemy': {
         const next = outcome.nextIdx;
         setEnemyIdx(next);
@@ -163,9 +175,9 @@ export default function BattleScreen({ enemyTeam, trainer, party, bag: bagProp, 
         enqueue([`${trainer?.name ?? 'Trainer'} schickt ${nextSp.name}!`], { type: 'continue' });
         break;
       }
-      case 'catch':    onEnd({ type: 'catch', enemy: foe, party, bag }); break;
-      case 'flee':     onEnd({ type: 'flee', party, bag }); break;
-      case 'lose':     onEnd({ type: 'lose', party, bag }); break;
+      case 'catch':    onEnd({ type: 'catch', enemy: foe, party, bag, pendingEvolutions: pendingEvolsRef.current }); break;
+      case 'flee':     onEnd({ type: 'flee', party, bag, pendingEvolutions: [] }); break;
+      case 'lose':     onEnd({ type: 'lose', party, bag, pendingEvolutions: [] }); break;
       case 'forceSwitch': setMandatory(true); setPhase('team'); break;
       default: setPhase('menu');
     }
@@ -184,7 +196,10 @@ export default function BattleScreen({ enemyTeam, trainer, party, bag: bagProp, 
     if (ev.levels.length) setTimeout(() => sfx('levelUp'), 300);
     for (const lv of ev.levels) lines.push(`${nameBefore} erreicht Level ${lv}!`);
     for (const mv of ev.learned) lines.push(`${nameBefore} erlernt ${MOVES[mv].name}!`);
-    if (ev.evolved) lines.push(`${ev.evolved.from} entwickelt sich zu ${ev.evolved.to}!`);
+    if (ev.evolved) {
+      pendingEvolsRef.current.push({ fromName: ev.evolved.from, toSpeciesId: meInst.speciesId });
+      lines.push(`${ev.evolved.from} entwickelt sich zu ${ev.evolved.to}!`);
+    }
     if (isTrainer) {
       const nextIdx = enemyIdx + 1;
       return nextIdx < enemyTeam.length ? { type: 'next_enemy', nextIdx } : { type: 'trainer_win' };
@@ -323,7 +338,7 @@ export default function BattleScreen({ enemyTeam, trainer, party, bag: bagProp, 
   const skipMsg = () => msg.length && setMsg((m) => m.slice(1));
 
   const foeType = TYPES[foeSp.type];
-  const bgKey = ZONE_BG[zone] || 'meadow';
+  const bgKey = ZONE_BG_MAP[zone] || 'meadow';
   const bgUrl = battleBgUrl(bgKey);
   const trainerSpriteKey = trainer?.sprite || 'trainer-generic';
   const trainerImgUrl = charImgUrl(trainerSpriteKey);
