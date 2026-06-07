@@ -3,13 +3,13 @@ import CreatureSprite from './CreatureSprite.jsx';
 export default function TitleScreen({ onNew, onContinue, canContinue }) {
   return (
     <div className="screen-center">
-      <div className="title-big" style={{ fontSize: 22, letterSpacing: 1 }}>
+      <div className="title-big title-glow" style={{ fontSize: 22, letterSpacing: 1 }}>
         BEASTLINGS<br />QUEST
       </div>
       <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
-        <CreatureSprite id={3}  type="feuer"   body="beast" size={80} />
-        <CreatureSprite id={6}  type="wasser"  body="fish"  size={80} />
-        <CreatureSprite id={9}  type="pflanze" body="beast" size={80} />
+        <span className="title-creature"><CreatureSprite id={3}  type="feuer"   body="beast" size={80} /></span>
+        <span className="title-creature"><CreatureSprite id={6}  type="wasser"  body="fish"  size={80} /></span>
+        <span className="title-creature"><CreatureSprite id={9}  type="pflanze" body="beast" size={80} /></span>
       </div>
       <div className="tiny" style={{ lineHeight: 2 }}>
         Ein Monster-Sammel-Abenteuer<br />in der Naturwelt
@@ -24,7 +24,8 @@ export default function TitleScreen({ onNew, onContinue, canContinue }) {
           ★ Neues Abenteuer
         </button>
       </div>
-      <div className="tiny" style={{ marginTop: 8 }}>
+      <div className="title-press-start">▸ Drücke Start ◂</div>
+      <div className="tiny" style={{ marginTop: 4 }}>
         Pfeiltasten · WASD · Touch-Pad
       </div>
     </div>

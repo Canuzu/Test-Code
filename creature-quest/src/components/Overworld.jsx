@@ -34,32 +34,42 @@ const TILE_FALLBACK = {
   'P':  '#c8a870',
   'S':  '#e8d8a0',
   'F':  '#60a830',
+  'C':  '#d84030', // Pokécenter (rotes Dach)
+  'M':  '#3060c0', // Shop (blaues Dach)
+  'G':  '#8a7048', // Arena (Stein)
+  'H':  '#a06838', // Haus
 };
 const WARP_COLOR  = '#d4a017';
-const NPC_ICON    = { talk: '💬', trainer: '⚔️' };
+const NPC_ICON    = { talk: '💬', trainer: '⚔️', heal: '💊', shop: '🛒' };
 const WARP_ARROW  = { '<': '◄', '>': '►', '^': '▲', 'v': '▼' };
+const BUILDING_EMOJI = { C: '🏥', M: '🛒', G: '🏛️', H: '🏠' };
 const TILE_ANIM   = { '~': 'cell-water', '"': 'cell-grass', 'F': 'cell-grass', 'T': 'cell-tree' };
 
 function TileCell({ ch, delay }) {
   const isWarp = TILE.WARPS.has(ch);
-  const imgUrl = !isWarp ? TILE_MAP[ch] : null;
+  const isBuilding = !!BUILDING_EMOJI[ch];
+  const imgUrl = !isWarp && !isBuilding ? TILE_MAP[ch] : null;
   const fallback = isWarp ? WARP_COLOR : (TILE_FALLBACK[ch] || '#5a9e30');
-  const animCls = !isWarp ? (TILE_ANIM[ch] || '') : '';
+  const animCls = !isWarp && !isBuilding ? (TILE_ANIM[ch] || '') : '';
   return (
     <div
       className={animCls}
       style={{
         width: TILE_PX, height: TILE_PX,
-        background: fallback,
+        background: isBuilding
+          ? `linear-gradient(180deg, ${fallback} 0%, ${fallback} 55%, #6b4f2a 55%, #5a4020 100%)`
+          : fallback,
         backgroundImage: imgUrl ? `url(${imgUrl})` : undefined,
         backgroundSize: 'cover', backgroundRepeat: 'no-repeat',
         imageRendering: 'pixelated',
+        border: isBuilding ? '1px solid #00000040' : undefined,
         animationDelay: animCls ? `${delay}ms` : undefined,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 10, color: '#fff', fontFamily: 'monospace', flexShrink: 0,
       }}
     >
-      {isWarp ? <span style={{ fontSize: 14, filter: 'drop-shadow(0 0 2px #000)' }}>{WARP_ARROW[ch]}</span> : null}
+      {isWarp && <span style={{ fontSize: 14, filter: 'drop-shadow(0 0 2px #000)' }}>{WARP_ARROW[ch]}</span>}
+      {isBuilding && <span style={{ fontSize: 18, filter: 'drop-shadow(0 1px 1px #0008)' }}>{BUILDING_EMOJI[ch]}</span>}
     </div>
   );
 }
@@ -139,8 +149,8 @@ function PlayerSprite({ facing, gender }) {
 export default function Overworld({
   zone, px, py, facing, gender = 'boy',
   onDir, onInteract,
-  onOpenParty, onOpenDex, onMenu,
-  balls, partyCount,
+  onOpenParty, onOpenDex, onOpenBag, onMenu,
+  balls, money = 0, badges, partyCount,
 }) {
   const z = ZONES[zone];
   const camX = Math.max(0, Math.min(px - Math.floor(VIEW_COLS / 2), ZONE_WIDTH  - VIEW_COLS));
@@ -156,8 +166,11 @@ export default function Overworld({
       {/* ── Top bar ── */}
       <div className="world-top">
         <span style={{ color: '#e8e0c8', fontSize: 9 }}>📍 {z.name}</span>
-        <span style={{ display: 'flex', gap: 6 }}>
+        <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <span style={{ color: '#f4d878', fontSize: 8 }}>💰{money}</span>
+          {badges && badges.size > 0 && <span style={{ fontSize: 8, color: '#f4d878' }}>🏅{badges.size}</span>}
           <button className="btn" style={{ padding: '3px 8px', fontSize: 8 }} onClick={onOpenParty}>Team ({partyCount})</button>
+          <button className="btn" style={{ padding: '3px 8px', fontSize: 8 }} onClick={onOpenBag}>🎒</button>
           <button className="btn" style={{ padding: '3px 8px', fontSize: 8 }} onClick={onOpenDex}>Dex</button>
           <button className="btn" style={{ padding: '3px 8px', fontSize: 8 }} onClick={onMenu}>☰</button>
         </span>

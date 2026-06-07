@@ -1,12 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import CreatureSprite from './CreatureSprite.jsx';
 import { charImgUrl } from './GenderSelect.jsx';
 import { MOVES } from '../data/moves.js';
 import { TYPES } from '../data/types.js';
 import {
-  performMove, enemyChooseMove, attemptCapture, fleeChance, speedOf, resetBuffs,
+  performMove, enemyChooseMove, attemptCapture, fleeChance, speedOf, resetBuffs, tickStatus,
 } from '../engine/battle.js';
-import { gainXp, xpReward, getSpecies, maxHp } from '../engine/creatures.js';
+import { gainXp, xpReward, getSpecies, maxHp, xpForNext } from '../engine/creatures.js';
+import { useItemOn } from '../engine/items.js';
+import { ITEMS, BALL_IDS, totalBalls } from '../data/items.js';
+import { sfx } from '../engine/audio.js';
 
 // Battle background images (downloaded by CI into assets/battle-bg/)
 const BG_IMGS = import.meta.glob('../assets/battle-bg/*.png', { eager: true, import: 'default' });
@@ -16,8 +19,6 @@ function battleBgUrl(name) {
   return null;
 }
 
-// Zone → background key mapping
-const ZONE_BG = { wiese: 'meadow', wald: 'forest', hoehle: 'cave' };
 
 function hpColor(ratio) {
   if (ratio > 0.5) return '#48c840';
@@ -34,17 +35,46 @@ const FX = {
   elektro: { glyph: '⚡', color: '#ffca28' },
   erde:    { glyph: '🪨', color: '#a1887f' },
   luft:    { glyph: '🌀', color: '#90caf9' },
+  geist:   { glyph: '👻', color: '#9b59b6' },
+  psycho:  { glyph: '🔮', color: '#e91e63' },
+  eis:     { glyph: '❄️', color: '#80deea' },
+  drache:  { glyph: '🐉', color: '#7c4dff' },
 };
 
-function HpBar({ inst, showNums }) {
+const STATUS_BADGE = {
+  burn:      { label: 'BRN', color: '#b03000', bg: '#ffcaaa' },
+  paralysis: { label: 'PAR', color: '#806000', bg: '#ffe878' },
+  poison:    { label: 'PSN', color: '#7030a0', bg: '#e8c0f0' },
+  sleep:     { label: 'SLP', color: '#404080', bg: '#c0c0e8' },
+  freeze:    { label: 'EIS', color: '#006060', bg: '#c0f0f0' },
+};
+
+// Zone → background key mapping (extended for all zones)
+const ZONE_BG_MAP = {
+  wiese: 'meadow', wald: 'forest', hoehle: 'cave',
+  sandtal: 'meadow', wuestenstadt: 'meadow', kueste: 'meadow',
+  havenfeld: 'meadow', nebelberge: 'cave', bergpass: 'cave',
+  hochland: 'cave', siegeshalle: 'cave',
+};
+
+function HpBar({ inst, showNums, showXp }) {
   const sp = getSpecies(inst);
   const mx = maxHp(inst);
   const ratio = Math.max(0, inst.curHp / mx);
+  const xpRatio = showXp ? Math.min(1, (inst.xp || 0) / Math.max(1, xpForNext(inst.level))) : null;
+  const badge = inst.status ? STATUS_BADGE[inst.status] : null;
   return (
     <div className="ds-hpbox">
       <div className="ds-hpbox-name">
         <span>{sp.name}</span>
-        <span>Lv{inst.level}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {badge && (
+            <span className="status-badge" style={{ background: badge.bg, color: badge.color }}>
+              {badge.label}
+            </span>
+          )}
+          Lv{inst.level}
+        </span>
       </div>
       <div className="ds-hpbar-row">
         <span className="ds-hp-label">HP</span>
@@ -55,13 +85,23 @@ function HpBar({ inst, showNums }) {
       {showNums && (
         <div className="ds-hpnums">{Math.max(0, inst.curHp)}<span className="ds-hpsep">/</span>{mx}</div>
       )}
+      {showXp && (
+        <div className="ds-xpbar-row">
+          <span className="ds-xp-label">EP</span>
+          <div className="ds-xpbar-track">
+            <div className="ds-xpbar-fill" style={{ width: `${(xpRatio ?? 0) * 100}%` }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export default function BattleScreen({ enemyTeam, trainer, party, balls, playerName, gender = 'boy', zone = 'wiese', onEnd, onUseBall }) {
+export default function BattleScreen({ enemyTeam, trainer, party, bag: bagProp, playerName, gender = 'boy', zone = 'wiese', onEnd }) {
   const isTrainer = !!trainer;
 
+  const [bag, setBag] = useState(() => ({ ...bagProp }));
+  const [itemTarget, setItemTarget] = useState(null); // itemId, das auf eine Kreatur angewendet wird
   const [enemyIdx, setEnemyIdx] = useState(0);
   const [active, setActive] = useState(() => party.findIndex((p) => p.curHp > 0));
   const [phase, setPhase] = useState('msg');
@@ -80,7 +120,9 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
   const [shake, setShake]   = useState(false);
   const [fainting, setFainting] = useState(null);
   const [trainerOut, setTrainerOut] = useState(false); // trainer portrait exits once battle starts
+  const [encounterFlash, setEncounterFlash] = useState(true);
   const [, forceTick] = useState(0);
+  const pendingEvolsRef = useRef([]);
 
   const foe = enemyTeam[enemyIdx];
   const foeSp = getSpecies(foe);
@@ -90,6 +132,8 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
   useEffect(() => {
     party.forEach(resetBuffs);
     enemyTeam.forEach(resetBuffs);
+    const t = setTimeout(() => setEncounterFlash(false), 780);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -107,7 +151,7 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
   useEffect(() => {
     if (phase !== 'msg') return;
     if (msg.length === 0) { applyOutcome(); return; }
-    const t = setTimeout(() => setMsg((m) => m.slice(1)), 1100);
+    const t = setTimeout(() => setMsg((m) => m.slice(1)), 720);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, msg]);
@@ -122,8 +166,8 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
   function applyOutcome() {
     switch (outcome.type) {
       case 'continue': setPhase('menu'); break;
-      case 'win':      onEnd({ type: 'win', enemy: foe }); break;
-      case 'trainer_win': onEnd({ type: 'trainer_win' }); break;
+      case 'win':      onEnd({ type: 'win', enemy: foe, party, bag, pendingEvolutions: pendingEvolsRef.current }); break;
+      case 'trainer_win': onEnd({ type: 'trainer_win', party, bag, pendingEvolutions: pendingEvolsRef.current }); break;
       case 'next_enemy': {
         const next = outcome.nextIdx;
         setEnemyIdx(next);
@@ -131,9 +175,9 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
         enqueue([`${trainer?.name ?? 'Trainer'} schickt ${nextSp.name}!`], { type: 'continue' });
         break;
       }
-      case 'catch':    onEnd({ type: 'catch', enemy: foe }); break;
-      case 'flee':     onEnd({ type: 'flee' }); break;
-      case 'lose':     onEnd({ type: 'lose' }); break;
+      case 'catch':    onEnd({ type: 'catch', enemy: foe, party, bag, pendingEvolutions: pendingEvolsRef.current }); break;
+      case 'flee':     onEnd({ type: 'flee', party, bag, pendingEvolutions: [] }); break;
+      case 'lose':     onEnd({ type: 'lose', party, bag, pendingEvolutions: [] }); break;
       case 'forceSwitch': setMandatory(true); setPhase('team'); break;
       default: setPhase('menu');
     }
@@ -149,9 +193,13 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
     const nameBefore = getSpecies(meInst).name;
     const ev = gainXp(meInst, xpReward(deadFoe));
     if (ev.gained) lines.push(`${nameBefore} erhält ${ev.gained} EP.`);
+    if (ev.levels.length) setTimeout(() => sfx('levelUp'), 300);
     for (const lv of ev.levels) lines.push(`${nameBefore} erreicht Level ${lv}!`);
     for (const mv of ev.learned) lines.push(`${nameBefore} erlernt ${MOVES[mv].name}!`);
-    if (ev.evolved) lines.push(`${ev.evolved.from} entwickelt sich zu ${ev.evolved.to}!`);
+    if (ev.evolved) {
+      pendingEvolsRef.current.push({ fromName: ev.evolved.from, toSpeciesId: meInst.speciesId });
+      lines.push(`${ev.evolved.from} entwickelt sich zu ${ev.evolved.to}!`);
+    }
     if (isTrainer) {
       const nextIdx = enemyIdx + 1;
       return nextIdx < enemyTeam.length ? { type: 'next_enemy', nextIdx } : { type: 'trainer_win' };
@@ -170,11 +218,11 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
         if (h.damage > 0) {
           setFx({ defender: h.defender, type: FX[h.type] ? h.type : 'normal', key: Date.now() + i });
           setShake(true);
-          setTimeout(() => setHitFlash(h.defender), 300);
+          setTimeout(() => { sfx(h.super ? 'superHit' : 'hit'); setHitFlash(h.defender); }, 300);
           setTimeout(() => { setHitFlash(null); setShake(false); }, 640);
           setTimeout(() => setFx(null), 700);
         }
-        if (h.faint) setTimeout(() => setFainting(h.faint), h.damage > 0 ? 360 : 60);
+        if (h.faint) setTimeout(() => { sfx('faint'); setFainting(h.faint); }, h.damage > 0 ? 360 : 60);
       }, i * 720);
     });
   }
@@ -189,15 +237,26 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
       if (who === 'me') {
         const r = performMove(me, foe, moveId);
         lines.push(...r.log);
-        hits.push({ attacker: 'player', defender: 'enemy', type: MOVES[moveId].type, damage: r.damage, faint: foe.curHp <= 0 ? 'enemy' : null });
+        if (!r.skipped) hits.push({ attacker: 'player', defender: 'enemy', type: MOVES[moveId].type, damage: r.damage, super: r.mult > 1, faint: foe.curHp <= 0 ? 'enemy' : null });
         if (foe.curHp <= 0) { lines.push(`${foeSp.name} wurde besiegt!`); out = resolveEnemyFaint(me, foe, lines); break; }
       } else {
         const mid = enemyChooseMove(foe);
         const r = performMove(foe, me, mid);
         lines.push(...r.log);
-        hits.push({ attacker: 'enemy', defender: 'player', type: MOVES[mid].type, damage: r.damage, faint: me.curHp <= 0 ? 'player' : null });
+        if (!r.skipped) hits.push({ attacker: 'enemy', defender: 'player', type: MOVES[mid].type, damage: r.damage, super: r.mult > 1, faint: me.curHp <= 0 ? 'player' : null });
         if (me.curHp <= 0) { lines.push(`${meSp.name} wurde besiegt!`); out = resolveFaint(active); break; }
       }
+    }
+    // End-of-turn status damage
+    if (out.type === 'continue' && foe.curHp > 0) {
+      const tick = tickStatus(foe);
+      lines.push(...tick.log);
+      if (foe.curHp <= 0) { lines.push(`${foeSp.name} wurde besiegt!`); out = resolveEnemyFaint(me, foe, lines); }
+    }
+    if (out.type === 'continue' && me.curHp > 0) {
+      const tick = tickStatus(me);
+      lines.push(...tick.log);
+      if (me.curHp <= 0) { lines.push(`${meSp.name} wurde besiegt!`); out = resolveFaint(active); }
     }
     playHits(hits);
     enqueue(lines, out);
@@ -213,12 +272,16 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
     return { type: 'continue' };
   }
 
-  function throwBall() {
+  function throwBall(ballId) {
     if (isTrainer) { enqueue(['Trainer-Kreaturen können nicht gefangen werden!'], { type: 'continue' }); return; }
-    if (balls <= 0) { enqueue(['Keine Fangkugeln mehr!'], { type: 'continue' }); return; }
-    onUseBall();
-    const lines = ['Du wirfst eine Fangkugel…'];
-    if (attemptCapture(foe)) {
+    if ((bag[ballId] || 0) <= 0) { enqueue(['Keine davon mehr im Beutel!'], { type: 'continue' }); return; }
+    const item = ITEMS[ballId];
+    setBag((b) => ({ ...b, [ballId]: Math.max(0, (b[ballId] || 0) - 1) }));
+    setPhase('msg');
+    sfx('ball');
+    const lines = [`Du wirfst ${item.name}…`];
+    if (attemptCapture(foe, item.ballBonus || 1)) {
+      sfx('catch');
       lines.push(`${foeSp.name} wurde gefangen!`);
       enqueue(lines, { type: 'catch' });
     } else {
@@ -228,6 +291,22 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
       playHits(hits);
       enqueue(lines, out);
     }
+  }
+
+  // Item (Heilung/Status/Beleber) im Kampf benutzen – kostet den Zug.
+  function useBattleItem(itemId, targetIdx) {
+    const target = party[targetIdx];
+    const res = useItemOn(itemId, target);
+    if (!res.ok) { sfx('cancel'); enqueue([res.msg], { type: 'continue' }); setItemTarget(null); return; }
+    setBag((b) => ({ ...b, [itemId]: Math.max(0, (b[itemId] || 0) - 1) }));
+    sfx(ITEMS[itemId]?.category === 'heal' ? 'heal' : 'confirm');
+    setItemTarget(null);
+    const lines = [res.msg];
+    // Gegner kontert (außer das Item belebte eine andere Kreatur als die aktive).
+    const hits = [];
+    const out = foeRetaliate(me, active, lines, hits);
+    playHits(hits);
+    enqueue(lines, out);
   }
 
   function doSwitch(i) {
@@ -259,7 +338,7 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
   const skipMsg = () => msg.length && setMsg((m) => m.slice(1));
 
   const foeType = TYPES[foeSp.type];
-  const bgKey = ZONE_BG[zone] || 'meadow';
+  const bgKey = ZONE_BG_MAP[zone] || 'meadow';
   const bgUrl = battleBgUrl(bgKey);
   const trainerSpriteKey = trainer?.sprite || 'trainer-generic';
   const trainerImgUrl = charImgUrl(trainerSpriteKey);
@@ -267,6 +346,9 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
 
   return (
     <div className="battle-wrap">
+      {/* ── Encounter flash on battle start ── */}
+      {encounterFlash && <div className="encounter-flash" />}
+
       {/* ── Trainer banner ── */}
       {isTrainer && (
         <div className="trainer-banner">
@@ -333,7 +415,7 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
               </div>
             </div>
           </div>
-          <HpBar inst={me} showNums />
+          <HpBar inst={me} showNums showXp />
         </div>
 
         {/* ── Attack effect layer ── */}
@@ -370,8 +452,8 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
               <button className="ds-btn ds-fight" onClick={() => setPhase('move')}>
                 <span className="ds-btn-icon">⚔</span>KÄMPFEN
               </button>
-              <button className="ds-btn ds-bag" onClick={throwBall} disabled={isTrainer}>
-                <span className="ds-btn-icon">◎</span>{isTrainer ? 'BAG —' : `BAG (${balls})`}
+              <button className="ds-btn ds-bag" onClick={() => { sfx('select'); setPhase('bag'); }}>
+                <span className="ds-btn-icon">🎒</span>BEUTEL
               </button>
               <button className="ds-btn ds-party" onClick={() => setPhase('team')}>
                 <span className="ds-btn-icon">◉</span>WECHSELN
@@ -388,11 +470,15 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
             {me.moves.map((mv) => {
               const m = MOVES[mv];
               const t = TYPES[m.type] || { color: '#888', icon: '◆', name: m.type };
+              const curPP = me.movePP?.[mv] ?? m.pp ?? 30;
+              const maxPP = m.pp ?? 30;
+              const ppClass = curPP === 0 ? 'pp-zero' : curPP <= Math.floor(maxPP / 3) ? 'pp-low' : '';
               return (
-                <button key={mv} className="ds-move-btn" onClick={() => playerAttack(mv)}>
+                <button key={mv} className="ds-move-btn" disabled={curPP === 0} onClick={() => playerAttack(mv)}>
                   <span className="ds-move-name">{m.name}</span>
                   <span className="type-pill ds-move-type" style={{ background: t.color }}>{t.icon} {t.name}</span>
                   {m.power > 0 && <span className="ds-move-power">Kraft {m.power}</span>}
+                  <span className={`ds-move-pp ${ppClass}`}>{curPP}/{maxPP}</span>
                 </button>
               );
             })}
@@ -425,6 +511,55 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
             {!mandatorySwitch && (
               <button className="ds-btn ds-back-btn" onClick={() => setPhase('menu')}>↩ Zurück</button>
             )}
+          </div>
+        )}
+
+        {phase === 'bag' && !itemTarget && (
+          <div className="ds-team">
+            <p className="ds-team-title">🎒 Beutel</p>
+            {/* Fangkugeln */}
+            {BALL_IDS.filter((id) => (bag[id] || 0) > 0).map((id) => {
+              const it = ITEMS[id];
+              return (
+                <button key={id} className="ds-team-row" disabled={isTrainer} onClick={() => throwBall(id)}>
+                  <span style={{ fontSize: 20, width: 36, textAlign: 'center' }}>{it.icon}</span>
+                  <span className="ds-team-name">{it.name}</span>
+                  <span className="ds-team-hp">×{bag[id]}</span>
+                </button>
+              );
+            })}
+            {/* Verbrauchs-Items */}
+            {Object.keys(bag).filter((id) => (bag[id] || 0) > 0 && ITEMS[id] && ['heal', 'revive', 'status'].includes(ITEMS[id].category)).map((id) => {
+              const it = ITEMS[id];
+              return (
+                <button key={id} className="ds-team-row" onClick={() => { sfx('select'); setItemTarget(id); }}>
+                  <span style={{ fontSize: 20, width: 36, textAlign: 'center' }}>{it.icon}</span>
+                  <span className="ds-team-name">{it.name}</span>
+                  <span className="ds-team-hp">×{bag[id]}</span>
+                </button>
+              );
+            })}
+            {totalBalls(bag) === 0 && Object.keys(bag).filter((id) => (bag[id] || 0) > 0 && ITEMS[id] && ['heal', 'revive', 'status'].includes(ITEMS[id].category)).length === 0 && (
+              <p className="tiny" style={{ padding: '4px 8px' }}>Dein Beutel ist leer.</p>
+            )}
+            <button className="ds-btn ds-back-btn" onClick={() => setPhase('menu')}>↩ Zurück</button>
+          </div>
+        )}
+
+        {phase === 'bag' && itemTarget && (
+          <div className="ds-team">
+            <p className="ds-team-title">{ITEMS[itemTarget].name} – bei wem?</p>
+            {party.map((p, i) => {
+              const sp = getSpecies(p);
+              return (
+                <button key={p.uid} className={`ds-team-row${p.curHp <= 0 ? ' fainted' : ''}`} onClick={() => useBattleItem(itemTarget, i)}>
+                  <CreatureSprite id={p.speciesId} type={sp.type} body={sp.body} size={36} />
+                  <span className="ds-team-name">{sp.name}{p.status ? ` · ${p.status}` : ''}</span>
+                  <span className="ds-team-hp">{Math.max(0, p.curHp)}/{maxHp(p)}</span>
+                </button>
+              );
+            })}
+            <button className="ds-btn ds-back-btn" onClick={() => setItemTarget(null)}>↩ Zurück</button>
           </div>
         )}
       </div>

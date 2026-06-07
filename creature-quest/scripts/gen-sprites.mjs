@@ -938,22 +938,231 @@ function nebelkraehe() {
   return px;
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// GENERIC TYPE-BASED SPRITE GENERATORS (placeholder sprites for all
+// remaining creatures — each body type + type color palette)
+// ═══════════════════════════════════════════════════════════════════
+const TC = {
+  feuer:   { p:[210,90,28,255],  h:[250,170,80,255],  d:[160,55,10,255],  a:[255,220,60,255]  },
+  wasser:  { p:[60,140,205,255], h:[160,215,248,255],  d:[35,90,160,255],  a:[90,200,210,255]  },
+  pflanze: { p:[85,165,45,255],  h:[145,210,88,255],   d:[50,110,20,255],  a:[220,90,105,255]  },
+  elektro: { p:[245,215,30,255], h:[255,242,140,255],  d:[185,155,8,255],  a:[255,100,20,255]  },
+  erde:    { p:[155,115,65,255], h:[205,170,110,255],  d:[95,70,35,255],   a:[220,180,90,255]  },
+  luft:    { p:[145,195,235,255],h:[210,232,250,255],  d:[90,140,190,255], a:[255,255,255,255] },
+  normal:  { p:[175,165,145,255],h:[220,210,188,255],  d:[125,115,92,255], a:[255,220,150,255] },
+  geist:   { p:[115,75,175,255], h:[168,128,218,255],  d:[65,35,118,255],  a:[210,170,255,255] },
+  psycho:  { p:[240,80,128,255], h:[255,155,182,255],  d:[185,35,75,255],  a:[255,220,240,255] },
+  eis:     { p:[145,210,215,255],h:[205,238,242,255],  d:[78,148,160,255], a:[230,248,255,255] },
+  drache:  { p:[90,50,195,255],  h:[152,115,238,255],  d:[55,28,138,255],  a:[180,140,255,255] },
+};
+const _E = [12, 8, 5, 255];
+const _W = [255, 255, 255, 255];
+function _OT(c) { return [Math.max(0,c.p[0]-60),Math.max(0,c.p[1]-60),Math.max(0,c.p[2]-60),255]; }
+
+function mkBeast(c) {
+  const px = mkC();
+  el(px,37,33,3.5,5,c.p); el(px,40,24,2.5,6,c.p);         // tail
+  el(px,22,33,10,8,c.p);  el(px,21,37,6.5,4.5,c.h);       // body + belly
+  el(px,14,41,4,4.5,c.p); el(px,28,41,4,4.5,c.p);         // back legs
+  el(px,13,45,5,2,c.d);   el(px,28,45,5,2,c.d);           // paws
+  el(px,20,22,8,7.5,c.p);                                   // head
+  tr(px,13,9,11,19,17,18,c.p);  tr(px,26,9,23,18,28,18,c.p);   // outer ears
+  tr(px,13,11,12,18,16,17,c.a); tr(px,26,11,24,17,27,17,c.a);  // inner ears
+  el(px,14,19,2.8,3,_E);  el(px,24,19,2.8,3,_E);          // eyes
+  sp(px,13,18,_W);         sp(px,23,18,_W);                 // glints
+  el(px,18,25,4,2.5,c.h); sp(px,16,24,_E); sp(px,19,24,_E); // snout + nostrils
+  ol(px,_OT(c)); return px;
+}
+
+function mkBird(c) {
+  const px = mkC();
+  tr(px,14,26,3,18,11,30,c.p);  tr(px,33,26,45,18,37,30,c.p); // wings
+  tr(px,5,20,2,26,8,18,c.h);    tr(px,43,20,46,26,40,18,c.h); // wing tips
+  tr(px,18,40,15,46,22,46,c.d); tr(px,28,40,33,46,25,46,c.d); // tail feathers
+  el(px,24,30,9,9,c.p); el(px,23,33,5.5,5.5,c.h);             // body + belly
+  el(px,22,20,7,7,c.p);                                         // head
+  tr(px,20,12,18,20,23,20,c.h);                                // crest
+  tr(px,15,22,11,25,15,26,c.a);                                // beak
+  el(px,18,19,3,3,_E); el(px,18,19,1.5,1.5,c.a);
+  sp(px,17,18,_W); sp(px,18,18,_W);                           // eye
+  ol(px,_OT(c)); return px;
+}
+
+function mkFish(c) {
+  const px = mkC();
+  tr(px,8,28,4,18,4,38,c.d); tr(px,5,23,2,14,2,32,c.h); // tail fin
+  el(px,26,28,16,7,c.p); el(px,26,30,12,4.5,c.h);        // body + belly
+  tr(px,20,21,28,15,34,21,c.d);                            // dorsal fin
+  tr(px,20,28,15,24,18,34,c.d);                            // pectoral fin
+  el(px,40,28,6,5.5,c.p); el(px,44,29,3,3.5,c.h);        // head + snout
+  el(px,38,26,3,3,_E); el(px,38,26,1.5,1.8,c.a);
+  sp(px,37,25,_W); sp(px,38,25,_W);                       // eye
+  ol(px,_OT(c)); return px;
+}
+
+function mkBlob(c) {
+  const px = mkC();
+  el(px,24,30,12,12,c.p); el(px,23,34,7,7,c.h);           // body + belly
+  el(px,17,44,5.5,2.5,c.p); el(px,31,44,5.5,2.5,c.p);    // stub legs
+  el(px,13,24,5,6,_E);    el(px,13,24,3.5,4.5,c.a);       // L eye outer + iris
+  el(px,31,24,5,6,_E);    el(px,31,24,3.5,4.5,c.a);       // R eye outer + iris
+  el(px,13,24,2,2.5,_E);  el(px,31,24,2,2.5,_E);          // pupils
+  sp(px,11,22,_W); sp(px,12,22,_W); sp(px,29,22,_W); sp(px,30,22,_W); // glints
+  sp(px,20,35,_E); sp(px,21,36,_E); sp(px,22,36,_E); sp(px,23,35,_E); // mouth
+  el(px,24,17,3,3,c.a);                                    // top accent
+  ol(px,_OT(c)); return px;
+}
+
+function mkGolem(c) {
+  const px = mkC();
+  el(px,22,14,8,7,c.p);  el(px,22,14,5,4,c.h);           // head + highlight
+  el(px,22,30,12,10,c.p); el(px,22,26,9,4,c.h);           // body + highlight
+  el(px,9,28,4,8,c.d);   el(px,35,28,4,8,c.d);            // arms
+  el(px,14,42,6,5,c.d);  el(px,30,42,6,5,c.d);            // legs
+  el(px,14,19,3,3,_E);   el(px,30,19,3,3,_E);             // eyes
+  el(px,14,19,1.8,1.8,c.a); el(px,30,19,1.8,1.8,c.a);    // eye glow
+  sp(px,18,24,c.d); sp(px,22,29,c.d); sp(px,28,33,c.d);  // crack marks
+  ol(px,_OT(c)); return px;
+}
+
+function mkBug(c) {
+  const px = mkC();
+  el(px,24,12,5,5,c.p);                                    // head
+  el(px,24,24,7,8,c.p);                                    // thorax
+  el(px,18,24,5,8,c.h); el(px,30,24,5,8,c.h);            // wing covers
+  el(px,24,37,9,9,c.d);                                    // abdomen
+  for(let i=0;i<3;i++){
+    el(px,14-i,22+i*5,2.5,1.5,c.d); // L leg
+    el(px,34+i,22+i*5,2.5,1.5,c.d); // R leg
+  }
+  sp(px,20,7,c.p); sp(px,19,5,c.p); sp(px,18,3,c.a); // L antenna
+  sp(px,28,7,c.p); sp(px,29,5,c.p); sp(px,30,3,c.a); // R antenna
+  el(px,20,12,2.5,2.5,_E); el(px,28,12,2.5,2.5,_E);
+  el(px,20,12,1.5,1.5,c.a); el(px,28,12,1.5,1.5,c.a); // compound eyes
+  ol(px,_OT(c)); return px;
+}
+
+function mkGhost(c) {
+  const px = mkC();
+  el(px,24,20,12,14,[c.p[0],c.p[1],c.p[2],60]);           // outer glow
+  el(px,24,20,10,12,c.p);                                   // main body
+  el(px,24,33,7,4,c.p); el(px,24,39,5,3,c.d); el(px,24,44,3,2.5,c.d); // wispy tail
+  el(px,17,18,4,4.5,_E); el(px,17,18,2.5,3,c.a);          // L eye + glow
+  el(px,31,18,4,4.5,_E); el(px,31,18,2.5,3,c.a);          // R eye + glow
+  sp(px,16,17,_W); sp(px,30,17,_W);                        // eye glints
+  el(px,24,25,5,2.5,_E);                                    // mouth
+  el(px,12,15,2,2,[c.p[0],c.p[1],c.p[2],160]);             // wisp L
+  el(px,36,12,2,2,[c.p[0],c.p[1],c.p[2],160]);             // wisp R
+  ol(px,_OT(c)); return px;
+}
+
+function mkDragon(c) {
+  const px = mkC();
+  el(px,40,36,4,5,c.p); el(px,43,28,3.5,6,c.p); el(px,44,20,2.5,5,c.d); // tail
+  el(px,22,34,12,10,c.p);                                   // body
+  tr(px,10,22,4,36,18,30,c.d); tr(px,34,22,44,36,30,30,c.d); // wings outer
+  tr(px,10,22,6,32,16,26,c.h); tr(px,34,22,42,32,32,26,c.h); // wings inner
+  el(px,20,22,6,6,c.p);                                     // neck
+  el(px,18,14,7,6,c.p);                                     // head
+  tr(px,14,8,12,16,18,16,c.d); tr(px,22,8,20,16,26,15,c.d); // horns
+  el(px,14,13,2.5,2.5,_E); el(px,22,13,2.5,2.5,_E);
+  el(px,14,13,1.5,1.5,c.a); el(px,22,13,1.5,1.5,c.a);
+  sp(px,13,12,_W); sp(px,21,12,_W);                        // eyes
+  el(px,16,17,4,2.5,c.d); sp(px,14,18,_E); sp(px,17,18,_E); // snout
+  sp(px,18,27,c.d); sp(px,22,24,c.d); sp(px,26,25,c.d);   // back spikes
+  ol(px,_OT(c)); return px;
+}
+
+function mkSnake(c) {
+  const px = mkC();
+  el(px,24,8,5,5,c.p);                                      // head
+  el(px,20,16,5,6,c.p); el(px,24,26,5,6,c.p); el(px,28,36,5,6,c.p); // body
+  el(px,24,44,4,4.5,c.d);                                   // tail tip
+  el(px,20,18,3,4,c.h); el(px,24,28,3,4,c.h); el(px,28,38,3,4,c.h); // belly
+  el(px,20,8,3,3,_E); el(px,28,8,3,3,_E);
+  el(px,20,8,1.8,1.8,c.a); el(px,28,8,1.8,1.8,c.a);
+  sp(px,19,7,_W); sp(px,27,7,_W);                          // eyes
+  sp(px,22,13,c.a); sp(px,26,13,c.a); sp(px,23,15,c.a); sp(px,25,15,c.a); // tongue
+  ol(px,_OT(c)); return px;
+}
+
+function _blend(t1, t2) {
+  return { p: TC[t1].p, h: TC[t2].h, d: TC[t1].d, a: TC[t2].a };
+}
+function gs(type, body, type2) {
+  const c = type2 ? _blend(type, type2) : TC[type];
+  const m = { beast:mkBeast, bird:mkBird, fish:mkFish, blob:mkBlob,
+               golem:mkGolem, bug:mkBug, ghost:mkGhost, dragon:mkDragon, snake:mkSnake };
+  return (m[body] || mkBlob)(c);
+}
+
 // ════════════════════════════════════════════════════════════════════
 // Generate all sprites
 // ════════════════════════════════════════════════════════════════════
 const SPRITES = {
-  1: glutwelp,
-  2: flammkater,
-  3: infernox,
-  4: troepfling,
-  5: wogefin,
-  6: tidehorn,
-  7: knospling,
-  8: rankgar,
-  9: florwucht,
-  13: funkmaus,
-  15: flatterling,
-  28: nebelkraehe,
+  // ── Hand-crafted starters + early wilds ──────────────────────────
+  1: glutwelp, 2: flammkater, 3: infernox,
+  4: troepfling, 5: wogefin, 6: tidehorn,
+  7: knospling, 8: rankgar, 9: florwucht,
+  13: funkmaus, 15: flatterling, 28: nebelkraehe,
+  // ── Erde line ────────────────────────────────────────────────────
+  10: () => gs('erde','golem'), 11: () => gs('erde','golem'), 12: () => gs('erde','golem'),
+  // ── Elektro beast ────────────────────────────────────────────────
+  14: () => gs('elektro','beast'),
+  // ── Luft bird line ───────────────────────────────────────────────
+  16: () => gs('luft','bird'), 17: () => gs('luft','bird'),
+  // ── Feuer bug line ───────────────────────────────────────────────
+  18: () => gs('feuer','bug'),  19: () => gs('feuer','bug'),
+  // ── Wasser frog/toad ─────────────────────────────────────────────
+  20: () => gs('wasser','fish'), 21: () => gs('wasser','blob'),
+  // ── Pflanze blob lines ───────────────────────────────────────────
+  22: () => gs('pflanze','blob'), 23: () => gs('pflanze','beast'),
+  24: () => gs('pflanze','blob'), 25: () => gs('pflanze','blob'),
+  // ── Mixed early ──────────────────────────────────────────────────
+  26: () => gs('elektro','golem'), 27: () => gs('erde','golem'),
+  // ── Wasser shell line ────────────────────────────────────────────
+  29: () => gs('wasser','blob'), 30: () => gs('wasser','fish'),
+  // ── Misc early ───────────────────────────────────────────────────
+  31: () => gs('feuer','bug'), 32: () => gs('pflanze','blob'), 33: () => gs('erde','beast'),
+  // ── Geist lines ──────────────────────────────────────────────────
+  34: () => gs('geist','ghost'), 35: () => gs('geist','ghost'),
+  36: () => gs('geist','ghost'), 37: () => gs('geist','ghost'), 38: () => gs('geist','ghost'),
+  // ── Psycho lines ─────────────────────────────────────────────────
+  39: () => gs('psycho','beast'), 40: () => gs('psycho','beast'), 41: () => gs('psycho','beast'),
+  42: () => gs('psycho','beast'), 43: () => gs('psycho','beast'),
+  // ── Eis lines ────────────────────────────────────────────────────
+  44: () => gs('eis','blob'),  45: () => gs('eis','beast'), 46: () => gs('eis','beast'),
+  47: () => gs('eis','golem'), 48: () => gs('eis','golem'),
+  // ── Drachen line ─────────────────────────────────────────────────
+  49: () => gs('drache','dragon'), 50: () => gs('drache','dragon'), 51: () => gs('drache','dragon'),
+  // ── Wüste feuer/erde ─────────────────────────────────────────────
+  52: () => gs('feuer','beast'), 53: () => gs('feuer','beast'),
+  54: () => gs('erde','beast'),  55: () => gs('erde','beast'),
+  56: () => gs('erde','bug'),    57: () => gs('erde','bug'),
+  58: () => gs('feuer','bug','erde'),
+  // ── Küste wasser ─────────────────────────────────────────────────
+  59: () => gs('wasser','fish'), 60: () => gs('wasser','fish'), 61: () => gs('wasser','fish'),
+  62: () => gs('wasser','blob'), 63: () => gs('wasser','beast'), 64: () => gs('wasser','beast'),
+  // ── Berge luft ───────────────────────────────────────────────────
+  65: () => gs('luft','bird'),  66: () => gs('luft','bird'),  67: () => gs('luft','bird'),
+  68: () => gs('elektro','bug','luft'), 69: () => gs('elektro','bug','luft'),
+  // ── Normal types ─────────────────────────────────────────────────
+  70: () => gs('normal','beast'), 71: () => gs('normal','beast'), 72: () => gs('normal','beast'),
+  73: () => gs('normal','beast'), 74: () => gs('normal','beast'),
+  // ── Erde golem line ──────────────────────────────────────────────
+  75: () => gs('erde','blob'),  76: () => gs('erde','golem'), 77: () => gs('erde','golem'),
+  // ── Team-Nox snakes + geist ──────────────────────────────────────
+  78: () => gs('erde','snake'), 79: () => gs('erde','snake','geist'),
+  80: () => gs('geist','ghost'), 81: () => gs('geist','ghost'),
+  // ── Dual-type specials ───────────────────────────────────────────
+  82: () => gs('eis','bird','luft'),   83: () => gs('eis','bird','luft'),
+  84: () => gs('feuer','golem','erde'), 85: () => gs('feuer','golem','erde'),
+  86: () => gs('psycho','beast','geist'), 87: () => gs('psycho','beast','geist'),
+  88: () => gs('feuer','bird','luft'),
+  // ── Legendaries ──────────────────────────────────────────────────
+  89: () => gs('feuer','dragon','drache'),
+  90: () => gs('geist','ghost','eis'),
+  91: () => gs('erde','golem'),
 };
 
 console.log(`Generating ${Object.keys(SPRITES).length} sprites → ${OUT}`);

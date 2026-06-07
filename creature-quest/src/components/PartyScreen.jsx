@@ -2,6 +2,13 @@ import CreatureSprite from './CreatureSprite.jsx';
 import { TYPES } from '../data/types.js';
 import { getSpecies, maxHp, maxStats, xpForNext } from '../engine/creatures.js';
 
+const STATUS_BADGE = {
+  burn:      { label: 'BRN', color: '#b03000', bg: '#ffcaaa' },
+  paralysis: { label: 'PAR', color: '#806000', bg: '#ffe878' },
+  poison:    { label: 'PSN', color: '#7030a0', bg: '#e8c0f0' },
+  sleep:     { label: 'SLP', color: '#404080', bg: '#c0c0e8' },
+};
+
 export default function PartyScreen({ party, box, onClose, onLead }) {
   return (
     <div className="overlay">
@@ -22,6 +29,14 @@ export default function PartyScreen({ party, box, onClose, onLead }) {
             <div style={{ flex: 1 }}>
               <div className="small">
                 {i === 0 ? '⭐ ' : ''}{sp.name} <span className="tiny">Lv{p.level}</span>
+                {p.status && STATUS_BADGE[p.status] && (
+                  <span
+                    className="status-badge"
+                    style={{ background: STATUS_BADGE[p.status].bg, color: STATUS_BADGE[p.status].color, marginLeft: 6 }}
+                  >
+                    {STATUS_BADGE[p.status].label}
+                  </span>
+                )}
               </div>
               <span className="type-pill" style={{ background: t.color }}>{t.icon} {t.name}</span>
               {t2 && <span className="type-pill" style={{ background: t2.color, marginLeft: 4 }}>{t2.icon} {t2.name}</span>}

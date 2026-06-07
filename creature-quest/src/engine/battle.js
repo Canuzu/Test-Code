@@ -25,13 +25,40 @@ export function performMove(user, target, moveId) {
   const log = [];
   const uName = getSpecies(user).name;
 
+  // Schlaf-Check: überspringe Zug wenn noch schläfrig
+  if (user.status === 'sleep') {
+    if ((user.sleepTurns ?? 0) > 0) {
+      user.sleepTurns -= 1;
+      if (user.sleepTurns === 0) {
+        user.status = null;
+        log.push(`${uName} wacht auf!`);
+      } else {
+        log.push(`${uName} schläft tief und fest.`);
+        return { log, damage: 0, skipped: true };
+      }
+    } else {
+      user.status = null;
+    }
+  }
+
+  // Lähmungs-Check: 25% Chance auf Ausfall
+  if (user.status === 'paralysis' && Math.random() < 0.25) {
+    log.push(`${uName} ist gelähmt und kann sich nicht bewegen!`);
+    return { log, damage: 0, skipped: true };
+  }
+
   // Treffer?
   if (Math.random() * 100 > move.acc) {
     log.push(`${uName} setzt ${move.name} ein – daneben!`);
     return { log, damage: 0, missed: true };
   }
 
-  // Status-Attacken
+  // PP-Verbrauch
+  if (user.movePP) {
+    user.movePP[moveId] = Math.max(0, (user.movePP[moveId] ?? move.pp ?? 30) - 1);
+  }
+
+  // Status-Attacken (power 0)
   if (move.power === 0) {
     if (move.effect === 'raise_atk') {
       user.atkMul = Math.min(2, (user.atkMul || 1) + 0.3);
@@ -39,15 +66,34 @@ export function performMove(user, target, moveId) {
     } else if (move.effect === 'raise_def') {
       user.defMul = Math.min(2, (user.defMul || 1) + 0.3);
       log.push(`${uName} setzt ${move.name} ein – Verteidigung steigt!`);
+    } else if (move.effect === 'sleep') {
+      const tName = getSpecies(target).name;
+      if (!target.status) {
+        target.status = 'sleep';
+        target.sleepTurns = 2 + Math.floor(Math.random() * 3);
+        log.push(`${uName} setzt ${move.name} ein!`);
+        log.push(`${tName} schläft ein!`);
+      } else {
+        log.push(`${uName} setzt ${move.name} ein – ${tName} ist bereits betroffen!`);
+      }
+    } else if (move.effect === 'poison') {
+      const tName = getSpecies(target).name;
+      if (!target.status) {
+        target.status = 'poison';
+        log.push(`${uName} setzt ${move.name} ein!`);
+        log.push(`${tName} wurde vergiftet!`);
+      } else {
+        log.push(`${uName} setzt ${move.name} ein – ${tName} ist bereits betroffen!`);
+      }
     } else {
       log.push(`${uName} setzt ${move.name} ein.`);
     }
     return { log, damage: 0 };
   }
 
-  // Schaden
+  // Schaden berechnen (Verbrennung halbiert Angriff)
   const lvl = user.level;
-  const a = atkOf(user);
+  const a = atkOf(user) * (user.status === 'burn' ? 0.5 : 1);
   const d = defOf(target);
   const userTypes = speciesTypes(getSpecies(user));
   const targetTypes = speciesTypes(getSpecies(target));
@@ -63,12 +109,39 @@ export function performMove(user, target, moveId) {
 
   target.curHp = Math.max(0, target.curHp - dmg);
 
+  // Drain: heile Benutzer um 50% des verursachten Schadens
+  if (move.effect === 'drain') {
+    const heal = Math.max(1, Math.floor(dmg / 2));
+    user.curHp = Math.min(maxHp(user), user.curHp + heal);
+  }
+
   log.push(`${uName} setzt ${move.name} ein!`);
   if (crit > 1) log.push('Ein Volltreffer!');
   const lbl = effectivenessLabel(mult);
   if (lbl) log.push(lbl);
 
+  // Sekundäreffekt: Status inflizieren
+  if (move.sideEffect && !target.status && target.curHp > 0) {
+    if (Math.random() < move.sideEffect.chance) {
+      const tName = getSpecies(target).name;
+      target.status = move.sideEffect.status;
+      if (target.status === 'burn')      log.push(`${tName} wurde verbrannt!`);
+      if (target.status === 'paralysis') log.push(`${tName} wurde gelähmt!`);
+      if (target.status === 'poison')    log.push(`${tName} wurde vergiftet!`);
+    }
+  }
+
   return { log, damage: dmg, mult, crit: crit > 1 };
+}
+
+// Rundenende-Statusschaden (Verbrennung / Vergiftung). Einmal pro Zug aufrufen.
+export function tickStatus(inst) {
+  if (inst.status !== 'burn' && inst.status !== 'poison') return { log: [], damage: 0 };
+  const name = getSpecies(inst).name;
+  const damage = Math.max(1, Math.floor(maxHp(inst) / 8));
+  inst.curHp = Math.max(0, inst.curHp - damage);
+  const label = inst.status === 'burn' ? 'Verbrennung' : 'Vergiftung';
+  return { log: [`${name} leidet unter ${label}!`], damage };
 }
 
 // Gegner-KI: meist eine Angriffs-Attacke, selten Status.
