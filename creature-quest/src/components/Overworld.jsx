@@ -139,8 +139,8 @@ function PlayerSprite({ facing, gender }) {
 export default function Overworld({
   zone, px, py, facing, gender = 'boy',
   onDir, onInteract,
-  onOpenParty, onOpenDex, onMenu,
-  balls, partyCount,
+  onOpenParty, onOpenDex, onOpenBag, onMenu,
+  balls, money = 0, badges, partyCount,
 }) {
   const z = ZONES[zone];
   const camX = Math.max(0, Math.min(px - Math.floor(VIEW_COLS / 2), ZONE_WIDTH  - VIEW_COLS));
@@ -156,8 +156,11 @@ export default function Overworld({
       {/* ── Top bar ── */}
       <div className="world-top">
         <span style={{ color: '#e8e0c8', fontSize: 9 }}>📍 {z.name}</span>
-        <span style={{ display: 'flex', gap: 6 }}>
+        <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <span style={{ color: '#f4d878', fontSize: 8 }}>💰{money}</span>
+          {badges && badges.size > 0 && <span style={{ fontSize: 8, color: '#f4d878' }}>🏅{badges.size}</span>}
           <button className="btn" style={{ padding: '3px 8px', fontSize: 8 }} onClick={onOpenParty}>Team ({partyCount})</button>
+          <button className="btn" style={{ padding: '3px 8px', fontSize: 8 }} onClick={onOpenBag}>🎒</button>
           <button className="btn" style={{ padding: '3px 8px', fontSize: 8 }} onClick={onOpenDex}>Dex</button>
           <button className="btn" style={{ padding: '3px 8px', fontSize: 8 }} onClick={onMenu}>☰</button>
         </span>
