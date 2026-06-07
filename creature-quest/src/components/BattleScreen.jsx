@@ -4,9 +4,9 @@ import { charImgUrl } from './GenderSelect.jsx';
 import { MOVES } from '../data/moves.js';
 import { TYPES } from '../data/types.js';
 import {
-  performMove, enemyChooseMove, attemptCapture, fleeChance, speedOf, resetBuffs,
+  performMove, enemyChooseMove, attemptCapture, fleeChance, speedOf, resetBuffs, tickStatus,
 } from '../engine/battle.js';
-import { gainXp, xpReward, getSpecies, maxHp } from '../engine/creatures.js';
+import { gainXp, xpReward, getSpecies, maxHp, xpForNext } from '../engine/creatures.js';
 
 // Battle background images (downloaded by CI into assets/battle-bg/)
 const BG_IMGS = import.meta.glob('../assets/battle-bg/*.png', { eager: true, import: 'default' });
@@ -36,15 +36,31 @@ const FX = {
   luft:    { glyph: '🌀', color: '#90caf9' },
 };
 
-function HpBar({ inst, showNums }) {
+const STATUS_BADGE = {
+  burn:      { label: 'BRN', color: '#b03000', bg: '#ffcaaa' },
+  paralysis: { label: 'PAR', color: '#806000', bg: '#ffe878' },
+  poison:    { label: 'PSN', color: '#7030a0', bg: '#e8c0f0' },
+  sleep:     { label: 'SLP', color: '#404080', bg: '#c0c0e8' },
+};
+
+function HpBar({ inst, showNums, showXp }) {
   const sp = getSpecies(inst);
   const mx = maxHp(inst);
   const ratio = Math.max(0, inst.curHp / mx);
+  const xpRatio = showXp ? Math.min(1, (inst.xp || 0) / Math.max(1, xpForNext(inst.level))) : null;
+  const badge = inst.status ? STATUS_BADGE[inst.status] : null;
   return (
     <div className="ds-hpbox">
       <div className="ds-hpbox-name">
         <span>{sp.name}</span>
-        <span>Lv{inst.level}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {badge && (
+            <span className="status-badge" style={{ background: badge.bg, color: badge.color }}>
+              {badge.label}
+            </span>
+          )}
+          Lv{inst.level}
+        </span>
       </div>
       <div className="ds-hpbar-row">
         <span className="ds-hp-label">HP</span>
@@ -54,6 +70,14 @@ function HpBar({ inst, showNums }) {
       </div>
       {showNums && (
         <div className="ds-hpnums">{Math.max(0, inst.curHp)}<span className="ds-hpsep">/</span>{mx}</div>
+      )}
+      {showXp && (
+        <div className="ds-xpbar-row">
+          <span className="ds-xp-label">EP</span>
+          <div className="ds-xpbar-track">
+            <div className="ds-xpbar-fill" style={{ width: `${(xpRatio ?? 0) * 100}%` }} />
+          </div>
+        </div>
       )}
     </div>
   );
@@ -80,6 +104,7 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
   const [shake, setShake]   = useState(false);
   const [fainting, setFainting] = useState(null);
   const [trainerOut, setTrainerOut] = useState(false); // trainer portrait exits once battle starts
+  const [encounterFlash, setEncounterFlash] = useState(true);
   const [, forceTick] = useState(0);
 
   const foe = enemyTeam[enemyIdx];
@@ -90,6 +115,8 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
   useEffect(() => {
     party.forEach(resetBuffs);
     enemyTeam.forEach(resetBuffs);
+    const t = setTimeout(() => setEncounterFlash(false), 780);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -107,7 +134,7 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
   useEffect(() => {
     if (phase !== 'msg') return;
     if (msg.length === 0) { applyOutcome(); return; }
-    const t = setTimeout(() => setMsg((m) => m.slice(1)), 1100);
+    const t = setTimeout(() => setMsg((m) => m.slice(1)), 720);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, msg]);
@@ -189,15 +216,26 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
       if (who === 'me') {
         const r = performMove(me, foe, moveId);
         lines.push(...r.log);
-        hits.push({ attacker: 'player', defender: 'enemy', type: MOVES[moveId].type, damage: r.damage, faint: foe.curHp <= 0 ? 'enemy' : null });
+        if (!r.skipped) hits.push({ attacker: 'player', defender: 'enemy', type: MOVES[moveId].type, damage: r.damage, faint: foe.curHp <= 0 ? 'enemy' : null });
         if (foe.curHp <= 0) { lines.push(`${foeSp.name} wurde besiegt!`); out = resolveEnemyFaint(me, foe, lines); break; }
       } else {
         const mid = enemyChooseMove(foe);
         const r = performMove(foe, me, mid);
         lines.push(...r.log);
-        hits.push({ attacker: 'enemy', defender: 'player', type: MOVES[mid].type, damage: r.damage, faint: me.curHp <= 0 ? 'player' : null });
+        if (!r.skipped) hits.push({ attacker: 'enemy', defender: 'player', type: MOVES[mid].type, damage: r.damage, faint: me.curHp <= 0 ? 'player' : null });
         if (me.curHp <= 0) { lines.push(`${meSp.name} wurde besiegt!`); out = resolveFaint(active); break; }
       }
+    }
+    // End-of-turn status damage
+    if (out.type === 'continue' && foe.curHp > 0) {
+      const tick = tickStatus(foe);
+      lines.push(...tick.log);
+      if (foe.curHp <= 0) { lines.push(`${foeSp.name} wurde besiegt!`); out = resolveEnemyFaint(me, foe, lines); }
+    }
+    if (out.type === 'continue' && me.curHp > 0) {
+      const tick = tickStatus(me);
+      lines.push(...tick.log);
+      if (me.curHp <= 0) { lines.push(`${meSp.name} wurde besiegt!`); out = resolveFaint(active); }
     }
     playHits(hits);
     enqueue(lines, out);
@@ -267,6 +305,9 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
 
   return (
     <div className="battle-wrap">
+      {/* ── Encounter flash on battle start ── */}
+      {encounterFlash && <div className="encounter-flash" />}
+
       {/* ── Trainer banner ── */}
       {isTrainer && (
         <div className="trainer-banner">
@@ -333,7 +374,7 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
               </div>
             </div>
           </div>
-          <HpBar inst={me} showNums />
+          <HpBar inst={me} showNums showXp />
         </div>
 
         {/* ── Attack effect layer ── */}
@@ -388,11 +429,15 @@ export default function BattleScreen({ enemyTeam, trainer, party, balls, playerN
             {me.moves.map((mv) => {
               const m = MOVES[mv];
               const t = TYPES[m.type] || { color: '#888', icon: '◆', name: m.type };
+              const curPP = me.movePP?.[mv] ?? m.pp ?? 30;
+              const maxPP = m.pp ?? 30;
+              const ppClass = curPP === 0 ? 'pp-zero' : curPP <= Math.floor(maxPP / 3) ? 'pp-low' : '';
               return (
-                <button key={mv} className="ds-move-btn" onClick={() => playerAttack(mv)}>
+                <button key={mv} className="ds-move-btn" disabled={curPP === 0} onClick={() => playerAttack(mv)}>
                   <span className="ds-move-name">{m.name}</span>
                   <span className="type-pill ds-move-type" style={{ background: t.color }}>{t.icon} {t.name}</span>
                   {m.power > 0 && <span className="ds-move-power">Kraft {m.power}</span>}
+                  <span className={`ds-move-pp ${ppClass}`}>{curPP}/{maxPP}</span>
                 </button>
               );
             })}

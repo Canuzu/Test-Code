@@ -38,10 +38,14 @@ export default function App() {
   const [dialogue, setDialogue] = useState(null); // { name, lines, onDone? }
 
   const [canContinue, setCanContinue] = useState(false);
+  const [fadeKey, setFadeKey] = useState(0); // bumps on each screen change to replay fade-in
 
   const encounterRng = useRef(mulberry32(Date.now() >>> 0));
 
   useEffect(() => { setCanContinue(hasSave()); }, []);
+
+  // Replay a quick fade-in whenever the screen changes (DS-style transitions).
+  useEffect(() => { setFadeKey((k) => k + 1); }, [screen]);
 
   const showToast = (txt) => {
     setToast(txt);
@@ -280,9 +284,12 @@ export default function App() {
   }
 
   // ---- Render ----
+  const fade = <div key={fadeKey} className="screen-fade screen-fade-in" />;
+
   if (screen === 'title') {
     return (
       <div className="app">
+        {fade}
         <TitleScreen onNew={startNewGame} onContinue={continueGame} canContinue={canContinue} />
       </div>
     );
@@ -291,6 +298,7 @@ export default function App() {
   if (screen === 'gender') {
     return (
       <div className="app">
+        {fade}
         <GenderSelect onChoose={handleGenderChoose} />
       </div>
     );
@@ -299,6 +307,7 @@ export default function App() {
   if (screen === 'name') {
     return (
       <div className="app">
+        {fade}
         <NameEntry onConfirm={handleNameConfirm} />
       </div>
     );
@@ -307,6 +316,7 @@ export default function App() {
   if (screen === 'starter') {
     return (
       <div className="app">
+        {fade}
         <StarterSelect onChoose={chooseStarter} />
       </div>
     );
@@ -315,6 +325,7 @@ export default function App() {
   if (screen === 'battle' && enemyTeam) {
     return (
       <div className="app">
+        {fade}
         {toast && <div className="toast">{toast}</div>}
         <BattleScreen
           enemyTeam={enemyTeam}
@@ -334,6 +345,7 @@ export default function App() {
   // world
   return (
     <div className="app">
+      {fade}
       {toast && <div className="toast">{toast}</div>}
       <Overworld
         zone={player.zone}

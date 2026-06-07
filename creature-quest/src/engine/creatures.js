@@ -44,8 +44,12 @@ export function createInstance(speciesId, level) {
     xp: 0,
     moves: movesUpToLevel(speciesId, level),
     curHp: 0,
+    status: null,
+    sleepTurns: 0,
   };
   inst.curHp = maxHp(inst);
+  inst.movePP = {};
+  for (const mv of inst.moves) inst.movePP[mv] = MOVES[mv]?.pp ?? 30;
   return inst;
 }
 
@@ -99,6 +103,10 @@ export function isFainted(inst) {
 
 export function healFull(inst) {
   inst.curHp = maxHp(inst);
+  inst.status = null;
+  inst.sleepTurns = 0;
+  inst.movePP = {};
+  for (const mv of inst.moves) inst.movePP[mv] = MOVES[mv]?.pp ?? 30;
 }
 
 export function moveData(moveId) {
