@@ -250,11 +250,117 @@ canvas, img { image-rendering: pixelated; }
 }
 
 /* Hit flash animation */
-.sprite-flash { animation: hitFlash 0.28s steps(2); }
+.sprite-flash { animation: hitFlash 0.34s steps(2); }
 @keyframes hitFlash {
   0%   { filter: brightness(10) saturate(0); }
+  50%  { filter: brightness(3) saturate(0.4) drop-shadow(0 0 6px #fff); }
   100% { filter: none; }
 }
+
+/* ── Living battle sprites: depth, breathing, entry, lunge, faint ── */
+.sprite-stack { position: relative; }
+.battle-scene .sprite-breath img {
+  filter: drop-shadow(3px 6px 3px rgba(0, 0, 0, 0.42));
+}
+
+/* breathing idle — sprite gently swells */
+.sprite-breath {
+  animation: breath 2.6s ease-in-out infinite;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+@keyframes breath {
+  0%, 100% { transform: scaleY(1) translateY(0); }
+  50%      { transform: scaleY(1.035) translateY(-2px); }
+}
+/* faint — collapse + fade (overrides breathing via higher specificity) */
+.sprite-breath.is-faint {
+  animation: faintDrop 0.6s ease-in forwards;
+  transform-origin: 50% 100%;
+}
+@keyframes faintDrop {
+  0%   { transform: translateY(0) scaleY(1); opacity: 1; }
+  100% { transform: translateY(48px) scaleY(0.12); opacity: 0; }
+}
+
+/* send-in entry */
+.sprite-enter      { animation: spriteEnter 0.5s cubic-bezier(.2,.8,.3,1) both; }
+.sprite-enter-back { animation: spriteEnterBack 0.5s cubic-bezier(.2,.8,.3,1) both; }
+@keyframes spriteEnter     { from { opacity: 0; transform: translateX(64px)  scale(.55); } to { opacity: 1; transform: none; } }
+@keyframes spriteEnterBack { from { opacity: 0; transform: translateX(-64px) scale(.55); } to { opacity: 1; transform: none; } }
+
+/* attacker lunges toward the opponent */
+.lunge-player { animation: lungePlayer 0.26s ease; }
+.lunge-enemy  { animation: lungeEnemy  0.26s ease; }
+@keyframes lungePlayer { 0% { transform: translate(0,0); } 45% { transform: translate(22px,-16px); } 100% { transform: translate(0,0); } }
+@keyframes lungeEnemy  { 0% { transform: translate(0,0); } 45% { transform: translate(-22px,16px); } 100% { transform: translate(0,0); } }
+
+/* whole-scene shake on impact */
+.battle-scene.shake { animation: sceneShake 0.34s ease; }
+@keyframes sceneShake {
+  0%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(-6px, 3px); }
+  30% { transform: translate(6px, -3px); }
+  45% { transform: translate(-5px, -2px); }
+  60% { transform: translate(5px, 2px); }
+  75% { transform: translate(-3px, 1px); }
+}
+
+/* ── Attack effect layer: flying projectile + impact burst ── */
+.fx-layer { position: absolute; inset: 0; z-index: 8; pointer-events: none; }
+.fx-proj {
+  position: absolute;
+  font-size: 30px;
+  filter: drop-shadow(0 0 8px currentColor);
+  will-change: left, top, transform;
+}
+.fx-to-enemy  .fx-proj { animation: projToEnemy  0.34s ease-in forwards; }
+.fx-to-player .fx-proj { animation: projToPlayer 0.34s ease-in forwards; }
+@keyframes projToEnemy {
+  0%   { left: 24%; top: 68%; transform: translate(-50%,-50%) scale(.5) rotate(0deg); }
+  100% { left: 74%; top: 26%; transform: translate(-50%,-50%) scale(1.15) rotate(300deg); }
+}
+@keyframes projToPlayer {
+  0%   { left: 74%; top: 26%; transform: translate(-50%,-50%) scale(.5) rotate(0deg); }
+  100% { left: 24%; top: 68%; transform: translate(-50%,-50%) scale(1.15) rotate(-300deg); }
+}
+.fx-burst {
+  position: absolute;
+  width: 90px; height: 90px;
+  border-radius: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  z-index: 7;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  animation: fxBurst 0.42s ease-out 0.3s forwards;
+}
+.fx-burst-enemy  { left: 74%; top: 26%; }
+.fx-burst-player { left: 24%; top: 68%; }
+@keyframes fxBurst {
+  0%   { transform: translate(-50%,-50%) scale(0);   opacity: .95; }
+  70%  { opacity: .8; }
+  100% { transform: translate(-50%,-50%) scale(2.6); opacity: 0; }
+}
+
+/* ── Sky atmosphere: drifting clouds + sun glow ── */
+.battle-clouds { position: absolute; inset: 0 0 52% 0; overflow: hidden; pointer-events: none; }
+.bcloud {
+  position: absolute; height: 24px; border-radius: 20px;
+  background: #ffffffcc; filter: blur(2px);
+  box-shadow: 18px 6px 0 -4px #ffffffb0, -16px 4px 0 -2px #ffffffb0;
+}
+.bcloud.b1 { width: 70px; top: 14px; left: -100px; animation: bDrift 26s linear infinite; }
+.bcloud.b2 { width: 54px; top: 40px; left: -100px; animation: bDrift 34s linear infinite 6s; opacity: .8; }
+.bcloud.b3 { width: 88px; top: 6px;  left: -130px; animation: bDrift 44s linear infinite 12s; opacity: .7; }
+@keyframes bDrift { from { transform: translateX(0); } to { transform: translateX(560px); } }
+.battle-sun {
+  position: absolute; top: -34px; right: -34px; width: 130px; height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff7c860 0%, #fff7c800 70%);
+  pointer-events: none;
+  animation: sunPulse 5s ease-in-out infinite;
+}
+@keyframes sunPulse { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
 
 /* DS-style HP box */
 .ds-hpbox {
@@ -566,4 +672,46 @@ canvas, img { image-rendering: pixelated; }
   line-height: 1.8;
   color: var(--ink);
   min-height: 40px;
+}
+
+/* ── Living overworld: animated tiles, clouds, depth, bobbing actors ── */
+.cell-water { animation: waterShimmer 3.4s ease-in-out infinite; }
+@keyframes waterShimmer {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50%      { filter: brightness(1.2) saturate(1.3); }
+}
+.cell-grass { animation: grassSway 2.8s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes grassSway {
+  0%, 100% { transform: skewX(0deg)  scaleY(1); }
+  30%      { transform: skewX(4deg)  scaleY(1.02); }
+  70%      { transform: skewX(-4deg) scaleY(1.02); }
+}
+.cell-tree { animation: treeSway 5s ease-in-out infinite; transform-origin: 50% 92%; }
+@keyframes treeSway {
+  0%, 100% { transform: rotate(0deg); }
+  35%      { transform: rotate(1.2deg); }
+  70%      { transform: rotate(-1.2deg); }
+}
+
+/* drifting clouds over the map (behind actors) */
+.ow-clouds { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 3; }
+.ow-cloud { position: absolute; border-radius: 50%; background: #fff; filter: blur(3px); }
+.ow-cloud.c1 { width: 120px; height: 40px; top: 18px;  left: -150px; opacity: .16; animation: owDrift 30s linear infinite; }
+.ow-cloud.c2 { width: 90px;  height: 30px; top: 130px; left: -150px; opacity: .12; animation: owDrift 42s linear infinite 8s; }
+.ow-cloud.c3 { width: 150px; height: 46px; top: 230px; left: -190px; opacity: .10; animation: owDrift 54s linear infinite 16s; }
+@keyframes owDrift { from { transform: translateX(0); } to { transform: translateX(680px); } }
+
+/* depth: top light + edge vignette */
+.ow-vignette {
+  position: absolute; inset: 0; pointer-events: none; z-index: 6;
+  background: radial-gradient(120% 80% at 50% 28%, #ffffff22 0%, #00000000 42%, #00000055 100%);
+}
+
+/* bobbing actors + soft ground shadows */
+.ow-actor { animation: owBob 1.2s ease-in-out infinite; }
+@keyframes owBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+.ow-shadow {
+  position: absolute; left: 50%; bottom: 1px;
+  width: 22px; height: 7px; transform: translateX(-50%);
+  background: #00000055; border-radius: 50%; filter: blur(1px); z-index: 0;
 }
