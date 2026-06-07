@@ -1,0 +1,8 @@
+{
+  "_comment": "AI-generated sprite/tile URLs. Filled by gen-sprite-agents, downloaded by download-sprites.mjs during CI.",
+  "sprites": {
+    "1": "https://d8j0ntlcm91z4.cloudfront.net/user_3EXx4srSN4LRB1TpuCr7HoL6VQx/hf_20260607_085242_c094b85e-fe48-43fe-a306-facb9e4a6988.png"
+  },
+  "tiles": {},
+  "player": null
+}
