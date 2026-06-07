@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import TitleScreen from './components/TitleScreen.jsx';
+import GenderSelect from './components/GenderSelect.jsx';
 import NameEntry from './components/NameEntry.jsx';
 import StarterSelect from './components/StarterSelect.jsx';
 import Overworld from './components/Overworld.jsx';
@@ -15,9 +16,10 @@ import { saveGame, loadGame, hasSave, clearSave } from './engine/save.js';
 const ENCOUNTER_RATE = 0.22;
 
 export default function App() {
-  const [screen, setScreen] = useState('title'); // title | name | starter | world | battle
+  const [screen, setScreen] = useState('title'); // title | gender | name | starter | world | battle
   const [player, setPlayer] = useState({ zone: START.zone, x: START.x, y: START.y, facing: 'down' });
   const [playerName, setPlayerName] = useState('');
+  const [gender, setGender] = useState('boy');
   const [party, setParty] = useState([]);
   const [box, setBox] = useState([]);
   const [dexSeen, setDexSeen] = useState(new Set());
@@ -50,7 +52,7 @@ export default function App() {
   const persist = useCallback((over = {}) => {
     saveGame({
       player, party, box, dexSeen, dexCaught, balls,
-      playerName, defeatedTrainers, ...over,
+      playerName, defeatedTrainers, gender, ...over,
     });
   }, [player, party, box, dexSeen, dexCaught, balls, playerName, defeatedTrainers]);
 
@@ -61,6 +63,11 @@ export default function App() {
     setDefeatedTrainers(new Set());
     setPlayerName('');
     setPlayer({ zone: START.zone, x: START.x, y: START.y, facing: 'down' });
+    setScreen('gender');
+  }
+
+  function handleGenderChoose(g) {
+    setGender(g);
     setScreen('name');
   }
 
@@ -75,6 +82,7 @@ export default function App() {
     setBalls(s.balls);
     setPlayerName(s.playerName || '');
     setDefeatedTrainers(s.defeatedTrainers || new Set());
+    setGender(s.gender || 'boy');
     setScreen('world');
   }
 
@@ -93,7 +101,7 @@ export default function App() {
     saveGame({
       player: { zone: START.zone, x: START.x, y: START.y, facing: 'down' },
       party: newParty, box: [], dexSeen: seen, dexCaught: caught, balls: 10,
-      playerName, defeatedTrainers: new Set(),
+      playerName, defeatedTrainers: new Set(), gender,
     });
     setCanContinue(true);
     showToast(`${getSpecies(starter).name} schließt sich dir an!`);
@@ -280,6 +288,14 @@ export default function App() {
     );
   }
 
+  if (screen === 'gender') {
+    return (
+      <div className="app">
+        <GenderSelect onChoose={handleGenderChoose} />
+      </div>
+    );
+  }
+
   if (screen === 'name') {
     return (
       <div className="app">
@@ -306,6 +322,8 @@ export default function App() {
           party={party}
           balls={balls}
           playerName={playerName}
+          gender={gender}
+          zone={player.zone}
           onUseBall={() => setBalls((b) => Math.max(0, b - 1))}
           onEnd={endBattle}
         />
@@ -322,6 +340,7 @@ export default function App() {
         px={player.x}
         py={player.y}
         facing={player.facing}
+        gender={gender}
         balls={balls}
         partyCount={party.length}
         onDir={tryDir}
