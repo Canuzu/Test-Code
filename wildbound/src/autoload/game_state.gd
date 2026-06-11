@@ -14,6 +14,8 @@ var facing: int = Direction.Dir.DOWN
 var playtime: float = 0.0
 var flags: Dictionary = {}
 var party: Array = []   # of Creature (max 6)
+var inventory: Inventory = Inventory.new()
+var money: int = 0
 
 var _counting: bool = true
 
@@ -30,6 +32,8 @@ func new_game() -> void:
 	playtime = 0.0
 	flags = {}
 	party = []
+	inventory = Inventory.new()
+	money = 0
 
 func to_dict() -> Dictionary:
 	var party_data: Array = []
@@ -43,6 +47,8 @@ func to_dict() -> Dictionary:
 		"playtime": playtime,
 		"flags": flags,
 		"party": party_data,
+		"inventory": inventory.to_dict(),
+		"money": money,
 	}
 
 func apply_dict(data: Dictionary) -> void:
@@ -56,3 +62,6 @@ func apply_dict(data: Dictionary) -> void:
 	party = []
 	for creature_data in data.get("party", []):
 		party.append(Creature.from_dict(creature_data))
+	inventory = Inventory.new()
+	inventory.from_dict(data.get("inventory", {}))
+	money = int(data.get("money", 0))

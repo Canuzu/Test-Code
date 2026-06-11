@@ -16,7 +16,7 @@ class_name Battle extends RefCounted
 ## StatusFx, enemy move choice in BattleAI. HP and status conditions persist on
 ## the Creature beyond the battle; stat stages and PP are volatile (Combatant).
 
-enum Phase { CHOOSE, REPLACE, DONE }
+enum Phase { CHOOSE, REPLACE, CATCH, DONE }
 
 const EXP_DIVISOR := 7.0
 const FLEE_BONUS := 30
@@ -38,6 +38,7 @@ var _struggle: MoveData = MoveData.from_dict(STRUGGLE)
 var _rng: RandomNumberGenerator
 var _flee_attempts: int = 0
 var _events: Array = []
+var _catch_wild: Creature = null  # the wild creature to catch (set when entering CATCH phase)
 
 func _init(party: Array, wild: Creature, rng: RandomNumberGenerator = null) -> void:
 	_party = party
@@ -128,6 +129,25 @@ func choose_replacement(party_index: int) -> Array:
 		return []
 	phase = Phase.CHOOSE
 	_send_out(party_index)
+	return _flush()
+
+## After enemy faints. Attempt catch with the given ball.
+func choose_catch(ball_id: String) -> Array:
+	if phase != Phase.CATCH or _catch_wild == null:
+		return []
+	_text("Der Ball wirft sich...")
+	var enemy_hp_pct := float(enemy.creature.current_hp) / enemy.creature.max_hp()
+	var success := Catch.resolve_catch(ball_id, _catch_wild, enemy_hp_pct, _rng)
+	for _i in range(4):
+		_events.append({"t": "catch_shake"})
+	if success:
+		_text("Getroffen! %s gefangen!" % _catch_wild.display_name())
+		_party.append(_catch_wild)
+		_award_exp()
+		_finish("win")
+	else:
+		_text("Verdammt! %s ist entkommen!" % _catch_wild.display_name())
+		phase = Phase.CHOOSE
 	return _flush()
 
 # --- turn internals -----------------------------------------------------------
@@ -228,8 +248,8 @@ func _check_faints() -> void:
 	if enemy.creature.is_fainted():
 		_events.append({"t": "faint", "side": "enemy"})
 		_text("%s ist besiegt!" % _label(enemy, "enemy"))
-		_award_exp()
-		_finish("win")
+		_catch_wild = enemy.creature
+		phase = Phase.CATCH
 		return
 	if player.creature.is_fainted():
 		_events.append({"t": "faint", "side": "player"})

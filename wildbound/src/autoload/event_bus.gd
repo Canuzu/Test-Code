@@ -41,6 +41,14 @@ signal battle_started
 @warning_ignore("unused_signal")
 signal battle_ended(outcome: String)
 
+# --- items / inventory ---
+@warning_ignore("unused_signal")
+signal inventory_changed(item_id: String, count: int)
+@warning_ignore("unused_signal")
+signal item_used(item_id: String, context: String)
+@warning_ignore("unused_signal")
+signal catch_attempt(ball_id: String, result: bool)
+
 # --- save ---
 @warning_ignore("unused_signal")
 signal game_saved(slot: int)
