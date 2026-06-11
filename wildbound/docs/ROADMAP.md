@@ -21,7 +21,7 @@ Resources built from verifiable data tables · stat/EXP/level-up/learnset/
 evolution logic · party model persisted in saves · team overview panel · roster
 validation in the verifier. *(Scales toward the 150+ target via more data.)*
 
-## ✅ M4 — Battle system *(current)*
+## ✅ M4 — Battle system
 Turn-based wild battles from tall-grass encounter tables · event-driven battle
 engine (UI-independent, seeded & headless-testable) · classic damage formula
 with STAB/crit/spread · stat stages · Gift/Brand status conditions (persist
@@ -30,9 +30,13 @@ in-battle level-ups, move learning and evolution · blackout flow · battle UI
 (HP/EXP bars, typewriter log, action/move/team menus) · generated creature
 placeholder sprites · battle/encounter validation in verifier + engine tests.
 
-## M5 — Catching & items
-Capture items & mechanics · bag/inventory · healing, buffs, key items · item use
-in and out of battle · shops.
+## ✅ M5 — Catching & items *(current)*
+Pokéball types with catch rate formula · item data (balls, consumables, effects) ·
+inventory system (99-stack limits, persisted in saves) · catch mechanics (four-shake
+roll, status modifiers, wild capture after victory) · bag UI (overworld item use,
+creature healing/status cure) · shop system (NPC merchants, purchase flow, money
+management) · 7-item starter stock (3 ball types + 3 healing items) · complete M4
+battle integration (CATCH phase, item selection, success/failure flow).
 
 ## M6 — Trainers
 Trainer classes · line-of-sight detection · battle AI · rewards/rematches.
