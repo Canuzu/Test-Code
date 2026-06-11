@@ -10,7 +10,7 @@ class_name BattleScene extends Control
 const TEXT_SPEED := 45.0          # chars/second, matches DialogBox
 const AUTO_ADVANCE := 1.1         # seconds a finished line stays before moving on
 const HP_TWEEN := 0.4
-const ACTIONS := ["KAMPF", "TEAM", "FLUCHT"]
+const ACTIONS := ["KAMPF", "TEAM", "ITEM", "FLUCHT"]
 const CATEGORY_NAMES := {
 	MoveData.Category.PHYSICAL: "Physisch",
 	MoveData.Category.SPECIAL: "Spezial",
@@ -25,7 +25,7 @@ const COL_HP_MID := Color("#d6c14a")
 const COL_HP_LOW := Color("#c65b3c")
 const COL_EXP := Color("#5a86c6")
 
-enum Ui { BUSY, ACTION, MOVES, TEAM, REPLACE }
+enum Ui { BUSY, ACTION, MOVES, TEAM, ITEM, REPLACE }
 
 var wild: Creature
 
@@ -34,7 +34,9 @@ var _ui: int = Ui.BUSY
 var _action_idx := 0
 var _move_idx := 0
 var _team_idx := 0
+var _item_idx := 0
 var _skip := false
+var _ball_items: Array = []  # filtered list of ball items available in inventory
 
 var _enemy_sprite: TextureRect
 var _player_sprite: TextureRect
@@ -58,6 +60,9 @@ var _move_info: Label
 var _team_panel: Control
 var _team_labels: Array = []
 var _team_hint: Label
+var _item_panel: Control
+var _item_labels: Array = []
+var _item_info: Label
 var _flash: ColorRect
 
 func _ready() -> void:
@@ -86,11 +91,15 @@ func _run(events: Array) -> void:
 			"switch":
 				_load_sprite(ev["side"])
 				_refresh_panels()
+			"catch_shake":
+				await _animate_catch_shake()
 			"refresh":
 				_refresh_panels()
 	match _battle.phase:
 		Battle.Phase.CHOOSE:
 			_open_action()
+		Battle.Phase.CATCH:
+			_open_item()
 		Battle.Phase.REPLACE:
 			_open_team(true)
 		Battle.Phase.DONE:
@@ -173,12 +182,14 @@ func _on_confirm() -> void:
 			_confirm_action()
 		Ui.MOVES:
 			_confirm_move()
+		Ui.ITEM:
+			_confirm_item()
 		Ui.TEAM, Ui.REPLACE:
 			_confirm_team()
 
 func _on_cancel() -> void:
 	match _ui:
-		Ui.MOVES, Ui.TEAM:
+		Ui.MOVES, Ui.TEAM, Ui.ITEM:
 			_open_action()
 		_:
 			pass
@@ -197,6 +208,10 @@ func _on_nav(dir: Vector2i) -> void:
 				elif dir.y != 0 and slots > 2:
 					_move_idx = wrapi(_move_idx + 2 * dir.y, 0, slots)
 				_render_moves()
+		Ui.ITEM:
+			if dir.y != 0 and _ball_items.size() > 0:
+				_item_idx = wrapi(_item_idx + dir.y, 0, _ball_items.size())
+				_render_item()
 		Ui.TEAM, Ui.REPLACE:
 			if dir.y != 0:
 				_team_idx = wrapi(_team_idx + dir.y, 0, _battle.party().size())
@@ -212,6 +227,8 @@ func _confirm_action() -> void:
 		1:
 			_open_team(false)
 		2:
+			_open_item()
+		3:
 			_run(_battle.choose_flee())
 
 func _confirm_move() -> void:
@@ -244,6 +261,7 @@ func _hide_menus() -> void:
 	_action_panel.hide()
 	_move_panel.hide()
 	_team_panel.hide()
+	_item_panel.hide()
 	_msg_panel.show()
 
 func _open_action() -> void:
@@ -329,6 +347,71 @@ func _render_team() -> void:
 			color = COL_DISABLED
 		label.add_theme_color_override("font_color", color)
 	_team_hint.text = "[E] wählen" + ("" if _ui == Ui.REPLACE else " · [Esc] zurück")
+
+func _open_item() -> void:
+	if _battle.phase != Battle.Phase.CATCH:
+		return
+	_ui = Ui.ITEM
+	_hide_menus()
+	_msg_label.text = "Welchen Ball?"
+	_msg_label.visible_characters = -1
+	_msg_panel.show()
+	_item_idx = 0
+	_ball_items = []
+	var item_db = ItemDatabase.new()
+	for item_id in GameState.inventory.get_items():
+		if item_db.has(item_id):
+			var item := item_db.get_item(item_id)
+			if item.type == "ball":
+				_ball_items.append(item)
+	if _ball_items.is_empty():
+		_item_info.text = "Keine Bälle!"
+		_item_panel.show()
+		return
+	_item_panel.show()
+	_render_item()
+
+func _render_item() -> void:
+	for i in _item_labels.size():
+		var label: Label = _item_labels[i]
+		if i >= _ball_items.size():
+			label.hide()
+			continue
+		label.show()
+		var item: ItemData = _ball_items[i]
+		var count := GameState.inventory.count_item(item.id)
+		label.text = "%s%s × %d" % [
+			"> " if i == _item_idx else "  ",
+			item.display_name,
+			count,
+		]
+		var color := COL_TEXT if i == _item_idx else COL_DIM
+		label.add_theme_color_override("font_color", color)
+	if _item_idx < _ball_items.size():
+		var item: ItemData = _ball_items[_item_idx]
+		_item_info.text = item.description
+	else:
+		_item_info.text = ""
+
+func _confirm_item() -> void:
+	if _item_idx >= _ball_items.size():
+		return
+	var item: ItemData = _ball_items[_item_idx]
+	if not GameState.inventory.has_item(item.id):
+		_item_info.text = "Keine mehr!"
+		return
+	GameState.inventory.remove_item(item.id)
+	_run(_battle.choose_catch(item.id))
+
+func _animate_catch_shake() -> void:
+	var sprite := _enemy_sprite
+	var original_pos := sprite.position
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(sprite, "position:x", original_pos.x - 3, 0.1)
+	tw.tween_property(sprite, "position:y", original_pos.y + 2, 0.1)
+	await tw.finished
+	await _pause(0.15)
+	sprite.position = original_pos
 
 # --- panels & bars ----------------------------------------------------------
 
@@ -431,6 +514,13 @@ func _build_ui() -> void:
 		_team_labels.append(_mk_label(_team_panel, Vector2(8, 16 + i * 12), ""))
 	_team_hint = _mk_label(_team_panel, Vector2(8, 90), "", COL_DIM)
 	_team_panel.hide()
+
+	_item_panel = _mk_panel(Vector2(50, 30), Vector2(220, 94), self)
+	_mk_label(_item_panel, Vector2(8, 3), "ITEM")
+	for i in 4:
+		_item_labels.append(_mk_label(_item_panel, Vector2(8, 16 + i * 12), ""))
+	_item_info = _mk_label(_item_panel, Vector2(8, 80), "", COL_DIM)
+	_item_panel.hide()
 
 	_flash = ColorRect.new()
 	_flash.color = Color("#070a12")
