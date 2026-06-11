@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/world/entities/npc.gd" id="1_npc"]
+[ext_resource type="Script" path="res://src/player/grid_movement.gd" id="2_move"]
+
+[node name="NPC" type="Node2D"]
+script = ExtResource("1_npc")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+region_enabled = true
+region_rect = Rect2(0, 0, 16, 16)
+
+[node name="GridMovement" type="Node" parent="."]
+script = ExtResource("2_move")
+tiles_per_second = 3.0
+sprint_multiplier = 1.0

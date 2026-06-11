@@ -1,0 +1,19 @@
+{
+	"farnried.sign_dorf": {
+		"pages": [
+			{ "speaker": "", "text": "FARNRIED — Wo der Farn flüstert und der Nebel Wurzeln schlägt." }
+		]
+	},
+	"farnried.mira": {
+		"pages": [
+			{ "speaker": "Mira", "text": "Hörst du das? Im hohen Gras raschelt es wieder. Seit Tagen wird es lauter." },
+			{ "speaker": "Mira", "text": "Vater sagt, die Wildlinge ziehen näher ans Dorf. Er sagt es, als wäre es nichts. Aber nachts verriegelt er die Tür." }
+		]
+	},
+	"farnried.bram": {
+		"pages": [
+			{ "speaker": "Bram", "text": "Früher sind wir bis nach Verdania gewandert, ohne eine Fackel zu tragen. Heute endet der Mut der Leute am Dorfrand." },
+			{ "speaker": "Bram", "text": "Wenn du zum Moospfad willst, sprich vorher mit der Ältesten. Ihr Haus ist das mit dem dunklen Dach." }
+		]
+	}
+}

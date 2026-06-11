@@ -1,0 +1,10 @@
+# Normalize line endings; keep SVG/text diffable, mark true binaries.
+* text=auto eol=lf
+*.svg text
+*.gd text
+*.tscn text
+*.tres text
+*.json text
+*.png binary
+*.ogg binary
+*.wav binary

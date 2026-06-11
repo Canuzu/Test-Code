@@ -1,0 +1,39 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://src/ui/dialog_box.tscn" id="2_dialog"]
+[ext_resource type="Script" path="res://src/ui/debug_hud.gd" id="3_hud"]
+[ext_resource type="PackedScene" path="res://src/ui/team_panel.tscn" id="4_team"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1_main")
+
+[node name="MapHost" type="Node2D" parent="."]
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="DebugHud" type="Label" parent="UILayer"]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 316.0
+offset_bottom = 64.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.6)
+theme_override_font_sizes/font_size = 8
+script = ExtResource("3_hud")
+
+[node name="DialogBox" parent="UILayer" instance=ExtResource("2_dialog")]
+
+[node name="TeamPanel" parent="UILayer" instance=ExtResource("4_team")]
+
+[node name="BattleLayer" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="FadeLayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="Fade" type="ColorRect" parent="FadeLayer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.04, 0.05, 0.08, 1)

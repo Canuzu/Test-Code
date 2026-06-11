@@ -1,0 +1,13 @@
+{
+	"moospfad.sign_nord": {
+		"pages": [
+			{ "speaker": "", "text": "MOOSPFAD — Im Norden: Verdania. Der Weg ist seit dem letzten Beben unpassierbar." }
+		]
+	},
+	"moospfad.jorin": {
+		"pages": [
+			{ "speaker": "Jorin", "text": "Bleib auf dem Pfad, hörst du? Das hohe Gras gehört ihnen — nicht uns." },
+			{ "speaker": "Jorin", "text": "Gestern habe ich eine Spur gesehen, breiter als mein Stiefel. Was immer das war: Es hatte keine Eile." }
+		]
+	}
+}
