@@ -48,6 +48,8 @@ signal inventory_changed(item_id: String, count: int)
 signal item_used(item_id: String, context: String)
 @warning_ignore("unused_signal")
 signal catch_attempt(ball_id: String, result: bool)
+@warning_ignore("unused_signal")
+signal shop_opened(shop_id: String, stock: Array)
 
 # --- save ---
 @warning_ignore("unused_signal")

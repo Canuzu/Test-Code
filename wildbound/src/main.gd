@@ -8,12 +8,16 @@ extends Node
 
 var _battle_ui: BattleScene = null
 var _bag_panel: BagPanel = null
+var _shop_panel: ShopPanel = null
 
 func _ready() -> void:
 	SceneManager.register_main($MapHost, $FadeLayer/Fade)
 	_bag_panel = BagPanel.new()
 	$UILayer.add_child(_bag_panel)
 	_bag_panel.hide()
+	_shop_panel = ShopPanel.new()
+	$UILayer.add_child(_shop_panel)
+	_shop_panel.hide()
 	SceneManager.change_map(GameState.current_map, GameState.player_cell, GameState.facing)
 	EventBus.encounter_started.connect(_on_encounter_started)
 	EventBus.battle_ended.connect(_on_battle_ended)

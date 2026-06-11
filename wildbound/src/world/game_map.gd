@@ -36,6 +36,7 @@ func _ready() -> void:
 	_build_warps(data.get("warps", []))
 	_spawn_signs(data.get("signs", []))
 	_spawn_npcs(data.get("npcs", []))
+	_spawn_shops(data.get("shops", []))
 	player.setup_camera(_pixel_rect())
 	_rng.randomize()
 	EventBus.player_moved.connect(_on_player_moved)
@@ -68,6 +69,18 @@ func _spawn_npcs(npcs: Array) -> void:
 		npc.configure(def)
 		add_child(npc)
 		_interactables.append(npc)
+
+func _spawn_shops(shops: Array) -> void:
+	for def in shops:
+		var shop := Shop.new(
+			def.get("id", ""),
+			Vector2i(int(def.get("cell", [0, 0])[0]), int(def.get("cell", [0, 0])[1])),
+			def.get("sheet", ""),
+			def.get("stock", [])
+		)
+		shop.position = shop.grid_cell * Constants.TILE_SIZE + Vector2.ONE * (Constants.TILE_SIZE / 2.0)
+		add_child(shop)
+		_interactables.append(shop)
 
 ## --- Grid queries -----------------------------------------------------------
 
