@@ -13,6 +13,7 @@ const ACTIONS := {
 	"interact": [KEY_E, KEY_ENTER, KEY_SPACE],
 	"menu": [KEY_ESCAPE],
 	"team": [KEY_T],
+	"bag": [KEY_B],
 	"quick_save": [KEY_F5],
 	"quick_load": [KEY_F9],
 }

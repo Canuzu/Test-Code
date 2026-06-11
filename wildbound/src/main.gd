@@ -7,9 +7,13 @@ extends Node
 ## outlive any single map.
 
 var _battle_ui: BattleScene = null
+var _bag_panel: BagPanel = null
 
 func _ready() -> void:
 	SceneManager.register_main($MapHost, $FadeLayer/Fade)
+	_bag_panel = BagPanel.new()
+	$UILayer.add_child(_bag_panel)
+	_bag_panel.hide()
 	SceneManager.change_map(GameState.current_map, GameState.player_cell, GameState.facing)
 	EventBus.encounter_started.connect(_on_encounter_started)
 	EventBus.battle_ended.connect(_on_battle_ended)
@@ -17,7 +21,9 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if SceneManager.is_transitioning or _battle_ui != null:
 		return
-	if event.is_action_pressed("quick_save"):
+	if event.is_action_pressed("bag"):
+		_bag_panel.visible = not _bag_panel.visible
+	elif event.is_action_pressed("quick_save"):
 		SaveManager.save_to_slot(0)
 	elif event.is_action_pressed("quick_load"):
 		SaveManager.load_from_slot(0)
