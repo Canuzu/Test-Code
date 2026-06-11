@@ -42,4 +42,7 @@ const DATA := {
 	"signs": [
 		{"cell": [3, 7], "dialog": "farnried.sign_dorf"},
 	],
+	"shops": [
+		{"id": "farnried.shop", "cell": [17, 4], "sheet": "npc_villager", "stock": ["poké_ball", "great_ball", "potion", "super_potion"]},
+	],
 }

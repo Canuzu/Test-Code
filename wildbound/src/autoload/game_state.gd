@@ -33,7 +33,7 @@ func new_game() -> void:
 	flags = {}
 	party = []
 	inventory = Inventory.new()
-	money = 0
+	money = 1000
 
 func to_dict() -> Dictionary:
 	var party_data: Array = []

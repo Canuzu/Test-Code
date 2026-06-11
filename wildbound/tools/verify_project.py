@@ -72,6 +72,10 @@ EXPECTED = [
     "src/creatures/creature.gd", "src/creatures/move_database.gd",
     "src/creatures/species_database.gd",
     "src/creatures/data/moves_table.gd", "src/creatures/data/species_table.gd",
+    "src/items/item_data.gd", "src/items/item_database.gd", "src/items/inventory.gd",
+    "src/items/catch.gd", "src/items/data/items_table.gd",
+    "src/ui/bag_panel.gd", "src/ui/shop_panel.gd",
+    "src/world/entities/shop.gd",
     "src/battle/damage.gd", "src/battle/combatant.gd", "src/battle/status_fx.gd",
     "src/battle/battle_ai.gd", "src/battle/battle.gd", "src/battle/battle_scene.gd",
     "tools/test_battle.gd", "tools/test_battle.tscn",
@@ -196,6 +200,18 @@ def check_map(map_id, data, all_maps, dialog_ids, used_dialogs, species_ids):
         used_dialogs.add(sign.get("dialog", ""))
         if sign.get("dialog", "") not in dialog_ids:
             errors.append(f"{map_id}: sign dialog '{sign.get('dialog')}' not found")
+    for shop in data.get("shops", []):
+        x, y = shop.get("cell", [0, 0])
+        if not walkable(rows, x, y):
+            errors.append(f"{map_id}: shop '{shop.get('id')}' cell not walkable")
+        if not os.path.isfile(os.path.join(ROOT, f"assets/sprites/npcs/{shop.get('sheet','')}.svg")):
+            errors.append(f"{map_id}: shop sheet missing: {shop.get('sheet')}.svg")
+        used_dialogs.add(shop.get("id", ""))
+        if shop.get("id", "") not in dialog_ids:
+            errors.append(f"{map_id}: shop dialog '{shop.get('id')}' not found")
+        for item_id in shop.get("stock", []):
+            if item_id == "":
+                errors.append(f"{map_id}: shop '{shop.get('id')}' empty stock item")
     check_encounters(map_id, data, rows, species_ids)
     print(f"map ok: {map_id} ({len(rows[0])}x{len(rows)}, "
           f"{len(data.get('npcs', []))} npcs, {len(data.get('warps', []))} warps, "
@@ -297,6 +313,53 @@ def check_creatures():
     return species_ids
 
 
+def check_items():
+    items = literal_after_marker(os.path.join(ROOT, "src/items/data/items_table.gd"))
+    if items is None:
+        return set()
+
+    item_ids = set()
+    for item in items:
+        item_id = item["id"]
+        if item_id in item_ids:
+            errors.append(f"item '{item_id}' duplicated")
+        item_ids.add(item_id)
+
+        item_type = item.get("type", "")
+        if item_type not in ("ball", "consumable", "key", "tm"):
+            errors.append(f"item '{item_id}': bad type '{item_type}'")
+
+        price = item.get("price", 0)
+        if not (isinstance(price, int) and price >= 0):
+            errors.append(f"item '{item_id}': price must be non-negative int, got {price!r}")
+
+        effect = item.get("effect", {})
+        if effect:
+            action = effect.get("action", "")
+            if action == "heal_hp":
+                if "value" not in effect:
+                    errors.append(f"item '{item_id}': heal_hp effect missing 'value'")
+            elif action == "heal_full":
+                pass  # no parameters needed
+            elif action == "cure_status":
+                status = effect.get("status", "")
+                if status not in VALID_STATUSES:
+                    errors.append(f"item '{item_id}': cure_status unknown '{status}'")
+            elif action in ("", None):
+                if item_type == "consumable":
+                    errors.append(f"item '{item_id}': consumable without effect action")
+            else:
+                if item_type == "consumable":
+                    errors.append(f"item '{item_id}': unknown effect action '{action}'")
+
+            if item_type == "ball" and effect.get("catch_power"):
+                if not isinstance(effect["catch_power"], (int, float)):
+                    errors.append(f"item '{item_id}': catch_power must be number")
+
+    print(f"items ok: {len(item_ids)} items")
+    return item_ids
+
+
 # --- assets ------------------------------------------------------------------
 
 def check_svgs():
@@ -324,6 +387,7 @@ def main():
             errors.append(f"missing file: {rel}")
 
     species_ids = check_creatures()
+    item_ids = check_items()
 
     maps = load_maps()
     dialog_ids = load_dialog_ids()

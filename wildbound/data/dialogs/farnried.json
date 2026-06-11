@@ -15,5 +15,11 @@
 			{ "speaker": "Bram", "text": "Früher sind wir bis nach Verdania gewandert, ohne eine Fackel zu tragen. Heute endet der Mut der Leute am Dorfrand." },
 			{ "speaker": "Bram", "text": "Wenn du zum Moospfad willst, sprich vorher mit der Ältesten. Ihr Haus ist das mit dem dunklen Dach." }
 		]
+	},
+	"farnried.shop": {
+		"pages": [
+			{ "speaker": "Ladenbesitzer", "text": "Willkommen! Ich habe alles, was der Wildkämpfer braucht." },
+			{ "speaker": "Ladenbesitzer", "text": "Komm jederzeit wieder!" }
+		]
 	}
 }

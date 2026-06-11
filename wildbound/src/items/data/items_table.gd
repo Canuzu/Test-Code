@@ -58,12 +58,4 @@ const DATA := [
 		"effect": {"action": "cure_status", "status": "poison"},
 		"price": 100,
 	},
-	{
-		"id": "awakening",
-		"display_name": "Aufwecker",
-		"type": "consumable",
-		"description": "Heilt Schlaf.",
-		"effect": {"action": "cure_status", "status": "sleep"},
-		"price": 250,
-	},
 ]
