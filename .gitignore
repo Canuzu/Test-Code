@@ -8,6 +8,9 @@ dist-ssr
 .vite
 npm-debug.log*
 
+# Delivery artifacts (generated on demand, not source)
+wildbound.zip
+
 # Generated at build time by scripts/fetch-prices.mjs — but the card snapshots
 # are committed and grown incrementally by the deploy workflow, so keep those.
 public/data/*
