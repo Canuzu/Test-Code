@@ -1,11 +1,14 @@
 // Service worker for offline support (PWA).
 // Strategy:
 //   - navigations  → network-first, fall back to the cached app shell (offline);
-//   - data/*.json snapshots → network-first (always try fresh prices), cache fallback;
+//   - data/*.json snapshots → STALE-WHILE-REVALIDATE: serve the cached snapshot
+//       instantly (fast load) and refresh it in the background, so a repeat visit
+//       never blocks on the multi-MB download; the daily snapshot changes at most
+//       once a day, so showing the cached copy for a moment is always acceptable;
 //   - other same-origin assets → cache-first, then network (hashed, immutable);
 //   - cross-origin card images (pokemontcg.io / onepiece-cardgame.com) → left untouched.
 
-const CACHE = 'kwde-v5';
+const CACHE = 'kwde-v6';
 const SHELL = ['./', './index.html'];
 
 self.addEventListener('install', (event) => {
@@ -41,8 +44,14 @@ self.addEventListener('fetch', (event) => {
 
   if (url.pathname.includes('/data/') && url.pathname.endsWith('.json')) {
     event.respondWith(
-      fetch(req).then((res) => { putInCache(req, res.clone()); return res; })
-        .catch(() => caches.match(req)),
+      caches.match(req).then((cached) => {
+        // Kick off a background refresh regardless; return cache immediately if we
+        // have it, otherwise wait for the network (first ever visit).
+        const fresh = fetch(req)
+          .then((res) => { if (res.ok) putInCache(req, res.clone()); return res; })
+          .catch(() => cached);
+        return cached || fresh;
+      }),
     );
     return;
   }

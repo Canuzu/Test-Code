@@ -8,6 +8,7 @@ import { planIsPro, billingEnabled } from './lib/pro.js';
 import * as billing from './lib/billing.js';
 import { applyTheme } from './lib/theme.js';
 import { gameSnapshot } from './data/providers/index.js';
+import { rehydrateCards } from './lib/cardCodec.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
 import { ONE_PIECE_CARDS } from './data/onePieceCards.js';
 import { YUGIOH_CARDS } from './data/yugiohCards.js';
@@ -107,16 +108,12 @@ export function StoreProvider({ children }) {
   // Loads the card dataset for `g`: cached snapshot if present, else the bundled
   // sample, then pulls the fresh same-origin snapshot in the background.
   const loadGameData = useCallback((g) => {
-    const cache = store.get(KEYS.cards);
-    if (cache && Array.isArray(cache.cards) && cache.cards.length) {
-      setRawCards(cache.cards);
-      setSource('cache');
-      setLastUpdated(cache.ts ? new Date(cache.ts) : null);
-    } else {
-      setRawCards(sampleFor(g));
-      setSource('sample');
-      setLastUpdated(null);
-    }
+    // Show the bundled sample instantly, then swap in the snapshot. The snapshot
+    // fetch resolves from the service-worker Cache API on repeat visits, so the
+    // sample is only ever a brief first-paint placeholder.
+    setRawCards(sampleFor(g));
+    setSource('sample');
+    setLastUpdated(null);
     loadSnapshot({ silent: true, game: g });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -312,17 +309,27 @@ export function StoreProvider({ children }) {
     setLoading(true);
     if (!silent) setError(null);
     try {
-      const res = await fetch(url, { cache: 'no-cache' });
+      // 'default' lets the HTTP cache + service worker serve the snapshot
+      // instantly (stale-while-revalidate) instead of blocking on a revalidation
+      // round-trip every load — the single biggest first-paint win for a daily
+      // snapshot that changes at most once per day.
+      const res = await fetch(url, { cache: 'default' });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const list = Array.isArray(data?.cards) ? data.cards : [];
       if (list.length === 0) throw new Error('Snapshot leer');
+      // Snapshots ship slimmed (see lib/cardCodec.js): restore the constant /
+      // derivable fields so the rest of the app sees the full card shape.
+      rehydrateCards(list, g);
       const ts = data.generatedAt ? new Date(data.generatedAt).getTime() : Date.now();
       setRawCards(list);
       setSource('snapshot');
       setSnapshotInfo({ cmEnriched: data.cmEnriched || 0, pricesEstimated: !!data.pricesEstimated });
       setLastUpdated(new Date(ts));
-      store.set(KEYS.cards, { cards: list, ts });
+      // NB: we deliberately do NOT cache the (8–9 MB) card list in localStorage —
+      // it overflows the ~5 MB quota and the failed write wasted a full
+      // JSON.stringify of the dataset on every load. The service worker's Cache
+      // API holds the snapshot instead (no size limit), serving repeat loads.
       accumulateHistory(list, ts);
       if (!silent) showToast(`✓ Aktuelle Marktdaten geladen · ${list.length} Karten`);
       return true;

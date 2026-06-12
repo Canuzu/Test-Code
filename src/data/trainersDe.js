@@ -20,6 +20,10 @@ export const TRAINER_DE = {
   'Fairy Energy': 'Feen-Energie',
   'Dragon Energy': 'Drachen-Energie',
 
+  // --- Special Energy ---
+  'Double Colorless Energy': 'Doppelfarblos-Energie',
+  'Rainbow Energy': 'Regenbogen-Energie',
+
   // --- Poké Ball line ---
   'Poké Ball': 'Pokéball',
   'Great Ball': 'Superball',
@@ -36,6 +40,15 @@ export const TRAINER_DE = {
   'Friend Ball': 'Freundesball',
   'Net Ball': 'Netzball',
   'Dusk Ball': 'Finsterball',
+  'Repeat Ball': 'Wiederball',
+  'Fast Ball': 'Turboball',
+  'Lure Ball': 'Köderball',
+  'Heavy Ball': 'Schwerball',
+  'Love Ball': 'Sympathieball',
+  'Moon Ball': 'Mondball',
+  'Beast Ball': 'Bestienball',
+  'Dream Ball': 'Traumball',
+  'Park Ball': 'Parkball',
 
   // --- Potions / healing ---
   Potion: 'Trank',
@@ -45,13 +58,27 @@ export const TRAINER_DE = {
   Revive: 'Beleber',
   'Max Revive': 'Top-Beleber',
   'Rare Candy': 'Sonderbonbon',
+  Antidote: 'Gegengift',
+  'Burn Heal': 'Feuerheiler',
+  'Ice Heal': 'Eisheiler',
+  Awakening: 'Aufwecker',
+  'Paralyze Heal': 'Para-Heiler',
+  'Full Heal': 'Hyperheiler',
+  'Full Restore': 'Top-Genesung',
 
-  // --- Common items ---
+  // --- Common items / tools ---
   'Energy Search': 'Energiesuche',
   'Energy Retrieval': 'Energie-Rückgewinnung',
   'Pokédex': 'Pokédex',
   'Town Map': 'Stadtplan',
   'Escape Rope': 'Fluchtseil',
   'Pokémon Catcher': 'Pokémon-Fänger',
+  'Pokémon Communication': 'Pokémon-Kommunikation',
+  'Float Stone': 'Schwebestein',
+  'Air Balloon': 'Luftballon',
   'Switch': 'Wechsel',
+
+  // --- Supporters (high-confidence official German names) ---
+  "Boss's Orders": 'Befehl des Bosses',
+  Marnie: 'Mary',
 };
