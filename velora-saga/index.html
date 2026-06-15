@@ -16,7 +16,7 @@
 </head>
 <body>
 <div id="wrap"><canvas id="game" width="480" height="320"></canvas></div>
-<div id="hint">Pfeiltasten/WASD bewegen · Leertaste/Enter bestätigen · ESC Menü</div>
+<div id="hint">Pfeiltasten/WASD bewegen · X/Shift halten = rennen · Leertaste/Enter bestätigen · ESC Menü</div>
 <div id="touch">
   <div class="tbtn" id="t-up"    style="left:70px;bottom:150px;width:60px;height:60px;">▲</div>
   <div class="tbtn" id="t-down"  style="left:70px;bottom:30px;width:60px;height:60px;">▼</div>
@@ -548,9 +548,10 @@ function drawTile(ch, sx, sy, season, x, y){
   switch(ch){
     case '.': case 'F': case ',':{
       if(drawGround('t_grass',sx,sy,x,y)){
-        if(ch===','){ // Hochgras-Büschel als Overlay
+        if(ch===','){ // Hochgras-Büschel als Overlay, leicht wiegend
           c.fillStyle = winter? '#a9c0aa' : (autumn? '#7e8a3a':'#2f6b28');
-          for(let i=0;i<6;i++){ const px=sx+2+(i*2)%TILE, py=sy+6+((i*3)%8); c.fillRect(px,py,2,6); }
+          const sw=Math.round(Math.sin(Date.now()/350 + x*0.7 + y*0.4));
+          for(let i=0;i<6;i++){ const px=sx+2+(i*2)%TILE, py=sy+6+((i*3)%8); c.fillRect(px+sw,py,2,6); }
         }
         if(ch==='F'&&!winter){ c.fillStyle=autumn?'#d98b3a':'#f2d54b'; c.fillRect(sx+6,sy+6,4,4); c.fillStyle='#fff'; c.fillRect(sx+7,sy+7,2,2); }
         seasonTint(sx,sy,season);
@@ -563,9 +564,10 @@ function drawTile(ch, sx, sy, season, x, y){
       fill(g1);
       c.fillStyle=g2;
       for(let i=0;i<4;i++){ const px=sx+((x*7+i*5)%TILE), py=sy+((y*5+i*4)%TILE); c.fillRect(px,py,2,2); }
-      if(ch===','){ // Hochgras
+      if(ch===','){ // Hochgras, leicht wiegend
         c.fillStyle = winter? '#a9c0aa' : (autumn? '#7e8a3a':'#3f7d33');
-        for(let i=0;i<6;i++){ const px=sx+2+(i*2)%TILE, py=sy+6+((i*3)%8); c.fillRect(px,py,2,6); }
+        const sw=Math.round(Math.sin(Date.now()/350 + x*0.7 + y*0.4));
+        for(let i=0;i<6;i++){ const px=sx+2+(i*2)%TILE, py=sy+6+((i*3)%8); c.fillRect(px+sw,py,2,6); }
       }
       if(ch==='F'&&!winter){ c.fillStyle=autumn?'#d98b3a':'#e8d24b'; c.fillRect(sx+6,sy+6,3,3); c.fillStyle='#fff'; c.fillRect(sx+7,sy+7,1,1); }
       break;
@@ -613,7 +615,7 @@ function drawTile(ch, sx, sy, season, x, y){
     case 'C':{ fill('#8a6a3a'); c.fillStyle='#6a4a2a'; c.fillRect(sx,sy,TILE,3); c.fillStyle='#a07a4a'; c.fillRect(sx+1,sy+4,TILE-2,TILE-5); break; }
     case 'M':{ fill('#d8cfc0'); c.fillStyle='#7a5a8a'; c.fillRect(sx+2,sy+2,12,12); c.fillStyle='#9a7aaa'; c.fillRect(sx+3,sy+3,10,4); break; }
     case '+': case 'O':{ if(drawGround('t_cave',sx,sy,x,y)) break; fill('#4a4640'); c.fillStyle='#423e38'; for(let i=0;i<3;i++){ c.fillRect(sx+((x*5+i*4)%TILE),sy+((y*4+i*3)%TILE),2,2);} break; }
-    case 'P':{ if(!drawGround('t_cave',sx,sy,x,y)) fill('#4a4640'); c.fillStyle='#3a5a3a'; for(let i=0;i<5;i++){ c.fillRect(sx+2+(i*2)%TILE, sy+6+((i*3)%8),2,6);} break; }
+    case 'P':{ if(!drawGround('t_cave',sx,sy,x,y)) fill('#4a4640'); c.fillStyle='#3a5a3a'; const sw=Math.round(Math.sin(Date.now()/350 + x*0.7 + y*0.4)); for(let i=0;i<5;i++){ c.fillRect(sx+2+(i*2)%TILE+sw, sy+6+((i*3)%8),2,6);} break; }
     default: fill('#000');
   }
 }
@@ -1218,6 +1220,73 @@ const battle = {
 };
 function activePlayer(){ return G.party.find(c=>c.hp>0); }
 
+/* =========================================================================
+   KAMPF-ANIMATIONEN (Pokémon-Schwarz-Stil): Einflug, Idle-Atmen, Angriffs-
+   Vorstoß, Treffer-Blinken, Bildschirm-Shake, Typ-Partikel, KO-Absinken.
+   Rein visuell — die Kampf-Logik (Callback-Kette) bleibt unberührt.
+   ========================================================================= */
+const LUNGE_T=0.32, HIT_T=0.42;
+const BFX = {
+  shake:0, flash:0,
+  entry:{player:0, enemy:0},   // 1 = außerhalb, 0 = auf Position
+  hit:{player:0, enemy:0},     // Restzeit Treffer-Blinken (s)
+  lunge:{player:0, enemy:0},   // Restzeit Vorstoß (s)
+  faint:{player:0, enemy:0},   // 0..1 Absink-Fortschritt
+  parts:[]                     // Partikel {x,y,vx,vy,life,max,color,r}
+};
+function bfxReset(side){ BFX.hit[side]=0; BFX.lunge[side]=0; BFX.faint[side]=0; }
+function bfxEntry(side){ BFX.entry[side]=1; bfxReset(side); }
+function bfxFaint(side){ if(BFX.faint[side]<=0) BFX.faint[side]=0.0001; }
+function bfxStart(){ BFX.flash=1; BFX.shake=0; BFX.parts.length=0; bfxEntry('player'); bfxEntry('enemy'); }
+function bfxSpawn(x,y,color,n){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=40+Math.random()*90;
+    BFX.parts.push({x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-40, life:0, max:0.4+Math.random()*0.35, color, r:2+rnd(3)});
+  }
+}
+function bfxAttack(who, eff, type){
+  const def = who==='player'?'enemy':'player';
+  BFX.lunge[who]=LUNGE_T; BFX.hit[def]=HIT_T;
+  BFX.shake=Math.min(11, 4+eff*3);
+  const pos = def==='enemy'? {x:362,y:92} : {x:110,y:222};
+  bfxSpawn(pos.x, pos.y, TYPE_COLORS[type]||'#fff', 16);
+}
+function updateBFX(dt){
+  if(BFX.shake>0) BFX.shake=Math.max(0, BFX.shake-dt*42);
+  if(BFX.flash>0) BFX.flash=Math.max(0, BFX.flash-dt*2.3);
+  for(const s of ['player','enemy']){
+    if(BFX.entry[s]>0) BFX.entry[s]=Math.max(0, BFX.entry[s]-dt*2.6);
+    if(BFX.hit[s]>0)   BFX.hit[s]=Math.max(0, BFX.hit[s]-dt);
+    if(BFX.lunge[s]>0) BFX.lunge[s]=Math.max(0, BFX.lunge[s]-dt);
+    if(BFX.faint[s]>0 && BFX.faint[s]<1) BFX.faint[s]=Math.min(1, BFX.faint[s]+dt*2.1);
+  }
+  for(let i=BFX.parts.length-1;i>=0;i--){
+    const p=BFX.parts[i]; p.life+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=140*dt;
+    if(p.life>=p.max) BFX.parts.splice(i,1);
+  }
+}
+// Zeichnet ein Kampf-Wesen mit allen Animations-Offsets.
+function drawBattler(side, species, bx, by, size, flip){
+  const t=performance.now()/1000;
+  let x=bx, y=by + Math.sin(t*2 + (side==='enemy'?1.3:0))*2.2;  // Idle-Atmen
+  if(BFX.entry[side]>0)  x += (side==='enemy'? 1:-1) * BFX.entry[side] * 240;
+  if(BFX.lunge[side]>0){ const k=Math.sin((1-BFX.lunge[side]/LUNGE_T)*Math.PI);
+    x += (side==='enemy'? -1:1) * k * 28; y += (side==='enemy'? 1:-1) * k * 9; }
+  let alpha=1;
+  if(BFX.faint[side]>0){ const f=BFX.faint[side]; y += f*48; alpha=Math.max(0,1-f); }
+  if(BFX.hit[side]>0 && Math.floor(t*30)%2===0) alpha*=0.25;  // Treffer-Blinken
+  CTX.save(); CTX.globalAlpha=alpha;
+  drawCreature(species, x, y, size, flip);
+  CTX.restore();
+}
+function drawBattleParts(){
+  for(const p of BFX.parts){
+    CTX.globalAlpha=Math.max(0, 1-p.life/p.max);
+    CTX.fillStyle=p.color; CTX.fillRect(Math.round(p.x), Math.round(p.y), p.r, p.r);
+  }
+  CTX.globalAlpha=1;
+}
+
 function startWildBattle(){
   const map=curMap();
   const table = map.encounters[G.season] || map.encounters[0];
@@ -1250,6 +1319,7 @@ function beginBattle(opts){
   if(!G.dex[battle.enemy.species]) G.dex[battle.enemy.species]='seen';
   Audio2.play(battle.music);
   state=STATE.BATTLE;
+  bfxStart();
   // Intro-Text
   const introLines = battle.wild
     ? ['Ein wildes '+battle.enemy.name+' erscheint!']
@@ -1358,6 +1428,7 @@ function doMoveReal(who,move,defender,attacker,next){
   if(m.power>0){
     const {dmg,eff}=calcDamage(attacker, defender, move);
     defender.hp=Math.max(0, defender.hp-dmg);
+    bfxAttack(who, eff, m.type);
     Audio2.sfx(eff>1?'superhit':'hit');
     if(eff>1) lines.push('Das ist sehr effektiv!');
     else if(eff<1 && eff>0) lines.push('Das ist nicht sehr effektiv...');
@@ -1381,6 +1452,7 @@ function doMoveReal(who,move,defender,attacker,next){
 function handleFaint(c, next){
   Audio2.sfx('faint');
   const isEnemy = (c===battle.enemy);
+  bfxFaint(isEnemy?'enemy':'player');
   battleMsg([c.name+(isEnemy?' wurde besiegt!':' deines Teams wurde besiegt!')], ()=>{
     if(isEnemy){
       // EXP vergeben
@@ -1391,6 +1463,7 @@ function handleFaint(c, next){
           battle.enemyIdx++; battle.enemy=battle.enemyTeam[battle.enemyIdx];
           battle.enemyHpShown=battle.enemy.hp;
           if(!G.dex[battle.enemy.species]) G.dex[battle.enemy.species]='seen';
+          bfxEntry('enemy');
           battleMsg([battle.trainer.name+' schickt '+battle.enemy.name+' in den Kampf!'], ()=>{ battle.phase='menu'; });
         } else {
           winBattle();
@@ -1480,6 +1553,7 @@ function doSwitch(act, next){
   const idx=act.idx;
   battle.player=G.party[idx];
   battle.playerHpShown=battle.player.hp;
+  bfxEntry('player');
   battleMsg(['Los, '+battle.player.name+'!'], next);
 }
 function doCatch(next){
@@ -1823,28 +1897,38 @@ function battleBgKey(){
   return 'bg_grass';
 }
 function drawBattle(bgOnly){
-  // Hintergrund — generiertes 16-bit-Pixel-Art je nach Schauplatz
   const bgk=battleBgKey();
+  // Bildschirm-Shake (Feld + Wesen, UI bleibt stabil)
+  const sh = BFX.shake>0.3 ? BFX.shake : 0;
+  const ox = sh? Math.round((Math.random()*2-1)*sh):0;
+  const oy = sh? Math.round((Math.random()*2-1)*sh):0;
+  CTX.save();
+  CTX.translate(ox,oy);
+  // Hintergrund — generiertes 16-bit-Pixel-Art je nach Schauplatz (leicht
+  // übergroß gezeichnet, damit der Shake keine schwarzen Ränder zeigt)
   if(imgReady(bgk)){
     CTX.imageSmoothingEnabled=false;
-    CTX.drawImage(IMG[bgk],0,0,VW,VH);
+    CTX.drawImage(IMG[bgk],-14,-14,VW+28,VH+28);
   } else {
-    for(let i=0;i<VH;i++){ const t=i/VH; CTX.fillStyle = t<0.6?'#aee0ff':'#7ec850'; CTX.fillRect(0,i,VW,1); }
-    CTX.fillStyle='#7ec850'; CTX.fillRect(0,VH*0.55,VW,VH*0.45);
-    CTX.fillStyle='#6cb840'; CTX.fillRect(0,VH*0.55,VW,6);
+    for(let i=-14;i<VH+14;i++){ const t=(i+14)/(VH+28); CTX.fillStyle = t<0.6?'#aee0ff':'#7ec850'; CTX.fillRect(-14,i,VW+28,1); }
+    CTX.fillStyle='#7ec850'; CTX.fillRect(-14,VH*0.55,VW+28,VH*0.45);
+    CTX.fillStyle='#6cb840'; CTX.fillRect(-14,VH*0.55,VW+28,6);
   }
   // Gegner-Plattform + Wesen
   CTX.fillStyle='rgba(60,40,20,0.32)'; CTX.beginPath(); CTX.ellipse(360,120,60,16,0,0,7); CTX.fill();
   const e=battle.enemy;
-  drawCreature(e.species, 330, 56, 64, false);
-  // Spieler-Plattform + Wesen (von hinten = wir zeichnen Front gespiegelt klein)
+  drawBattler('enemy', e.species, 330, 56, 64, false);
+  // Spieler-Plattform + Wesen
   CTX.fillStyle='rgba(120,90,60,0.4)'; CTX.beginPath(); CTX.ellipse(110,250,64,18,0,0,7); CTX.fill();
   const p=battle.player;
-  drawCreature(p.species, 70, 180, 80, true);
-  // Info-Boxen
-  // Gegner oben links
+  drawBattler('player', p.species, 70, 180, 80, true);
+  // Treffer-/Typ-Partikel über den Wesen
+  drawBattleParts();
+  CTX.restore();
+  // Kampfstart-Blitz (ohne Shake, ganzflächig)
+  if(BFX.flash>0){ CTX.fillStyle='rgba(255,255,255,'+(BFX.flash*0.85)+')'; CTX.fillRect(0,0,VW,VH); }
+  // Info-Boxen (stabile UI)
   drawInfoBox(20,20, e, false);
-  // Spieler unten rechts
   drawInfoBox(250,170, p, true);
 
   if(bgOnly) return;
@@ -2099,7 +2183,8 @@ function updateOverworld(dt){
   if(consume('menu')){ openMenu(); return; }
   if(consume('a')){ interact(); if(state!==STATE.OVERWORLD) return; }
   if(ow.moving){
-    ow.progress += dt*ow.speed;
+    ow.running = Keys.b;                       // B gedrückt halten = Rennen
+    ow.progress += dt*ow.speed*(ow.running?1.75:1);
     if(ow.progress>=1){ ow.progress=0; finishMove(); }
     return;
   }
@@ -2247,7 +2332,7 @@ function updateBattle(){
       if(c.hp<=0){ openDialogInBattle(c.name+' kann nicht kämpfen!'); return; }
       if(c===battle.player){ openDialogInBattle(c.name+' ist bereits im Kampf!'); return; }
       Audio2.sfx('confirm');
-      if(battle.mustSwitch){ battle.mustSwitch=false; battle.player=c; battle.playerHpShown=c.hp; battleMsg(['Los, '+c.name+'!'], ()=>{ battle.phase='menu'; battle.cursor=0; }); }
+      if(battle.mustSwitch){ battle.mustSwitch=false; battle.player=c; battle.playerHpShown=c.hp; bfxEntry('player'); battleMsg(['Los, '+c.name+'!'], ()=>{ battle.phase='menu'; battle.cursor=0; }); }
       else { execTurn({type:'switch', idx:partyScr.idx}); }
     }
     return;
@@ -2278,6 +2363,8 @@ function loop(now){
     case STATE.BATTLE: updateBattle(); break;
     case STATE.EVOLVE: updateEvolve(); break;
   }
+  // Kampf-Animationen weiterlaufen lassen (auch während Textphasen)
+  if(state===STATE.BATTLE||state===STATE.EVOLVE) updateBFX(dt);
   // Party-Screen Item-Anwendung (aus Beutel im Overworld)
   if(state===STATE.PARTY && partyScr.applyItem){ handlePartyItemApply(); }
   clearPressed();

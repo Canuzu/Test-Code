@@ -31,6 +31,9 @@ jobs:
       - name: Smoke-test Velora Saga
         working-directory: velora-saga
         run: node scripts/smoke-velora.mjs
+      - name: Headless boot + animation run
+        working-directory: velora-saga
+        run: node scripts/headless-run.mjs
       - uses: actions/configure-pages@v5
         with:
           enablement: true

@@ -25,6 +25,14 @@ alle Motive). Enthalten sind:
 Fehlt eine Bilddatei, fällt das Spiel automatisch auf die eingebauten **prozeduralen Sprites/Tiles**
 zurück — es startet also auch ohne `assets/`.
 
+## Animationen (Pokémon-Schwarz-Feeling)
+
+- **Kampf:** weicher Kampfstart-Blitz, einfliegende Wesen, ständiges Idle-„Atmen", Angriffs-Vorstoß
+  des Angreifers, Treffer-Blinken des Getroffenen, Bildschirm-Shake (skaliert mit Effektivität),
+  typgefärbte Partikel-Bursts, sanft sinkende KP-Balken und KO-Absink-Animation.
+- **Welt:** wiegendes Hochgras, schimmerndes Wasser, animierte Lauf-Frames.
+- **Spielgefühl:** **X/Shift gedrückt halten = rennen** (~1,75× Tempo) für flüssigere Wege.
+
 ## Projektstruktur
 
 ```
@@ -42,20 +50,24 @@ velora-saga/
 
 ## Test
 
-Headless-Smoke-Test (prüft, dass das Spiel-Skript fehlerfrei kompiliert und alle
-referenzierten Bilddateien als gültige PNGs vorhanden sind):
+Zwei Node-Tests, beide laufen als Gate im GitHub-Pages-Workflow vor jedem Deploy:
 
 ```
-node scripts/smoke-velora.mjs
+node scripts/smoke-velora.mjs   # Skript kompiliert? 18 Arten? alle PNGs gültig?
+node scripts/headless-run.mjs    # bootet das Spiel mit Canvas-/DOM-Stubs und
+                                 # fährt Titel- + Kampf-Animationsframes ohne Fehler
 ```
 
-Derselbe Test läuft als Gate im GitHub-Pages-Workflow vor jedem Deploy.
+Der Headless-Lauf führt das echte Spiel-Skript aus (gestubbter 2D-Context, Image,
+localStorage, AudioContext) und treibt u. a. die Kampf-Animationen über viele Frames —
+fängt also Laufzeitfehler, die ein reiner Kompilier-Check übersieht.
 
 ## Steuerung
 
 | Aktion | Tasten |
 |---|---|
 | Bewegen | Pfeiltasten oder **WASD** |
+| Rennen (gedrückt halten) | **X** / **Shift** / **K** |
 | Bestätigen / Interagieren | **Leertaste** oder **Enter** |
 | Abbrechen / Zurück | **X** / **Esc** (Backspace) |
 | Hauptmenü | **Esc** oder **M** |
