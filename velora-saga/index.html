@@ -1212,8 +1212,8 @@ const battle = {
   menu:'main', // main | fight | bag | party
   cursor:0, sub:0,
   log:[], logIdx:0, logTimer:0, logChar:0,
-  phase:'intro', // intro | menu | exec | message | end | catch
-  queue:[], anim:0, result:null,
+  phase:'intro', // intro | menu | exec | message | anim | end | catch
+  queue:[], anim:0, result:null, animTime:0, animCb:null,
   playerHpShown:0, enemyHpShown:0,
   caughtKey:null, runAttempts:0, escaped:false, expGain:0,
   switching:false, mustSwitch:false, reward:0
@@ -1339,6 +1339,10 @@ function battleMsgAdvance(){
   if(battleMsgQueue.length===0){ const cb=battleMsgCb; battleMsgCb=null; if(cb)cb(); }
   else { battleMsgFull=battleMsgQueue[0]; battleMsgChar=0; battleMsgTimer=0; }
 }
+// Getaktete, nicht-interaktive Animationsphase: spielt dur Sekunden lang die
+// Kampf-Animation, ohne auf Eingabe zu warten, und ruft danach cb auf.
+// Während dieser Phase bleibt die zuletzt gezeigte Nachricht stehen.
+function battleAnim(dur, cb){ battle.phase='anim'; battle.animTime=dur; battle.animCb=cb||null; }
 
 function calcDamage(att, def, move){
   const m=MOVES[move.key];
@@ -1423,29 +1427,36 @@ function doMove(who, move, next){
 function doMoveReal(who,move,defender,attacker,next){
   const m=MOVES[move.key];
   move.pp=Math.max(0,move.pp-1);
-  const lines=[attacker.name+' setzt '+m.name+' ein!'];
-  if(!moveHits(move)){ lines.push('Die Attacke geht daneben!'); battleMsg(lines, next); return; }
-  if(m.power>0){
-    const {dmg,eff}=calcDamage(attacker, defender, move);
-    defender.hp=Math.max(0, defender.hp-dmg);
+  // 1) Ansage der Attacke (Text stehen lassen)
+  battleMsg([attacker.name+' setzt '+m.name+' ein!'], ()=>{
+    if(!moveHits(move)){ battleMsg(['Die Attacke geht daneben!'], next); return; }
+    // Schaden vorberechnen, aber NOCH NICHT anwenden
+    let dmg=0, eff=1;
+    if(m.power>0){ const r=calcDamage(attacker, defender, move); dmg=r.dmg; eff=r.eff; }
+    // 2) Angriffs-Animation: erst Bewegung/Effekt …
     bfxAttack(who, eff, m.type);
-    Audio2.sfx(eff>1?'superhit':'hit');
-    if(eff>1) lines.push('Das ist sehr effektiv!');
-    else if(eff<1 && eff>0) lines.push('Das ist nicht sehr effektiv...');
-    else if(eff===0) lines.push('Es zeigt keine Wirkung...');
-  }
-  // Status-Effekt der Attacke
-  if(m.status && (!defender.status) && defender.hp>0){
-    if(Math.random()*100 < (m.statusChance||0)){
-      defender.status=m.status;
-      if(m.status==='schlaf') defender.sleepTurns=1+rnd(3);
-      const sl={gift:'wurde vergiftet!', paralyse:'ist nun paralysiert!', schlaf:'ist eingeschlafen!'};
-      lines.push(defender.name+' '+sl[m.status]);
-    }
-  }
-  battleMsg(lines, ()=>{
-    if(defender.hp<=0){ handleFaint(defender, next); }
-    else next();
+    if(m.power>0) Audio2.sfx(eff>1?'superhit':'hit');
+    battleAnim(0.55, ()=>{
+      const lines=[];
+      // 3) … dann Schaden anwenden -> KP-Balken läuft jetzt sichtbar runter
+      if(m.power>0){
+        defender.hp=Math.max(0, defender.hp-dmg);
+        if(eff>1) lines.push('Das ist sehr effektiv!');
+        else if(eff<1 && eff>0) lines.push('Das ist nicht sehr effektiv...');
+        else if(eff===0) lines.push('Es zeigt keine Wirkung...');
+      }
+      // Status-Effekt der Attacke
+      if(m.status && (!defender.status) && defender.hp>0 && Math.random()*100 < (m.statusChance||0)){
+        defender.status=m.status;
+        if(m.status==='schlaf') defender.sleepTurns=1+rnd(3);
+        const sl={gift:'wurde vergiftet!', paralyse:'ist nun paralysiert!', schlaf:'ist eingeschlafen!'};
+        lines.push(defender.name+' '+sl[m.status]);
+      }
+      const proceed=()=>{ if(defender.hp<=0){ handleFaint(defender, next); } else next(); };
+      // Effekt-/Status-Text zeigen; sonst dem Balken kurz Zeit zum Auslaufen geben
+      if(lines.length) battleMsg(lines, proceed);
+      else battleAnim(0.45, proceed);
+    });
   });
 }
 
@@ -1938,6 +1949,10 @@ function drawBattle(bgOnly){
     drawTextBox(8,VH-72,VW-16,64);
     wrapText(battleMsgFull.substring(0,battleMsgChar), 20, VH-58, VW-40, 12, '#fff');
     if(battleMsgChar>=battleMsgFull.length && (Date.now()/400|0)%2===0){ CTX.fillStyle='#fff'; CTX.fillRect(VW-24,VH-22,6,6); }
+  } else if(battle.phase==='anim'){
+    // Während der Angriffs-Animation bleibt die letzte Nachricht stehen
+    drawTextBox(8,VH-72,VW-16,64);
+    wrapText(battleMsgFull, 20, VH-58, VW-40, 12, '#fff');
   } else if(battle.phase==='menu'){
     drawBattleMenu();
   } else if(battle.phase==='fight'){
@@ -2365,6 +2380,11 @@ function loop(now){
   }
   // Kampf-Animationen weiterlaufen lassen (auch während Textphasen)
   if(state===STATE.BATTLE||state===STATE.EVOLVE) updateBFX(dt);
+  // Getaktete Animationsphase herunterzählen und danach fortsetzen
+  if(state===STATE.BATTLE && battle.phase==='anim'){
+    battle.animTime-=dt;
+    if(battle.animTime<=0){ const cb=battle.animCb; battle.animCb=null; battle.phase='exec'; if(cb)cb(); }
+  }
   // Party-Screen Item-Anwendung (aus Beutel im Overworld)
   if(state===STATE.PARTY && partyScr.applyItem){ handlePartyItemApply(); }
   clearPressed();

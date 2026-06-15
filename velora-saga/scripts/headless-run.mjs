@@ -81,6 +81,14 @@ try {
     ctx.drawBattleParts();
     fx++;
   }
+  // Exercise the new decoupled attack sequence (announce -> animate -> apply).
+  if (typeof ctx.doMoveReal === 'function' && typeof ctx.makeCreature === 'function'
+      && typeof ctx.battleMsgAdvance === 'function') {
+    const atk = ctx.makeCreature('glutfox', 8), def = ctx.makeCreature('muffel', 8);
+    ctx.doMoveReal('player', atk.moves[0], def, atk, () => {});
+    ctx.battleMsgAdvance();   // dismiss "uses move" -> enters timed anim phase
+    for (let i = 0; i < 20; i++) { ctx.updateBFX(0.016); fx++; }
+  }
   console.log(`✓ booted (${frames} title frames) + drove ${fx} battle-animation frames without runtime error`);
   process.exit(0);
 } catch (e) {
