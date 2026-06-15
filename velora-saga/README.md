@@ -30,8 +30,21 @@ zurück — es startet also auch ohne `assets/`.
 - **Kampf:** weicher Kampfstart-Blitz, einfliegende Wesen, ständiges Idle-„Atmen", Angriffs-Vorstoß
   des Angreifers, Treffer-Blinken des Getroffenen, Bildschirm-Shake (skaliert mit Effektivität),
   typgefärbte Partikel-Bursts, sanft sinkende KP-Balken und KO-Absink-Animation.
-- **Welt:** wiegendes Hochgras, schimmerndes Wasser, animierte Lauf-Frames.
+- **Welt:** wiegendes Hochgras, schimmerndes Wasser, animierte Lauf-Frames, Wetter (Regen/Schnee/
+  Nebel/Sonne) und weiche Tag/Nacht-Lichtfarben.
 - **Spielgefühl:** **X/Shift gedrückt halten = rennen** (~1,75× Tempo) für flüssigere Wege.
+
+## Kampfmechanik (Tiefe)
+
+- **Volltreffer** (~1/16, ×1,5), **Statuswert-Stufen** (Angriff/Verteidigung/Tempo, −6…+6) über
+  Attacken wie Drohblick/Härten/Flinkschritt/Kraftruf.
+- **Statuszustände:** Gift, Paralyse, Schlaf, **Verbrennung** (Schaden/Runde + schwächt physisch),
+  **Frost** (festgefroren, taut zufällig auf), **Verwirrung** (flüchtig, kann sich selbst treffen).
+- **Fähigkeiten** je Typ: Lodermut/Wucherung/Sturzbach (Typ-Boost bei wenig KP), Robustheit
+  (überlebt K.O. aus voller KP), Statik (Berührung kann paralysieren), Aufwind (Tempo), Wachsamkeit
+  (schlafimmun) — sichtbar im Wesen-Detail.
+- **Wetter wirkt im Kampf** (Regen↑Wasser/↓Feuer, Sonne umgekehrt, Schnee↑Gestein) und eine
+  **zielgerichtete Gegner-KI** wählt Attacken nach erwarteter Wirkung.
 
 ## Projektstruktur
 

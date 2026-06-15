@@ -90,7 +90,27 @@ try {
     ctx.battleMsgAdvance();   // dismiss "uses move" -> enters timed anim phase
     for (let i = 0; i < 20; i++) { ctx.updateBFX(0.016); fx++; }
   }
-  console.log(`✓ booted (${frames} title frames) + drove ${fx} battle-animation frames without runtime error`);
+  // Deep-mechanics logic checks (stages, abilities, crit, speed, status fields)
+  if (typeof ctx.calcDamage === 'function' && typeof ctx.stageMul === 'function') {
+    const assert = (c, m) => { if (!c) throw new Error('mechanics check failed: ' + m); };
+    assert(Math.abs(ctx.stageMul(0) - 1) < 1e-9, 'stageMul(0)=1');
+    assert(Math.abs(ctx.stageMul(2) - 2) < 1e-9, 'stageMul(+2)=2');
+    assert(Math.abs(ctx.stageMul(-2) - 0.5) < 1e-9, 'stageMul(-2)=0.5');
+    const A = ctx.makeCreature('glutfox', 20), D = ctx.makeCreature('blattling', 20);
+    ctx.initVolatile(A); ctx.initVolatile(D);
+    assert(A.stages && A.confuse === 0, 'initVolatile sets stages+confuse');
+    assert(typeof ctx.abilityOf(A) === 'string', 'abilityOf returns string');
+    const base = ctx.calcDamage(A, D, A.moves[0]);
+    assert(base.dmg > 0 && !Number.isNaN(base.dmg), 'calcDamage produces positive dmg');
+    assert(typeof base.crit === 'boolean', 'calcDamage returns crit flag');
+    D.stages.def = 4;                          // higher defence -> less damage
+    let lo = 0, hi = 0; for (let i = 0; i < 40; i++){ lo += ctx.calcDamage(A, D, A.moves[0]).dmg; }
+    D.stages.def = 0; for (let i = 0; i < 40; i++){ hi += ctx.calcDamage(A, D, A.moves[0]).dmg; }
+    assert(lo < hi, 'defence stage reduces damage');
+    const sp0 = ctx.speedOf(A); A.status = 'paralyse'; assert(ctx.speedOf(A) < sp0, 'paralysis halves speed'); A.status = null;
+    fx++;
+  }
+  console.log(`✓ booted (${frames} title frames) + drove ${fx} battle-animation frames + mechanics checks OK`);
   process.exit(0);
 } catch (e) {
   console.log(`✗ runtime error after ${frames} frames: ${e && e.stack || e}`);

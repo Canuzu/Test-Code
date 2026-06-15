@@ -244,31 +244,36 @@ function typeEff(atkType, defType){
    cat: 'phys' nutzt Angriff/Verteidigung. status-effekt optional.
    ========================================================================= */
 const MOVES = {
-  rempler:    {name:'Rempler',     type:'Normal',  power:35, acc:100, pp:35},
-  kratzer:    {name:'Kratzer',     type:'Normal',  power:40, acc:100, pp:35},
-  biss:       {name:'Biss',        type:'Normal',  power:55, acc:100, pp:25},
-  ramme:      {name:'Ramme',       type:'Normal',  power:75, acc:90,  pp:15},
+  rempler:    {name:'Rempler',     type:'Normal',  power:35, acc:100, pp:35, cat:'phys'},
+  kratzer:    {name:'Kratzer',     type:'Normal',  power:40, acc:100, pp:35, cat:'phys'},
+  biss:       {name:'Biss',        type:'Normal',  power:55, acc:100, pp:25, cat:'phys'},
+  ramme:      {name:'Ramme',       type:'Normal',  power:75, acc:90,  pp:15, cat:'phys'},
   schlummer:  {name:'Schlummerlied',type:'Normal', power:0,  acc:75,  pp:15, status:'schlaf', statusChance:100},
-  blattwirbel:{name:'Blattwirbel', type:'Pflanze', power:45, acc:100, pp:25},
-  rankenhieb: {name:'Rankenhieb',  type:'Pflanze', power:60, acc:100, pp:20},
-  blattsturm: {name:'Blattsturm',  type:'Pflanze', power:90, acc:90,  pp:10},
+  drohblick:  {name:'Drohblick',   type:'Normal',  power:0,  acc:100, pp:30, stat:{who:'foe', def:-1}},
+  härten:     {name:'Härten',      type:'Normal',  power:0,  acc:100, pp:30, stat:{who:'self', def:1}},
+  flinkschritt:{name:'Flinkschritt',type:'Normal', power:0,  acc:100, pp:30, stat:{who:'self', spd:2}},
+  kraftruf:   {name:'Kraftruf',    type:'Normal',  power:0,  acc:100, pp:20, stat:{who:'self', atk:1}},
+  blattwirbel:{name:'Blattwirbel', type:'Pflanze', power:45, acc:100, pp:25, cat:'phys'},
+  rankenhieb: {name:'Rankenhieb',  type:'Pflanze', power:60, acc:100, pp:20, cat:'phys'},
+  blattsturm: {name:'Blattsturm',  type:'Pflanze', power:90, acc:90,  pp:10, cat:'spec'},
   sporenstaub:{name:'Sporenstaub', type:'Pflanze', power:0,  acc:80,  pp:15, status:'gift', statusChance:100},
-  funke:      {name:'Funke',       type:'Feuer',   power:45, acc:100, pp:25},
-  flammenzunge:{name:'Flammenzunge',type:'Feuer',  power:60, acc:100, pp:20},
-  glutsturm:  {name:'Glutsturm',   type:'Feuer',   power:90, acc:90,  pp:10},
-  spritzer:   {name:'Spritzer',    type:'Wasser',  power:45, acc:100, pp:25},
-  aquastoss:  {name:'Aquastoß',    type:'Wasser',  power:60, acc:100, pp:20},
-  flutwelle:  {name:'Flutwelle',   type:'Wasser',  power:90, acc:90,  pp:10},
-  zapper:     {name:'Zapper',      type:'Elektro', power:45, acc:100, pp:25},
-  blitzschlag:{name:'Blitzschlag', type:'Elektro', power:65, acc:100, pp:15},
-  donnerstoss:{name:'Donnerstoß',  type:'Elektro', power:90, acc:90,  pp:10, status:'paralyse', statusChance:20},
+  funke:      {name:'Funke',       type:'Feuer',   power:45, acc:100, pp:25, cat:'spec'},
+  flammenzunge:{name:'Flammenzunge',type:'Feuer',  power:60, acc:100, pp:20, cat:'spec', status:'brand', statusChance:15},
+  glutsturm:  {name:'Glutsturm',   type:'Feuer',   power:90, acc:90,  pp:10, cat:'spec', status:'brand', statusChance:20},
+  spritzer:   {name:'Spritzer',    type:'Wasser',  power:45, acc:100, pp:25, cat:'spec'},
+  aquastoss:  {name:'Aquastoß',    type:'Wasser',  power:60, acc:100, pp:20, cat:'spec'},
+  flutwelle:  {name:'Flutwelle',   type:'Wasser',  power:90, acc:90,  pp:10, cat:'spec', status:'frost', statusChance:10},
+  zapper:     {name:'Zapper',      type:'Elektro', power:45, acc:100, pp:25, cat:'spec'},
+  blitzschlag:{name:'Blitzschlag', type:'Elektro', power:65, acc:100, pp:15, cat:'spec'},
+  donnerstoss:{name:'Donnerstoß',  type:'Elektro', power:90, acc:90,  pp:10, cat:'spec', status:'paralyse', statusChance:20},
   funkenstoss:{name:'Funkenstoß',  type:'Elektro', power:0,  acc:90,  pp:20, status:'paralyse', statusChance:100},
-  steinwurf:  {name:'Steinwurf',   type:'Gestein', power:50, acc:95,  pp:20},
-  felsschlag: {name:'Felsschlag',  type:'Gestein', power:70, acc:90,  pp:15},
-  steinhagel: {name:'Steinhagel',  type:'Gestein', power:90, acc:85,  pp:10},
-  windstoss:  {name:'Windstoß',    type:'Flug',    power:45, acc:100, pp:25},
-  flügelschlag:{name:'Flügelschlag',type:'Flug',   power:60, acc:100, pp:20},
-  sturzflug:  {name:'Sturzflug',   type:'Flug',    power:90, acc:90,  pp:10}
+  steinwurf:  {name:'Steinwurf',   type:'Gestein', power:50, acc:95,  pp:20, cat:'phys'},
+  felsschlag: {name:'Felsschlag',  type:'Gestein', power:70, acc:90,  pp:15, cat:'phys'},
+  steinhagel: {name:'Steinhagel',  type:'Gestein', power:90, acc:85,  pp:10, cat:'spec'},
+  windstoss:  {name:'Windstoß',    type:'Flug',    power:45, acc:100, pp:25, cat:'spec'},
+  flügelschlag:{name:'Flügelschlag',type:'Flug',   power:60, acc:100, pp:20, cat:'phys'},
+  sturzflug:  {name:'Sturzflug',   type:'Flug',    power:90, acc:90,  pp:10, cat:'phys'},
+  verwirrspiel:{name:'Verwirrspiel',type:'Flug',   power:0,  acc:90,  pp:15, confuse:true}
 };
 
 /* =========================================================================
@@ -300,7 +305,7 @@ const SPECIES = {
     dex:'Sein Panzer aus gehärtetem Wasser schützt es vor harten Schlägen.'},
   // --- Wilde Wesen ---
   muffel:{id:7, name:'Muffel', type:'Normal', base:{hp:40,atk:45,def:40,spd:48}, catchRate:120, baseExp:42,
-    learn:[[1,'rempler'],[1,'kratzer'],[8,'biss'],[14,'ramme']],
+    learn:[[1,'rempler'],[1,'kratzer'],[5,'drohblick'],[8,'biss'],[14,'ramme'],[20,'kraftruf']],
     evo:{into:'muffrat', level:14}, dex:'Ein neugieriges Fellwesen, das überall in Velora herumwuselt.'},
   muffrat:{id:8, name:'Muffrat', type:'Normal', base:{hp:60,atk:68,def:58,spd:72}, catchRate:60, baseExp:118,
     learn:[[1,'rempler'],[1,'biss'],[16,'ramme']],
@@ -312,13 +317,13 @@ const SPECIES = {
     learn:[[1,'windstoss'],[1,'flügelschlag'],[20,'sturzflug'],[26,'ramme']],
     dex:'Ein stolzer Greifvogel, der von hohen Felsen aus die Route überblickt.'},
   zappel:{id:11, name:'Zappel', type:'Elektro', base:{hp:38,atk:46,def:38,spd:60}, catchRate:90, baseExp:54,
-    learn:[[1,'rempler'],[1,'zapper'],[10,'funkenstoss'],[16,'blitzschlag']],
+    learn:[[1,'rempler'],[1,'zapper'],[5,'flinkschritt'],[10,'funkenstoss'],[16,'blitzschlag']],
     evo:{into:'voltik', level:20}, dex:'Es speichert statische Ladung im Fell und knistert bei Berührung.'},
   voltik:{id:12, name:'Voltik', type:'Elektro', base:{hp:55,atk:72,def:52,spd:88}, catchRate:45, baseExp:138,
     learn:[[1,'zapper'],[1,'blitzschlag'],[22,'donnerstoss'],[28,'ramme']],
     dex:'Rast wie ein Blitz über die Wiesen. Seine Pfoten hinterlassen Funken.'},
   klumpf:{id:13, name:'Klumpf', type:'Gestein', base:{hp:55,atk:52,def:68,spd:28}, catchRate:90, baseExp:58,
-    learn:[[1,'rempler'],[1,'steinwurf'],[12,'felsschlag'],[18,'ramme']],
+    learn:[[1,'rempler'],[1,'steinwurf'],[6,'härten'],[12,'felsschlag'],[18,'ramme']],
     evo:{into:'felsbrocker', level:22}, dex:'Ein lebender Steinklumpen, der sich tagsüber kaum von Felsen unterscheidet.'},
   felsbrocker:{id:14, name:'Felsbrocker', type:'Gestein', base:{hp:75,atk:74,def:95,spd:34}, catchRate:45, baseExp:150,
     learn:[[1,'steinwurf'],[1,'felsschlag'],[24,'steinhagel'],[30,'ramme']],
@@ -330,7 +335,7 @@ const SPECIES = {
     learn:[[1,'rempler'],[1,'blattwirbel'],[10,'rankenhieb'],[17,'sporenstaub']],
     dex:'Tarnt sich im Unterholz als Laubhaufen und überrascht so seine Gegner.'},
   nachtflatter:{id:17, name:'Nachtflatter', type:'Flug', base:{hp:44,atk:52,def:46,spd:64}, catchRate:80, baseExp:70,
-    learn:[[1,'windstoss'],[1,'biss'],[12,'flügelschlag'],[20,'sturzflug']],
+    learn:[[1,'windstoss'],[1,'biss'],[8,'verwirrspiel'],[12,'flügelschlag'],[20,'sturzflug']],
     dex:'Nur nachts aktiv. Es findet sich im Dunkeln durch feines Gehör zurecht.'},
   kristallit:{id:18, name:'Kristallit', type:'Gestein', base:{hp:50,atk:55,def:60,spd:50}, catchRate:60, baseExp:88,
     learn:[[1,'steinwurf'],[1,'zapper'],[15,'felsschlag'],[22,'blitzschlag']],
@@ -1413,6 +1418,7 @@ function beginBattle(opts){
   battle.reward = opts.trainer? opts.trainer.reward : 0;
   battle.mustSwitch=false; battle.result=null;
   battle.playerHpShown=battle.player.hp; battle.enemyHpShown=battle.enemy.hp;
+  initVolatile(battle.player); initVolatile(battle.enemy);
   // Dex: gesehen
   if(!G.dex[battle.enemy.species]) G.dex[battle.enemy.species]='seen';
   Audio2.play(battle.music);
@@ -1442,29 +1448,48 @@ function battleMsgAdvance(){
 // Während dieser Phase bleibt die zuletzt gezeigte Nachricht stehen.
 function battleAnim(dur, cb){ battle.phase='anim'; battle.animTime=dur; battle.animCb=cb||null; }
 
+/* ===== TIEFE KAMPFMECHANIK: Fähigkeiten, Statuswert-Stufen, Volltreffer ===== */
+const ABILITY_BY_TYPE={Feuer:'Lodermut',Pflanze:'Wucherung',Wasser:'Sturzbach',Gestein:'Robustheit',Elektro:'Statik',Flug:'Aufwind',Normal:'Wachsamkeit'};
+const ABILITY_DESC={Lodermut:'Feuer-Attacken werden bei wenig KP stärker.',Wucherung:'Pflanzen-Attacken werden bei wenig KP stärker.',Sturzbach:'Wasser-Attacken werden bei wenig KP stärker.',Robustheit:'Überlebt aus voller KP einen K.O.-Treffer mit 1 KP.',Statik:'Berührung kann den Angreifer paralysieren.',Aufwind:'Verleiht etwas mehr Tempo.',Wachsamkeit:'Kann nicht einschlafen.'};
+function abilityOf(c){ const sp=SPECIES[c.species]; return (sp&&sp.ability)||ABILITY_BY_TYPE[sp&&sp.type]||'—'; }
+function stageMul(n){ n=clamp(n||0,-6,6); return n>=0 ? (2+n)/2 : 2/(2-n); }
+function initVolatile(c){ if(!c) return; c.stages={atk:0,def:0,spd:0}; c.confuse=0; }
 function calcDamage(att, def, move){
   const m=MOVES[move.key];
-  if(m.power===0) return {dmg:0, eff:1};
+  if(m.power===0) return {dmg:0, eff:1, crit:false};
   const stab = SPECIES[att.species].type===m.type ? 1.5 : 1;
   const eff = typeEff(m.type, SPECIES[def.species].type);
   const lvl=att.level;
-  // Wetter-Einfluss (nur im Außenkampf relevant; G.weather ist drinnen 'clear')
-  let wx=1; const w=G.weather;
+  // Wetter (drinnen 'clear')
+  let wx=1; const w=G&&G.weather;
   if(w==='rain'){ if(m.type==='Wasser') wx=1.3; else if(m.type==='Feuer') wx=0.7; }
   else if(w==='sun'){ if(m.type==='Feuer') wx=1.3; else if(m.type==='Wasser') wx=0.7; }
   else if(w==='snow'){ if(m.type==='Gestein') wx=1.15; }
-  let dmg = Math.floor( ( (2*lvl/5+2) * m.power * att.stats.atk / def.stats.def ) / 50 ) + 2;
-  dmg = Math.floor(dmg * stab * eff * wx * rndRange(0.85,1.0));
-  return {dmg:Math.max(1,dmg), eff};
+  // Statuswert-Stufen (Angriff/Verteidigung)
+  let atkStat = att.stats.atk * stageMul(att.stages && att.stages.atk);
+  let defStat = def.stats.def * stageMul(def.stages && def.stages.def);
+  if(att.status==='brand' && m.cat!=='spec') atkStat*=0.5;   // Verbrennung schwächt physisch
+  // Fähigkeit: Typ-Boost bei wenig KP
+  let abx=1; const ab=abilityOf(att);
+  if(att.hp <= att.maxhp/3){
+    if(ab==='Lodermut'&&m.type==='Feuer') abx=1.5;
+    else if(ab==='Wucherung'&&m.type==='Pflanze') abx=1.5;
+    else if(ab==='Sturzbach'&&m.type==='Wasser') abx=1.5;
+  }
+  const crit = Math.random()<1/16, cx=crit?1.5:1;
+  let dmg = Math.floor( ( (2*lvl/5+2) * m.power * atkStat / Math.max(1,defStat) ) / 50 ) + 2;
+  dmg = Math.floor(dmg * stab * eff * wx * abx * cx * rndRange(0.85,1.0));
+  return {dmg:Math.max(1,dmg), eff, crit};
 }
 function moveHits(move){
   const m=MOVES[move.key];
   return Math.random()*100 < m.acc;
 }
 function speedOf(c){
-  let s=c.stats.spd;
+  let s=c.stats.spd * stageMul(c.stages && c.stages.spd);
   if(c.status==='paralyse') s=Math.floor(s/2);
-  return s;
+  if(abilityOf(c)==='Aufwind') s=Math.floor(s*1.15);
+  return Math.floor(s);
 }
 
 // Spieleraktion gewählt -> Runde ausführen
@@ -1493,6 +1518,20 @@ function execTurn(playerAction){
 function chooseEnemyMove(e){
   const usable=e.moves.filter(m=>m.pp>0);
   if(usable.length===0) return null;
+  const foe=battle.player;
+  // 75% gezielt: beste erwartete Wirkung; sonst zufällig (etwas Unberechenbarkeit)
+  if(foe && Math.random()<0.75){
+    let best=null, bestScore=-1;
+    for(const mv of usable){ const m=MOVES[mv.key]; let sc;
+      if(m.power>0){ const stab=SPECIES[e.species].type===m.type?1.5:1, ef=typeEff(m.type,SPECIES[foe.species].type); sc=m.power*stab*ef; }
+      else if((m.status||m.confuse) && !foe.status && !foe.confuse) sc=58;   // Status nur wenn Ziel frei
+      else if(m.stat) sc=42;                                                  // Buff/Debuff
+      else sc=15;
+      sc*=(0.85+Math.random()*0.3);
+      if(sc>bestScore){ bestScore=sc; best=mv; }
+    }
+    return best||choice(usable);
+  }
   return choice(usable);
 }
 
@@ -1515,13 +1554,29 @@ function runSequence(seq, i){
 function doMove(who, move, next){
   const attacker = who==='player'?battle.player:battle.enemy;
   const defender = who==='player'?battle.enemy:battle.player;
-  // Status-Hindernisse
-  if(attacker.status==='schlaf'){
-    if(attacker.sleepTurns>0){
-      attacker.sleepTurns--;
-      battleMsg([attacker.name+' schläft tief und fest.'], next); return;
-    } else { attacker.status=null; battleMsg([attacker.name+' wacht auf!'], ()=>doMoveReal(who,move,defender,attacker,next)); return; }
+  const side = who==='player'?'player':'enemy';
+  // Frost: 20% Auftauen, sonst festgefroren
+  if(attacker.status==='frost'){
+    if(Math.random()<0.2){ attacker.status=null; battleMsg([attacker.name+' taut wieder auf!'], ()=>doMoveReal(who,move,defender,attacker,next)); return; }
+    battleMsg([attacker.name+' ist eingefroren und kann sich nicht bewegen!'], next); return;
   }
+  // Schlaf
+  if(attacker.status==='schlaf'){
+    if(attacker.sleepTurns>0){ attacker.sleepTurns--; battleMsg([attacker.name+' schläft tief und fest.'], next); return; }
+    else { attacker.status=null; battleMsg([attacker.name+' wacht auf!'], ()=>doMoveReal(who,move,defender,attacker,next)); return; }
+  }
+  // Verwirrung (flüchtig): 33% Selbsttreffer
+  if(attacker.confuse>0){
+    attacker.confuse--;
+    if(Math.random()<0.33){
+      const self=Math.max(1, Math.floor(attacker.maxhp/8));
+      attacker.hp=Math.max(0, attacker.hp-self);
+      bfxImpact(side, 'Normal', 1);
+      battleMsg([attacker.name+' ist verwirrt!','Es verletzt sich in seiner Verwirrung!'], ()=>{ if(attacker.hp<=0) handleFaint(attacker,next); else next(); });
+      return;
+    }
+  }
+  // Paralyse
   if(attacker.status==='paralyse' && Math.random()<0.25){
     battleMsg([attacker.name+' ist paralysiert und kann sich nicht rühren!'], next); return;
   }
@@ -1533,30 +1588,53 @@ function doMoveReal(who,move,defender,attacker,next){
   // 1) Ansage der Attacke (Text stehen lassen)
   battleMsg([attacker.name+' setzt '+m.name+' ein!'], ()=>{
     if(!moveHits(move)){ battleMsg(['Die Attacke geht daneben!'], next); return; }
-    // Schaden vorberechnen, aber NOCH NICHT anwenden
-    let dmg=0, eff=1;
-    if(m.power>0){ const r=calcDamage(attacker, defender, move); dmg=r.dmg; eff=r.eff; }
+    let dmg=0, eff=1, crit=false;
+    if(m.power>0){ const r=calcDamage(attacker, defender, move); dmg=r.dmg; eff=r.eff; crit=r.crit; }
     // 2) Angriffs-Animation: erst Bewegung/Effekt …
     bfxAttack(who, eff, m.type);
+    if(crit) BFX.shake=Math.min(14, BFX.shake+4);
     if(m.power>0) Audio2.sfx(eff>1?'superhit':'hit');
     battleAnim(0.55, ()=>{
       const lines=[];
       // 3) … dann Schaden anwenden -> KP-Balken läuft jetzt sichtbar runter
       if(m.power>0){
+        let survived=false;
+        if(dmg>=defender.hp && defender.hp===defender.maxhp && abilityOf(defender)==='Robustheit'){ dmg=defender.hp-1; survived=true; }
         defender.hp=Math.max(0, defender.hp-dmg);
+        if(crit) lines.push('Ein Volltreffer!');
         if(eff>1) lines.push('Das ist sehr effektiv!');
         else if(eff<1 && eff>0) lines.push('Das ist nicht sehr effektiv...');
         else if(eff===0) lines.push('Es zeigt keine Wirkung...');
+        if(survived) lines.push(defender.name+' hält dank Robustheit durch!');
       }
-      // Status-Effekt der Attacke
+      // Statuswert-Veränderung (Buff/Debuff)
+      if(m.stat){
+        const tgt = m.stat.who==='self'? attacker : defender;
+        if(!(m.stat.who==='foe' && tgt.hp<=0) && tgt.stages){
+          for(const k of ['atk','def','spd']) if(m.stat[k]){
+            const before=tgt.stages[k]; tgt.stages[k]=clamp(before+m.stat[k],-6,6);
+            const sn={atk:'Angriff',def:'Verteidigung',spd:'Tempo'}[k], up=m.stat[k]>0, strong=Math.abs(m.stat[k])>1;
+            if(tgt.stages[k]===before) lines.push(tgt.name+'s '+sn+(up?' geht nicht weiter hoch!':' geht nicht weiter runter!'));
+            else lines.push(tgt.name+'s '+sn+(up?(strong?' steigt stark!':' steigt!'):(strong?' sinkt stark!':' sinkt!')));
+          }
+        }
+      }
+      // Status-Effekt (Gift/Paralyse/Schlaf/Brand/Frost)
       if(m.status && (!defender.status) && defender.hp>0 && Math.random()*100 < (m.statusChance||0)){
-        defender.status=m.status;
-        if(m.status==='schlaf') defender.sleepTurns=1+rnd(3);
-        const sl={gift:'wurde vergiftet!', paralyse:'ist nun paralysiert!', schlaf:'ist eingeschlafen!'};
-        lines.push(defender.name+' '+sl[m.status]);
+        if(!(m.status==='schlaf' && abilityOf(defender)==='Wachsamkeit')){
+          defender.status=m.status;
+          if(m.status==='schlaf') defender.sleepTurns=1+rnd(3);
+          const sl={gift:'wurde vergiftet!', paralyse:'ist nun paralysiert!', schlaf:'ist eingeschlafen!', brand:'erleidet nun Verbrennungen!', frost:'ist eingefroren!'};
+          lines.push(defender.name+' '+sl[m.status]);
+        }
+      }
+      // Verwirrung (flüchtig)
+      if(m.confuse && defender.hp>0 && !defender.confuse){ defender.confuse=2+rnd(3); lines.push(defender.name+' ist nun verwirrt!'); }
+      // Fähigkeit Statik: Berührung kann den Angreifer paralysieren
+      if(m.power>0 && m.cat!=='spec' && defender.hp>0 && abilityOf(defender)==='Statik' && !attacker.status && Math.random()<0.3){
+        attacker.status='paralyse'; lines.push(attacker.name+' wurde durch Statik paralysiert!');
       }
       const proceed=()=>{ if(defender.hp<=0){ handleFaint(defender, next); } else next(); };
-      // Effekt-/Status-Text zeigen; sonst dem Balken kurz Zeit zum Auslaufen geben
       if(lines.length) battleMsg(lines, proceed);
       else battleAnim(0.45, proceed);
     });
@@ -1576,6 +1654,7 @@ function handleFaint(c, next){
         if(battle.enemyIdx < battle.enemyTeam.length-1){
           battle.enemyIdx++; battle.enemy=battle.enemyTeam[battle.enemyIdx];
           battle.enemyHpShown=battle.enemy.hp;
+          initVolatile(battle.enemy);
           if(!G.dex[battle.enemy.species]) G.dex[battle.enemy.species]='seen';
           bfxEntry('enemy');
           battleMsg([battle.trainer.name+' schickt '+battle.enemy.name+' in den Kampf!'], ()=>{ battle.phase='menu'; });
@@ -1667,6 +1746,7 @@ function doSwitch(act, next){
   const idx=act.idx;
   battle.player=G.party[idx];
   battle.playerHpShown=battle.player.hp;
+  initVolatile(battle.player);
   bfxEntry('player');
   battleMsg(['Los, '+battle.player.name+'!'], next);
 }
@@ -1707,10 +1787,13 @@ function endOfTurn(){
   const doTick=(idx)=>{
     if(idx>=tickers.length){ afterTicks(); return; }
     const c=tickers[idx];
-    if(c.hp>0 && c.status==='gift'){
+    if(c.hp>0 && (c.status==='gift' || c.status==='brand')){
       const dmg=Math.max(1, Math.floor(c.maxhp/8));
       c.hp=Math.max(0,c.hp-dmg);
-      battleMsg([c.name+' erleidet Schaden durch Gift!'], ()=>{
+      const lbl = c.status==='brand' ? ' erleidet Schaden durch die Verbrennung!' : ' erleidet Schaden durch Gift!';
+      const sd = (c===battle.enemy)?'enemy':'player';
+      bfxImpact(sd, c.status==='brand'?'Feuer':'Pflanze', 1);
+      battleMsg([c.name+lbl], ()=>{
         if(c.hp<=0){ handleFaint(c, ()=>doTick(idx+1)); } else doTick(idx+1);
       });
     } else doTick(idx+1);
@@ -2057,7 +2140,7 @@ function drawHpBar(x,y,w,cur,max){
 }
 function statusTag(c){
   if(!c.status) return '';
-  return {gift:'GIF',paralyse:'PAR',schlaf:'SLF'}[c.status]||'';
+  return {gift:'GIF',paralyse:'PAR',schlaf:'SLF',brand:'BRN',frost:'FRO'}[c.status]||'';
 }
 function battleBgKey(){
   if(G.map==='ordenbasis') return 'bg_boss';
@@ -2148,7 +2231,7 @@ function drawInfoBox(x,y,c,isPlayer){
   text(c.name, x+14, y+5, '#fff', 10);
   text('Lv'+c.level, x+w-32, y+5, '#ffe45a', 9);
   const st=statusTag(c);
-  if(st){ const sc={GIF:'#a05ad0',PAR:'#d8b53a',SLF:'#7a8aa0'}[st]||'#c03030';
+  if(st){ const sc={GIF:'#a05ad0',PAR:'#d8b53a',SLF:'#7a8aa0',BRN:'#e0623a',FRO:'#6fc7e0'}[st]||'#c03030';
     panel(x+w-72,y+4,24,11,sc,null,3); text(st,x+w-69,y+5,'#160e1e',7); }
   drawHpBar(x+32, y+19, w-66, isPlayer? animHp(c,true) : animHp(c,false), c.maxhp);
   text('KP', x+13, y+16, '#bfe0ff', 7);
@@ -2538,7 +2621,7 @@ function updateBattle(){
       if(c.hp<=0){ openDialogInBattle(c.name+' kann nicht kämpfen!'); return; }
       if(c===battle.player){ openDialogInBattle(c.name+' ist bereits im Kampf!'); return; }
       Audio2.sfx('confirm');
-      if(battle.mustSwitch){ battle.mustSwitch=false; battle.player=c; battle.playerHpShown=c.hp; bfxEntry('player'); battleMsg(['Los, '+c.name+'!'], ()=>{ battle.phase='menu'; battle.cursor=0; }); }
+      if(battle.mustSwitch){ battle.mustSwitch=false; battle.player=c; battle.playerHpShown=c.hp; initVolatile(c); bfxEntry('player'); battleMsg(['Los, '+c.name+'!'], ()=>{ battle.phase='menu'; battle.cursor=0; }); }
       else { execTurn({type:'switch', idx:partyScr.idx}); }
     }
     return;
@@ -2623,6 +2706,7 @@ function drawPartyDetail(c){
   text('Tempo        '+c.stats.spd, 160, 112, '#cde', 10);
   const need=expForLevel(c.level+1)-expForLevel(c.level), cur=c.exp-expForLevel(c.level);
   text('E-Punkte bis Lv'+(c.level+1)+': '+(need-cur), 160, 128, '#9ce', 8);
+  const ab=abilityOf(c); text('Fähigkeit: '+ab, 160, 140, '#ffe45a', 9);
   // Attacken
   text('Attacken:', 40, 150, '#ffe', 10);
   for(let i=0;i<c.moves.length;i++){
