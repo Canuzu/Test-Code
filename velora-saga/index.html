@@ -1987,11 +1987,16 @@ function drawStarter(){
    ZEICHNEN: KAMPF
    ========================================================================= */
 function hpColor(ratio){ return ratio>0.5?'#48c048':(ratio>0.2?'#e0c020':'#e04040'); }
+// Abgerundetes Rechteck als Pfad (Gen5-UI-Look)
+function rrect(x,y,w,h,r){ r=Math.min(r,h/2,w/2); const c=CTX; c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+function panel(x,y,w,h,fill,border,r){ rrect(x,y,w,h,r==null?6:r); if(fill){ CTX.fillStyle=fill; CTX.fill(); } if(border){ CTX.lineWidth=2; CTX.strokeStyle=border; CTX.stroke(); CTX.lineWidth=1; } }
 function drawHpBar(x,y,w,cur,max){
-  CTX.fillStyle='#222'; CTX.fillRect(x-1,y-1,w+2,6);
-  CTX.fillStyle='#555'; CTX.fillRect(x,y,w,4);
-  const r=clamp(cur/max,0,1);
-  CTX.fillStyle=hpColor(r); CTX.fillRect(x,y,Math.round(w*r),4);
+  const r=clamp(cur/max,0,1), h=6;
+  panel(x-1,y-1,w+2,h+2,'#0b0e18','#000',(h+2)/2);     // Rahmen
+  rrect(x,y,w,h,h/2); CTX.fillStyle='#2c3a30'; CTX.fill(); // Track
+  if(r>0){ const fw=Math.max(h,Math.round(w*r));
+    rrect(x,y,fw,h,h/2); CTX.fillStyle=hpColor(r); CTX.fill();
+    rrect(x+1,y+1,Math.max(2,fw-2),2,1); CTX.fillStyle='rgba(255,255,255,0.4)'; CTX.fill(); } // Glanz
 }
 function statusTag(c){
   if(!c.status) return '';
@@ -2076,24 +2081,23 @@ function drawBattle(bgOnly){
   }
 }
 function drawInfoBox(x,y,c,isPlayer){
-  const w=200,h=isPlayer?42:34;
-  CTX.fillStyle='#080a18'; CTX.fillRect(x,y,w,h);
-  CTX.fillStyle='#e8e0c0'; CTX.fillRect(x+1,y+1,w-2,h-2);
-  const g=CTX.createLinearGradient(0,y,0,y+h);
-  g.addColorStop(0,'#33386a'); g.addColorStop(1,'#1c1f3e');
-  CTX.fillStyle=g; CTX.fillRect(x+3,y+3,w-6,h-6);
-  text(c.name, x+8, y+5, '#fff', 9);
-  text('Lv'+c.level, x+w-34, y+5, '#ffe45a', 9);
+  const w=206,h=isPlayer?46:34;
+  panel(x,y,w,h,'#1b1f3a','#e8e0c0',8);
+  // farbiger Typ-Akzent links
+  const tcol=TYPE_COLORS[(SPECIES[c.species]||{}).type]||'#888';
+  rrect(x+4,y+4,5,h-8,2); CTX.fillStyle=tcol; CTX.fill();
+  text(c.name, x+14, y+5, '#fff', 10);
+  text('Lv'+c.level, x+w-32, y+5, '#ffe45a', 9);
   const st=statusTag(c);
-  if(st){ CTX.fillStyle='#c03030'; CTX.fillRect(x+w-72,y+4,22,10); text(st,x+w-70,y+5,'#fff',7); }
-  drawHpBar(x+30, y+20, w-60, isPlayer? (animHp(c,true)) : (animHp(c,false)), c.maxhp);
-  text('KP', x+8, y+17, '#cfe', 7);
-  if(isPlayer){ text(Math.round(animHp(c,true))+'/'+c.maxhp, x+w-64, y+27, '#fff', 8);
-    // EXP-Balken
-    const need=expForLevel(c.level+1)-expForLevel(c.level);
-    const cur=c.exp-expForLevel(c.level);
-    CTX.fillStyle='#888'; CTX.fillRect(x+8,y+h-5,w-16,2);
-    CTX.fillStyle='#40a0e0'; CTX.fillRect(x+8,y+h-5,Math.round((w-16)*clamp(cur/need,0,1)),2);
+  if(st){ const sc={GIF:'#a05ad0',PAR:'#d8b53a',SLF:'#7a8aa0'}[st]||'#c03030';
+    panel(x+w-72,y+4,24,11,sc,null,3); text(st,x+w-69,y+5,'#160e1e',7); }
+  drawHpBar(x+32, y+19, w-66, isPlayer? animHp(c,true) : animHp(c,false), c.maxhp);
+  text('KP', x+13, y+16, '#bfe0ff', 7);
+  if(isPlayer){
+    text(Math.round(animHp(c,true))+'/'+c.maxhp, x+w-70, y+27, '#fff', 8);
+    const need=expForLevel(c.level+1)-expForLevel(c.level), cur=c.exp-expForLevel(c.level);
+    panel(x+10,y+h-7,w-20,4,'#0b0e18',null,2);
+    if(need>0){ rrect(x+11,y+h-6,Math.max(0,Math.round((w-22)*clamp(cur/need,0,1))),2,1); CTX.fillStyle='#46b0ff'; CTX.fill(); }
   }
 }
 function animHp(c, isPlayer){
@@ -2102,25 +2106,39 @@ function animHp(c, isPlayer){
   else { battle.enemyHpShown += (target-battle.enemyHpShown)*0.2; if(Math.abs(target-battle.enemyHpShown)<0.5)battle.enemyHpShown=target; return battle.enemyHpShown; }
 }
 function drawBattleMenu(){
-  drawTextBox(8,VH-72,VW-16,64);
-  text('Was tust du?', 20, VH-58, '#fff', 10);
-  const opts=['KAMPF','BEUTEL','WESEN','FLUCHT'];
+  // Nachrichtenfeld links
+  panel(8,VH-58,232,50,'#1c2040','#e8e0c0',8);
+  text('Was möchtest du tun?', 22, VH-39, '#fff', 11);
+  // 2x2 Kommando-Buttons rechts (Gen5-Look, farbcodiert)
+  const opts=[['KAMPF','#d24b4b'],['BEUTEL','#e0a83a'],['WESEN','#52b86a'],['FLUCHT','#4a90d9']];
+  const bx=248, by=VH-58, bw=110, bh=23;
   for(let i=0;i<4;i++){
-    const x=240+(i%2)*110, y=VH-58+Math.floor(i/2)*20;
-    const sel=i===battle.cursor;
-    text((sel?'▶':' ')+opts[i], x, y, sel?'#ffe45a':'#fff', 10);
+    const px=bx+(i%2)*(bw+4), py=by+Math.floor(i/2)*(bh+4), sel=i===battle.cursor, col=opts[i][1];
+    panel(px,py,bw,bh, sel?col:'#161a30', sel?'#fff':col, 6);
+    if(sel) text('▶', px+5, py+7, '#160e1e', 10);
+    text(opts[i][0], px+16, py+7, sel?'#160e1e':'#fff', 11);
   }
 }
 function drawFightMenu(){
-  drawTextBox(8,VH-72,VW-16,64);
   const p=battle.player;
+  // Info-Streifen rechts (Typ/AP/Stärke der Auswahl)
+  panel(248,VH-58,110,50,'#1c2040','#e8e0c0',8);
+  const selMv=p.moves[battle.cursor];
+  if(selMv){ const m=MOVES[selMv.key];
+    text('TYP', 258, VH-51, '#9ab', 8);
+    panel(284,VH-52,62,12, TYPE_COLORS[m.type], null,3); textC(m.type, 315, VH-51, '#160e1e', 8);
+    text('AP   '+selMv.pp+'/'+selMv.maxpp, 258, VH-35, '#fff', 9);
+    text('Stärke '+(m.power>0?m.power:'—'), 258, VH-23, '#cde', 8);
+  }
+  // 2x2 typgefärbte Attacken-Buttons links
+  const bx=8, by=VH-58, bw=116, bh=23;
   for(let i=0;i<4;i++){
-    const x=20+(i%2)*230, y=VH-58+Math.floor(i/2)*22;
-    if(i<p.moves.length){
-      const mv=p.moves[i]; const m=MOVES[mv.key]; const sel=i===battle.cursor;
-      text((sel?'▶':' ')+m.name, x, y, sel?'#ffe45a':'#fff', 9);
-      text(m.type+' '+mv.pp+'/'+mv.maxpp, x+12, y+10, TYPE_COLORS[m.type], 7);
-    } else { text('—', x, y, '#666', 9); }
+    const px=bx+(i%2)*(bw+4), py=by+Math.floor(i/2)*(bh+4);
+    if(i<p.moves.length){ const mv=p.moves[i], m=MOVES[mv.key], sel=i===battle.cursor, col=TYPE_COLORS[m.type];
+      panel(px,py,bw,bh, sel?col:'#161a30', sel?'#fff':col, 6);
+      text(m.name, px+8, py+4, sel?'#160e1e':'#fff', 9);
+      text('AP '+mv.pp+'/'+mv.maxpp, px+8, py+13, sel?'#2a1a10':'#9ab', 7);
+    } else { panel(px,py,bw,bh,'#10131f','#333',6); text('—', px+8, py+7, '#555', 9); }
   }
 }
 function drawBattleBag(){
