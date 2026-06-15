@@ -1019,7 +1019,7 @@ MAPS.ordenbasis = {
     "B         B",
     "BBBBBDBBBBB"
   ],
-  warps:[ {x:5,y:11, to:'sturmkliff', tx:11, ty:13} ],
+  warps:[ {x:5,y:11, to:'wolkenburg', tx:11, ty:13} ],
   npcs:[
     {x:5,y:5, dir:'down', palette:{shirt:'#2a2a3a',hair:'#1a1a1a'}, name:'Schergin',
      trainer:{ name:'Orden-Schergin', team:[['nachtflatter',16],['muffrat',16]], reward:1200, music:'boss',
@@ -1096,15 +1096,15 @@ MAPS.sturmkliff = {
     {x:5,y:3, to:'heilstation', tx:5, ty:7, ret:'sturmkliff', rx:5, ry:4},  // Heilstation
     {x:18,y:3, to:'shop', tx:4, ty:6, ret:'sturmkliff', rx:18, ry:4},       // Shop
     {x:7,y:9, to:'pruefhalle3', tx:6, ty:11},                               // Prüfhalle Elektro
-    {x:11,y:14, to:'ordenbasis', tx:5, ty:11}                               // Süd -> Orden-Basis (Finale)
+    {x:11,y:14, to:'pfad4', tx:14, ty:1}                                    // Süd -> Pfad 4 (Aufstieg)
   ],
   npcs:[
     {x:14,y:7, dir:'down', palette:{shirt:'#e0c233',hair:'#3a2a1a'}, name:'Klippenbewohner',
      lines:['Sturmkliff thront hoch über dem Meer.','Hallenleiterin Juna zähmt hier den Blitz!']},
     {x:9,y:11, dir:'up', palette:{shirt:'#5a8ad2',hair:'#c0a030'}, name:'Späherin',
-     lines:['Hinter der Stadt liegt die Basis des Orden Nyx.','Heil dich, bevor du gehst!']}
+     lines:['Der Pfad südlich steigt hinauf zur Wolkenburg.','Dort wartet die letzte Prüfhalle!']}
   ],
-  signs:{ '17,8':'» STURMKLIFF «\nStadt über den Klippen.\nSüden: Basis des Orden Nyx.' },
+  signs:{ '17,8':'» STURMKLIFF «\nStadt über den Klippen.\nSüden: Aufstieg zur Wolkenburg.' },
   encounters:{}
 };
 
@@ -1136,6 +1136,113 @@ MAPS.pruefhalle3 = {
     {x:3,y:7, dir:'right', palette:{shirt:'#e8d24b',hair:'#3a2a1a'}, name:'Hallen-Schülerin',
      trainer:{ name:'Schülerin Edda', team:[['zappel',15],['funkel',16]], reward:520,
        intro:['Juna ist elektrisierend stark!'], win:['Wow, du auch!'], lose:['Bleib geerdet!'] }}
+  ],
+  signs:{}, encounters:{}
+};
+
+// --- PFAD 4 (Aufstieg zur Wolkenburg) ---
+MAPS.pfad4 = {
+  music:'overworld', indoor:false,
+  grid:[
+    "######=======##############",
+    "#####.=......#.....#######.#",
+    "###...=,,,,..#..,,,,...###.#",
+    "#.....=,,,,..=..,,,,......##",
+    "#..#..======+======..#....#",
+    "#..#...#....=.....#...#..#.#",
+    "#.....,,,...=...,,,,..#....#",
+    "#.....,,,...=...,,,,..#..#.#",
+    "#..#..======+=====...#....#",
+    "#.....=.....=....#........##",
+    "#..S..=,,,..=..,,,,..####..#",
+    "#.....=,,,..=..,,,,.......##",
+    "#.....======+======......##",
+    "#...........=............#",
+    "######======================"
+  ],
+  warps:[
+    {x:14,y:0, to:'sturmkliff', tx:11, ty:13},     // Nord -> Sturmkliff
+    {x:12,y:14, to:'wolkenburg', tx:13, ty:1}       // Süd -> Wolkenburg
+  ],
+  npcs:[
+    {x:7,y:6, dir:'right', palette:{shirt:'#9ab8e0',hair:'#222'}, name:'Bergsteiger',
+     trainer:{ name:'Bergsteiger Ron', team:[['sturmaar',18],['geoll',18]], reward:1100,
+       intro:['Nur die Stärksten erreichen die Wolkenburg!'], win:['Du hast den Aufstieg verdient.'], lose:['Kehr um und übe!'] }},
+    {x:18,y:11, dir:'up', palette:{shirt:'#cfe0f0',hair:'#3a2a1a'}, name:'Falknerin',
+     trainer:{ name:'Falknerin Win', team:[['wölkchen',17],['schwingfalk',19]], reward:1050,
+       intro:['Meine Vögel reiten den Aufwind!'], win:['Beachtlicher Flug!'], lose:['Höher hinaus!'] }}
+  ],
+  signs:{ '3,10':'» PFAD 4 «\nSturmkliff ↑   Wolkenburg ↓\nDer Wind wird hier oben rauer.' },
+  encounters:{
+    0:[ {s:'wölkchen',min:16,max:19,w:24},{s:'sturmaar',min:18,max:21,w:14},{s:'nachtflatter',min:16,max:19,w:22},{s:'geoll',min:16,max:19,w:22},{s:'funkel',min:16,max:19,w:18} ]
+  }
+};
+
+// --- STADT WOLKENBURG (Prüfhalle Flug) ---
+MAPS.wolkenburg = {
+  music:'town', indoor:false,
+  grid:[
+    "#############=#############",
+    "#....FF.....=.....FF......#",
+    "#..HHHHHH..====..HHHHHH...#",
+    "#..HHDHHH..=..=..HHDHHH...#",
+    "#....=.....=..=....=......#",
+    "#....=.....=..=....=......#",
+    "#....========+========....#",
+    "#............=...........#",
+    "#...HHHHHHH..=...S........#",
+    "#...HHHDHHH..=............#",
+    "#.....=......=....FF......#",
+    "#.....=......=...........#",
+    "#FF...========+======....#",
+    "#............=...........#",
+    "############=##############"
+  ],
+  warps:[
+    {x:13,y:0, to:'pfad4', tx:12, ty:13},                                    // Nord -> Pfad 4
+    {x:5,y:3, to:'heilstation', tx:5, ty:7, ret:'wolkenburg', rx:5, ry:4},   // Heilstation
+    {x:18,y:3, to:'shop', tx:4, ty:6, ret:'wolkenburg', rx:18, ry:4},        // Shop
+    {x:7,y:9, to:'pruefhalle4', tx:6, ty:11},                                // Prüfhalle Flug
+    {x:11,y:14, to:'ordenbasis', tx:5, ty:11}                                // Süd -> Orden-Basis (Finale)
+  ],
+  npcs:[
+    {x:14,y:7, dir:'down', palette:{shirt:'#9ab8e0',hair:'#3a2a1a'}, name:'Wolkenbewohner',
+     lines:['Willkommen auf der Wolkenburg, höchste Stadt Veloras.','Leiter Aero herrscht hier über die Lüfte!']},
+    {x:9,y:11, dir:'up', palette:{shirt:'#5a8ad2',hair:'#c0a030'}, name:'Wächter',
+     lines:['Hinter der Burg wartet der Orden Nyx.','Ohne alle Embleme bist du chancenlos!']}
+  ],
+  signs:{ '17,8':'» WOLKENBURG «\nStadt über den Wolken.\nSüden: Basis des Orden Nyx.' },
+  encounters:{}
+};
+
+// --- Prüfhalle 4: Flug (Leiter Aero) ---
+MAPS.pruefhalle4 = {
+  music:'town', indoor:true,
+  grid:[
+    "BBBBBBBBBBBBB",
+    "B           B",
+    "B   .....   B",
+    "B  ..,,,..  B",
+    "B   .....   B",
+    "B           B",
+    "B  .. F ..  B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "BBBBBDBBBBBBB"
+  ],
+  warps:[ {x:5,y:12, to:'wolkenburg', tx:7, ty:10} ],
+  npcs:[
+    {x:6,y:1, dir:'down', palette:{shirt:'#9ab8e0',hair:'#5a6a8a'}, name:'Hallenleiter Aero', special:'leader4',
+     trainer:{ name:'Hallenleiter Aero', team:[['wölkchen',20],['schwingfalk',21],['sturmaar',23]], reward:3600, leader:true, badge:'Sturm-Emblem', music:'boss',
+       intro:['Ich bin Aero, Herr der Wolkenburg.','Spürst du den Sturm, der sich zusammenbraut?'],
+       win:['Du reitest den Wind besser als ich! Nimm das Sturm-Emblem!'],
+       lose:['Komm wieder, wenn dein Flug sicherer ist.'] }},
+    {x:3,y:7, dir:'right', palette:{shirt:'#cfe0f0',hair:'#3a2a1a'}, name:'Hallen-Schüler',
+     trainer:{ name:'Schüler Luk', team:[['piepser',18],['wölkchen',19]], reward:640,
+       intro:['Aero fliegt allen davon!'], win:['Saubere Landung!'], lose:['Bleib am Boden!'] }}
   ],
   signs:{}, encounters:{}
 };
@@ -2151,7 +2258,7 @@ function drawOwHud(){
   text(label, VW-w, 7, '#fff');
   // Ortsname links oben kurz
   const placeNames={moosheim:'Moosheim',pfad1:'Pfad 1',lindgruen:'Lindgrün',felsschlucht:'Felsschlucht',wogenfels:'Wogenfels',
-    pfad3:'Pfad 3',sturmkliff:'Sturmkliff',
+    pfad3:'Pfad 3',sturmkliff:'Sturmkliff',pfad4:'Pfad 4',wolkenburg:'Wolkenburg',pruefhalle4:'Flug-Halle',
     spielerhaus:'Zuhause',rivalenhaus:'Kjells Haus',labor:'Labor',heilstation:'Heilstation',shop:'Wesen-Laden',
     pruefhalle1:'Pflanzen-Halle',pruefhalle2:'Wasser-Halle',pruefhalle3:'Elektro-Halle',ordenbasis:'Orden-Basis'};
   const pn=placeNames[G.map]||G.map;

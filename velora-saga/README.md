@@ -90,8 +90,8 @@ Auf Touch-Geräten erscheint ein Bildschirm-Steuerkreuz automatisch.
 ## Enthaltene Systeme
 
 - **Welt:** Heimatdorf Moosheim, Pfad 1, Städte Lindgrün & Wogenfels, Höhle Felsschlucht, dazu die
-  Küstenregion **Pfad 3 → Sturmkliff** und die Orden-Basis (Finale). **Drei Prüfhallen** (Pflanze,
-  Wasser, Elektro). NPCs, Heilstation, Wesen-Laden.
+  Küstenregion **Pfad 3 → Sturmkliff** und der Aufstieg **Pfad 4 → Wolkenburg** vor der Orden-Basis
+  (Finale). **Vier Prüfhallen** (Pflanze, Wasser, Elektro, Flug). NPCs, Heilstation, Wesen-Laden.
 - **Tag/Nacht-Zyklus** und **Jahreszeiten** (Frühling/Sommer/Herbst/Winter) ändern Optik und die
   wilden Wesen je Route; dazu ein **Wettersystem** (Regen/Schnee/Nebel/Sonne) mit Kampfwirkung.
 - **22 eigene Wesen** in 7 Typen (Normal, Pflanze, Feuer, Wasser, Elektro, Gestein, Flug),
@@ -106,7 +106,7 @@ Auf Touch-Geräten erscheint ein Bildschirm-Steuerkreuz automatisch.
 
 ## Ziel
 
-Vom Startdorf bis zur Orden-Basis: Wesen fangen, drei Prüfhallen meistern und die
+Vom Startdorf bis zur Orden-Basis: Wesen fangen, vier Prüfhallen meistern und die
 Antagonisten-Gruppe **Orden Nyx** und ihre Anführerin **Nox** besiegen.
 
 > Alle Bezeichnungen (Region, Orte, Wesen, Figuren, Organisation, Begriffe wie
