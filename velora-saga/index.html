@@ -1468,14 +1468,36 @@ const BFX = {
   lunge:{player:0, enemy:0},   // Restzeit Angriffs-Vorstoß (s)
   faint:{player:0, enemy:0},   // 0..1 Absink-Fortschritt
   parts:[],                    // Partikel {x,y,vx,vy,life,max,color,r,g}
-  fx:[]                        // Attacken-Effekte {ty,x0,y0,x1,y1,t,dur,kind}
+  fx:[],                       // Attacken-Effekte {ty,x0,y0,x1,y1,t,dur,kind}
+  ball:{on:false, phase:'', t:0}, captureProg:0   // Fangkugel-Animation
 };
 function sideCenter(side){ return side==='enemy'? {x:362,y:92} : {x:110,y:222}; }
 function easeOutCubic(p){ return 1-Math.pow(1-p,3); }
 function bfxReset(side){ BFX.hit[side]=0; BFX.lunge[side]=0; BFX.faint[side]=0; }
 function bfxEntry(side){ BFX.entry[side]=1; bfxReset(side); }
 function bfxFaint(side){ if(BFX.faint[side]<=0) BFX.faint[side]=0.0001; }
-function bfxStart(){ BFX.flash=1; BFX.shake=0; BFX.intro=0.7; BFX.ambT=0; BFX.parts.length=0; BFX.fx.length=0; bfxEntry('player'); bfxEntry('enemy'); }
+function bfxStart(){ BFX.flash=1; BFX.shake=0; BFX.intro=0.7; BFX.ambT=0; BFX.parts.length=0; BFX.fx.length=0; BFX.ball.on=false; BFX.captureProg=0; bfxEntry('player'); bfxEntry('enemy'); }
+function bfxThrow(){ BFX.ball.on=true; BFX.ball.phase='throw'; BFX.ball.t=0; BFX.captureProg=0; }
+function bfxAbsorb(){ BFX.ball.phase='absorb'; BFX.ball.t=0; }
+function bfxWiggle(){ BFX.ball.phase='wiggle'; BFX.ball.t=0; }
+// Zeichnet eine Fangkugel (klassische Kapsel) bei x,y mit Drehung rot.
+function drawBall(x,y,rot){
+  const c=CTX, r=9; c.save(); c.translate(x,y); c.rotate(rot||0);
+  c.fillStyle='#d23b3b'; c.beginPath(); c.arc(0,0,r,Math.PI,0); c.fill();        // obere Hälfte rot
+  c.fillStyle='#f2f2f2'; c.beginPath(); c.arc(0,0,r,0,Math.PI); c.fill();          // untere Hälfte weiß
+  c.fillStyle='#15151a'; c.fillRect(-r,-1,r*2,2);                                   // Mittelband
+  c.beginPath(); c.arc(0,0,3.2,0,7); c.fill();                                      // Knopf außen
+  c.fillStyle='#f2f2f2'; c.beginPath(); c.arc(0,0,1.6,0,7); c.fill();               // Knopf innen
+  c.restore();
+}
+function drawCatchBall(){
+  if(!BFX.ball.on) return;
+  const fx=110, fy=205, tx=362, ty=120, t=BFX.ball.t;
+  let x=tx, y=ty, rot=0;
+  if(BFX.ball.phase==='throw'){ const p=Math.min(1,t/0.5); x=fx+(tx-fx)*p; y=fy+(ty-fy)*p - Math.sin(p*Math.PI)*80; rot=p*8; }
+  else if(BFX.ball.phase==='wiggle'){ rot=Math.sin(t*16)*0.5*Math.max(0,1-t/0.55); }
+  drawBall(x,y,rot);
+}
 function bfxSpawn(x,y,color,n){
   for(let i=0;i<n;i++){
     const a=Math.random()*Math.PI*2, sp=40+Math.random()*90;
@@ -1521,6 +1543,7 @@ function updateBFX(dt){
     if(BFX.lunge[s]>0) BFX.lunge[s]=Math.max(0, BFX.lunge[s]-dt);
     if(BFX.faint[s]>0 && BFX.faint[s]<1) BFX.faint[s]=Math.min(1, BFX.faint[s]+dt*2.1);
   }
+  if(BFX.ball.on){ BFX.ball.t+=dt; if(BFX.ball.phase==='absorb') BFX.captureProg=Math.min(1, BFX.captureProg+dt*2.4); }
   BFX.ambT-=dt;
   if(BFX.ambT<=0 && battle.active && state===STATE.BATTLE){
     BFX.ambT=0.20;
@@ -1992,21 +2015,38 @@ function doCatch(next){
   let shakes=0;
   for(let i=0;i<4;i++){ if(rnd(65536) < shakeProb) shakes++; else break; }
   const caught = (a>=255) || shakes===4;
-  Audio2.sfx('catch');
   battle._catchShakes=shakes;
-  if(caught){
-    Audio2.sfx('caught');
-    battleMsg(['Wackel... wackel... klick!', e.name+' wurde gefangen!'], ()=>{
-      G.dex[e.species]='caught';
-      if(G.party.length<6){ G.party.push(e); battleMsg([e.name+' kommt ins Team!'], ()=>endBattle()); }
-      else { G.box.push(e); battleMsg([e.name+' wird in die Aufbewahrung geschickt!'], ()=>endBattle()); }
+  // Animierte Sequenz: Wurf -> Einsaugen -> Wackeln -> Ergebnis
+  battleMsg(['Du wirfst die '+it.name+'!'], ()=>{
+    Audio2.sfx('catch'); bfxThrow();
+    battleAnim(0.5, ()=>{               // Ball erreicht den Gegner
+      bfxAbsorb();
+      battleAnim(0.55, ()=>{           // Gegner wird eingesogen
+        const wiggle=(i)=>{
+          if(i >= Math.max(1, shakes)){ resolve(); return; }
+          bfxWiggle(); Audio2.sfx('select');
+          battleAnim(0.6, ()=>wiggle(i+1));
+        };
+        const resolve=()=>{
+          if(caught){
+            Audio2.sfx('caught'); BFX.ball.phase='caught';
+            battleMsg(['Klick! '+e.name+' wurde gefangen!'], ()=>{
+              G.dex[e.species]='caught'; BFX.ball.on=false; BFX.captureProg=0;
+              if(G.party.length<6){ G.party.push(e); battleMsg([e.name+' kommt ins Team!'], ()=>endBattle()); }
+              else { G.box.push(e); battleMsg([e.name+' wird in die Aufbewahrung geschickt!'], ()=>endBattle()); }
+            });
+          } else {
+            BFX.ball.on=false; BFX.captureProg=0;   // Gegner bricht aus -> erscheint wieder
+            const msg = shakes===0?'Oh nein! Das Wesen ist sofort raus!':
+                        shakes===1?'Mist! Es hat sich befreit!':
+                        shakes===2?'Ah! Fast gefangen!':'So nah! Es ist doch entkommen!';
+            battleMsg([msg], next);
+          }
+        };
+        wiggle(0);
+      });
     });
-  } else {
-    const msg = shakes===0?'Oh nein! Das Wesen ist sofort raus!':
-                shakes===1?'Mist! Es hat sich befreit!':
-                shakes===2?'Ah! Fast gefangen!':'So nah! Es ist doch entkommen!';
-    battleMsg([msg], next);
-  }
+  });
 }
 
 function endOfTurn(){
@@ -2400,14 +2440,22 @@ function drawBattle(bgOnly){
   // Gegner-Plattform + Wesen
   CTX.fillStyle='rgba(60,40,20,0.32)'; CTX.beginPath(); CTX.ellipse(360,120,60,16,0,0,7); CTX.fill();
   const e=battle.enemy;
-  drawBattler('enemy', e.species, 330, 56, 64, false);
+  if(BFX.ball.on && BFX.captureProg>0){
+    // Beim Fangen schrumpft der Gegner in die Kugel (verschwindet bei voller Aufnahme)
+    if(BFX.captureProg<1){ const s=1-BFX.captureProg; CTX.save(); CTX.globalAlpha=s;
+      CTX.translate(362,92); CTX.scale(s,s); CTX.translate(-362,-92);
+      drawCreature(e.species, 330,56,64,false); CTX.restore(); CTX.globalAlpha=1; }
+  } else {
+    drawBattler('enemy', e.species, 330, 56, 64, false);
+  }
   // Spieler-Plattform + Wesen
   CTX.fillStyle='rgba(120,90,60,0.4)'; CTX.beginPath(); CTX.ellipse(110,250,64,18,0,0,7); CTX.fill();
   const p=battle.player;
   drawBattler('player', p.species, 70, 180, 80, true);
-  // Attacken-Effekte (reisende Projektile/Blitze) + Treffer-/Typ-Partikel
+  // Attacken-Effekte (reisende Projektile/Blitze) + Treffer-/Typ-Partikel + Fangkugel
   drawMoveFX();
   drawBattleParts();
+  drawCatchBall();
   CTX.restore();
   // Außenkampf: Tageslicht-Tönung + Wetter über dem Feld
   if(battleBgKey()==='bg_grass'){ applyLighting(false,0.8); drawWeather(false); }
