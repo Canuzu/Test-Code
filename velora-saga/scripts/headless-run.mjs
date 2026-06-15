@@ -78,6 +78,7 @@ try {
     ctx.updateBFX(0.016);
     ctx.drawBattler('enemy', 'muffel', 330, 56, 64, false);
     ctx.drawBattler('player', 'glutfox', 70, 180, 80, true);
+    if (typeof ctx.drawMoveFX === 'function') ctx.drawMoveFX();
     ctx.drawBattleParts();
     fx++;
   }

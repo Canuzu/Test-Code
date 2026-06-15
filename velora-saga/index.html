@@ -1232,13 +1232,15 @@ const BFX = {
   hit:{player:0, enemy:0},     // Restzeit Treffer-Rückstoß/Blinken (s)
   lunge:{player:0, enemy:0},   // Restzeit Angriffs-Vorstoß (s)
   faint:{player:0, enemy:0},   // 0..1 Absink-Fortschritt
-  parts:[]                     // Partikel {x,y,vx,vy,life,max,color,r,g}
+  parts:[],                    // Partikel {x,y,vx,vy,life,max,color,r,g}
+  fx:[]                        // Attacken-Effekte {ty,x0,y0,x1,y1,t,dur,kind}
 };
+function sideCenter(side){ return side==='enemy'? {x:362,y:92} : {x:110,y:222}; }
 function easeOutCubic(p){ return 1-Math.pow(1-p,3); }
 function bfxReset(side){ BFX.hit[side]=0; BFX.lunge[side]=0; BFX.faint[side]=0; }
 function bfxEntry(side){ BFX.entry[side]=1; bfxReset(side); }
 function bfxFaint(side){ if(BFX.faint[side]<=0) BFX.faint[side]=0.0001; }
-function bfxStart(){ BFX.flash=1; BFX.shake=0; BFX.intro=0.7; BFX.ambT=0; BFX.parts.length=0; bfxEntry('player'); bfxEntry('enemy'); }
+function bfxStart(){ BFX.flash=1; BFX.shake=0; BFX.intro=0.7; BFX.ambT=0; BFX.parts.length=0; BFX.fx.length=0; bfxEntry('player'); bfxEntry('enemy'); }
 function bfxSpawn(x,y,color,n){
   for(let i=0;i<n;i++){
     const a=Math.random()*Math.PI*2, sp=40+Math.random()*90;
@@ -1247,10 +1249,19 @@ function bfxSpawn(x,y,color,n){
 }
 function bfxAttack(who, eff, type){
   const def = who==='player'?'enemy':'player';
-  BFX.lunge[who]=LUNGE_T; BFX.hit[def]=HIT_T;
-  BFX.shake=Math.min(11, 4+eff*3);
-  const pos = def==='enemy'? {x:362,y:92} : {x:110,y:222};
-  bfxSpawn(pos.x, pos.y, TYPE_COLORS[type]||'#fff', 16);
+  BFX.lunge[who]=LUNGE_T;
+  BFX.shake=Math.min(12, 4+eff*3);
+  // Attacken-Projektil/Strahl, das zum Ziel reist; Treffer-Effekt folgt beim Einschlag
+  const a=sideCenter(who), b=sideCenter(def);
+  BFX.fx.push({ty:type, x0:a.x, y0:a.y, x1:b.x, y1:b.y, t:0, dur:0.40, eff:eff, def:def, bursted:false});
+}
+// Treffer-Einschlag am Ziel (Blitz, Stauchen, Partikel-Burst)
+function bfxImpact(def, type, eff){
+  BFX.hit[def]=HIT_T;
+  BFX.shake=Math.min(13, 5+eff*3.5);
+  const p=sideCenter(def);
+  bfxSpawn(p.x, p.y, TYPE_COLORS[type]||'#fff', eff>1?22:15);
+  if(eff>1) bfxSpawn(p.x, p.y, '#ffffff', 8);
 }
 // Dezente typ-spezifische Ambient-Partikel an einem Wesen (Glut, Funken, Blasen …)
 function spawnAmbient(side, c, x, y){
@@ -1284,6 +1295,37 @@ function updateBFX(dt){
   for(let i=BFX.parts.length-1;i>=0;i--){
     const p=BFX.parts[i]; p.life+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=(p.g==null?160:p.g)*dt;
     if(p.life>=p.max) BFX.parts.splice(i,1);
+  }
+  // Attacken-Effekte: Projektil reist zum Ziel, hinterlässt Spur, schlägt ein
+  for(let i=BFX.fx.length-1;i>=0;i--){
+    const f=BFX.fx[i]; f.t+=dt; const p=Math.min(1,f.t/f.dur);
+    if(f.ty!=='Elektro'){ // Spurpartikel entlang der Flugbahn (Blitz wird direkt gezeichnet)
+      const hx=f.x0+(f.x1-f.x0)*p, hy=f.y0+(f.y1-f.y0)*p;
+      const col=TYPE_COLORS[f.ty]||'#fff';
+      BFX.parts.push({x:hx+(Math.random()*8-4), y:hy+(Math.random()*8-4), vx:(Math.random()*2-1)*16, vy:(Math.random()*2-1)*16-10, life:0, max:0.3, color:col, r:2+rnd(2), g:30});
+    }
+    if(!f.bursted && p>=0.96){ f.bursted=true; bfxImpact(f.def, f.ty, f.eff); }
+    if(f.t>=f.dur) BFX.fx.splice(i,1);
+  }
+}
+// Zeichnet die reisenden Attacken-Effekte (typ-spezifisch).
+function drawMoveFX(){
+  for(const f of BFX.fx){
+    const p=Math.min(1, f.t/f.dur);
+    const hx=f.x0+(f.x1-f.x0)*p, hy=f.y0+(f.y1-f.y0)*p;
+    const col=TYPE_COLORS[f.ty]||'#fff';
+    if(f.ty==='Elektro'){
+      // zackiger Blitz von Angreifer zu Ziel, flackernd
+      CTX.strokeStyle='#fff27a'; CTX.lineWidth=3; CTX.globalAlpha=0.5+Math.random()*0.5;
+      CTX.beginPath();
+      const seg=8;
+      for(let s=0;s<=seg;s++){ const tt=s/seg; const lx=f.x0+(f.x1-f.x0)*tt+(s>0&&s<seg?(Math.random()*16-8):0); const ly=f.y0+(f.y1-f.y0)*tt+(s>0&&s<seg?(Math.random()*16-8):0); if(s===0)CTX.moveTo(lx,ly); else CTX.lineTo(lx,ly); }
+      CTX.stroke(); CTX.lineWidth=1; CTX.globalAlpha=1;
+    } else {
+      // leuchtender Kern mit kurzem Schweif
+      for(let k=0;k<4;k++){ const tp=Math.max(0,p-k*0.05); const x=f.x0+(f.x1-f.x0)*tp, y=f.y0+(f.y1-f.y0)*tp; CTX.globalAlpha=(1-k*0.22); CTX.fillStyle=k===0?'#fff':col; const r=7-k*1.4; CTX.fillRect(Math.round(x-r/2),Math.round(y-r/2),Math.round(r),Math.round(r)); }
+      CTX.globalAlpha=1;
+    }
   }
 }
 // Typ-spezifische Idle-Bewegung (Atmen, Schweben, Flackern, Wackeln …)
@@ -1989,7 +2031,8 @@ function drawBattle(bgOnly){
   CTX.fillStyle='rgba(120,90,60,0.4)'; CTX.beginPath(); CTX.ellipse(110,250,64,18,0,0,7); CTX.fill();
   const p=battle.player;
   drawBattler('player', p.species, 70, 180, 80, true);
-  // Treffer-/Typ-Partikel über den Wesen
+  // Attacken-Effekte (reisende Projektile/Blitze) + Treffer-/Typ-Partikel
+  drawMoveFX();
   drawBattleParts();
   CTX.restore();
   // Kampfstart-Blitz (ohne Shake, ganzflächig)
