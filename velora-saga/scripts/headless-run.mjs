@@ -110,6 +110,34 @@ try {
     const sp0 = ctx.speedOf(A); A.status = 'paralyse'; assert(ctx.speedOf(A) < sp0, 'paralysis halves speed'); A.status = null;
     fx++;
   }
+  // World-integrity checks: every warp target, encounter species, trainer team and learnset is valid
+  if (typeof ctx._gameData === 'function') {
+    const { MAPS, SPECIES, MOVES } = ctx._gameData();
+    // Reference integrity: the things that silently break navigation/battles if a
+    // content typo creeps in. (Spawn-tile geometry follows the game's intentional
+    // "spawn just below a door, then step in" convention, so it isn't asserted.)
+    let werr = 0;
+    const wfail = (m) => { console.log('✗ world: ' + m); werr++; };
+    for (const [name, map] of Object.entries(MAPS)) {
+      if (!Array.isArray(map.grid) || !map.grid.length) { wfail(`${name}: no grid`); continue; }
+      for (const w of (map.warps || [])) {
+        if (w.dynamicReturn) continue;
+        if (!MAPS[w.to]) wfail(`${name}: warp -> unknown map '${w.to}'`);
+        else if (w.tx == null || w.ty == null) wfail(`${name}->${w.to}: missing target coords`);
+      }
+      for (const tbl of Object.values(map.encounters || {}))
+        for (const e of tbl) if (!SPECIES[e.s]) wfail(`${name}: encounter unknown species '${e.s}'`);
+      for (const n of (map.npcs || [])) if (n.trainer) for (const [s] of n.trainer.team)
+        if (!SPECIES[s]) wfail(`${name}: trainer '${n.trainer.name}' unknown species '${s}'`);
+    }
+    // learnsets + evolutions reference real moves/species
+    for (const [k, sp] of Object.entries(SPECIES)) {
+      for (const [, mv] of (sp.learn || [])) if (!MOVES[mv]) wfail(`species ${k}: learn unknown move '${mv}'`);
+      if (sp.evo && !SPECIES[sp.evo.into]) wfail(`species ${k}: evo into unknown '${sp.evo.into}'`);
+    }
+    if (werr) throw new Error(`${werr} world-integrity problem(s)`);
+    console.log(`✓ world integrity OK (${Object.keys(MAPS).length} maps, ${Object.keys(SPECIES).length} species)`);
+  }
   console.log(`✓ booted (${frames} title frames) + drove ${fx} battle-animation frames + mechanics checks OK`);
   process.exit(0);
 } catch (e) {

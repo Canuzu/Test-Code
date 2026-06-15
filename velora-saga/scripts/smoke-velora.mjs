@@ -55,8 +55,8 @@ const fileMap = Object.fromEntries(
   [...fileBlock.matchAll(/'([^']+)'\s*:\s*'([^']+)'/g)].map((m) => [m[1], m[2]])
 );
 
-if (speciesKeys.length !== 18) bad(`expected 18 species, found ${speciesKeys.length}`);
-else ok(`18 species defined`);
+if (speciesKeys.length < 18) bad(`expected at least 18 species, found ${speciesKeys.length}`);
+else ok(`${speciesKeys.length} species defined`);
 
 let spriteMiss = 0;
 for (const k of speciesKeys) {

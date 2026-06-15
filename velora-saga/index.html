@@ -57,7 +57,8 @@ const CREATURE_FILE = {
   'tröpflin':'troepflin','aqualon':'aqualon','muffel':'muffel','muffrat':'muffrat',
   'piepser':'piepser','schwingfalk':'schwingfalk','zappel':'zappel','voltik':'voltik',
   'klumpf':'klumpf','felsbrocker':'felsbrocker','aschling':'aschling','blattling':'blattling',
-  'nachtflatter':'nachtflatter','kristallit':'kristallit'
+  'nachtflatter':'nachtflatter','kristallit':'kristallit',
+  'funkel':'funkel','wölkchen':'woelkchen','sturmaar':'sturmaar','geoll':'geoll'
 };
 const IMG = {};
 let assetsTotal = 0, assetsLoaded = 0;
@@ -339,7 +340,20 @@ const SPECIES = {
     dex:'Nur nachts aktiv. Es findet sich im Dunkeln durch feines Gehör zurecht.'},
   kristallit:{id:18, name:'Kristallit', type:'Gestein', base:{hp:50,atk:55,def:60,spd:50}, catchRate:60, baseExp:88,
     learn:[[1,'steinwurf'],[1,'zapper'],[15,'felsschlag'],[22,'blitzschlag']],
-    dex:'Ein Kristallwesen, das im Höhleninneren elektrische Energie speichert.'}
+    dex:'Ein Kristallwesen, das im Höhleninneren elektrische Energie speichert.'},
+  // --- Neue Region: Sturmkliff & Wolkenburg ---
+  funkel:{id:19, name:'Funkel', type:'Elektro', base:{hp:40,atk:50,def:40,spd:66}, catchRate:90, baseExp:58,
+    learn:[[1,'rempler'],[1,'zapper'],[6,'flinkschritt'],[12,'funkenstoss'],[18,'blitzschlag']],
+    dex:'Ein kugeliges Funkenwesen, das auf Klippen statische Ladung aus der Seeluft sammelt.'},
+  wölkchen:{id:20, name:'Wölkchen', type:'Flug', base:{hp:42,atk:40,def:42,spd:60}, catchRate:120, baseExp:52,
+    learn:[[1,'rempler'],[1,'windstoss'],[9,'flügelschlag'],[14,'biss']],
+    evo:{into:'sturmaar', level:20}, dex:'Ein flauschiges Wolkenküken, das im Aufwind über dem Hafen schwebt.'},
+  sturmaar:{id:21, name:'Sturmaar', type:'Flug', base:{hp:72,atk:82,def:60,spd:94}, catchRate:30, baseExp:160,
+    learn:[[1,'windstoss'],[1,'flügelschlag'],[1,'biss'],[20,'verwirrspiel'],[24,'sturzflug'],[30,'ramme']],
+    dex:'Ein stolzer Sturmadler, dessen Schwingen Gewitterböen heraufbeschwören.'},
+  geoll:{id:22, name:'Geoll', type:'Gestein', base:{hp:62,atk:56,def:82,spd:26}, catchRate:70, baseExp:92,
+    learn:[[1,'rempler'],[1,'steinwurf'],[8,'härten'],[14,'felsschlag'],[22,'steinhagel']],
+    dex:'Ein gepanzerter Felskäfer, der sich in steinige Pässe gräbt und Geröll abwehrt.'}
 };
 const SPECIES_LIST = Object.keys(SPECIES);
 
@@ -944,7 +958,7 @@ MAPS.wogenfels = {
     {x:5,y:3, to:'heilstation', tx:5, ty:7, ret:'wogenfels', rx:5, ry:4},
     {x:18,y:3, to:'shop', tx:4, ty:6, ret:'wogenfels', rx:18, ry:4},
     {x:7,y:9, to:'pruefhalle2', tx:6, ty:13},                             // Prüfhalle Wasser
-    {x:22,y:13, to:'ordenbasis', tx:5, ty:11},                            // Orden-Basis (Finale)
+    {x:22,y:13, to:'pfad3', tx:14, ty:1},                                 // Ost -> Pfad 3 (neue Region)
   ],
   npcs:[
     {x:14,y:7, dir:'down', palette:{shirt:'#4a90d9',hair:'#3a2a1a'}, name:'Hafenbewohner',
@@ -952,7 +966,7 @@ MAPS.wogenfels = {
     {x:9,y:11, dir:'up', palette:{shirt:'#5a8ad2',hair:'#c0a030'}, name:'Späher',
      lines:['Die Wasser-Halle von Leiter Tarek ist hart.','Heil deine Wesen vorher!']}
   ],
-  signs:{ '17,8':'» WOGENFELS «\nHafenstadt am Westmeer.\nOsten: Basis des Orden Nyx.' },
+  signs:{ '17,8':'» WOGENFELS «\nHafenstadt am Westmeer.\nOsten: Küstenpfad nach Sturmkliff.' },
   encounters:{}
 };
 
@@ -1005,16 +1019,123 @@ MAPS.ordenbasis = {
     "B         B",
     "BBBBBDBBBBB"
   ],
-  warps:[ {x:5,y:11, to:'wogenfels', tx:22, ty:12} ],
+  warps:[ {x:5,y:11, to:'sturmkliff', tx:11, ty:13} ],
   npcs:[
     {x:5,y:5, dir:'down', palette:{shirt:'#2a2a3a',hair:'#1a1a1a'}, name:'Schergin',
      trainer:{ name:'Orden-Schergin', team:[['nachtflatter',16],['muffrat',16]], reward:1200, music:'boss',
        intro:['Du kommst nicht an Anführerin Nox vorbei!'], win:['Unmöglich...'], lose:['Der Orden Nyx ist überall!'] }},
     {x:5,y:1, dir:'down', palette:{shirt:'#1a1a2a',hair:'#6a2a6a'}, name:'Anführerin Nox', special:'boss',
-     trainer:{ name:'Orden-Anführerin Nox', team:[['nachtflatter',18],['felsbrocker',18],['voltik',20]], reward:5000, boss:true, music:'boss',
+     trainer:{ name:'Orden-Anführerin Nox', team:[['nachtflatter',18],['felsbrocker',19],['sturmaar',20],['voltik',22]], reward:5000, boss:true, music:'boss',
        intro:['Also bist du der lästige Forscher.','Ich bin Nox, Anführerin des Orden Nyx!','Mit der Macht der wilden Wesen beherrsche ich Velora!'],
        win:['...Unglaublich. Die Bande zu deinen Wesen ist echte Stärke.','Der Orden Nyx löst sich auf. Velora ist frei!'],
        lose:['Hahaha! Die Dunkelheit verschlingt Velora!'] }}
+  ],
+  signs:{}, encounters:{}
+};
+
+// --- PFAD 3 (Küstenroute östlich von Wogenfels) ---
+MAPS.pfad3 = {
+  music:'overworld', indoor:false,
+  grid:[
+    "######=======##############",
+    "#####.=......#.....#######.#",
+    "###...=,,,,..#..,,,,...###.#",
+    "#.....=,,,,..=..,,,,......##",
+    "#..#..======+======..#....#",
+    "#..#...#....=.....#...#..#.#",
+    "#.....,,,...=...,,,,..#....#",
+    "#.....,,,...=...,,,,..#..#.#",
+    "#..#..======+=====...#....#",
+    "#.....=.....=....#........##",
+    "#..S..=,,,..=..,,,,..####..#",
+    "#.....=,,,..=..,,,,.......##",
+    "#.....======+======......##",
+    "#...........=............#",
+    "######======================"
+  ],
+  warps:[
+    {x:14,y:0, to:'wogenfels', tx:13, ty:1},       // Nord -> Wogenfels (sichere Eingangskachel)
+    {x:12,y:14, to:'sturmkliff', tx:13, ty:1}      // Süd -> Sturmkliff
+  ],
+  npcs:[
+    {x:7,y:6, dir:'right', palette:{shirt:'#e0c233',hair:'#222'}, name:'Klippen-Trainer',
+     trainer:{ name:'Segler Nilo', team:[['wölkchen',15],['funkel',16]], reward:900,
+       intro:['Die Seeluft macht meine Wesen flink!'], win:['Pah, guter Wind für dich.'], lose:['Immer schön gegen den Wind!'] }},
+    {x:18,y:11, dir:'up', palette:{shirt:'#7a7a8a',hair:'#3a2a1a'}, name:'Wanderin',
+     trainer:{ name:'Geologin Per', team:[['geoll',16],['klumpf',15]], reward:880,
+       intro:['Im Pass findet man die härtesten Brocken!'], win:['Beachtlich.'], lose:['Stein schlägt Schere!'] }}
+  ],
+  signs:{ '3,10':'» PFAD 3 «\nWogenfels ↑   Sturmkliff ↓\nWind und Funken liegen in der Luft.' },
+  encounters:{
+    0:[ {s:'piepser',min:13,max:16,w:22},{s:'funkel',min:14,max:17,w:24},{s:'wölkchen',min:13,max:16,w:24},{s:'geoll',min:14,max:17,w:16},{s:'zappel',min:13,max:16,w:14} ]
+  }
+};
+
+// --- STADT STURMKLIFF (Prüfhalle Elektro) ---
+MAPS.sturmkliff = {
+  music:'town', indoor:false,
+  grid:[
+    "#############=#############",
+    "#....FF.....=.....FF......#",
+    "#..HHHHHH..====..HHHHHH...#",
+    "#..HHDHHH..=..=..HHDHHH...#",
+    "#....=.....=..=....=......#",
+    "#....=.....=..=....=......#",
+    "#....========+========....#",
+    "#............=...........#",
+    "#...HHHHHHH..=...S........#",
+    "#...HHHDHHH..=............#",
+    "#.....=......=....FF......#",
+    "#.....=......=...........#",
+    "#FF...========+======....#",
+    "#............=...........#",
+    "############=##############"
+  ],
+  warps:[
+    {x:13,y:0, to:'pfad3', tx:12, ty:13},                                   // Nord -> Pfad 3
+    {x:5,y:3, to:'heilstation', tx:5, ty:7, ret:'sturmkliff', rx:5, ry:4},  // Heilstation
+    {x:18,y:3, to:'shop', tx:4, ty:6, ret:'sturmkliff', rx:18, ry:4},       // Shop
+    {x:7,y:9, to:'pruefhalle3', tx:6, ty:11},                               // Prüfhalle Elektro
+    {x:11,y:14, to:'ordenbasis', tx:5, ty:11}                               // Süd -> Orden-Basis (Finale)
+  ],
+  npcs:[
+    {x:14,y:7, dir:'down', palette:{shirt:'#e0c233',hair:'#3a2a1a'}, name:'Klippenbewohner',
+     lines:['Sturmkliff thront hoch über dem Meer.','Hallenleiterin Juna zähmt hier den Blitz!']},
+    {x:9,y:11, dir:'up', palette:{shirt:'#5a8ad2',hair:'#c0a030'}, name:'Späherin',
+     lines:['Hinter der Stadt liegt die Basis des Orden Nyx.','Heil dich, bevor du gehst!']}
+  ],
+  signs:{ '17,8':'» STURMKLIFF «\nStadt über den Klippen.\nSüden: Basis des Orden Nyx.' },
+  encounters:{}
+};
+
+// --- Prüfhalle 3: Elektro (Leiterin Juna) ---
+MAPS.pruefhalle3 = {
+  music:'town', indoor:true,
+  grid:[
+    "BBBBBBBBBBBBB",
+    "B           B",
+    "B   +++++   B",
+    "B   +   +   B",
+    "B   +   +   B",
+    "B   +++++   B",
+    "B           B",
+    "B   ++ ++   B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "BBBBBDBBBBBBB"
+  ],
+  warps:[ {x:5,y:12, to:'sturmkliff', tx:7, ty:10} ],
+  npcs:[
+    {x:6,y:1, dir:'down', palette:{shirt:'#e0c233',hair:'#d8b53a'}, name:'Hallenleiterin Juna', special:'leader3',
+     trainer:{ name:'Hallenleiterin Juna', team:[['funkel',18],['voltik',20]], reward:3000, leader:true, badge:'Funken-Emblem', music:'boss',
+       intro:['Ich bin Juna, Meisterin der Elektro-Halle.','Spürst du schon das Knistern in der Luft?'],
+       win:['Was für eine Energie! Nimm das Funken-Emblem!'],
+       lose:['Komm wieder, wenn deine Bande heller leuchtet.'] }},
+    {x:3,y:7, dir:'right', palette:{shirt:'#e8d24b',hair:'#3a2a1a'}, name:'Hallen-Schülerin',
+     trainer:{ name:'Schülerin Edda', team:[['zappel',15],['funkel',16]], reward:520,
+       intro:['Juna ist elektrisierend stark!'], win:['Wow, du auch!'], lose:['Bleib geerdet!'] }}
   ],
   signs:{}, encounters:{}
 };
@@ -2030,8 +2151,9 @@ function drawOwHud(){
   text(label, VW-w, 7, '#fff');
   // Ortsname links oben kurz
   const placeNames={moosheim:'Moosheim',pfad1:'Pfad 1',lindgruen:'Lindgrün',felsschlucht:'Felsschlucht',wogenfels:'Wogenfels',
+    pfad3:'Pfad 3',sturmkliff:'Sturmkliff',
     spielerhaus:'Zuhause',rivalenhaus:'Kjells Haus',labor:'Labor',heilstation:'Heilstation',shop:'Wesen-Laden',
-    pruefhalle1:'Pflanzen-Halle',pruefhalle2:'Wasser-Halle',ordenbasis:'Orden-Basis'};
+    pruefhalle1:'Pflanzen-Halle',pruefhalle2:'Wasser-Halle',pruefhalle3:'Elektro-Halle',ordenbasis:'Orden-Basis'};
   const pn=placeNames[G.map]||G.map;
   CTX.fillStyle='rgba(20,30,50,0.7)'; CTX.fillRect(4,4,CTX.measureText(pn).width+10,14);
   text(pn,8,7,'#ffe');
@@ -2745,6 +2867,9 @@ function drawPartyDetail(c){
     origUpdateParty();
   };
 })();
+
+/* Test-Hook: gibt die Spieldaten für den Headless-Integritätstest frei (harmlos im Browser). */
+function _gameData(){ return { MAPS, SPECIES, MOVES, TILE_DEF, CREATURE_FILE }; }
 
 /* Start */
 state=STATE.TITLE;

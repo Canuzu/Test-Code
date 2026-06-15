@@ -89,12 +89,13 @@ Auf Touch-Geräten erscheint ein Bildschirm-Steuerkreuz automatisch.
 
 ## Enthaltene Systeme
 
-- **Welt:** Heimatdorf Moosheim, Pfad 1 (Wald/Wiese), Städte Lindgrün & Wogenfels mit je einer
-  Prüfhalle, Höhle Felsschlucht, Orden-Basis (Finale). NPCs, Heilstation, Wesen-Laden.
-- **Tag/Nacht-Zyklus** (Bildschirm-Tönung) und **Jahreszeiten** (Frühling/Sommer/Herbst/Winter):
-  ändern Optik (z. B. Schnee im Winter) und die wilden Wesen je Route.
-- **18 eigene Wesen** in 7 Typen (Normal, Pflanze, Feuer, Wasser, Elektro, Gestein, Flug),
-  inkl. 3 Starter mit Entwicklung und Typen-Effektivitätstabelle.
+- **Welt:** Heimatdorf Moosheim, Pfad 1, Städte Lindgrün & Wogenfels, Höhle Felsschlucht, dazu die
+  Küstenregion **Pfad 3 → Sturmkliff** und die Orden-Basis (Finale). **Drei Prüfhallen** (Pflanze,
+  Wasser, Elektro). NPCs, Heilstation, Wesen-Laden.
+- **Tag/Nacht-Zyklus** und **Jahreszeiten** (Frühling/Sommer/Herbst/Winter) ändern Optik und die
+  wilden Wesen je Route; dazu ein **Wettersystem** (Regen/Schnee/Nebel/Sonne) mit Kampfwirkung.
+- **22 eigene Wesen** in 7 Typen (Normal, Pflanze, Feuer, Wasser, Elektro, Gestein, Flug),
+  inkl. mehrerer Entwicklungslinien und Typen-Effektivitätstabelle.
 - **Rundenkämpfe:** Angriff, Beutel, Wesen wechseln, Fliehen; KP-Balken, Status (Gift/Paralyse/Schlaf),
   EXP, Level-Aufstieg, Entwicklung, **Fangkugel**-Mechanik (Fangrate abhängig von KP & Status),
   Trainer-Kämpfe mit festen Teams, Hallenleiter mit **Emblem**-Belohnung, finaler Boss.
@@ -105,7 +106,7 @@ Auf Touch-Geräten erscheint ein Bildschirm-Steuerkreuz automatisch.
 
 ## Ziel
 
-Vom Startdorf bis zur Orden-Basis: Wesen fangen, zwei Prüfhallen meistern und die
+Vom Startdorf bis zur Orden-Basis: Wesen fangen, drei Prüfhallen meistern und die
 Antagonisten-Gruppe **Orden Nyx** und ihre Anführerin **Nox** besiegen.
 
 > Alle Bezeichnungen (Region, Orte, Wesen, Figuren, Organisation, Begriffe wie
