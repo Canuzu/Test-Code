@@ -2,7 +2,7 @@ name: Deploy Velora Saga to GitHub Pages
 
 on:
   push:
-    branches: [claude/eager-carson-qwxm72]
+    branches: [main, claude/eager-carson-qwxm72]
     paths:
       - "velora-saga/**"
       - ".github/workflows/pages.yml"
