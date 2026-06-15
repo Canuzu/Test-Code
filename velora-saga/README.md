@@ -7,6 +7,49 @@ Welt, eigenen Wesen, Namen, Story und Begriffen**.
 ## Spielen
 
 Einfach **`index.html` im Browser öffnen** — kein Build, keine Installation, kein Server nötig.
+Die Bilddateien liegen daneben im Ordner `assets/`, daher das Projekt am besten als Ganzes
+ausliefern (oder über GitHub Pages, siehe `.github/workflows/pages.yml`).
+
+## Grafik
+
+Die Optik basiert auf **stilkonsistenter 16-bit-Pixel-Art** (eine gemeinsame Stil-Formel für
+alle Motive). Enthalten sind:
+
+- **18 Wesen-Sprites** (inkl. aller Entwicklungen) mit transparentem Hintergrund — verwendet in
+  Kämpfen, Starterwahl, Team-Übersicht, Wesen-Lexikon und auf dem Titelbild.
+- **Kampf-Hintergründe** für Wiese, Höhle und Orden-Basis (Finale).
+- **Welt-Texturen** (Gras, Weg, Wasser, Höhlenboden), die in der Overworld **nahtlos**
+  an Weltkoordinaten verankert gekachelt werden.
+- **UI** mit einheitlichen tiefen Indigo-Panels und cremefarbenem Text.
+
+Fehlt eine Bilddatei, fällt das Spiel automatisch auf die eingebauten **prozeduralen Sprites/Tiles**
+zurück — es startet also auch ohne `assets/`.
+
+## Projektstruktur
+
+```
+velora-saga/
+  index.html              das komplette Spiel (Canvas + Logik, ohne Abhängigkeiten)
+  assets/
+    creatures/*.png       18 Wesen-Sprites (transparent)
+    bg/*.png              3 Kampf-Hintergründe
+    tiles/*.png           4 nahtlose Welt-Texturen
+  scripts/
+    process_assets.py     Nachbearbeitung der generierten Bilder (Key-out, Skalierung)
+    smoke-velora.mjs      Node-Smoke-Test
+  design/assets.csv       Asset-Manifest (Rolle → Datei → Beschreibung)
+```
+
+## Test
+
+Headless-Smoke-Test (prüft, dass das Spiel-Skript fehlerfrei kompiliert und alle
+referenzierten Bilddateien als gültige PNGs vorhanden sind):
+
+```
+node scripts/smoke-velora.mjs
+```
+
+Derselbe Test läuft als Gate im GitHub-Pages-Workflow vor jedem Deploy.
 
 ## Steuerung
 

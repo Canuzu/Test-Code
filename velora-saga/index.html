@@ -47,6 +47,54 @@ function resize(){
 window.addEventListener('resize', resize); resize();
 
 /* =========================================================================
+   BILD-ASSETS — generierte, stilkonsistente 16-bit-Pixel-Art (assets/)
+   Sprites werden mit transparentem Hintergrund geladen; falls eine Datei
+   fehlt, fällt das Spiel automatisch auf die prozeduralen Sprites zurück.
+   ========================================================================= */
+// Wesen-Schlüssel -> Dateiname (Umlaute werden in den Dateinamen aufgelöst)
+const CREATURE_FILE = {
+  'sprossknu':'sprossknu','florant':'florant','glutfox':'glutfox','pyrolux':'pyrolux',
+  'tröpflin':'troepflin','aqualon':'aqualon','muffel':'muffel','muffrat':'muffrat',
+  'piepser':'piepser','schwingfalk':'schwingfalk','zappel':'zappel','voltik':'voltik',
+  'klumpf':'klumpf','felsbrocker':'felsbrocker','aschling':'aschling','blattling':'blattling',
+  'nachtflatter':'nachtflatter','kristallit':'kristallit'
+};
+const IMG = {};
+let assetsTotal = 0, assetsLoaded = 0;
+function loadImg(key, path){
+  assetsTotal++;
+  const im = new Image();
+  im.onload  = ()=>{ assetsLoaded++; };
+  im.onerror = ()=>{ assetsLoaded++; }; // fehlende Datei zählt als „fertig" (Fallback greift)
+  im.src = path;
+  IMG[key] = im;
+}
+function imgReady(key){ const im=IMG[key]; return !!(im && im.complete && im.naturalWidth>0); }
+function loadAllAssets(){
+  for(const k in CREATURE_FILE) loadImg('cre_'+k, 'assets/creatures/'+CREATURE_FILE[k]+'.png');
+  loadImg('bg_grass','assets/bg/battle_grass.png');
+  loadImg('bg_cave', 'assets/bg/battle_cave.png');
+  loadImg('bg_boss', 'assets/bg/battle_boss.png');
+  loadImg('t_grass','assets/tiles/grass.png');
+  loadImg('t_path', 'assets/tiles/path.png');
+  loadImg('t_water','assets/tiles/water.png');
+  loadImg('t_cave', 'assets/tiles/cave.png');
+}
+function assetsReady(){ return assetsTotal===0 || assetsLoaded>=assetsTotal; }
+function drawLoading(){
+  CTX.fillStyle='#12152a'; CTX.fillRect(0,0,VW,VH);
+  CTX.font='bold 22px monospace'; CTX.textBaseline='top'; CTX.textAlign='center';
+  CTX.fillStyle='#ffe45a'; CTX.fillText('VELORA SAGA', VW/2, 110);
+  CTX.font='10px monospace'; CTX.fillStyle='#cfe'; CTX.fillText('Lade Grafiken …', VW/2, 150);
+  CTX.textAlign='left';
+  const bw=240, bx=(VW-bw)/2, by=172, p=assetsTotal? assetsLoaded/assetsTotal : 1;
+  CTX.fillStyle='#0d1228'; CTX.fillRect(bx-2,by-2,bw+4,12);
+  CTX.fillStyle='#e8e0c0'; CTX.fillRect(bx-1,by-1,bw+2,10);
+  CTX.fillStyle='#2a2f5a'; CTX.fillRect(bx,by,bw,8);
+  CTX.fillStyle='#7ad0ff'; CTX.fillRect(bx,by,Math.round(bw*p),8);
+}
+
+/* =========================================================================
    EINGABE
    ========================================================================= */
 const Keys = { up:false, down:false, left:false, right:false, a:false, b:false, menu:false };
@@ -408,10 +456,13 @@ function makeCreatureSprite(speciesKey){
   spriteCache[speciesKey]=cv; return cv;
 }
 function drawCreature(speciesKey, x, y, size, flip){
-  const s = makeCreatureSprite(speciesKey);
+  const key='cre_'+speciesKey;
+  // bevorzugt das generierte 16-bit-Sprite, sonst prozeduraler Fallback
+  const s = imgReady(key) ? IMG[key] : makeCreatureSprite(speciesKey);
   CTX.save();
-  if(flip){ CTX.translate(x+size,y); CTX.scale(-1,1); CTX.drawImage(s,0,0,size,size); }
-  else { CTX.drawImage(s,x,y,size,size); }
+  CTX.imageSmoothingEnabled=false;
+  if(flip){ CTX.translate(Math.round(x)+size,Math.round(y)); CTX.scale(-1,1); CTX.drawImage(s,0,0,size,size); }
+  else { CTX.drawImage(s,Math.round(x),Math.round(y),size,size); }
   CTX.restore();
 }
 
@@ -468,6 +519,26 @@ const TILE_DEF = {
   'O':{name:'felsboden', solid:false}
 };
 
+// Zeichnet eine an Weltkoordinaten verankerte Kachel aus einer nahtlosen
+// Textur, sodass benachbarte Kacheln ein durchgehendes Bodenbild ergeben.
+function drawGround(imgKey, sx, sy, x, y){
+  const im=IMG[imgKey];
+  if(!(im && im.complete && im.naturalWidth>0)) return false;
+  const tw=im.naturalWidth, th=im.naturalHeight, T=TILE;
+  const ox=((x*T)%tw+tw)%tw, oy=((y*T)%th+th)%th;
+  CTX.imageSmoothingEnabled=false;
+  const w1=Math.min(T,tw-ox), h1=Math.min(T,th-oy);
+  CTX.drawImage(im, ox,oy,w1,h1, sx,sy,w1,h1);
+  if(w1<T) CTX.drawImage(im, 0,oy, T-w1,h1, sx+w1,sy, T-w1,h1);
+  if(h1<T) CTX.drawImage(im, ox,0, w1,T-h1, sx,sy+h1, w1,T-h1);
+  if(w1<T&&h1<T) CTX.drawImage(im, 0,0, T-w1,T-h1, sx+w1,sy+h1, T-w1,T-h1);
+  return true;
+}
+// Jahreszeiten-/Schnee-Tönung über eine texturierte Bodenkachel
+function seasonTint(sx,sy,season){
+  if(season===2){ CTX.fillStyle='rgba(170,120,40,0.28)'; CTX.fillRect(sx,sy,TILE,TILE); }
+  else if(season===3){ CTX.fillStyle='rgba(230,238,245,0.62)'; CTX.fillRect(sx,sy,TILE,TILE); }
+}
 // Tile-Zeichner. season + nightAmt beeinflussen Optik.
 function drawTile(ch, sx, sy, season, x, y){
   const c=CTX;
@@ -476,6 +547,15 @@ function drawTile(ch, sx, sy, season, x, y){
   const autumn = (season===2);
   switch(ch){
     case '.': case 'F': case ',':{
+      if(drawGround('t_grass',sx,sy,x,y)){
+        if(ch===','){ // Hochgras-Büschel als Overlay
+          c.fillStyle = winter? '#a9c0aa' : (autumn? '#7e8a3a':'#2f6b28');
+          for(let i=0;i<6;i++){ const px=sx+2+(i*2)%TILE, py=sy+6+((i*3)%8); c.fillRect(px,py,2,6); }
+        }
+        if(ch==='F'&&!winter){ c.fillStyle=autumn?'#d98b3a':'#f2d54b'; c.fillRect(sx+6,sy+6,4,4); c.fillStyle='#fff'; c.fillRect(sx+7,sy+7,2,2); }
+        seasonTint(sx,sy,season);
+        break;
+      }
       let g1='#6db04f', g2='#5da043';
       if(season===1){ g1='#7cc057'; g2='#69ad48'; }      // Sommer
       else if(autumn){ g1='#9a9a4a'; g2='#8a8a40'; }      // Herbst
@@ -491,14 +571,15 @@ function drawTile(ch, sx, sy, season, x, y){
       break;
     }
     case '=':{
+      if(drawGround('t_path',sx,sy,x,y)){ seasonTint(sx,sy,season); break; }
       fill(winter?'#d2c9b8':'#caa873'); c.fillStyle=winter?'#c2b9a8':'#b89863';
       c.fillRect(sx,sy,TILE,2); c.fillRect(sx,sy+TILE-2,TILE,2);
       break;
     }
     case '#':{
-      fill(winter?'#d8e2e8':'#5da043');
-      // Baum
-      c.fillStyle=winter?'#e8eef2':'#2f6b2a'; c.beginPath?0:0;
+      if(!drawGround('t_grass',sx,sy,x,y)) fill(winter?'#d8e2e8':'#5da043');
+      else seasonTint(sx,sy,season);
+      // Baum auf Grasbasis
       c.fillStyle=winter?'#dfe8ee':(autumn?'#c07a2a':'#2f7a2a'); c.fillRect(sx+2,sy,12,11);
       c.fillStyle=winter?'#eef4f8':(autumn?'#d89446':'#3a8a34'); c.fillRect(sx+4,sy+2,8,6);
       c.fillStyle='#6b4a2a'; c.fillRect(sx+6,sy+11,4,5);
@@ -511,6 +592,11 @@ function drawTile(ch, sx, sy, season, x, y){
       break;
     }
     case 'W':{
+      if(drawGround('t_water',sx,sy,x,y)){
+        const t=Date.now()/600; // dezenter Glanz als Overlay
+        c.fillStyle='rgba(180,220,255,0.5)'; c.fillRect(sx+2+((Math.sin(t+x)*2)|0),sy+2,3,1);
+        break;
+      }
       const t=Date.now()/600;
       fill('#3a7fc4'); c.fillStyle='#4a90d9';
       for(let i=0;i<3;i++){ const py=sy+3+i*5+Math.sin(t+x+i)*1; c.fillRect(sx+2,py,12,2); }
@@ -526,8 +612,8 @@ function drawTile(ch, sx, sy, season, x, y){
     case '~':{ fill('#c25a5a'); c.fillStyle='#b24a4a'; c.fillRect(sx+1,sy+1,TILE-2,TILE-2); c.fillStyle='#d26a6a'; c.fillRect(sx+3,sy+3,2,2); break; }
     case 'C':{ fill('#8a6a3a'); c.fillStyle='#6a4a2a'; c.fillRect(sx,sy,TILE,3); c.fillStyle='#a07a4a'; c.fillRect(sx+1,sy+4,TILE-2,TILE-5); break; }
     case 'M':{ fill('#d8cfc0'); c.fillStyle='#7a5a8a'; c.fillRect(sx+2,sy+2,12,12); c.fillStyle='#9a7aaa'; c.fillRect(sx+3,sy+3,10,4); break; }
-    case '+': case 'O':{ fill('#4a4640'); c.fillStyle='#423e38'; for(let i=0;i<3;i++){ c.fillRect(sx+((x*5+i*4)%TILE),sy+((y*4+i*3)%TILE),2,2);} break; }
-    case 'P':{ fill('#4a4640'); c.fillStyle='#3a5a3a'; for(let i=0;i<5;i++){ c.fillRect(sx+2+(i*2)%TILE, sy+6+((i*3)%8),2,6);} break; }
+    case '+': case 'O':{ if(drawGround('t_cave',sx,sy,x,y)) break; fill('#4a4640'); c.fillStyle='#423e38'; for(let i=0;i<3;i++){ c.fillRect(sx+((x*5+i*4)%TILE),sy+((y*4+i*3)%TILE),2,2);} break; }
+    case 'P':{ if(!drawGround('t_cave',sx,sy,x,y)) fill('#4a4640'); c.fillStyle='#3a5a3a'; for(let i=0;i<5;i++){ c.fillRect(sx+2+(i*2)%TILE, sy+6+((i*3)%8),2,6);} break; }
     default: fill('#000');
   }
 }
@@ -1528,10 +1614,14 @@ function openShop(){
    ZEICHNEN: gemeinsame UI-Helfer
    ========================================================================= */
 function drawTextBox(x,y,w,h){
-  CTX.fillStyle='#1a2030'; CTX.fillRect(x,y,w,h);
-  CTX.fillStyle='#f8f8f8'; CTX.fillRect(x+2,y+2,w-4,h-4);
-  CTX.fillStyle='#1a2030'; CTX.fillRect(x+4,y+4,w-8,h-8);
-  CTX.fillStyle='#3a4a6a'; CTX.fillRect(x+5,y+5,w-10,h-10);
+  // tiefes Indigo-Panel mit cremefarbenem Rand (einheitlicher UI-Stil)
+  CTX.fillStyle='#080a18'; CTX.fillRect(x,y,w,h);
+  CTX.fillStyle='#e8e0c0'; CTX.fillRect(x+1,y+1,w-2,h-2);
+  CTX.fillStyle='#2b2f5c'; CTX.fillRect(x+3,y+3,w-6,h-6);
+  const g=CTX.createLinearGradient(0,y,0,y+h);
+  g.addColorStop(0,'#33386a'); g.addColorStop(1,'#1c1f3e');
+  CTX.fillStyle=g; CTX.fillRect(x+4,y+4,w-8,h-8);
+  CTX.fillStyle='rgba(255,255,255,0.08)'; CTX.fillRect(x+4,y+4,w-8,2);
 }
 function text(str,x,y,col,size){
   CTX.fillStyle=col||'#fff';
@@ -1726,14 +1816,25 @@ function statusTag(c){
   if(!c.status) return '';
   return {gift:'GIF',paralyse:'PAR',schlaf:'SLF'}[c.status]||'';
 }
+function battleBgKey(){
+  if(G.map==='ordenbasis') return 'bg_boss';
+  const m=MAPS[G.map];
+  if(m && (m.dark || G.map==='felsschlucht')) return 'bg_cave';
+  return 'bg_grass';
+}
 function drawBattle(bgOnly){
-  // Hintergrund
-  const grd = battle.trainer? ['#3a2a4a','#5a4a6a'] : ['#2a4a6a','#4a7a9a'];
-  for(let i=0;i<VH;i++){ const t=i/VH; CTX.fillStyle = t<0.6?'#aee0ff':'#7ec850'; CTX.fillRect(0,i,VW,1); }
-  CTX.fillStyle='#7ec850'; CTX.fillRect(0,VH*0.55,VW,VH*0.45);
-  CTX.fillStyle='#6cb840'; CTX.fillRect(0,VH*0.55,VW,6);
+  // Hintergrund — generiertes 16-bit-Pixel-Art je nach Schauplatz
+  const bgk=battleBgKey();
+  if(imgReady(bgk)){
+    CTX.imageSmoothingEnabled=false;
+    CTX.drawImage(IMG[bgk],0,0,VW,VH);
+  } else {
+    for(let i=0;i<VH;i++){ const t=i/VH; CTX.fillStyle = t<0.6?'#aee0ff':'#7ec850'; CTX.fillRect(0,i,VW,1); }
+    CTX.fillStyle='#7ec850'; CTX.fillRect(0,VH*0.55,VW,VH*0.45);
+    CTX.fillStyle='#6cb840'; CTX.fillRect(0,VH*0.55,VW,6);
+  }
   // Gegner-Plattform + Wesen
-  CTX.fillStyle='rgba(120,90,60,0.4)'; CTX.beginPath(); CTX.ellipse(360,120,60,16,0,0,7); CTX.fill();
+  CTX.fillStyle='rgba(60,40,20,0.32)'; CTX.beginPath(); CTX.ellipse(360,120,60,16,0,0,7); CTX.fill();
   const e=battle.enemy;
   drawCreature(e.species, 330, 56, 64, false);
   // Spieler-Plattform + Wesen (von hinten = wir zeichnen Front gespiegelt klein)
@@ -1765,15 +1866,18 @@ function drawBattle(bgOnly){
 }
 function drawInfoBox(x,y,c,isPlayer){
   const w=200,h=isPlayer?42:34;
-  CTX.fillStyle='#1a2030'; CTX.fillRect(x,y,w,h);
-  CTX.fillStyle='#e8e8e8'; CTX.fillRect(x+2,y+2,w-4,h-4);
-  text(c.name, x+8, y+5, '#1a2030', 9);
-  text('Lv'+c.level, x+w-34, y+5, '#1a2030', 9);
+  CTX.fillStyle='#080a18'; CTX.fillRect(x,y,w,h);
+  CTX.fillStyle='#e8e0c0'; CTX.fillRect(x+1,y+1,w-2,h-2);
+  const g=CTX.createLinearGradient(0,y,0,y+h);
+  g.addColorStop(0,'#33386a'); g.addColorStop(1,'#1c1f3e');
+  CTX.fillStyle=g; CTX.fillRect(x+3,y+3,w-6,h-6);
+  text(c.name, x+8, y+5, '#fff', 9);
+  text('Lv'+c.level, x+w-34, y+5, '#ffe45a', 9);
   const st=statusTag(c);
   if(st){ CTX.fillStyle='#c03030'; CTX.fillRect(x+w-72,y+4,22,10); text(st,x+w-70,y+5,'#fff',7); }
   drawHpBar(x+30, y+20, w-60, isPlayer? (animHp(c,true)) : (animHp(c,false)), c.maxhp);
-  text('KP', x+8, y+17, '#1a2030', 7);
-  if(isPlayer){ text(Math.round(animHp(c,true))+'/'+c.maxhp, x+w-64, y+27, '#1a2030', 8);
+  text('KP', x+8, y+17, '#cfe', 7);
+  if(isPlayer){ text(Math.round(animHp(c,true))+'/'+c.maxhp, x+w-64, y+27, '#fff', 8);
     // EXP-Balken
     const need=expForLevel(c.level+1)-expForLevel(c.level);
     const cur=c.exp-expForLevel(c.level);
@@ -2157,6 +2261,8 @@ function openDialogInBattle(msg){ const back=battle.phase; battleMsg([msg], ()=>
 let lastT=performance.now();
 function loop(now){
   let dt=(now-lastT)/1000; lastT=now; if(dt>0.1)dt=0.1;
+  // Warten, bis alle Grafiken geladen sind (Ladebalken)
+  if(!assetsReady()){ clearPressed(); drawLoading(); requestAnimationFrame(loop); return; }
   // Update
   switch(state){
     case STATE.TITLE: updateTitle(); break;
@@ -2260,6 +2366,7 @@ function drawPartyDetail(c){
 
 /* Start */
 state=STATE.TITLE;
+loadAllAssets();
 Audio2.play('town');
 requestAnimationFrame(loop);
 </script>

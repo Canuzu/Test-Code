@@ -1,0 +1,26 @@
+role,file,kind,key_color,job_id,description
+sprossknu,assets/creatures/sprossknu.png,sprite,#FF00FF,6dc956df-0c0e-4ba5-9ec7-1bd9ed71e508,shy green sprout creature
+florant,assets/creatures/florant.png,sprite,#FF00FF,863b31f6-a0a9-45b7-994a-c3fa58347b0b,sturdy green plant beast
+glutfox,assets/creatures/glutfox.png,sprite,#FF00FF,12969cc4-7be6-4e0a-9d21-63c521202c56,orange fox cub with sparking tail
+pyrolux,assets/creatures/pyrolux.png,sprite,#FF00FF,fa8f13d8-424c-46f6-b97a-71702c77ac52,proud fire fox with flame mane
+troepflin,assets/creatures/troepflin.png,sprite,#FF00FF,3b54d3b7-11c5-4d80-b93b-cf1724a93d43,round blue water-droplet creature
+aqualon,assets/creatures/aqualon.png,sprite,#FF00FF,0731a9b8-6d32-49e0-b6f7-2d0319c5c848,blue turtle water creature with shell
+muffel,assets/creatures/muffel.png,sprite,#FF00FF,ff64068c-909d-42df-b951-4cfdc37ef859,curious cream-brown furball
+muffrat,assets/creatures/muffrat.png,sprite,#FF00FF,c30020d6-c30a-4324-8d5d-c0eb28e21f1f,nimble brown rodent
+piepser,assets/creatures/piepser.png,sprite,#FF00FF,0936520e-ff9f-45a4-9dba-4f284ce9c336,tiny sky-blue songbird
+schwingfalk,assets/creatures/schwingfalk.png,sprite,#FF00FF,4ac27208-95b2-4956-88fb-8951821803ff,proud blue-grey falcon raptor
+zappel,assets/creatures/zappel.png,sprite,#FF00FF,59755a0f-3aba-417c-ac87-64f3e5126eb8,fuzzy yellow static critter
+voltik,assets/creatures/voltik.png,sprite,#FF00FF,e4816aa5-2c77-47d4-89ab-9aabd5ba32fa,golden lightning beast
+klumpf,assets/creatures/klumpf.png,sprite,#FF00FF,a6b2c436-36a4-440a-8812-12516f31d26c,grey living rock-lump
+felsbrocker,assets/creatures/felsbrocker.png,sprite,#FF00FF,e195ee3d-b97f-484a-8b13-5d0ddd655391,granite boulder beast
+aschling,assets/creatures/aschling.png,sprite,#FF00FF,c815e16f-53ad-41fa-908d-c6a5f4b868ef,glowing ember creature
+blattling,assets/creatures/blattling.png,sprite,#FF00FF,4fa60d23-81db-4644-9b30-951c23ecdb1e,green leaf-pile creature
+nachtflatter,assets/creatures/nachtflatter.png,sprite,#FF00FF,7a813cce-317f-4bbb-8876-b7fe3fdb8073,nocturnal teal bat-flyer
+kristallit,assets/creatures/kristallit.png,sprite,#FF00FF,b573996c-0852-45da-9d43-b6e6f1424742,cyan crystal creature
+battle_grass,assets/bg/battle_grass.png,background,,25639307-72eb-4ec0-8160-79f41b99e52b,meadow battlefield
+battle_cave,assets/bg/battle_cave.png,background,,5940ad53-be8c-4a8e-95e9-2cef58ff7889,cave battlefield
+battle_boss,assets/bg/battle_boss.png,background,,1e3f5851-b258-4c83-bf11-49fbefe1c358,shadow-fortress battlefield
+tile_grass,assets/tiles/grass.png,tile,,5caadde7-82fd-4e0c-9700-bb5f0ab86438,grass ground
+tile_path,assets/tiles/path.png,tile,,c392509b-1e4c-4953-bceb-f394140a2249,dirt path ground
+tile_water,assets/tiles/water.png,tile,,b8b9df53-f856-41a0-8b4d-d3ec27400470,water surface
+tile_cave,assets/tiles/cave.png,tile,,01dc8988-36f2-464d-96c4-ee6a9ba14a48,cave floor
