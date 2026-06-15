@@ -1100,11 +1100,13 @@ function doWarp(w){
     // Rückkehr aus Heilstation/Shop
     const r=G._return;
     if(r){ G.map=r.map; G.px=r.x; G.py=r.y; G.dir='down'; }
+    setWeather();
     Audio2.play(curMap().music); return;
   }
   if(w.ret){ G._return={map:w.ret, x:w.rx, y:w.ry}; }
   G.map=w.to; G.px=w.tx; G.py=w.ty;
   const m=curMap();
+  setWeather();
   Audio2.play(m.music||'overworld');
 }
 
@@ -1446,8 +1448,13 @@ function calcDamage(att, def, move){
   const stab = SPECIES[att.species].type===m.type ? 1.5 : 1;
   const eff = typeEff(m.type, SPECIES[def.species].type);
   const lvl=att.level;
+  // Wetter-Einfluss (nur im Außenkampf relevant; G.weather ist drinnen 'clear')
+  let wx=1; const w=G.weather;
+  if(w==='rain'){ if(m.type==='Wasser') wx=1.3; else if(m.type==='Feuer') wx=0.7; }
+  else if(w==='sun'){ if(m.type==='Feuer') wx=1.3; else if(m.type==='Wasser') wx=0.7; }
+  else if(w==='snow'){ if(m.type==='Gestein') wx=1.15; }
   let dmg = Math.floor( ( (2*lvl/5+2) * m.power * att.stats.atk / def.stats.def ) / 50 ) + 2;
-  dmg = Math.floor(dmg * stab * eff * rndRange(0.85,1.0));
+  dmg = Math.floor(dmg * stab * eff * wx * rndRange(0.85,1.0));
   return {dmg:Math.max(1,dmg), eff};
 }
 function moveHits(move){
@@ -1831,6 +1838,58 @@ function timeStr(){
 }
 const SEASON_NAMES=['Frühling','Sommer','Herbst','Winter'];
 
+/* ===== TAG/NACHT-LICHTFARBE + WETTER ===== */
+// Weiche Lichttönung je Tageszeit: Morgenröte, Tag, Abendrot, Nacht.
+function timeTint(){
+  const h=(G.gameMinutes/60)%24;
+  const key=[ [0,18,26,66,0.52],[5,28,30,82,0.48],[6.5,255,150,92,0.24],[9,255,242,214,0.04],
+    [16,255,244,220,0.03],[18.5,255,128,70,0.27],[20,38,40,96,0.42],[24,18,26,66,0.52] ];
+  let a=key[0], b=key[key.length-1];
+  for(let i=0;i<key.length-1;i++){ if(h>=key[i][0] && h<key[i+1][0]){ a=key[i]; b=key[i+1]; break; } }
+  const t=(h-a[0])/((b[0]-a[0])||1), L=(p,q)=>p+(q-p)*t;
+  return { r:Math.round(L(a[1],b[1])), g:Math.round(L(a[2],b[2])), b:Math.round(L(a[3],b[3])), a:L(a[4],b[4]) };
+}
+function applyLighting(dark, scale){
+  const t=timeTint(); let a=t.a*(scale==null?1:scale);
+  if(dark) a=Math.max(a,0.5);
+  if(a<=0.01) return;
+  CTX.fillStyle='rgba('+t.r+','+t.g+','+t.b+','+a.toFixed(3)+')'; CTX.fillRect(0,0,VW,VH);
+}
+// Wetterzustand je Karte/Saison
+let weatherParts=null, weatherTimer=0;
+function pickWeather(map){
+  if(!map || map.indoor || map.dark) return 'clear';
+  if(G.season===3) return Math.random()<0.7?'snow':'clear';
+  const r=Math.random();
+  if(G.season===1){ if(r<0.5) return 'sun'; if(r<0.6) return 'rain'; return 'clear'; }
+  if(r<0.22) return 'rain'; if(r<0.32) return 'fog'; if(r<0.45) return 'sun'; return 'clear';
+}
+function setWeather(){ G.weather=pickWeather(curMap()); weatherParts=null; weatherTimer=45+rnd(60); }
+function ensureWeather(){ if(G.weather==null) setWeather(); }
+function drawWeather(intense){
+  const w=G.weather;
+  if(w==='rain'){
+    if(!weatherParts){ weatherParts=[]; const n=intense?70:54; for(let i=0;i<n;i++) weatherParts.push({x:rnd(VW+40),y:rnd(VH),s:6+Math.random()*5}); }
+    CTX.strokeStyle='rgba(175,205,255,0.5)'; CTX.lineWidth=1; CTX.beginPath();
+    for(const p of weatherParts){ CTX.moveTo(p.x,p.y); CTX.lineTo(p.x-4,p.y+11); p.y+=p.s*2.4; p.x-=p.s*0.6; if(p.y>VH){p.y=-10;p.x=rnd(VW+40);} if(p.x<-12)p.x=VW+10; }
+    CTX.stroke(); CTX.fillStyle='rgba(28,38,68,0.16)'; CTX.fillRect(0,0,VW,VH);
+  } else if(w==='snow'){
+    if(!weatherParts){ weatherParts=[]; const n=intense?60:42; for(let i=0;i<n;i++) weatherParts.push({x:rnd(VW),y:rnd(VH),s:0.3+Math.random()*0.8,r:1+rnd(2)}); }
+    CTX.fillStyle='rgba(255,255,255,0.88)';
+    for(const p of weatherParts){ CTX.fillRect(p.x|0,p.y|0,p.r,p.r); p.y+=p.s+0.5; p.x+=Math.sin(p.y/26)*0.4; if(p.y>VH){p.y=-2;p.x=rnd(VW);} }
+  } else if(w==='fog'){
+    const t=Date.now()/4200;
+    for(let i=0;i<3;i++){ CTX.fillStyle='rgba(212,217,228,'+(0.06+0.045*i)+')'; const off=((t+i*0.4)%1)*VW; CTX.fillRect(-VW+off,30+i*72,VW*2,48); }
+    CTX.fillStyle='rgba(204,209,220,0.12)'; CTX.fillRect(0,0,VW,VH);
+  } else if(w==='sun'){
+    CTX.fillStyle='rgba(255,226,150,0.10)'; CTX.fillRect(0,0,VW,VH);
+    CTX.save(); CTX.globalAlpha=0.05; CTX.fillStyle='#fff6c8';
+    for(let i=0;i<5;i++){ CTX.beginPath(); CTX.moveTo(-20,0); CTX.lineTo(50+i*62,0); CTX.lineTo(14+i*62,VH); CTX.lineTo(-20,VH); CTX.closePath(); CTX.fill(); }
+    CTX.restore();
+  }
+}
+const WEATHER_LABEL={clear:'',rain:'Regen',snow:'Schnee',fog:'Nebel',sun:'Sonnig'};
+
 /* =========================================================================
    ZEICHNEN: OVERWORLD
    ========================================================================= */
@@ -1867,12 +1926,9 @@ function drawOverworld(){
   // Spieler
   ow.animFrame = ow.moving? (Math.floor(ow.progress*4)%2===0?0:1) : 0;
   drawCharacter(Math.round(pxPix-camX), Math.round(pyPix-camY), G.dir, ow.animFrame, {shirt:'#d24b4b',hair:'#5a3a1a'});
-  // Tag/Nacht-Overlay
-  const na=map.dark?0.45:nightAmount();
-  if(na>0){ CTX.fillStyle='rgba(20,24,60,'+na+')'; CTX.fillRect(0,0,VW,VH); }
-  if(G.season===3 && !map.indoor){ // Schnee-Partikel im Winter
-    drawSnow();
-  }
+  // Tag/Nacht-Licht + Wetter
+  applyLighting(map.dark);
+  if(!map.indoor && !map.dark) drawWeather(false);
   // HUD oben
   drawOwHud();
 }
@@ -1883,8 +1939,9 @@ function drawSnow(){
   for(const f of snowFlakes){ CTX.fillRect(f.x|0,f.y|0,2,2); f.y+=f.s; f.x+=Math.sin(f.y/30)*0.3; if(f.y>VH){f.y=-2;f.x=rnd(VW);} }
 }
 function drawOwHud(){
-  // Zeit + Jahreszeit oben rechts
-  const label = timeStr()+'  '+SEASON_NAMES[G.season];
+  // Zeit + Jahreszeit (+ Wetter) oben rechts
+  const wl=WEATHER_LABEL[G.weather]||'';
+  const label = timeStr()+'  '+SEASON_NAMES[G.season]+(wl?'  '+wl:'');
   CTX.font='8px monospace'; const w=CTX.measureText(label).width+10;
   CTX.fillStyle='rgba(20,30,50,0.7)'; CTX.fillRect(VW-w-4,4,w,14);
   text(label, VW-w, 7, '#fff');
@@ -2040,6 +2097,8 @@ function drawBattle(bgOnly){
   drawMoveFX();
   drawBattleParts();
   CTX.restore();
+  // Außenkampf: Tageslicht-Tönung + Wetter über dem Feld
+  if(battleBgKey()==='bg_grass'){ applyLighting(false,0.8); drawWeather(false); }
   // Kampfstart-Blitz (ohne Shake, ganzflächig)
   if(BFX.flash>0){ CTX.fillStyle='rgba(255,255,255,'+(BFX.flash*0.85)+')'; CTX.fillRect(0,0,VW,VH); }
   // VS-Banner bei Trainer-Kämpfen (gleitet beim Kampfstart ein und blendet aus)
@@ -2324,7 +2383,9 @@ function updateStarter(){
 function updateOverworld(dt){
   // Zeit voranschreiten (1 reale Sek ~ 1 Spielminute)
   G.gameMinutes += dt*1.0;
-  if(G.gameMinutes>=24*60){ G.gameMinutes-=24*60; G.dayCount++; if(G.dayCount%3===0){ G.season=(G.season+1)%4; } }
+  if(G.gameMinutes>=24*60){ G.gameMinutes-=24*60; G.dayCount++; if(G.dayCount%3===0){ G.season=(G.season+1)%4; setWeather(); } }
+  // Wetter: gelegentlich wechseln
+  ensureWeather(); weatherTimer-=dt; if(weatherTimer<=0) setWeather();
   if(consume('menu')){ openMenu(); return; }
   if(consume('a')){ interact(); if(state!==STATE.OVERWORLD) return; }
   if(ow.moving){
