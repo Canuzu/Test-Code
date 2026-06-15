@@ -2,8 +2,11 @@
 name: Deploy Velora Saga to GitHub Pages
 
 on:
+  # Deploy only from the default branch — the github-pages environment rejects
+  # other branches, and mixing branches in one concurrency group cancels the
+  # valid run. Feature work reaches Pages by merging into main.
   push:
-    branches: [main, claude/eager-carson-qwxm72]
+    branches: [main]
     paths:
       - "velora-saga/**"
       - ".github/workflows/pages.yml"
@@ -16,7 +19,7 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
