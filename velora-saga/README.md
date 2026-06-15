@@ -1,0 +1,44 @@
+# Velora Saga — Wesen-Abenteuer
+
+Ein eigenständiges 2D-Monster-Sammel-RPG (Canvas/HTML5, **ohne externe Abhängigkeiten**),
+inspiriert von der Spielstruktur klassischer Sammel-RPGs, aber mit komplett **eigener
+Welt, eigenen Wesen, Namen, Story und Begriffen**.
+
+## Spielen
+
+Einfach **`index.html` im Browser öffnen** — kein Build, keine Installation, kein Server nötig.
+
+## Steuerung
+
+| Aktion | Tasten |
+|---|---|
+| Bewegen | Pfeiltasten oder **WASD** |
+| Bestätigen / Interagieren | **Leertaste** oder **Enter** |
+| Abbrechen / Zurück | **X** / **Esc** (Backspace) |
+| Hauptmenü | **Esc** oder **M** |
+
+Auf Touch-Geräten erscheint ein Bildschirm-Steuerkreuz automatisch.
+
+## Enthaltene Systeme
+
+- **Welt:** Heimatdorf Moosheim, Pfad 1 (Wald/Wiese), Städte Lindgrün & Wogenfels mit je einer
+  Prüfhalle, Höhle Felsschlucht, Orden-Basis (Finale). NPCs, Heilstation, Wesen-Laden.
+- **Tag/Nacht-Zyklus** (Bildschirm-Tönung) und **Jahreszeiten** (Frühling/Sommer/Herbst/Winter):
+  ändern Optik (z. B. Schnee im Winter) und die wilden Wesen je Route.
+- **18 eigene Wesen** in 7 Typen (Normal, Pflanze, Feuer, Wasser, Elektro, Gestein, Flug),
+  inkl. 3 Starter mit Entwicklung und Typen-Effektivitätstabelle.
+- **Rundenkämpfe:** Angriff, Beutel, Wesen wechseln, Fliehen; KP-Balken, Status (Gift/Paralyse/Schlaf),
+  EXP, Level-Aufstieg, Entwicklung, **Fangkugel**-Mechanik (Fangrate abhängig von KP & Status),
+  Trainer-Kämpfe mit festen Teams, Hallenleiter mit **Emblem**-Belohnung, finaler Boss.
+- **Menüs:** Team-Übersicht & Wesen-Details, Beutel/Items, **Wesen-Lexikon** (gesehen/gefangen),
+  Regions-Karte, Speichern.
+- **Speichern** im Browser (`localStorage`), Fortsetzen über das Titelbild.
+- **Chiptune-Musik** (Overworld/Stadt/Kampf/Boss/Höhle) und SFX über die WebAudio-API.
+
+## Ziel
+
+Vom Startdorf bis zur Orden-Basis: Wesen fangen, zwei Prüfhallen meistern und die
+Antagonisten-Gruppe **Orden Nyx** und ihre Anführerin **Nox** besiegen.
+
+> Alle Bezeichnungen (Region, Orte, Wesen, Figuren, Organisation, Begriffe wie
+> „Fangkugel", „Wesen-Lexikon", „Prüfhalle", „Emblem") sind frei erfunden.
