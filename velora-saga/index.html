@@ -1225,23 +1225,24 @@ function activePlayer(){ return G.party.find(c=>c.hp>0); }
    Vorstoß, Treffer-Blinken, Bildschirm-Shake, Typ-Partikel, KO-Absinken.
    Rein visuell — die Kampf-Logik (Callback-Kette) bleibt unberührt.
    ========================================================================= */
-const LUNGE_T=0.32, HIT_T=0.42;
+const LUNGE_T=0.34, HIT_T=0.42;
 const BFX = {
-  shake:0, flash:0,
+  shake:0, flash:0, intro:0, ambT:0,
   entry:{player:0, enemy:0},   // 1 = außerhalb, 0 = auf Position
-  hit:{player:0, enemy:0},     // Restzeit Treffer-Blinken (s)
-  lunge:{player:0, enemy:0},   // Restzeit Vorstoß (s)
+  hit:{player:0, enemy:0},     // Restzeit Treffer-Rückstoß/Blinken (s)
+  lunge:{player:0, enemy:0},   // Restzeit Angriffs-Vorstoß (s)
   faint:{player:0, enemy:0},   // 0..1 Absink-Fortschritt
-  parts:[]                     // Partikel {x,y,vx,vy,life,max,color,r}
+  parts:[]                     // Partikel {x,y,vx,vy,life,max,color,r,g}
 };
+function easeOutCubic(p){ return 1-Math.pow(1-p,3); }
 function bfxReset(side){ BFX.hit[side]=0; BFX.lunge[side]=0; BFX.faint[side]=0; }
 function bfxEntry(side){ BFX.entry[side]=1; bfxReset(side); }
 function bfxFaint(side){ if(BFX.faint[side]<=0) BFX.faint[side]=0.0001; }
-function bfxStart(){ BFX.flash=1; BFX.shake=0; BFX.parts.length=0; bfxEntry('player'); bfxEntry('enemy'); }
+function bfxStart(){ BFX.flash=1; BFX.shake=0; BFX.intro=0.7; BFX.ambT=0; BFX.parts.length=0; bfxEntry('player'); bfxEntry('enemy'); }
 function bfxSpawn(x,y,color,n){
   for(let i=0;i<n;i++){
     const a=Math.random()*Math.PI*2, sp=40+Math.random()*90;
-    BFX.parts.push({x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-40, life:0, max:0.4+Math.random()*0.35, color, r:2+rnd(3)});
+    BFX.parts.push({x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-40, life:0, max:0.4+Math.random()*0.35, color, r:2+rnd(3), g:160});
   }
 }
 function bfxAttack(who, eff, type){
@@ -1251,33 +1252,86 @@ function bfxAttack(who, eff, type){
   const pos = def==='enemy'? {x:362,y:92} : {x:110,y:222};
   bfxSpawn(pos.x, pos.y, TYPE_COLORS[type]||'#fff', 16);
 }
+// Dezente typ-spezifische Ambient-Partikel an einem Wesen (Glut, Funken, Blasen …)
+function spawnAmbient(side, c, x, y){
+  if(!c || BFX.faint[side]>0 || BFX.entry[side]>0.1) return;
+  const ty=SPECIES[c.species]?SPECIES[c.species].type:'Normal';
+  let col, vy=-26, life=0.85, r=2, g=22;
+  if(ty==='Feuer'){ col='#ffb13a'; vy=-50; life=0.7; g=10; }
+  else if(ty==='Elektro'){ if(Math.random()<0.55) return; col='#fff27a'; vy=-6; life=0.32; r=2; g=0; }
+  else if(ty==='Wasser'){ if(Math.random()<0.3) return; col='#bfe6ff'; vy=-20; g=8; }
+  else if(ty==='Flug'){ if(Math.random()<0.62) return; col='#e6f2ff'; vy=-14; g=6; }
+  else if(ty==='Pflanze'){ if(Math.random()<0.5) return; col='#9bd86a'; vy=-12; g=14; }
+  else return; // Normal/Gestein: keine Ambient-Partikel
+  BFX.parts.push({x:x+(Math.random()*26-13), y:y+(Math.random()*14-2), vx:(Math.random()*2-1)*9, vy:vy*(0.6+Math.random()*0.7), life:0, max:life, color:col, r, g});
+}
 function updateBFX(dt){
   if(BFX.shake>0) BFX.shake=Math.max(0, BFX.shake-dt*42);
   if(BFX.flash>0) BFX.flash=Math.max(0, BFX.flash-dt*2.3);
+  if(BFX.intro>0) BFX.intro=Math.max(0, BFX.intro-dt);
   for(const s of ['player','enemy']){
-    if(BFX.entry[s]>0) BFX.entry[s]=Math.max(0, BFX.entry[s]-dt*2.6);
+    if(BFX.entry[s]>0) BFX.entry[s]=Math.max(0, BFX.entry[s]-dt*2.4);
     if(BFX.hit[s]>0)   BFX.hit[s]=Math.max(0, BFX.hit[s]-dt);
     if(BFX.lunge[s]>0) BFX.lunge[s]=Math.max(0, BFX.lunge[s]-dt);
     if(BFX.faint[s]>0 && BFX.faint[s]<1) BFX.faint[s]=Math.min(1, BFX.faint[s]+dt*2.1);
   }
+  BFX.ambT-=dt;
+  if(BFX.ambT<=0 && battle.active && state===STATE.BATTLE){
+    BFX.ambT=0.20;
+    spawnAmbient('enemy', battle.enemy, 362, 96);
+    spawnAmbient('player', battle.player, 110, 226);
+  }
   for(let i=BFX.parts.length-1;i>=0;i--){
-    const p=BFX.parts[i]; p.life+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=140*dt;
+    const p=BFX.parts[i]; p.life+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=(p.g==null?160:p.g)*dt;
     if(p.life>=p.max) BFX.parts.splice(i,1);
   }
 }
-// Zeichnet ein Kampf-Wesen mit allen Animations-Offsets.
+// Typ-spezifische Idle-Bewegung (Atmen, Schweben, Flackern, Wackeln …)
+function typeMotion(type, t){
+  let bob=Math.sin(t*2.0)*2.0, amp=0.05, spd=2.0, rot=0, jx=0;
+  switch(type){
+    case 'Flug':    bob=Math.sin(t*2.7)*5.2; rot=Math.sin(t*2.7)*0.06; amp=0.085; spd=2.7; break;
+    case 'Feuer':   bob=Math.sin(t*3.1)*1.5; spd=6.2; amp=0.05+Math.abs(Math.sin(t*9.5))*0.035; jx=Math.sin(t*22)*0.7; break;
+    case 'Wasser':  bob=Math.sin(t*1.8)*2.2; jx=Math.sin(t*1.5)*1.6; amp=0.08; spd=1.8; break;
+    case 'Elektro': bob=Math.sin(t*2.4)*2.0; { const ph=t%1.5; if(ph<0.1) jx=(Math.random()*2-1)*1.6; } break;
+    case 'Gestein': bob=Math.sin(t*1.1)*0.9; amp=0.022; spd=1.1; break;
+    case 'Pflanze': bob=Math.sin(t*1.8)*2.0; rot=Math.sin(t*1.5)*0.025; amp=0.055; break;
+  }
+  const breathe=Math.sin(t*spd);
+  return { bob, jx, sx:1 - amp*0.6*breathe, sy:1 + amp*breathe, rot };
+}
+// Zeichnet ein Kampf-Wesen mit voller prozeduraler Animation (am Boden verankert).
 function drawBattler(side, species, bx, by, size, flip){
-  const t=performance.now()/1000;
-  let x=bx, y=by + Math.sin(t*2 + (side==='enemy'?1.3:0))*2.2;  // Idle-Atmen
-  if(BFX.entry[side]>0)  x += (side==='enemy'? 1:-1) * BFX.entry[side] * 240;
-  if(BFX.lunge[side]>0){ const k=Math.sin((1-BFX.lunge[side]/LUNGE_T)*Math.PI);
-    x += (side==='enemy'? -1:1) * k * 28; y += (side==='enemy'? 1:-1) * k * 9; }
-  let alpha=1;
-  if(BFX.faint[side]>0){ const f=BFX.faint[side]; y += f*48; alpha=Math.max(0,1-f); }
-  if(BFX.hit[side]>0 && Math.floor(t*30)%2===0) alpha*=0.25;  // Treffer-Blinken
-  CTX.save(); CTX.globalAlpha=alpha;
+  const t=performance.now()/1000 + (side==='enemy'?0.7:0);
+  const type=(SPECIES[species]&&SPECIES[species].type)||'Normal';
+  const m=typeMotion(type, t);
+  let x=bx + m.jx, y=by + m.bob, sx=m.sx, sy=m.sy, rot=m.rot, alpha=1;
+  const dirAway = (side==='enemy'? 1:-1), dirToFoe = -dirAway;
+  // Einflug (eased)
+  if(BFX.entry[side]>0){ const pin=1-BFX.entry[side]; x += dirAway*(1-easeOutCubic(pin))*300; alpha*=easeOutCubic(Math.min(1,pin*1.6)); }
+  // Angriff: Ausholen -> Vorstoß -> zurück
+  if(BFX.lunge[side]>0){
+    const p=1-BFX.lunge[side]/LUNGE_T; let k;
+    if(p<0.22) k=-(p/0.22)*0.34; else k=Math.sin(((p-0.22)/0.78)*Math.PI);
+    x += dirToFoe*k*30; y += (side==='enemy'?1:-1)*Math.max(0,k)*10;
+    sx*=1+0.06*Math.max(0,k); sy*=1-0.05*Math.max(0,k);
+  }
+  // Treffer: Rückstoß + Stauchen + Blinken
+  if(BFX.hit[side]>0){
+    const h=BFX.hit[side]/HIT_T;
+    x += dirAway*h*9*Math.sin(performance.now()/26);
+    sx*=1+0.06*h; sy*=1-0.06*h;
+    if(Math.floor(t*30)%2===0) alpha*=0.32;
+  }
+  // KO: absinken, stauchen, ausblenden
+  if(BFX.faint[side]>0){ const f=BFX.faint[side]; y+=f*46; sy*=Math.max(0.18,1-f*0.85); alpha*=Math.max(0,1-f); }
+  const ax=x+size/2, ay=by+size; // Verankerung an den Füßen
+  CTX.save();
+  CTX.globalAlpha=clamp(alpha,0,1);
+  CTX.translate(ax,ay); CTX.rotate(rot); CTX.scale(sx,sy); CTX.translate(-ax,-ay);
   drawCreature(species, x, y, size, flip);
   CTX.restore();
+  CTX.globalAlpha=1;
 }
 function drawBattleParts(){
   for(const p of BFX.parts){
@@ -1915,6 +1969,8 @@ function drawBattle(bgOnly){
   const oy = sh? Math.round((Math.random()*2-1)*sh):0;
   CTX.save();
   CTX.translate(ox,oy);
+  // Kampfstart-Kino: Feld zoomt sanft heran
+  if(BFX.intro>0){ const z=1+0.14*(BFX.intro/0.7); CTX.translate(VW/2,VH*0.46); CTX.scale(z,z); CTX.translate(-VW/2,-VH*0.46); }
   // Hintergrund — generiertes 16-bit-Pixel-Art je nach Schauplatz (leicht
   // übergroß gezeichnet, damit der Shake keine schwarzen Ränder zeigt)
   if(imgReady(bgk)){
@@ -1938,6 +1994,19 @@ function drawBattle(bgOnly){
   CTX.restore();
   // Kampfstart-Blitz (ohne Shake, ganzflächig)
   if(BFX.flash>0){ CTX.fillStyle='rgba(255,255,255,'+(BFX.flash*0.85)+')'; CTX.fillRect(0,0,VW,VH); }
+  // VS-Banner bei Trainer-Kämpfen (gleitet beim Kampfstart ein und blendet aus)
+  if(battle.trainer && BFX.intro>0){
+    const p=BFX.intro/0.7, a=clamp(p*1.4,0,1), bh=44, by=VH/2-bh/2;
+    const sl=Math.round((1-easeOutCubic(1-p))*VW*0.5);
+    CTX.save(); CTX.globalAlpha=a;
+    CTX.fillStyle='#0a0c1c'; CTX.fillRect(0,by,VW,bh);
+    CTX.fillStyle='#ffe45a'; CTX.fillRect(0,by,VW,2); CTX.fillRect(0,by+bh-2,VW,2);
+    CTX.fillStyle='#ff5a6a'; CTX.font='bold 22px monospace'; CTX.textBaseline='top'; CTX.textAlign='center';
+    CTX.fillText('VS', VW/2 - sl, by+10);
+    CTX.fillStyle='#fff'; CTX.font='12px monospace';
+    CTX.fillText(battle.trainer.name, VW/2 + sl, by+15);
+    CTX.textAlign='left'; CTX.restore(); CTX.globalAlpha=1;
+  }
   // Info-Boxen (stabile UI)
   drawInfoBox(20,20, e, false);
   drawInfoBox(250,170, p, true);
