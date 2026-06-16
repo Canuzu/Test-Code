@@ -287,21 +287,21 @@ const SPECIES = {
   sprossknu:{id:1, name:'Sprössknu', type:'Pflanze', base:{hp:45,atk:49,def:49,spd:45}, catchRate:45, baseExp:64,
     learn:[[1,'rempler'],[1,'blattwirbel'],[7,'rankenhieb'],[13,'biss'],[18,'sporenstaub'],[22,'blattsturm']],
     evo:{into:'florant', level:16}, dex:'Ein scheues Sprosswesen, das Sonnenlicht über die Blätter am Kopf sammelt.'},
-  florant:{id:2, name:'Florant', type:'Pflanze', base:{hp:65,atk:72,def:68,spd:62}, catchRate:30, baseExp:142,
+  florant:{id:2, name:'Florant', type:'Pflanze', base:{hp:65,atk:72,def:68,spd:62,spa:85,spdf:72}, catchRate:30, baseExp:142,
     learn:[[1,'rempler'],[1,'blattwirbel'],[1,'rankenhieb'],[18,'sporenstaub'],[24,'blattsturm'],[30,'ramme']],
     dex:'Die ausgewachsene Form von Sprössknu. Seine Ranken sind erstaunlich kräftig.'},
   // --- Starter Feuer ---
   glutfox:{id:3, name:'Glutfox', type:'Feuer', base:{hp:42,atk:54,def:43,spd:55}, catchRate:45, baseExp:64,
     learn:[[1,'kratzer'],[1,'funke'],[7,'flammenzunge'],[13,'biss'],[20,'glutsturm']],
     evo:{into:'pyrolux', level:16}, dex:'Aus seinem buschigen Schweif glühen Funken, wenn es aufgeregt ist.'},
-  pyrolux:{id:4, name:'Pyrolux', type:'Feuer', base:{hp:60,atk:78,def:55,spd:75}, catchRate:30, baseExp:142,
+  pyrolux:{id:4, name:'Pyrolux', type:'Feuer', base:{hp:60,atk:78,def:55,spd:75,spa:92,spdf:62}, catchRate:30, baseExp:142,
     learn:[[1,'kratzer'],[1,'funke'],[1,'flammenzunge'],[22,'glutsturm'],[28,'ramme']],
     dex:'Schnell und stolz. Seine Flammenmähne lodert heller, je mutiger es kämpft.'},
   // --- Starter Wasser ---
   tröpflin:{id:5, name:'Tröpflin', type:'Wasser', base:{hp:50,atk:48,def:52,spd:43}, catchRate:45, baseExp:64,
     learn:[[1,'rempler'],[1,'spritzer'],[7,'aquastoss'],[13,'biss'],[20,'flutwelle']],
     evo:{into:'aqualon', level:16}, dex:'Ein rundes Wasserwesen, das in klaren Bächen Blasen pustet.'},
-  aqualon:{id:6, name:'Aqualon', type:'Wasser', base:{hp:70,atk:65,def:74,spd:58}, catchRate:30, baseExp:142,
+  aqualon:{id:6, name:'Aqualon', type:'Wasser', base:{hp:70,atk:65,def:74,spd:58,spa:80,spdf:82}, catchRate:30, baseExp:142,
     learn:[[1,'rempler'],[1,'spritzer'],[1,'aquastoss'],[22,'flutwelle'],[28,'ramme']],
     dex:'Sein Panzer aus gehärtetem Wasser schützt es vor harten Schlägen.'},
   // --- Wilde Wesen ---
@@ -320,7 +320,7 @@ const SPECIES = {
   zappel:{id:11, name:'Zappel', type:'Elektro', base:{hp:38,atk:46,def:38,spd:60}, catchRate:90, baseExp:54,
     learn:[[1,'rempler'],[1,'zapper'],[5,'flinkschritt'],[10,'funkenstoss'],[16,'blitzschlag']],
     evo:{into:'voltik', level:20}, dex:'Es speichert statische Ladung im Fell und knistert bei Berührung.'},
-  voltik:{id:12, name:'Voltik', type:'Elektro', base:{hp:55,atk:72,def:52,spd:88}, catchRate:45, baseExp:138,
+  voltik:{id:12, name:'Voltik', type:'Elektro', base:{hp:55,atk:72,def:52,spd:88,spa:92,spdf:60}, catchRate:45, baseExp:138,
     learn:[[1,'zapper'],[1,'blitzschlag'],[22,'donnerstoss'],[28,'ramme']],
     dex:'Rast wie ein Blitz über die Wiesen. Seine Pfoten hinterlassen Funken.'},
   klumpf:{id:13, name:'Klumpf', type:'Gestein', base:{hp:55,atk:52,def:68,spd:28}, catchRate:90, baseExp:58,
@@ -338,7 +338,7 @@ const SPECIES = {
   nachtflatter:{id:17, name:'Nachtflatter', type:'Flug', base:{hp:44,atk:52,def:46,spd:64}, catchRate:80, baseExp:70,
     learn:[[1,'windstoss'],[1,'biss'],[8,'verwirrspiel'],[12,'flügelschlag'],[20,'sturzflug']],
     dex:'Nur nachts aktiv. Es findet sich im Dunkeln durch feines Gehör zurecht.'},
-  kristallit:{id:18, name:'Kristallit', type:'Gestein', base:{hp:50,atk:55,def:60,spd:50}, catchRate:60, baseExp:88,
+  kristallit:{id:18, name:'Kristallit', type:'Gestein', base:{hp:50,atk:55,def:60,spd:50,spa:72,spdf:70}, catchRate:60, baseExp:88,
     learn:[[1,'steinwurf'],[1,'zapper'],[15,'felsschlag'],[22,'blitzschlag']],
     dex:'Ein Kristallwesen, das im Höhleninneren elektrische Energie speichert.'},
   // --- Neue Region: Sturmkliff & Wolkenburg ---
@@ -403,6 +403,9 @@ function computeStats(inst){
   inst.stats.atk = Math.floor(b.atk*2*L/100)+5;
   inst.stats.def = Math.floor(b.def*2*L/100)+5;
   inst.stats.spd = Math.floor(b.spd*2*L/100)+5;
+  // Physisch/Spezial-Split: eigene Spezial-Werte (Default = phys. Werte, bis je Art getunt)
+  inst.stats.spatk = Math.floor((b.spa!=null?b.spa:b.atk)*2*L/100)+5;
+  inst.stats.spdef = Math.floor((b.spdf!=null?b.spdf:b.def)*2*L/100)+5;
   const newMax = Math.floor(b.hp*2*L/100)+L+10;
   inst.maxhp = newMax;
 }
@@ -1716,10 +1719,11 @@ function calcDamage(att, def, move){
   if(w==='rain'){ if(m.type==='Wasser') wx=1.3; else if(m.type==='Feuer') wx=0.7; }
   else if(w==='sun'){ if(m.type==='Feuer') wx=1.3; else if(m.type==='Wasser') wx=0.7; }
   else if(w==='snow'){ if(m.type==='Gestein') wx=1.15; }
-  // Statuswert-Stufen (Angriff/Verteidigung)
-  let atkStat = att.stats.atk * stageMul(att.stages && att.stages.atk);
-  let defStat = def.stats.def * stageMul(def.stages && def.stages.def);
-  if(att.status==='brand' && m.cat!=='spec') atkStat*=0.5;   // Verbrennung schwächt physisch
+  // Physisch/Spezial-Split: phys. nutzt Angr./Vert. (mit Stufen), spez. Sp.Angr./Sp.Vert.
+  const physical = m.cat!=='spec';
+  let atkStat = physical ? att.stats.atk * stageMul(att.stages && att.stages.atk) : att.stats.spatk;
+  let defStat = physical ? def.stats.def * stageMul(def.stages && def.stages.def) : def.stats.spdef;
+  if(att.status==='brand' && physical) atkStat*=0.5;   // Verbrennung schwächt nur physische Angriffe
   // Fähigkeit: Typ-Boost bei wenig KP
   let abx=1; const ab=abilityOf(att);
   if(att.hp <= att.maxhp/3){
@@ -2978,9 +2982,9 @@ function drawPartyDetail(c){
   // Statuswerte
   text('KP   '+c.hp+' / '+c.maxhp, 160, 50, '#fff', 10);
   drawHpBar(160, 64, 200, c.hp, c.maxhp);
-  text('Angriff      '+c.stats.atk, 160, 80, '#cde', 10);
-  text('Verteidigung '+c.stats.def, 160, 96, '#cde', 10);
-  text('Tempo        '+c.stats.spd, 160, 112, '#cde', 10);
+  text('Angriff '+c.stats.atk+'   Sp.Ang '+c.stats.spatk, 160, 82, '#cde', 9);
+  text('Vert.   '+c.stats.def+'   Sp.Ver '+c.stats.spdef, 160, 96, '#cde', 9);
+  text('Tempo   '+c.stats.spd, 160, 110, '#cde', 9);
   const need=expForLevel(c.level+1)-expForLevel(c.level), cur=c.exp-expForLevel(c.level);
   text('E-Punkte bis Lv'+(c.level+1)+': '+(need-cur), 160, 128, '#9ce', 8);
   const ab=abilityOf(c); text('Fähigkeit: '+ab, 160, 140, '#ffe45a', 9);

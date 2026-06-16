@@ -104,11 +104,16 @@ try {
     const base = ctx.calcDamage(A, D, A.moves[0]);
     assert(base.dmg > 0 && !Number.isNaN(base.dmg), 'calcDamage produces positive dmg');
     assert(typeof base.crit === 'boolean', 'calcDamage returns crit flag');
-    D.stages.def = 4;                          // higher defence -> less damage
-    let lo = 0, hi = 0; for (let i = 0; i < 40; i++){ lo += ctx.calcDamage(A, D, A.moves[0]).dmg; }
-    D.stages.def = 0; for (let i = 0; i < 40; i++){ hi += ctx.calcDamage(A, D, A.moves[0]).dmg; }
-    assert(lo < hi, 'defence stage reduces damage');
+    const physMove = { key: 'biss' };          // physical move -> uses Def + its stages
+    D.stages.def = 4;                          // higher defence -> less physical damage
+    let lo = 0, hi = 0; for (let i = 0; i < 60; i++){ lo += ctx.calcDamage(A, D, physMove).dmg; }
+    D.stages.def = 0; for (let i = 0; i < 60; i++){ hi += ctx.calcDamage(A, D, physMove).dmg; }
+    assert(lo < hi, 'defence stage reduces physical damage');
     const sp0 = ctx.speedOf(A); A.status = 'paralyse'; assert(ctx.speedOf(A) < sp0, 'paralysis halves speed'); A.status = null;
+    // physical/special split: a special attacker has a distinct, higher Sp.Atk
+    const P = ctx.makeCreature('pyrolux', 30); ctx.initVolatile(P);
+    assert(P.stats.spatk != null && P.stats.spdef != null, 'special stats exist');
+    assert(P.stats.spatk > P.stats.atk, 'special attacker has higher Sp.Atk than Atk');
     fx++;
   }
   // World-integrity checks: every warp target, encounter species, trainer team and learnset is valid
