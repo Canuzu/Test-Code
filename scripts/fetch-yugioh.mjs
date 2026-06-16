@@ -16,6 +16,7 @@ import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalize, rarityLabel } from '../src/data/providers/yugioh.js';
+import { slimCards } from '../src/lib/cardCodec.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/data/yugioh.json');
@@ -160,7 +161,7 @@ async function main() {
     pricesEstimated: true,
     count: out.length,
     completedSets,
-    cards: out,
+    cards: slimCards(out, 'yugioh'),
   }));
   console.log(`[fetch-yugioh] ✓ wrote ${out.length} cards · ${completedSets.length} sets`);
 }

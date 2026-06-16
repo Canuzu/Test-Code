@@ -11,6 +11,7 @@ import LogoMark from './components/LogoMark.jsx';
 import GameMark from './components/GameMark.jsx';
 import GameSelect from './components/GameSelect.jsx';
 import { getGame } from './data/providers/index.js';
+import { clearDiscoverMemo } from './lib/discoverMemo.js';
 
 // Heavy / on-demand views are code-split so the charting library (recharts)
 // and modals are not part of the initial bundle.
@@ -98,6 +99,12 @@ function Shell() {
   const [showLegal, setShowLegal] = useState(false);
   const [installEvt, setInstallEvt] = useState(null);
   const [discoverKey, setDiscoverKey] = useState(0); // bump to reset Discover to its start page
+  // Discover's primary navigation (which category + which open set) lives here,
+  // not inside Discover, so it becomes part of the browser history below — that
+  // makes Back/Forward step Set → Set-list → Start instead of straight out of
+  // the game, and lets us restore the exact sub-view on a popstate.
+  const [discCat, setDiscCat] = useState('start');
+  const [discSet, setDiscSet] = useState(null);
 
   // PWA install prompt: capture the event so we can offer an install button.
   useEffect(() => {
@@ -123,12 +130,39 @@ function Shell() {
   const navView = {
     game: activeGame,
     tab,
+    discCat, discSet,
     modal: modal ? { id: modal.card.id, tab: modal.tab } : null,
     showCompare, showSettings, showImport, showPricing, showAuth,
   };
 
+  // Re-apply a saved scroll offset across the next few frames, so it sticks even
+  // as images/cards finish laying out and the page grows to its full height.
+  const restoreScroll = (y) => {
+    let n = 0;
+    const tick = () => { window.scrollTo(0, y); if (++n < 6) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  };
+
+  // Take over scroll restoration from the browser (its automatic guess fights
+  // our state-driven views) and continuously record the current scroll offset
+  // into the active history entry, so a later Back/Forward can restore it.
   useEffect(() => {
-    window.history.replaceState({ __kw: { game: activeGame, tab: 'discover' } }, '');
+    if ('scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const s = window.history.state || {};
+        try { window.history.replaceState({ ...s, kwScroll: window.scrollY }, ''); } catch { /* ignore */ }
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { window.removeEventListener('scroll', onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, []);
+
+  useEffect(() => {
+    window.history.replaceState({ __kw: { game: activeGame, tab: 'discover', discCat: 'start', discSet: null } }, '');
     const onPop = (e) => {
       const v = e.state?.__kw || {};
       isPopping.current = true;
@@ -137,6 +171,8 @@ function Shell() {
       const { select, leave } = navActions.current;
       if (v.game) select?.(v.game); else leave?.();
       setTab(v.tab || 'discover');
+      setDiscCat(v.discCat || 'start');
+      setDiscSet(v.discSet ?? null);
       setShowCompare(!!v.showCompare);
       setShowSettings(!!v.showSettings);
       setShowImport(!!v.showImport);
@@ -146,6 +182,8 @@ function Shell() {
         const c = cardsRef.current.find((x) => x.id === v.modal.id);
         setModal(c ? { card: c, tab: v.modal.tab } : null);
       } else setModal(null);
+      // Land exactly where you were: restore the offset saved on this entry.
+      restoreScroll(e.state?.kwScroll || 0);
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
@@ -156,26 +194,18 @@ function Shell() {
     if (isPopping.current) { isPopping.current = false; return; }
     window.history.pushState({ __kw: navView }, '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeGame, tab, modal, showCompare, showSettings, showImport, showPricing, showAuth]);
-
-  // Scroll back to the top whenever the tab changes (incl. browser back/forward,
-  // which sets `tab` via popstate). Without this the new view inherits the old
-  // scroll position and lands "randomly" in the middle of the page. The card
-  // modal is a fixed overlay with its own scroll, so we deliberately don't
-  // touch the page scroll there — closing a card keeps your place in the list.
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  }, [tab]);
+  }, [activeGame, tab, discCat, discSet, modal, showCompare, showSettings, showImport, showPricing, showAuth]);
 
   const onOpen = (card, t = 'overview') => setModal({ card, tab: t });
   const scrollTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-  // Tapping a nav item always returns to the top — even when re-tapping the tab
-  // you're already on (the [tab] effect only fires when the value changes).
+  // Tapping a nav item always returns to the top.
   const goTab = (id) => { setTab(id); scrollTop(); };
+  // Reset Discover to its Start view (drops the remembered sub-view too).
+  const resetDiscover = (g) => { clearDiscoverMemo(g); setDiscCat('start'); setDiscSet(null); setDiscoverKey((k) => k + 1); };
   // Logo / site name → back to the game-selection landing page.
-  const goHome = () => { setTab('discover'); setDiscoverKey((k) => k + 1); leaveGame(); };
-  // Pick a game from the landing page, then start on its Discover view.
-  const pickGame = (id) => { selectGame(id); setTab('discover'); setDiscoverKey((k) => k + 1); scrollTop(); };
+  const goHome = () => { resetDiscover(activeGame); setTab('discover'); leaveGame(); };
+  // Pick a game from the landing page, then start fresh on its Discover view.
+  const pickGame = (id) => { selectGame(id); resetDiscover(id); setTab('discover'); scrollTop(); };
   // Keep the once-registered popstate handler pointed at the live store actions.
   navActions.current = { select: selectGame, leave: leaveGame };
   const isMobile = useIsMobile();
@@ -263,7 +293,7 @@ function Shell() {
 
       {/* Body */}
       <main style={{ padding: isMobile ? '14px 12px' : '16px 20px', maxWidth: 1400, margin: '0 auto' }}>
-        {tab === 'discover' && <Discover key={discoverKey} onOpen={onOpen} />}
+        {tab === 'discover' && <Discover key={discoverKey} onOpen={onOpen} cat={discCat} setCat={setDiscCat} selectedSet={discSet} setSelectedSet={setDiscSet} />}
         {tab === 'analytics' && <Suspense fallback={<Loader />}><Analytics onOpen={onOpen} pro={pro} onUpgrade={() => setShowPricing(true)} /></Suspense>}
         {tab === 'watchlist' && <WatchlistView onOpen={onOpen} />}
         {tab === 'portfolio' && <PortfolioView onImport={() => (pro ? setShowImport(true) : setShowPricing(true))} />}

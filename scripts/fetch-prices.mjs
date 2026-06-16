@@ -18,6 +18,7 @@ import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalize } from '../src/data/providers/pokemon.js';
+import { slimCards } from '../src/lib/cardCodec.js';
 import { fetchCardmarket } from './fetch-cardmarket.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -77,7 +78,8 @@ async function allCardsInSet(setId) {
 
 async function writeSnapshot(payload) {
   await mkdir(dirname(OUT), { recursive: true });
-  await writeFile(OUT, JSON.stringify(payload));
+  const out = payload.cards ? { ...payload, cards: slimCards(payload.cards, 'pokemon') } : payload;
+  await writeFile(OUT, JSON.stringify(out));
 }
 
 // Load the previously committed snapshot so this run continues from it.
