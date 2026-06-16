@@ -369,7 +369,11 @@ const ITEMS = {
   weckruf:    {name:'Weckruf',      kind:'cure', cure:'schlaf', price:100, desc:'Weckt ein schlafendes Wesen.'},
   lösekraut:  {name:'Lösekraut',    kind:'cure', cure:'paralyse',price:100,desc:'Heilt Paralyse.'},
   fangkugel:  {name:'Fangkugel',    kind:'ball', ballBonus:1,   price:200, desc:'Eine Kugel zum Fangen wilder Wesen.'},
-  edelkugel:  {name:'Edelkugel',    kind:'ball', ballBonus:2,   price:600, desc:'Bessere Fangkugel mit höherer Fangrate.'}
+  edelkugel:  {name:'Edelkugel',    kind:'ball', ballBonus:2,   price:600, desc:'Bessere Fangkugel mit höherer Fangrate.'},
+  // Getragene Items (werden einem Wesen zum Halten gegeben)
+  ueberreste: {name:'Überreste',    kind:'hold', hold:'heal8',  price:900, desc:'Hält ein Wesen: heilt jede Runde 1/16 der KP.'},
+  kraftband:  {name:'Kraftband',    kind:'hold', hold:'power',  price:800, desc:'Hält ein Wesen: erhöht den angerichteten Schaden um 10%.'},
+  fokusgurt:  {name:'Fokusgurt',    kind:'hold', hold:'focus',  price:1000,desc:'Hält ein Wesen: übersteht aus vollen KP einen K.O.-Treffer mit 1 KP.'}
 };
 
 /* =========================================================================
@@ -381,13 +385,13 @@ function choice(arr){ return arr[rnd(arr.length)]; }
 function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
 function deepCopy(o){ return JSON.parse(JSON.stringify(o)); }
 
-// Erschafft eine Wesen-Instanz aus Art + Level
-function makeCreature(speciesKey, level){
+// Erschafft eine Wesen-Instanz aus Art + Level (optional getragenes Item)
+function makeCreature(speciesKey, level, held){
   const sp = SPECIES[speciesKey];
   const inst = {
     species:speciesKey, name:sp.name, level:level,
     exp: level*level*level,
-    stats:{}, hp:0, maxhp:0, status:null, sleepTurns:0, moves:[]
+    stats:{}, hp:0, maxhp:0, status:null, sleepTurns:0, moves:[], held:held||null
   };
   computeStats(inst);
   inst.hp = inst.maxhp;
@@ -994,7 +998,7 @@ MAPS.pruefhalle2 = {
   warps:[ {x:5,y:12, to:'wogenfels', tx:7, ty:10} ],
   npcs:[
     {x:6,y:1, dir:'down', palette:{shirt:'#4a90d9',hair:'#2a5a9a'}, name:'Hallenleiter Tarek', special:'leader2',
-     trainer:{ name:'Hallenleiter Tarek', team:[['tröpflin',14],['aqualon',16]], reward:2200, leader:true, badge:'Wogen-Emblem', music:'boss',
+     trainer:{ name:'Hallenleiter Tarek', team:[['tröpflin',14],['aqualon',16,'ueberreste']], reward:2200, leader:true, badge:'Wogen-Emblem', music:'boss',
        intro:['Ich bin Tarek, Meister der Wasser-Halle.','Meine Flut wird dich fortspülen!'],
        win:['Eine starke Strömung treibt dich an. Nimm das Wogen-Emblem!'],
        lose:['Komm wieder, wenn deine Wesen stärker sind.'] }},
@@ -1028,7 +1032,7 @@ MAPS.ordenbasis = {
      trainer:{ name:'Orden-Schergin', team:[['nachtflatter',16],['muffrat',16]], reward:1200, music:'boss',
        intro:['Du kommst nicht an Anführerin Nox vorbei!'], win:['Unmöglich...'], lose:['Der Orden Nyx ist überall!'] }},
     {x:5,y:1, dir:'down', palette:{shirt:'#1a1a2a',hair:'#6a2a6a'}, name:'Anführerin Nox', special:'boss',
-     trainer:{ name:'Orden-Anführerin Nox', team:[['nachtflatter',18],['felsbrocker',19],['sturmaar',20],['voltik',22]], reward:5000, boss:true, music:'boss',
+     trainer:{ name:'Orden-Anführerin Nox', team:[['nachtflatter',18],['felsbrocker',19],['sturmaar',20],['voltik',22,'ueberreste']], reward:5000, boss:true, music:'boss',
        intro:['Also bist du der lästige Forscher.','Ich bin Nox, Anführerin des Orden Nyx!','Mit der Macht der wilden Wesen beherrsche ich Velora!'],
        win:['...Unglaublich. Die Bande zu deinen Wesen ist echte Stärke.','Der Orden Nyx löst sich auf. Velora ist frei!'],
        lose:['Hahaha! Die Dunkelheit verschlingt Velora!'] }}
@@ -1132,7 +1136,7 @@ MAPS.pruefhalle3 = {
   warps:[ {x:5,y:12, to:'sturmkliff', tx:7, ty:10} ],
   npcs:[
     {x:6,y:1, dir:'down', palette:{shirt:'#e0c233',hair:'#d8b53a'}, name:'Hallenleiterin Juna', special:'leader3',
-     trainer:{ name:'Hallenleiterin Juna', team:[['funkel',18],['voltik',20]], reward:3000, leader:true, badge:'Funken-Emblem', music:'boss',
+     trainer:{ name:'Hallenleiterin Juna', team:[['funkel',18],['voltik',20,'kraftband']], reward:3000, leader:true, badge:'Funken-Emblem', music:'boss',
        intro:['Ich bin Juna, Meisterin der Elektro-Halle.','Spürst du schon das Knistern in der Luft?'],
        win:['Was für eine Energie! Nimm das Funken-Emblem!'],
        lose:['Komm wieder, wenn deine Bande heller leuchtet.'] }},
@@ -1239,7 +1243,7 @@ MAPS.pruefhalle4 = {
   warps:[ {x:5,y:12, to:'wolkenburg', tx:7, ty:10} ],
   npcs:[
     {x:6,y:1, dir:'down', palette:{shirt:'#9ab8e0',hair:'#5a6a8a'}, name:'Hallenleiter Aero', special:'leader4',
-     trainer:{ name:'Hallenleiter Aero', team:[['wölkchen',20],['schwingfalk',21],['sturmaar',23]], reward:3600, leader:true, badge:'Sturm-Emblem', music:'boss',
+     trainer:{ name:'Hallenleiter Aero', team:[['wölkchen',20],['schwingfalk',21],['sturmaar',23,'fokusgurt']], reward:3600, leader:true, badge:'Sturm-Emblem', music:'boss',
        intro:['Ich bin Aero, Herr der Wolkenburg.','Spürst du den Sturm, der sich zusammenbraut?'],
        win:['Du reitest den Wind besser als ich! Nimm das Sturm-Emblem!'],
        lose:['Komm wieder, wenn dein Flug sicherer ist.'] }},
@@ -1657,7 +1661,7 @@ function startWildBattle(){
 }
 function startTrainerBattle(npc){
   const t=npc.trainer;
-  const team=t.team.map(([s,l])=>makeCreature(s,l));
+  const team=t.team.map(([s,l,h])=>makeCreature(s,l,h));
   beginBattle({wild:false, trainer:t, team, npc});
 }
 function beginBattle(opts){
@@ -1732,8 +1736,9 @@ function calcDamage(att, def, move){
     else if(ab==='Sturzbach'&&m.type==='Wasser') abx=1.5;
   }
   const crit = Math.random()<1/16, cx=crit?1.5:1;
+  const itx = (att.held==='kraftband') ? 1.1 : 1;   // getragenes Kraftband: +10% Schaden
   let dmg = Math.floor( ( (2*lvl/5+2) * m.power * atkStat / Math.max(1,defStat) ) / 50 ) + 2;
-  dmg = Math.floor(dmg * stab * eff * wx * abx * cx * rndRange(0.85,1.0));
+  dmg = Math.floor(dmg * stab * eff * wx * abx * cx * itx * rndRange(0.85,1.0));
   return {dmg:Math.max(1,dmg), eff, crit};
 }
 function moveHits(move){
@@ -1853,14 +1858,17 @@ function doMoveReal(who,move,defender,attacker,next){
       const lines=[];
       // 3) … dann Schaden anwenden -> KP-Balken läuft jetzt sichtbar runter
       if(m.power>0){
-        let survived=false;
-        if(dmg>=defender.hp && defender.hp===defender.maxhp && abilityOf(defender)==='Robustheit'){ dmg=defender.hp-1; survived=true; }
+        let survived=false, byItem=false;
+        if(dmg>=defender.hp && defender.hp===defender.maxhp){
+          if(abilityOf(defender)==='Robustheit'){ dmg=defender.hp-1; survived=true; }
+          else if(defender.held==='fokusgurt'){ dmg=defender.hp-1; survived=true; byItem=true; defender.held=null; }
+        }
         defender.hp=Math.max(0, defender.hp-dmg);
         if(crit) lines.push('Ein Volltreffer!');
         if(eff>1) lines.push('Das ist sehr effektiv!');
         else if(eff<1 && eff>0) lines.push('Das ist nicht sehr effektiv...');
         else if(eff===0) lines.push('Es zeigt keine Wirkung...');
-        if(survived) lines.push(defender.name+' hält dank Robustheit durch!');
+        if(survived) lines.push(defender.name+(byItem?' hält dank Fokusgurt durch!':' hält dank Robustheit durch!'));
       }
       // Statuswert-Veränderung (Buff/Debuff)
       if(m.stat){
@@ -2068,6 +2076,10 @@ function endOfTurn(){
       battleMsg([c.name+lbl], ()=>{
         if(c.hp<=0){ handleFaint(c, ()=>doTick(idx+1)); } else doTick(idx+1);
       });
+    } else if(c.hp>0 && c.held==='ueberreste' && c.hp<c.maxhp){
+      const heal=Math.max(1, Math.floor(c.maxhp/16));
+      c.hp=Math.min(c.maxhp, c.hp+heal);
+      battleMsg([c.name+' erholt sich durch Überreste etwas.'], ()=>doTick(idx+1));
     } else doTick(idx+1);
   };
   doTick(0);
@@ -2988,6 +3000,7 @@ function drawPartyDetail(c){
   const need=expForLevel(c.level+1)-expForLevel(c.level), cur=c.exp-expForLevel(c.level);
   text('E-Punkte bis Lv'+(c.level+1)+': '+(need-cur), 160, 128, '#9ce', 8);
   const ab=abilityOf(c); text('Fähigkeit: '+ab, 160, 140, '#ffe45a', 9);
+  text('Item: '+(c.held?ITEMS[c.held].name:'—'), 160, 152, '#cfe', 9);
   // Attacken
   text('Attacken:', 40, 150, '#ffe', 10);
   for(let i=0;i<c.moves.length;i++){

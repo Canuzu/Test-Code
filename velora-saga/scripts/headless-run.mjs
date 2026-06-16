@@ -114,6 +114,13 @@ try {
     const P = ctx.makeCreature('pyrolux', 30); ctx.initVolatile(P);
     assert(P.stats.spatk != null && P.stats.spdef != null, 'special stats exist');
     assert(P.stats.spatk > P.stats.atk, 'special attacker has higher Sp.Atk than Atk');
+    // held items: Kraftband (+10% damage) is applied via the attacker's held item
+    const target = ctx.makeCreature('blattling', 30); ctx.initVolatile(target);
+    const plain = ctx.makeCreature('pyrolux', 30), band = ctx.makeCreature('pyrolux', 30, 'kraftband');
+    assert(band.held === 'kraftband', 'held item is set on the instance');
+    const spMove = { key: 'funke' }; let a0 = 0, a1 = 0;
+    for (let i = 0; i < 80; i++){ a0 += ctx.calcDamage(plain, target, spMove).dmg; a1 += ctx.calcDamage(band, target, spMove).dmg; }
+    assert(a1 > a0, 'Kraftband increases damage');
     fx++;
   }
   // World-integrity checks: every warp target, encounter species, trainer team and learnset is valid
