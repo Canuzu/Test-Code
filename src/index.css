@@ -173,6 +173,30 @@ button, input, select, textarea { font-family: inherit; }
   animation: pokeShadow 3.3s ease-in-out infinite;
 }
 
+/* Per-game hero tint (Pokémon / One Piece keep the default gold glow). */
+.poke-hero.hero-magic {
+  background:
+    radial-gradient(130% 130% at 50% -10%, #8b5cf61f, transparent 58%),
+    radial-gradient(120% 120% at 50% 120%, #3b82f614, transparent 60%),
+    var(--surface);
+}
+.poke-hero.hero-yugioh {
+  background:
+    radial-gradient(130% 130% at 50% -10%, #f59e0b26, transparent 58%),
+    radial-gradient(120% 120% at 50% 120%, #b4530914, transparent 60%),
+    var(--surface);
+}
+
+/* Magic start-page hero: the mana wheel turning around its centre. */
+.mtg-wheel { display: block; filter: drop-shadow(0 10px 16px #00000055); }
+.mtg-spin { transform-origin: 50% 50%; animation: spin 18s linear infinite; }
+
+/* Yu-Gi-Oh! start-page hero: the Millennium Puzzle swinging from its cord. */
+.ygo-puzzle { display: block; transform-origin: 50% 9%; animation: ygoSway 4.2s ease-in-out infinite; }
+.ygo-glow { animation: eyeGlow 2.4s ease-in-out infinite; }
+@keyframes ygoSway { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+@keyframes eyeGlow { 0%, 100% { opacity: 0.15; } 50% { opacity: 0.6; } }
+
 @keyframes pokeBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
 @keyframes pokeShadow { 0%, 100% { transform: scaleX(1); opacity: 0.5; } 50% { transform: scaleX(0.8); opacity: 0.28; } }
 @keyframes pokeWiggle {
@@ -190,7 +214,8 @@ button, input, select, textarea { font-family: inherit; }
 
 @media (prefers-reduced-motion: reduce) {
   .poke-bounce, .poke-wiggle, .poke-btn, .poke-shadow, .poke-spark,
-  .op-ship, .op-wave-back, .op-wave-front, .op-shadow { animation: none !important; }
+  .op-ship, .op-wave-back, .op-wave-front, .op-shadow,
+  .mtg-spin, .ygo-puzzle, .ygo-glow { animation: none !important; }
 }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }

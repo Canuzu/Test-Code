@@ -422,9 +422,11 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
   );
 }
 
-// Self-contained welcome animation for a game's start page. Pokémon gets its
-// classic bouncing, wiggling Poké Ball; other games get a tasteful animated
-// card fan so the hero fits the game without per-game art assets.
+// Self-contained welcome animation for a game's start page. Each TCG gets its
+// own animated emblem: Pokémon a bouncing/wiggling Poké Ball, One Piece the
+// Thousand Sunny, Magic a slowly turning wheel of the five mana colours, and
+// Yu-Gi-Oh! the Millennium Puzzle swinging from its cord. Any future game falls
+// back to a tasteful animated card fan.
 function WelcomeHero({ game, onBrowse }) {
   const sparks = [
     { left: '12%', top: '24%', d: '0s', s: 9 },
@@ -435,6 +437,8 @@ function WelcomeHero({ game, onBrowse }) {
   ];
   const isPoke = game === 'pokemon';
   const isOP = game === 'onepiece';
+  const isMagic = game === 'magic';
+  const isYugioh = game === 'yugioh';
   const HERO = {
     pokemon: { grad: 'linear-gradient(90deg,#ffd700,#ff6b35)', title: 'Schnapp sie dir alle!', btn: '🃏 Sets durchstöbern' },
     onepiece: { grad: 'linear-gradient(90deg,#ffb300,#e23b3b)', title: 'Setze die Segel! ⚓', btn: '🏴‍☠️ Sets entern' },
@@ -443,12 +447,16 @@ function WelcomeHero({ game, onBrowse }) {
   };
   const hero = HERO[game] || HERO.pokemon;
   return (
-    <div className="poke-hero">
+    <div className={`poke-hero hero-${game}`}>
       {sparks.map((sp, i) => (
         <span key={i} className="poke-spark" style={{ left: sp.left, top: sp.top, width: sp.s, height: sp.s, animationDelay: sp.d }} />
       ))}
       {isOP ? (
         <ThousandSunny />
+      ) : isMagic ? (
+        <MagicMana />
+      ) : isYugioh ? (
+        <MillenniumPuzzle />
       ) : (
       <div className="poke-bounce">
         <div className="poke-wiggle">
@@ -503,6 +511,86 @@ function WelcomeHero({ game, onBrowse }) {
         </div>
         <button className="btn-primary" style={{ marginTop: 16 }} onClick={onBrowse}>{hero.btn}</button>
       </div>
+    </div>
+  );
+}
+
+// Magic hero: a slowly rotating wheel of the five mana colours (W/U/B/R/G)
+// around a glowing core. Pure SVG/CSS, matching the other emblems' spirit.
+function MagicMana() {
+  const pips = [
+    { x: 60, y: 22, c: '#f7f5d8', s: '#c9ba74' }, // White
+    { x: 96, y: 48, c: '#2a7de1', s: '#185aa6' }, // Blue
+    { x: 82, y: 91, c: '#37373f', s: '#161620' }, // Black
+    { x: 38, y: 91, c: '#e0492c', s: '#a82f18' }, // Red
+    { x: 24, y: 48, c: '#2faf5a', s: '#1d7a3c' }, // Green
+  ];
+  return (
+    <div className="poke-bounce">
+      <svg className="mtg-wheel mtg-spin" width="150" height="150" viewBox="0 0 120 120" role="img" aria-label="Magic-Mana-Symbole">
+        <defs>
+          <radialGradient id="mtgCore" cx="50%" cy="42%" r="62%">
+            <stop offset="0%" stopColor="#fffdf0" />
+            <stop offset="52%" stopColor="#ffe7a0" />
+            <stop offset="100%" stopColor="#9b6bff" />
+          </radialGradient>
+        </defs>
+        {/* faint pentagon + inner pentagram, the classic colour wheel */}
+        <polygon points="60,22 96,48 82,91 38,91 24,48" fill="none" stroke="#ffffff22" strokeWidth="2" />
+        <polygon points="60,22 82,91 24,48 96,48 38,91" fill="none" stroke="#ffffff12" strokeWidth="1.5" />
+        {/* glowing core */}
+        <circle cx="60" cy="60" r="15" fill="url(#mtgCore)" />
+        <circle cx="60" cy="60" r="15" fill="none" stroke="#ffffff55" strokeWidth="1.2" />
+        {/* mana pips */}
+        {pips.map((p, i) => (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r="12.5" fill={p.c} stroke={p.s} strokeWidth="2" />
+            <ellipse cx={p.x - 3.4} cy={p.y - 4} rx="4.4" ry="2.9" fill="#ffffff" opacity="0.35" />
+          </g>
+        ))}
+      </svg>
+      <div className="poke-shadow" />
+    </div>
+  );
+}
+
+// Yu-Gi-Oh! hero: the Millennium Puzzle — a golden inverted pyramid bearing the
+// Eye of Wadjet — swinging gently from its cord, with the eye glowing. Pure
+// SVG/CSS, no image asset.
+function MillenniumPuzzle() {
+  return (
+    <div className="poke-bounce">
+      <svg className="ygo-puzzle" width="150" height="150" viewBox="0 0 120 120" role="img" aria-label="Millennium-Puzzle">
+        <defs>
+          <linearGradient id="ygoGold" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ffe9a6" /><stop offset="48%" stopColor="#f0b73f" /><stop offset="100%" stopColor="#b9821b" />
+          </linearGradient>
+          <radialGradient id="ygoEyeGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#fff3b0" /><stop offset="100%" stopColor="#fff3b0" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        {/* cord ring + link */}
+        <circle cx="60" cy="14" r="7" fill="none" stroke="url(#ygoGold)" strokeWidth="3.5" />
+        <rect x="57.4" y="19" width="5.2" height="10" rx="2.2" fill="url(#ygoGold)" />
+        {/* inverted pyramid */}
+        <path d="M22 33 L98 33 L60 103 Z" fill="url(#ygoGold)" stroke="#6e4a12" strokeWidth="2.5" strokeLinejoin="round" />
+        {/* facet ridges for the 3-D pyramid read */}
+        <g stroke="#8a5c18" strokeWidth="1.4" opacity="0.5" fill="none">
+          <path d="M60 33 L60 103" /><path d="M22 33 L60 70" /><path d="M98 33 L60 70" />
+        </g>
+        {/* pulsing glow behind the eye */}
+        <circle className="ygo-glow" cx="60" cy="59" r="20" fill="url(#ygoEyeGlow)" />
+        {/* Eye of Wadjet */}
+        <g fill="none" stroke="#2a1a06" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M40 56 Q60 45 80 56" />
+          <path d="M43 60 Q60 51 77 60 Q60 69 43 60 Z" fill="#2a1a06" stroke="none" opacity="0.16" />
+          <path d="M43 60 Q60 51 77 60 Q60 69 43 60 Z" />
+          <circle cx="61" cy="60" r="3.6" fill="#2a1a06" stroke="none" />
+          <path d="M52 66 L52 76 Q52 80 58 79" />
+          <path d="M77 60 L86 57" />
+        </g>
+      </svg>
+      <div className="poke-shadow" />
     </div>
   );
 }
