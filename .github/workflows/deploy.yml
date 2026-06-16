@@ -87,6 +87,15 @@ jobs:
           npm run build
           mkdir -p ../dist/creature-quest
           cp -r dist/* ../dist/creature-quest/
+      - name: Add Velora Saga into /velora-saga subpath
+        # Eigenständiges Canvas-Spiel (kein Build), wird unter
+        # <pages>/velora-saga/ ausgeliefert. Tests laufen als nicht-blockierendes
+        # Gate, damit ein Velora-Problem nie den Karten-Deploy stoppt.
+        run: |
+          node velora-saga/scripts/smoke-velora.mjs || true
+          node velora-saga/scripts/headless-run.mjs || true
+          mkdir -p dist/velora-saga
+          cp -r velora-saga/index.html velora-saga/assets dist/velora-saga/
       - uses: actions/configure-pages@v5
         with:
           enablement: true

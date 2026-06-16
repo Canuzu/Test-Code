@@ -1,0 +1,3053 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Velora Saga — Wesen-Abenteuer</title>
+<style>
+  html,body{margin:0;padding:0;background:#111418;color:#eee;font-family:monospace;height:100%;overflow:hidden;}
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0a0c0f;}
+  canvas{image-rendering:pixelated;image-rendering:crisp-edges;background:#000;box-shadow:0 0 0 2px #2a2f38, 0 8px 40px rgba(0,0,0,.6);}
+  #hint{position:fixed;bottom:6px;left:0;right:0;text-align:center;font-size:11px;color:#7a8290;pointer-events:none;}
+  #touch{position:fixed;inset:0;display:none;}
+  .tbtn{position:absolute;background:rgba(60,70,90,.55);border:2px solid rgba(255,255,255,.25);border-radius:10px;color:#fff;
+        font-family:monospace;font-size:18px;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none;}
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="game" width="480" height="320"></canvas></div>
+<div id="hint">Pfeiltasten/WASD bewegen · X/Shift halten = rennen · Leertaste/Enter bestätigen · ESC Menü</div>
+<div id="touch">
+  <div class="tbtn" id="t-up"    style="left:70px;bottom:150px;width:60px;height:60px;">▲</div>
+  <div class="tbtn" id="t-down"  style="left:70px;bottom:30px;width:60px;height:60px;">▼</div>
+  <div class="tbtn" id="t-left"  style="left:10px;bottom:90px;width:60px;height:60px;">◀</div>
+  <div class="tbtn" id="t-right" style="left:130px;bottom:90px;width:60px;height:60px;">▶</div>
+  <div class="tbtn" id="t-a" style="right:20px;bottom:40px;width:74px;height:74px;">A</div>
+  <div class="tbtn" id="t-b" style="right:110px;bottom:90px;width:64px;height:64px;">B</div>
+  <div class="tbtn" id="t-m" style="right:20px;top:20px;width:54px;height:44px;font-size:13px;">MENÜ</div>
+</div>
+<script>
+"use strict";
+/* =========================================================================
+   VELORA SAGA — ein eigenständiges Monster-Sammel-RPG (Canvas, ohne Abhängigkeiten)
+   Alle Namen, Wesen, Orte, Begriffe sind frei erfunden.
+   ========================================================================= */
+
+const CANVAS = document.getElementById('game');
+const CTX = CANVAS.getContext('2d');
+CTX.imageSmoothingEnabled = false;
+const VW = 480, VH = 320, TILE = 16;
+
+/* ---- Skalierung an Fenster anpassen ---- */
+function resize(){
+  const s = Math.max(1, Math.min(Math.floor(window.innerWidth/VW), Math.floor(window.innerHeight/VH)));
+  CANVAS.style.width  = (VW*s)+'px';
+  CANVAS.style.height = (VH*s)+'px';
+}
+window.addEventListener('resize', resize); resize();
+
+/* =========================================================================
+   BILD-ASSETS — generierte, stilkonsistente 16-bit-Pixel-Art (assets/)
+   Sprites werden mit transparentem Hintergrund geladen; falls eine Datei
+   fehlt, fällt das Spiel automatisch auf die prozeduralen Sprites zurück.
+   ========================================================================= */
+// Wesen-Schlüssel -> Dateiname (Umlaute werden in den Dateinamen aufgelöst)
+const CREATURE_FILE = {
+  'sprossknu':'sprossknu','florant':'florant','glutfox':'glutfox','pyrolux':'pyrolux',
+  'tröpflin':'troepflin','aqualon':'aqualon','muffel':'muffel','muffrat':'muffrat',
+  'piepser':'piepser','schwingfalk':'schwingfalk','zappel':'zappel','voltik':'voltik',
+  'klumpf':'klumpf','felsbrocker':'felsbrocker','aschling':'aschling','blattling':'blattling',
+  'nachtflatter':'nachtflatter','kristallit':'kristallit',
+  'funkel':'funkel','wölkchen':'woelkchen','sturmaar':'sturmaar','geoll':'geoll'
+};
+const IMG = {};
+let assetsTotal = 0, assetsLoaded = 0;
+function loadImg(key, path){
+  assetsTotal++;
+  const im = new Image();
+  im.onload  = ()=>{ assetsLoaded++; };
+  im.onerror = ()=>{ assetsLoaded++; }; // fehlende Datei zählt als „fertig" (Fallback greift)
+  im.src = path;
+  IMG[key] = im;
+}
+function imgReady(key){ const im=IMG[key]; return !!(im && im.complete && im.naturalWidth>0); }
+function loadAllAssets(){
+  for(const k in CREATURE_FILE) loadImg('cre_'+k, 'assets/creatures/'+CREATURE_FILE[k]+'.png');
+  loadImg('bg_grass','assets/bg/battle_grass.png');
+  loadImg('bg_cave', 'assets/bg/battle_cave.png');
+  loadImg('bg_boss', 'assets/bg/battle_boss.png');
+  loadImg('t_grass','assets/tiles/grass.png');
+  loadImg('t_path', 'assets/tiles/path.png');
+  loadImg('t_water','assets/tiles/water.png');
+  loadImg('t_cave', 'assets/tiles/cave.png');
+}
+function assetsReady(){ return assetsTotal===0 || assetsLoaded>=assetsTotal; }
+function drawLoading(){
+  CTX.fillStyle='#12152a'; CTX.fillRect(0,0,VW,VH);
+  CTX.font='bold 22px monospace'; CTX.textBaseline='top'; CTX.textAlign='center';
+  CTX.fillStyle='#ffe45a'; CTX.fillText('VELORA SAGA', VW/2, 110);
+  CTX.font='10px monospace'; CTX.fillStyle='#cfe'; CTX.fillText('Lade Grafiken …', VW/2, 150);
+  CTX.textAlign='left';
+  const bw=240, bx=(VW-bw)/2, by=172, p=assetsTotal? assetsLoaded/assetsTotal : 1;
+  CTX.fillStyle='#0d1228'; CTX.fillRect(bx-2,by-2,bw+4,12);
+  CTX.fillStyle='#e8e0c0'; CTX.fillRect(bx-1,by-1,bw+2,10);
+  CTX.fillStyle='#2a2f5a'; CTX.fillRect(bx,by,bw,8);
+  CTX.fillStyle='#7ad0ff'; CTX.fillRect(bx,by,Math.round(bw*p),8);
+}
+
+/* =========================================================================
+   EINGABE
+   ========================================================================= */
+const Keys = { up:false, down:false, left:false, right:false, a:false, b:false, menu:false };
+const Pressed = {}; // einmalige Tastendrücke (für Menüs)
+const KEYMAP = {
+  ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right',
+  KeyW:'up', KeyS:'down', KeyA:'left', KeyD:'right',
+  Space:'a', Enter:'a', KeyZ:'a', KeyJ:'a',
+  KeyX:'b', KeyK:'b', Backspace:'b', ShiftLeft:'b',
+  Escape:'menu', KeyM:'menu'
+};
+window.addEventListener('keydown', e=>{
+  const k = KEYMAP[e.code];
+  if(k){ e.preventDefault(); if(!Keys[k]) Pressed[k]=true; Keys[k]=true; }
+});
+window.addEventListener('keyup', e=>{
+  const k = KEYMAP[e.code];
+  if(k){ e.preventDefault(); Keys[k]=false; }
+});
+function consume(k){ if(Pressed[k]){ Pressed[k]=false; return true; } return false; }
+function clearPressed(){ for(const k in Pressed) Pressed[k]=false; }
+
+/* Touch-Steuerung */
+(function(){
+  const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
+  if(!isTouch) return;
+  document.getElementById('touch').style.display='block';
+  document.getElementById('hint').style.display='none';
+  const bind=(id,key)=>{
+    const el=document.getElementById(id);
+    const on=e=>{e.preventDefault(); if(!Keys[key])Pressed[key]=true; Keys[key]=true;};
+    const off=e=>{e.preventDefault(); Keys[key]=false;};
+    el.addEventListener('touchstart',on,{passive:false});
+    el.addEventListener('touchend',off,{passive:false});
+    el.addEventListener('touchcancel',off,{passive:false});
+  };
+  bind('t-up','up'); bind('t-down','down'); bind('t-left','left'); bind('t-right','right');
+  bind('t-a','a'); bind('t-b','b'); bind('t-m','menu');
+})();
+
+/* =========================================================================
+   AUDIO — kleine Chiptune-Engine (WebAudio), keine externen Dateien
+   ========================================================================= */
+const Audio2 = (function(){
+  let ctx=null, master=null, musicGain=null, sfxGain=null;
+  let enabled=true, curTrack=null, seq=null, seqTimer=null, step=0;
+  function ensure(){
+    if(ctx) return;
+    try{
+      ctx = new (window.AudioContext||window.webkitAudioContext)();
+      master = ctx.createGain(); master.gain.value=0.5; master.connect(ctx.destination);
+      musicGain = ctx.createGain(); musicGain.gain.value=0.35; musicGain.connect(master);
+      sfxGain = ctx.createGain(); sfxGain.gain.value=0.6; sfxGain.connect(master);
+    }catch(e){ enabled=false; }
+  }
+  function resume(){ ensure(); if(ctx && ctx.state==='suspended') ctx.resume(); }
+  function note(freq,dur,type,gainNode,vol){
+    if(!ctx||!enabled) return;
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type=type||'square'; o.frequency.value=freq;
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(vol||0.3, ctx.currentTime+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+dur);
+    o.connect(g); g.connect(gainNode||sfxGain);
+    o.start(); o.stop(ctx.currentTime+dur+0.02);
+  }
+  // Notenfrequenzen
+  const N = {C3:130.8,D3:146.8,E3:164.8,F3:174.6,G3:196,A3:220,B3:246.9,
+             C4:261.6,D4:293.7,E4:329.6,F4:349.2,G4:392,A4:440,B4:493.9,
+             C5:523.3,D5:587.3,E5:659.3,F5:698.5,G5:784,A5:880,r:0};
+  const TRACKS = {
+    overworld:{ tempo:150, lead:['E4','G4','C5','G4','A4','C5','E5','C5','D5','B4','G4','B4','C5','G4','E4','G4'],
+                bass:['C3','C3','G3','G3','A3','A3','F3','F3'] },
+    town:{ tempo:130, lead:['C5','E5','G4','E5','F5','A4','F5','D5','E5','C5','G4','E4','C4','E4','G4','C5'],
+           bass:['C3','C3','F3','F3','G3','G3','C3','C3'] },
+    battle:{ tempo:180, lead:['A4','A4','E5','A4','C5','A4','E5','G5','F5','F5','C5','F5','E5','C5','A4','E5'],
+             bass:['A3','A3','A3','A3','F3','F3','G3','G3'] },
+    boss:{ tempo:165, lead:['D4','F4','A4','D5','C5','A4','F4','A4','G4','B4','D5','G5','F5','D5','A4','D5'],
+           bass:['D3','D3','D3','D3','A3','A3','G3','G3'] },
+    cave:{ tempo:110, lead:['A4','r','C5','r','E5','r','C5','r','G4','r','B4','r','D5','r','B4','r'],
+           bass:['A3','A3','E3','E3','F3','F3','E3','E3'] },
+    victory:{ tempo:150, lead:['C5','C5','C5','C5','G4','A4','C5','r','C5','G4','C5','r'],
+              bass:['C3','C3','G3','G3'] }
+  };
+  function play(name){
+    ensure(); if(!ctx||!enabled){ curTrack=name; return; }
+    if(curTrack===name && seqTimer) return;
+    stop(); curTrack=name; seq=TRACKS[name]; if(!seq) return;
+    step=0; const beat=60/seq.tempo*1000/2;
+    seqTimer=setInterval(()=>{
+      if(!enabled||!seq) return;
+      const l=seq.lead[step%seq.lead.length]; const b=seq.bass[Math.floor(step/2)%seq.bass.length];
+      if(l&&l!=='r') note(N[l]||440, beat/1000*0.9, 'square', musicGain, 0.22);
+      if(step%2===0 && b) note((N[b]||110)/1, beat/1000*1.6,'triangle',musicGain,0.30);
+      step++;
+    }, beat);
+  }
+  function stop(){ if(seqTimer){clearInterval(seqTimer); seqTimer=null;} }
+  // SFX
+  function sfx(kind){
+    ensure(); if(!ctx||!enabled) return;
+    if(kind==='select'){ note(660,0.06,'square',sfxGain,0.3); }
+    else if(kind==='confirm'){ note(523,0.05,'square',sfxGain,0.3); setTimeout(()=>note(784,0.08,'square',sfxGain,0.3),50); }
+    else if(kind==='cancel'){ note(330,0.08,'square',sfxGain,0.3); }
+    else if(kind==='hit'){ note(180,0.12,'sawtooth',sfxGain,0.35); }
+    else if(kind==='superhit'){ note(140,0.18,'sawtooth',sfxGain,0.4); setTimeout(()=>note(90,0.16,'sawtooth',sfxGain,0.35),60); }
+    else if(kind==='faint'){ note(400,0.1,'square',sfxGain,0.3); setTimeout(()=>note(200,0.25,'square',sfxGain,0.3),90); }
+    else if(kind==='heal'){ note(523,0.08,'sine',sfxGain,0.3); setTimeout(()=>note(659,0.08,'sine',sfxGain,0.3),80); setTimeout(()=>note(784,0.12,'sine',sfxGain,0.3),160); }
+    else if(kind==='levelup'){ [523,659,784,1046].forEach((f,i)=>setTimeout(()=>note(f,0.1,'square',sfxGain,0.3),i*70)); }
+    else if(kind==='catch'){ note(660,0.07,'square',sfxGain,0.3); setTimeout(()=>note(440,0.07,'square',sfxGain,0.3),120); setTimeout(()=>note(550,0.07,'square',sfxGain,0.3),240); }
+    else if(kind==='caught'){ [523,659,784,659,784,1046].forEach((f,i)=>setTimeout(()=>note(f,0.1,'square',sfxGain,0.3),i*90)); }
+    else if(kind==='evolve'){ [392,440,523,587,659,784].forEach((f,i)=>setTimeout(()=>note(f,0.12,'sine',sfxGain,0.3),i*100)); }
+    else if(kind==='bump'){ note(120,0.05,'square',sfxGain,0.2); }
+  }
+  function toggle(){ enabled=!enabled; if(!enabled) stop(); else if(curTrack) play(curTrack); return enabled; }
+  return { play, stop, sfx, resume, toggle, isOn:()=>enabled };
+})();
+window.addEventListener('keydown', ()=>Audio2.resume(), {once:true});
+window.addEventListener('touchstart', ()=>Audio2.resume(), {once:true});
+
+/* =========================================================================
+   DATEN: TYPEN & EFFEKTIVITÄT
+   ========================================================================= */
+const TYPES = ['Normal','Pflanze','Feuer','Wasser','Elektro','Gestein','Flug'];
+const TYPE_COLORS = {
+  Normal:'#b8b0a0', Pflanze:'#5fbb52', Feuer:'#e0623a', Wasser:'#4a90d9',
+  Elektro:'#e6c233', Gestein:'#a08a5a', Flug:'#9ab8e0'
+};
+// Effektivität: TE[angreifer][verteidiger] = multiplikator
+const TE = {
+  Normal:  {Gestein:0.5},
+  Pflanze: {Wasser:2, Gestein:2, Feuer:0.5, Pflanze:0.5, Flug:0.5},
+  Feuer:   {Pflanze:2, Gestein:0.5, Feuer:0.5, Wasser:0.5},
+  Wasser:  {Feuer:2, Gestein:2, Pflanze:0.5, Wasser:0.5, Elektro:0.5},
+  Elektro: {Wasser:2, Flug:2, Gestein:0.5, Pflanze:0.5},
+  Gestein: {Feuer:2, Flug:2, Wasser:0.5, Pflanze:0.5},
+  Flug:    {Pflanze:2, Elektro:0.5, Gestein:0.5}
+};
+function typeEff(atkType, defType){
+  if(!atkType||!defType) return 1;
+  const row = TE[atkType]; if(!row) return 1;
+  return (defType in row) ? row[defType] : 1;
+}
+
+/* =========================================================================
+   DATEN: ATTACKEN
+   cat: 'phys' nutzt Angriff/Verteidigung. status-effekt optional.
+   ========================================================================= */
+const MOVES = {
+  rempler:    {name:'Rempler',     type:'Normal',  power:35, acc:100, pp:35, cat:'phys'},
+  kratzer:    {name:'Kratzer',     type:'Normal',  power:40, acc:100, pp:35, cat:'phys'},
+  biss:       {name:'Biss',        type:'Normal',  power:55, acc:100, pp:25, cat:'phys'},
+  ramme:      {name:'Ramme',       type:'Normal',  power:75, acc:90,  pp:15, cat:'phys'},
+  schlummer:  {name:'Schlummerlied',type:'Normal', power:0,  acc:75,  pp:15, status:'schlaf', statusChance:100},
+  drohblick:  {name:'Drohblick',   type:'Normal',  power:0,  acc:100, pp:30, stat:{who:'foe', def:-1}},
+  härten:     {name:'Härten',      type:'Normal',  power:0,  acc:100, pp:30, stat:{who:'self', def:1}},
+  flinkschritt:{name:'Flinkschritt',type:'Normal', power:0,  acc:100, pp:30, stat:{who:'self', spd:2}},
+  kraftruf:   {name:'Kraftruf',    type:'Normal',  power:0,  acc:100, pp:20, stat:{who:'self', atk:1}},
+  blattwirbel:{name:'Blattwirbel', type:'Pflanze', power:45, acc:100, pp:25, cat:'phys'},
+  rankenhieb: {name:'Rankenhieb',  type:'Pflanze', power:60, acc:100, pp:20, cat:'phys'},
+  blattsturm: {name:'Blattsturm',  type:'Pflanze', power:90, acc:90,  pp:10, cat:'spec'},
+  sporenstaub:{name:'Sporenstaub', type:'Pflanze', power:0,  acc:80,  pp:15, status:'gift', statusChance:100},
+  funke:      {name:'Funke',       type:'Feuer',   power:45, acc:100, pp:25, cat:'spec'},
+  flammenzunge:{name:'Flammenzunge',type:'Feuer',  power:60, acc:100, pp:20, cat:'spec', status:'brand', statusChance:15},
+  glutsturm:  {name:'Glutsturm',   type:'Feuer',   power:90, acc:90,  pp:10, cat:'spec', status:'brand', statusChance:20},
+  spritzer:   {name:'Spritzer',    type:'Wasser',  power:45, acc:100, pp:25, cat:'spec'},
+  aquastoss:  {name:'Aquastoß',    type:'Wasser',  power:60, acc:100, pp:20, cat:'spec'},
+  flutwelle:  {name:'Flutwelle',   type:'Wasser',  power:90, acc:90,  pp:10, cat:'spec', status:'frost', statusChance:10},
+  zapper:     {name:'Zapper',      type:'Elektro', power:45, acc:100, pp:25, cat:'spec'},
+  blitzschlag:{name:'Blitzschlag', type:'Elektro', power:65, acc:100, pp:15, cat:'spec'},
+  donnerstoss:{name:'Donnerstoß',  type:'Elektro', power:90, acc:90,  pp:10, cat:'spec', status:'paralyse', statusChance:20},
+  funkenstoss:{name:'Funkenstoß',  type:'Elektro', power:0,  acc:90,  pp:20, status:'paralyse', statusChance:100},
+  steinwurf:  {name:'Steinwurf',   type:'Gestein', power:50, acc:95,  pp:20, cat:'phys'},
+  felsschlag: {name:'Felsschlag',  type:'Gestein', power:70, acc:90,  pp:15, cat:'phys'},
+  steinhagel: {name:'Steinhagel',  type:'Gestein', power:90, acc:85,  pp:10, cat:'spec'},
+  windstoss:  {name:'Windstoß',    type:'Flug',    power:45, acc:100, pp:25, cat:'spec'},
+  flügelschlag:{name:'Flügelschlag',type:'Flug',   power:60, acc:100, pp:20, cat:'phys'},
+  sturzflug:  {name:'Sturzflug',   type:'Flug',    power:90, acc:90,  pp:10, cat:'phys'},
+  verwirrspiel:{name:'Verwirrspiel',type:'Flug',   power:0,  acc:90,  pp:15, confuse:true}
+};
+
+/* =========================================================================
+   DATEN: WESEN (Kreaturen)
+   base: {hp,atk,def,spd}; learn: [[level,moveKey],...]; evo:{into, level}
+   sprite: prozedural via id-seed + typfarbe
+   ========================================================================= */
+const SPECIES = {
+  // --- Starter Pflanze ---
+  sprossknu:{id:1, name:'Sprössknu', type:'Pflanze', base:{hp:45,atk:49,def:49,spd:45}, catchRate:45, baseExp:64,
+    learn:[[1,'rempler'],[1,'blattwirbel'],[7,'rankenhieb'],[13,'biss'],[18,'sporenstaub'],[22,'blattsturm']],
+    evo:{into:'florant', level:16}, dex:'Ein scheues Sprosswesen, das Sonnenlicht über die Blätter am Kopf sammelt.'},
+  florant:{id:2, name:'Florant', type:'Pflanze', base:{hp:65,atk:72,def:68,spd:62,spa:85,spdf:72}, catchRate:30, baseExp:142,
+    learn:[[1,'rempler'],[1,'blattwirbel'],[1,'rankenhieb'],[18,'sporenstaub'],[24,'blattsturm'],[30,'ramme']],
+    dex:'Die ausgewachsene Form von Sprössknu. Seine Ranken sind erstaunlich kräftig.'},
+  // --- Starter Feuer ---
+  glutfox:{id:3, name:'Glutfox', type:'Feuer', base:{hp:42,atk:54,def:43,spd:55}, catchRate:45, baseExp:64,
+    learn:[[1,'kratzer'],[1,'funke'],[7,'flammenzunge'],[13,'biss'],[20,'glutsturm']],
+    evo:{into:'pyrolux', level:16}, dex:'Aus seinem buschigen Schweif glühen Funken, wenn es aufgeregt ist.'},
+  pyrolux:{id:4, name:'Pyrolux', type:'Feuer', base:{hp:60,atk:78,def:55,spd:75,spa:92,spdf:62}, catchRate:30, baseExp:142,
+    learn:[[1,'kratzer'],[1,'funke'],[1,'flammenzunge'],[22,'glutsturm'],[28,'ramme']],
+    dex:'Schnell und stolz. Seine Flammenmähne lodert heller, je mutiger es kämpft.'},
+  // --- Starter Wasser ---
+  tröpflin:{id:5, name:'Tröpflin', type:'Wasser', base:{hp:50,atk:48,def:52,spd:43}, catchRate:45, baseExp:64,
+    learn:[[1,'rempler'],[1,'spritzer'],[7,'aquastoss'],[13,'biss'],[20,'flutwelle']],
+    evo:{into:'aqualon', level:16}, dex:'Ein rundes Wasserwesen, das in klaren Bächen Blasen pustet.'},
+  aqualon:{id:6, name:'Aqualon', type:'Wasser', base:{hp:70,atk:65,def:74,spd:58,spa:80,spdf:82}, catchRate:30, baseExp:142,
+    learn:[[1,'rempler'],[1,'spritzer'],[1,'aquastoss'],[22,'flutwelle'],[28,'ramme']],
+    dex:'Sein Panzer aus gehärtetem Wasser schützt es vor harten Schlägen.'},
+  // --- Wilde Wesen ---
+  muffel:{id:7, name:'Muffel', type:'Normal', base:{hp:40,atk:45,def:40,spd:48}, catchRate:120, baseExp:42,
+    learn:[[1,'rempler'],[1,'kratzer'],[5,'drohblick'],[8,'biss'],[14,'ramme'],[20,'kraftruf']],
+    evo:{into:'muffrat', level:14}, dex:'Ein neugieriges Fellwesen, das überall in Velora herumwuselt.'},
+  muffrat:{id:8, name:'Muffrat', type:'Normal', base:{hp:60,atk:68,def:58,spd:72}, catchRate:60, baseExp:118,
+    learn:[[1,'rempler'],[1,'biss'],[16,'ramme']],
+    dex:'Flink und frech. Es klaut gern glänzende Dinge aus Rucksäcken.'},
+  piepser:{id:9, name:'Piepser', type:'Flug', base:{hp:40,atk:45,def:40,spd:56}, catchRate:120, baseExp:44,
+    learn:[[1,'rempler'],[1,'windstoss'],[9,'flügelschlag'],[15,'biss']],
+    evo:{into:'schwingfalk', level:18}, dex:'Ein kleiner Singvogel, dessen Trillern den Morgen in Velora einläutet.'},
+  schwingfalk:{id:10, name:'Schwingfalk', type:'Flug', base:{hp:60,atk:70,def:55,spd:80}, catchRate:45, baseExp:130,
+    learn:[[1,'windstoss'],[1,'flügelschlag'],[20,'sturzflug'],[26,'ramme']],
+    dex:'Ein stolzer Greifvogel, der von hohen Felsen aus die Route überblickt.'},
+  zappel:{id:11, name:'Zappel', type:'Elektro', base:{hp:38,atk:46,def:38,spd:60}, catchRate:90, baseExp:54,
+    learn:[[1,'rempler'],[1,'zapper'],[5,'flinkschritt'],[10,'funkenstoss'],[16,'blitzschlag']],
+    evo:{into:'voltik', level:20}, dex:'Es speichert statische Ladung im Fell und knistert bei Berührung.'},
+  voltik:{id:12, name:'Voltik', type:'Elektro', base:{hp:55,atk:72,def:52,spd:88,spa:92,spdf:60}, catchRate:45, baseExp:138,
+    learn:[[1,'zapper'],[1,'blitzschlag'],[22,'donnerstoss'],[28,'ramme']],
+    dex:'Rast wie ein Blitz über die Wiesen. Seine Pfoten hinterlassen Funken.'},
+  klumpf:{id:13, name:'Klumpf', type:'Gestein', base:{hp:55,atk:52,def:68,spd:28}, catchRate:90, baseExp:58,
+    learn:[[1,'rempler'],[1,'steinwurf'],[6,'härten'],[12,'felsschlag'],[18,'ramme']],
+    evo:{into:'felsbrocker', level:22}, dex:'Ein lebender Steinklumpen, der sich tagsüber kaum von Felsen unterscheidet.'},
+  felsbrocker:{id:14, name:'Felsbrocker', type:'Gestein', base:{hp:75,atk:74,def:95,spd:34}, catchRate:45, baseExp:150,
+    learn:[[1,'steinwurf'],[1,'felsschlag'],[24,'steinhagel'],[30,'ramme']],
+    dex:'Sein Körper ist hart wie Granit. Es rollt durch enge Höhlengänge.'},
+  aschling:{id:15, name:'Aschling', type:'Feuer', base:{hp:46,atk:58,def:44,spd:52}, catchRate:75, baseExp:66,
+    learn:[[1,'kratzer'],[1,'funke'],[11,'flammenzunge'],[19,'glutsturm']],
+    dex:'Glüht in warmen Höhlennischen und hält Wanderer in kalten Nächten warm.'},
+  blattling:{id:16, name:'Blattling', type:'Pflanze', base:{hp:48,atk:50,def:55,spd:42}, catchRate:90, baseExp:60,
+    learn:[[1,'rempler'],[1,'blattwirbel'],[10,'rankenhieb'],[17,'sporenstaub']],
+    dex:'Tarnt sich im Unterholz als Laubhaufen und überrascht so seine Gegner.'},
+  nachtflatter:{id:17, name:'Nachtflatter', type:'Flug', base:{hp:44,atk:52,def:46,spd:64}, catchRate:80, baseExp:70,
+    learn:[[1,'windstoss'],[1,'biss'],[8,'verwirrspiel'],[12,'flügelschlag'],[20,'sturzflug']],
+    dex:'Nur nachts aktiv. Es findet sich im Dunkeln durch feines Gehör zurecht.'},
+  kristallit:{id:18, name:'Kristallit', type:'Gestein', base:{hp:50,atk:55,def:60,spd:50,spa:72,spdf:70}, catchRate:60, baseExp:88,
+    learn:[[1,'steinwurf'],[1,'zapper'],[15,'felsschlag'],[22,'blitzschlag']],
+    dex:'Ein Kristallwesen, das im Höhleninneren elektrische Energie speichert.'},
+  // --- Neue Region: Sturmkliff & Wolkenburg ---
+  funkel:{id:19, name:'Funkel', type:'Elektro', base:{hp:40,atk:50,def:40,spd:66}, catchRate:90, baseExp:58,
+    learn:[[1,'rempler'],[1,'zapper'],[6,'flinkschritt'],[12,'funkenstoss'],[18,'blitzschlag']],
+    dex:'Ein kugeliges Funkenwesen, das auf Klippen statische Ladung aus der Seeluft sammelt.'},
+  wölkchen:{id:20, name:'Wölkchen', type:'Flug', base:{hp:42,atk:40,def:42,spd:60}, catchRate:120, baseExp:52,
+    learn:[[1,'rempler'],[1,'windstoss'],[9,'flügelschlag'],[14,'biss']],
+    evo:{into:'sturmaar', level:20}, dex:'Ein flauschiges Wolkenküken, das im Aufwind über dem Hafen schwebt.'},
+  sturmaar:{id:21, name:'Sturmaar', type:'Flug', base:{hp:72,atk:82,def:60,spd:94}, catchRate:30, baseExp:160,
+    learn:[[1,'windstoss'],[1,'flügelschlag'],[1,'biss'],[20,'verwirrspiel'],[24,'sturzflug'],[30,'ramme']],
+    dex:'Ein stolzer Sturmadler, dessen Schwingen Gewitterböen heraufbeschwören.'},
+  geoll:{id:22, name:'Geoll', type:'Gestein', base:{hp:62,atk:56,def:82,spd:26}, catchRate:70, baseExp:92,
+    learn:[[1,'rempler'],[1,'steinwurf'],[8,'härten'],[14,'felsschlag'],[22,'steinhagel']],
+    dex:'Ein gepanzerter Felskäfer, der sich in steinige Pässe gräbt und Geröll abwehrt.'}
+};
+const SPECIES_LIST = Object.keys(SPECIES);
+
+/* =========================================================================
+   DATEN: ITEMS
+   ========================================================================= */
+const ITEMS = {
+  trank:      {name:'Trank',        kind:'heal', amount:25,  price:120, desc:'Füllt 25 KP eines Wesens auf.'},
+  supertrank: {name:'Supertrank',   kind:'heal', amount:60,  price:350, desc:'Füllt 60 KP eines Wesens auf.'},
+  hypertrank: {name:'Hypertrank',   kind:'heal', amount:150, price:900, desc:'Füllt 150 KP eines Wesens auf.'},
+  beleber:    {name:'Beleber',      kind:'revive', amount:0.5,price:600, desc:'Belebt ein besiegtes Wesen mit halben KP.'},
+  gegengift:  {name:'Gegenmittel',  kind:'cure', cure:'gift',   price:100, desc:'Heilt Vergiftung.'},
+  weckruf:    {name:'Weckruf',      kind:'cure', cure:'schlaf', price:100, desc:'Weckt ein schlafendes Wesen.'},
+  lösekraut:  {name:'Lösekraut',    kind:'cure', cure:'paralyse',price:100,desc:'Heilt Paralyse.'},
+  fangkugel:  {name:'Fangkugel',    kind:'ball', ballBonus:1,   price:200, desc:'Eine Kugel zum Fangen wilder Wesen.'},
+  edelkugel:  {name:'Edelkugel',    kind:'ball', ballBonus:2,   price:600, desc:'Bessere Fangkugel mit höherer Fangrate.'},
+  // Getragene Items (werden einem Wesen zum Halten gegeben)
+  ueberreste: {name:'Überreste',    kind:'hold', hold:'heal8',  price:900, desc:'Hält ein Wesen: heilt jede Runde 1/16 der KP.'},
+  kraftband:  {name:'Kraftband',    kind:'hold', hold:'power',  price:800, desc:'Hält ein Wesen: erhöht den angerichteten Schaden um 10%.'},
+  fokusgurt:  {name:'Fokusgurt',    kind:'hold', hold:'focus',  price:1000,desc:'Hält ein Wesen: übersteht aus vollen KP einen K.O.-Treffer mit 1 KP.'}
+};
+
+/* =========================================================================
+   HILFSFUNKTIONEN
+   ========================================================================= */
+function rnd(n){ return Math.floor(Math.random()*n); }
+function rndRange(a,b){ return a + Math.random()*(b-a); }
+function choice(arr){ return arr[rnd(arr.length)]; }
+function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+function deepCopy(o){ return JSON.parse(JSON.stringify(o)); }
+
+// Erschafft eine Wesen-Instanz aus Art + Level (optional getragenes Item)
+function makeCreature(speciesKey, level, held){
+  const sp = SPECIES[speciesKey];
+  const inst = {
+    species:speciesKey, name:sp.name, level:level,
+    exp: level*level*level,
+    stats:{}, hp:0, maxhp:0, status:null, sleepTurns:0, moves:[], held:held||null
+  };
+  computeStats(inst);
+  inst.hp = inst.maxhp;
+  // erlernte Attacken bis Level (letzte 4)
+  const learned = sp.learn.filter(m=>m[0]<=level).map(m=>m[1]);
+  const uniq=[]; for(let i=learned.length-1;i>=0 && uniq.length<4;i--){ if(!uniq.includes(learned[i])) uniq.unshift(learned[i]); }
+  inst.moves = uniq.map(k=>({key:k, pp:MOVES[k].pp, maxpp:MOVES[k].pp}));
+  if(inst.moves.length===0) inst.moves=[{key:'rempler',pp:35,maxpp:35}];
+  return inst;
+}
+function computeStats(inst){
+  const sp = SPECIES[inst.species]; const L=inst.level; const b=sp.base;
+  inst.stats.atk = Math.floor(b.atk*2*L/100)+5;
+  inst.stats.def = Math.floor(b.def*2*L/100)+5;
+  inst.stats.spd = Math.floor(b.spd*2*L/100)+5;
+  // Physisch/Spezial-Split: eigene Spezial-Werte (Default = phys. Werte, bis je Art getunt)
+  inst.stats.spatk = Math.floor((b.spa!=null?b.spa:b.atk)*2*L/100)+5;
+  inst.stats.spdef = Math.floor((b.spdf!=null?b.spdf:b.def)*2*L/100)+5;
+  const newMax = Math.floor(b.hp*2*L/100)+L+10;
+  inst.maxhp = newMax;
+}
+function expForLevel(L){ return L*L*L; }
+
+/* =========================================================================
+   PIXEL-ART: prozedurale Wesen-Sprites
+   ========================================================================= */
+const spriteCache = {};
+function shade(hex, amt){
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=clamp(Math.round(r+amt),0,255); g=clamp(Math.round(g+amt),0,255); b=clamp(Math.round(b+amt),0,255);
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+// deterministischer RNG aus Seed
+function seeded(seed){ let s=seed%2147483647; if(s<=0)s+=2147483646; return ()=>{ s=s*16807%2147483647; return (s-1)/2147483646; }; }
+function makeCreatureSprite(speciesKey){
+  if(spriteCache[speciesKey]) return spriteCache[speciesKey];
+  const sp = SPECIES[speciesKey];
+  const G=16; // 16x16 pixel-grid
+  const cv=document.createElement('canvas'); cv.width=G; cv.height=G;
+  const c=cv.getContext('2d');
+  const base = TYPE_COLORS[sp.type];
+  const dark = shade(base,-50), light=shade(base,50), eye='#222', white='#fff';
+  const rng = seeded(sp.id*9973+17);
+  // Körper als symmetrische Blob-Form
+  const grid = []; for(let y=0;y<G;y++) grid.push(new Array(G).fill(0));
+  // Grundkörper: Ellipse
+  const cx=8, cy=9, rw=4+Math.round(rng()*1.5), rh=4+Math.round(rng()*1.5);
+  for(let y=0;y<G;y++)for(let x=0;x<8;x++){
+    const dx=(x-cx)/rw, dy=(y-cy)/rh;
+    if(dx*dx+dy*dy<=1.0){ grid[y][x]=1; }
+  }
+  // Kopf-/Ohren-Variation
+  const earType = sp.id%4;
+  if(earType===0){ grid[3][5]=1; grid[2][5]=1; grid[3][6]=1; } // ein Ohr/Spitze
+  else if(earType===1){ grid[4][4]=1; grid[3][4]=1; }
+  else if(earType===2){ grid[3][3]=1; grid[4][3]=1; grid[5][3]=1; } // langes Ohr
+  // Füße
+  grid[14][4]=1; grid[14][5]=1; grid[13][4]=1;
+  // Schweif/Flügel je nach typ
+  if(sp.type==='Flug'){ grid[8][2]=2; grid[9][1]=2; grid[7][2]=2; grid[10][2]=2; }
+  if(sp.type==='Feuer'){ grid[6][2]=3; grid[7][1]=3; grid[5][2]=3; }
+  // spiegeln auf rechte Hälfte
+  for(let y=0;y<G;y++)for(let x=0;x<8;x++){ if(grid[y][x]) grid[y][G-1-x]=grid[y][x]; }
+  // zeichnen
+  function px(x,y,col){ c.fillStyle=col; c.fillRect(x,y,1,1); }
+  for(let y=0;y<G;y++)for(let x=0;x<G;x++){
+    const v=grid[y][x]; if(!v) continue;
+    let col=base;
+    if(v===2) col=light; else if(v===3) col='#ffcf5a';
+    // Schattierung unten
+    if(y>cy+2 && v===1) col=dark;
+    // Highlight oben
+    if(y<cy-1 && v===1) col=light;
+    px(x,y,col);
+    // Outline
+    if(x>0&&!grid[y][x-1]) px(x-1,y,dark);
+    if(x<G-1&&!grid[y][x+1]) px(x+1,y,dark);
+    if(y>0&&!grid[y-1][x]) px(x,y-1,dark);
+    if(y<G-1&&!grid[y+1][x]) px(x,y+1,dark);
+  }
+  // Augen
+  px(6,8,white); px(6,8,eye); px(6,8,eye);
+  c.fillStyle=eye; c.fillRect(6,8,1,1); c.fillRect(10,8,1,1);
+  c.fillStyle=white; c.fillRect(6,7,1,1); c.fillRect(10,7,1,1);
+  // Mund
+  c.fillStyle=dark; c.fillRect(7,11,3,1);
+  spriteCache[speciesKey]=cv; return cv;
+}
+function drawCreature(speciesKey, x, y, size, flip){
+  const key='cre_'+speciesKey;
+  // bevorzugt das generierte 16-bit-Sprite, sonst prozeduraler Fallback
+  const s = imgReady(key) ? IMG[key] : makeCreatureSprite(speciesKey);
+  CTX.save();
+  CTX.imageSmoothingEnabled=false;
+  if(flip){ CTX.translate(Math.round(x)+size,Math.round(y)); CTX.scale(-1,1); CTX.drawImage(s,0,0,size,size); }
+  else { CTX.drawImage(s,Math.round(x),Math.round(y),size,size); }
+  CTX.restore();
+}
+
+/* =========================================================================
+   PIXEL-ART: Charakter-Sprites (Spieler/NPC), 16x16, 4 Richtungen
+   ========================================================================= */
+function drawCharacter(x,y,dir,frame,palette){
+  const skin=palette.skin||'#f0c090', hair=palette.hair||'#5a3a1a',
+        shirt=palette.shirt||'#d24b4b', pants=palette.pants||'#33384a', shoe='#222';
+  const c=CTX;
+  function r(px,py,w,h,col){ c.fillStyle=col; c.fillRect(Math.floor(x)+px,Math.floor(y)+py,w,h); }
+  // Beine (Lauf-Animation)
+  const step = frame%2===0?0:1;
+  r(4,12,3,3,pants); r(9,12,3,3,pants);
+  if(dir==='down'||dir==='up'){ r(4,14+step,3,2,shoe); r(9,14-step,3,2,shoe); }
+  else { r(5,14,4,2,shoe); }
+  // Körper
+  r(3,7,10,6,shirt);
+  // Kopf
+  r(4,1,8,7,skin);
+  // Haare
+  r(3,0,10,3,hair);
+  if(dir==='down'){ r(3,1,2,4,hair); r(11,1,2,4,hair);
+    c.fillStyle='#222'; c.fillRect(x+5,y+4,1,2); c.fillRect(x+10,y+4,1,2); }
+  else if(dir==='up'){ r(3,1,10,6,hair); }
+  else if(dir==='left'){ r(3,1,3,5,hair); c.fillStyle='#222'; c.fillRect(x+5,y+4,1,2); }
+  else if(dir==='right'){ r(10,1,3,5,hair); c.fillStyle='#222'; c.fillRect(x+10,y+4,1,2); }
+}
+
+/* =========================================================================
+   TILES / KARTEN
+   ========================================================================= */
+// Tile-Eigenschaften: solid (blockt), encounter (wildes wesen), warpchar handled per-map
+const TILE_DEF = {
+  '.':{name:'gras', solid:false},
+  ',':{name:'hochgras', solid:false, encounter:true},
+  '=':{name:'weg', solid:false},
+  'F':{name:'blume', solid:false},
+  '#':{name:'baum', solid:true},
+  'R':{name:'fels', solid:true},
+  'W':{name:'wasser', solid:true},
+  'H':{name:'hauswand', solid:true},
+  'D':{name:'tuer', solid:false, warp:true},
+  'S':{name:'schild', solid:true},
+  'L':{name:'kante', solid:false, ledge:true},
+  ' ':{name:'boden', solid:false},
+  'C':{name:'theke', solid:true},
+  'B':{name:'wand', solid:true},
+  '*':{name:'hoehlenwand', solid:true},
+  '+':{name:'hoehlenboden', solid:false},
+  'P':{name:'hoehlengras', solid:false, encounter:true},
+  '~':{name:'bodenmatte', solid:false},
+  'M':{name:'moebel', solid:true},
+  'O':{name:'felsboden', solid:false}
+};
+
+// Zeichnet eine an Weltkoordinaten verankerte Kachel aus einer nahtlosen
+// Textur, sodass benachbarte Kacheln ein durchgehendes Bodenbild ergeben.
+function drawGround(imgKey, sx, sy, x, y){
+  const im=IMG[imgKey];
+  if(!(im && im.complete && im.naturalWidth>0)) return false;
+  const tw=im.naturalWidth, th=im.naturalHeight, T=TILE;
+  const ox=((x*T)%tw+tw)%tw, oy=((y*T)%th+th)%th;
+  CTX.imageSmoothingEnabled=false;
+  const w1=Math.min(T,tw-ox), h1=Math.min(T,th-oy);
+  CTX.drawImage(im, ox,oy,w1,h1, sx,sy,w1,h1);
+  if(w1<T) CTX.drawImage(im, 0,oy, T-w1,h1, sx+w1,sy, T-w1,h1);
+  if(h1<T) CTX.drawImage(im, ox,0, w1,T-h1, sx,sy+h1, w1,T-h1);
+  if(w1<T&&h1<T) CTX.drawImage(im, 0,0, T-w1,T-h1, sx+w1,sy+h1, T-w1,T-h1);
+  return true;
+}
+// Jahreszeiten-/Schnee-Tönung über eine texturierte Bodenkachel
+function seasonTint(sx,sy,season){
+  if(season===2){ CTX.fillStyle='rgba(170,120,40,0.28)'; CTX.fillRect(sx,sy,TILE,TILE); }
+  else if(season===3){ CTX.fillStyle='rgba(230,238,245,0.62)'; CTX.fillRect(sx,sy,TILE,TILE); }
+}
+// Tile-Zeichner. season + nightAmt beeinflussen Optik.
+function drawTile(ch, sx, sy, season, x, y){
+  const c=CTX;
+  function fill(col){ c.fillStyle=col; c.fillRect(sx,sy,TILE,TILE); }
+  const winter = (season===3);
+  const autumn = (season===2);
+  switch(ch){
+    case '.': case 'F': case ',':{
+      if(drawGround('t_grass',sx,sy,x,y)){
+        if(ch===','){ // Hochgras-Büschel als Overlay, leicht wiegend
+          c.fillStyle = winter? '#a9c0aa' : (autumn? '#7e8a3a':'#2f6b28');
+          const sw=Math.round(Math.sin(Date.now()/350 + x*0.7 + y*0.4));
+          for(let i=0;i<6;i++){ const px=sx+2+(i*2)%TILE, py=sy+6+((i*3)%8); c.fillRect(px+sw,py,2,6); }
+        }
+        if(ch==='F'&&!winter){ c.fillStyle=autumn?'#d98b3a':'#f2d54b'; c.fillRect(sx+6,sy+6,4,4); c.fillStyle='#fff'; c.fillRect(sx+7,sy+7,2,2); }
+        seasonTint(sx,sy,season);
+        break;
+      }
+      let g1='#6db04f', g2='#5da043';
+      if(season===1){ g1='#7cc057'; g2='#69ad48'; }      // Sommer
+      else if(autumn){ g1='#9a9a4a'; g2='#8a8a40'; }      // Herbst
+      else if(winter){ g1='#d8e2e8'; g2='#c8d4dc'; }      // Winter (Schnee)
+      fill(g1);
+      c.fillStyle=g2;
+      for(let i=0;i<4;i++){ const px=sx+((x*7+i*5)%TILE), py=sy+((y*5+i*4)%TILE); c.fillRect(px,py,2,2); }
+      if(ch===','){ // Hochgras, leicht wiegend
+        c.fillStyle = winter? '#a9c0aa' : (autumn? '#7e8a3a':'#3f7d33');
+        const sw=Math.round(Math.sin(Date.now()/350 + x*0.7 + y*0.4));
+        for(let i=0;i<6;i++){ const px=sx+2+(i*2)%TILE, py=sy+6+((i*3)%8); c.fillRect(px+sw,py,2,6); }
+      }
+      if(ch==='F'&&!winter){ c.fillStyle=autumn?'#d98b3a':'#e8d24b'; c.fillRect(sx+6,sy+6,3,3); c.fillStyle='#fff'; c.fillRect(sx+7,sy+7,1,1); }
+      break;
+    }
+    case '=':{
+      if(drawGround('t_path',sx,sy,x,y)){ seasonTint(sx,sy,season); break; }
+      fill(winter?'#d2c9b8':'#caa873'); c.fillStyle=winter?'#c2b9a8':'#b89863';
+      c.fillRect(sx,sy,TILE,2); c.fillRect(sx,sy+TILE-2,TILE,2);
+      break;
+    }
+    case '#':{
+      if(!drawGround('t_grass',sx,sy,x,y)) fill(winter?'#d8e2e8':'#5da043');
+      else seasonTint(sx,sy,season);
+      // Baum auf Grasbasis
+      c.fillStyle=winter?'#dfe8ee':(autumn?'#c07a2a':'#2f7a2a'); c.fillRect(sx+2,sy,12,11);
+      c.fillStyle=winter?'#eef4f8':(autumn?'#d89446':'#3a8a34'); c.fillRect(sx+4,sy+2,8,6);
+      c.fillStyle='#6b4a2a'; c.fillRect(sx+6,sy+11,4,5);
+      break;
+    }
+    case 'R': case '*':{
+      fill('#7a6f5e'); c.fillStyle='#6a5f4e'; c.fillRect(sx+2,sy+2,12,12);
+      c.fillStyle='#8a7f6e'; c.fillRect(sx+3,sy+3,5,5);
+      c.fillStyle='#5a4f3e'; c.fillRect(sx+9,sy+9,4,4);
+      break;
+    }
+    case 'W':{
+      if(drawGround('t_water',sx,sy,x,y)){
+        const t=Date.now()/600; // dezenter Glanz als Overlay
+        c.fillStyle='rgba(180,220,255,0.5)'; c.fillRect(sx+2+((Math.sin(t+x)*2)|0),sy+2,3,1);
+        break;
+      }
+      const t=Date.now()/600;
+      fill('#3a7fc4'); c.fillStyle='#4a90d9';
+      for(let i=0;i<3;i++){ const py=sy+3+i*5+Math.sin(t+x+i)*1; c.fillRect(sx+2,py,12,2); }
+      c.fillStyle='#7ab0e8'; c.fillRect(sx+2+((Math.sin(t+x)*2)|0),sy+2,3,1);
+      break;
+    }
+    case 'H':{ fill('#b56a4a'); c.fillStyle='#a25a3a'; c.fillRect(sx,sy,TILE,2); for(let i=0;i<TILE;i+=4)c.fillRect(sx+i,sy,1,TILE); break; }
+    case 'B':{ fill('#6a6f7a'); c.fillStyle='#5a5f6a'; for(let i=0;i<TILE;i+=4)c.fillRect(sx,sy+i,TILE,1); break; }
+    case 'D':{ fill('#6a4a2a'); c.fillStyle='#4a3a1a'; c.fillRect(sx+3,sy+1,10,15); c.fillStyle='#e8d24b'; c.fillRect(sx+10,sy+8,2,2); break; }
+    case 'S':{ fill(winter?'#d8e2e8':'#6db04f'); c.fillStyle='#8a6a3a'; c.fillRect(sx+3,sy+8,10,5); c.fillStyle='#6a4a2a'; c.fillRect(sx+7,sy+11,2,4); break; }
+    case 'L':{ fill('#caa873'); c.fillStyle='#8a6a3a'; c.fillRect(sx,sy+TILE-4,TILE,4); c.fillStyle='#6a4a2a'; c.fillRect(sx,sy+TILE-2,TILE,2); break; }
+    case ' ':{ fill('#d8cfc0'); c.fillStyle='#cec5b6'; if((x+y)%2===0)c.fillRect(sx,sy,TILE,TILE); c.fillStyle='#c8bfb0'; c.fillRect(sx,sy,TILE,1); break; }
+    case '~':{ fill('#c25a5a'); c.fillStyle='#b24a4a'; c.fillRect(sx+1,sy+1,TILE-2,TILE-2); c.fillStyle='#d26a6a'; c.fillRect(sx+3,sy+3,2,2); break; }
+    case 'C':{ fill('#8a6a3a'); c.fillStyle='#6a4a2a'; c.fillRect(sx,sy,TILE,3); c.fillStyle='#a07a4a'; c.fillRect(sx+1,sy+4,TILE-2,TILE-5); break; }
+    case 'M':{ fill('#d8cfc0'); c.fillStyle='#7a5a8a'; c.fillRect(sx+2,sy+2,12,12); c.fillStyle='#9a7aaa'; c.fillRect(sx+3,sy+3,10,4); break; }
+    case '+': case 'O':{ if(drawGround('t_cave',sx,sy,x,y)) break; fill('#4a4640'); c.fillStyle='#423e38'; for(let i=0;i<3;i++){ c.fillRect(sx+((x*5+i*4)%TILE),sy+((y*4+i*3)%TILE),2,2);} break; }
+    case 'P':{ if(!drawGround('t_cave',sx,sy,x,y)) fill('#4a4640'); c.fillStyle='#3a5a3a'; const sw=Math.round(Math.sin(Date.now()/350 + x*0.7 + y*0.4)); for(let i=0;i<5;i++){ c.fillRect(sx+2+(i*2)%TILE+sw, sy+6+((i*3)%8),2,6);} break; }
+    default: fill('#000');
+  }
+}
+
+/* =========================================================================
+   KARTEN-DEFINITIONEN
+   Jede Karte: grid (Array von Strings), warps[], npcs[], encounters{season:[{s,min,max,w}]}, music, indoor, dark
+   ========================================================================= */
+const MAPS = {};
+
+// --- HEIMATDORF: Moosheim ---
+MAPS.moosheim = {
+  music:'town', indoor:false,
+  grid:[
+    "###########################",
+    "#......FF........FF.......#",
+    "#..HHHHH....=....HHHHH....#",
+    "#..HHDHH....=....HHDHH....#",
+    "#...=.......=.......=.....#",
+    "#...=.......=.......=.....#",
+    "#FF.========+========.FF..#",
+    "#...........=.............#",
+    "#....HHHHH..=....S........#",
+    "#....HHDHH..=.............#",
+    "#......=....=......FF.....#",
+    "#......=....=.............#",
+    "#......======............#",
+    "#........,,,,,..#####.....#",
+    "#........,,,,,..#####.....#",
+    "#######=====###############"
+  ],
+  warps:[
+    {x:5,y:3, to:'spielerhaus', tx:4, ty:7},       // Spielerhaus
+    {x:18,y:3, to:'rivalenhaus', tx:4, ty:7},      // Rivalenhaus
+    {x:6,y:9, to:'labor', tx:6, ty:9},             // Labor von Prof. Farn
+    {x:7,y:15, to:'pfad1', tx:14, ty:1},           // Süd-Ausgang zum Pfad 1
+  ],
+  npcs:[
+    {x:14,y:7, dir:'down', palette:{shirt:'#4b7bd2',hair:'#3a2a1a'}, name:'Dorfbewohner',
+     lines:['Willkommen in Moosheim!','Hier beginnt die Reise jedes Wesen-Forschers.']},
+    {x:20,y:10, dir:'left', palette:{shirt:'#3aa05a',hair:'#5a3a1a'}, name:'Großmutter',
+     lines:['Pass auf dich auf im hohen Gras im Süden.','Dort lauern wilde Wesen!']},
+    {x:9,y:13, dir:'up', palette:{shirt:'#d2a04b',hair:'#222'}, name:'Kind',
+     lines:['Im hohen Gras hüpft es manchmal!','Aber ich trau mich nicht rein...']}
+  ],
+  signs:{ '18,8':'» MOOSHEIM «\nEin ruhiges Dorf am Rand der Velora-Region.' },
+  encounters:{}
+};
+
+// --- Spielerhaus (innen) ---
+MAPS.spielerhaus = {
+  music:'town', indoor:true,
+  grid:[
+    "BBBBBBBBB",
+    "B M   M B",
+    "B       B",
+    "B  ~~~  B",
+    "B  ~~~  B",
+    "B       B",
+    "B       B",
+    "BBBBDBBBB"
+  ],
+  warps:[ {x:4,y:7, to:'moosheim', tx:5, ty:4} ],
+  npcs:[
+    {x:2,y:2, dir:'down', palette:{shirt:'#c45a8a',hair:'#7a4a2a'}, name:'Mutter',
+     lines:['Guten Morgen, Liebes!','Professorin Farn hat nach dir gefragt.','Geh ruhig zu ihrem Labor im Westen.']}
+  ],
+  signs:{}, encounters:{}
+};
+
+// --- Rivalenhaus (innen) ---
+MAPS.rivalenhaus = {
+  music:'town', indoor:true,
+  grid:[
+    "BBBBBBBBB",
+    "B M   M B",
+    "B       B",
+    "B  ~~~  B",
+    "B       B",
+    "B       B",
+    "BBBBDBBBB"
+  ],
+  warps:[ {x:4,y:6, to:'moosheim', tx:18, ty:4} ],
+  npcs:[
+    {x:5,y:2, dir:'left', palette:{shirt:'#5a8ad2',hair:'#c0a030'}, name:'Kjells Schwester',
+     lines:['Kjell ist schon zur Professorin gerannt.','Er will unbedingt das erste Wesen!']}
+  ],
+  signs:{}, encounters:{}
+};
+
+// --- Labor von Professorin Farn ---
+MAPS.labor = {
+  music:'town', indoor:true,
+  grid:[
+    "BBBBBBBBBBBBB",
+    "B M M  CCCC B",
+    "B          B".replace('B','B'),
+    "B   ~~~    B",
+    "B   ~~~    B",
+    "B          B",
+    "B  M    M  B",
+    "B          B",
+    "BBBBBDBBBBBB"
+  ],
+  warps:[ {x:5,y:8, to:'moosheim', tx:6, ty:10} ],
+  npcs:[
+    {x:6,y:1, dir:'down', palette:{shirt:'#e8e8e8',hair:'#9a9a9a'}, name:'Professorin Farn', special:'prof',
+     lines:['Ah, da bist du ja! Ich bin Professorin Farn.','Ich erforsche die Wesen von Velora.','Such dir ein Wesen aus — es wird dein Partner!']}
+  ],
+  signs:{}, encounters:{}
+};
+
+// --- PFAD 1 (Route mit Wald/Wiese) ---
+MAPS.pfad1 = {
+  music:'overworld', indoor:false,
+  grid:[
+    "######=======##############",
+    "#####.=......#.....#######.#",
+    "###...=,,,,..#..,,,,...###.#",
+    "#.....=,,,,..=..,,,,......##",
+    "#..#..======+======..#....#",
+    "#..#...#....=.....#...#..#.#",
+    "#.....,,,...=...,,,,..#....#",
+    "#.....,,,...=...,,,,..#..#.#",
+    "#..#..======+=====...#....#",
+    "#.....=.....=....#........##",
+    "#..S..=,,,..=..,,,,..####..#",
+    "#.....=,,,..=..,,,,.......##",
+    "#.....======+======......##",
+    "#...........=............#",
+    "######======================"
+  ],
+  warps:[
+    {x:14,y:0, to:'moosheim', tx:7, ty:14},   // Nord -> Heimatdorf
+    {x:12,y:14, to:'lindgruen', tx:13, ty:1}, // Süd -> Stadt Lindgrün
+  ],
+  npcs:[
+    {x:7,y:6, dir:'right', palette:{shirt:'#c0a030',hair:'#c0a030'}, name:'Wanderer Tim', special:'rival_pfad',
+     trainer:{ name:'Wanderer Tim', team:[['muffel',5],['piepser',5]], reward:300,
+       intro:['Hey! Lust auf ein Duell?'], win:['Stark! Du wirst es weit bringen.'], lose:['Übe noch ein wenig!'] }},
+    {x:18,y:11, dir:'up', palette:{shirt:'#3aa05a',hair:'#222'}, name:'Käfersammlerin',
+     trainer:{ name:'Sammlerin Lia', team:[['blattling',6],['muffel',6]], reward:360,
+       intro:['Meine Wesen sind im hohen Gras gewachsen!'], win:['Oje, ihr wart zu stark.'], lose:['Hihi, weiter sammeln!'] }}
+  ],
+  signs:{ '3,10':'» PFAD 1 «\nMoosheim ↑   Lindgrün ↓\nVorsicht: wilde Wesen im Gras.' },
+  encounters:{
+    0:[ {s:'muffel',min:3,max:5,w:35},{s:'piepser',min:3,max:5,w:25},{s:'blattling',min:3,max:6,w:25},{s:'zappel',min:4,max:6,w:15} ], // Frühling
+    1:[ {s:'muffel',min:3,max:5,w:30},{s:'piepser',min:3,max:5,w:30},{s:'zappel',min:4,max:6,w:25},{s:'blattling',min:3,max:6,w:15} ], // Sommer
+    2:[ {s:'muffel',min:3,max:6,w:35},{s:'blattling',min:4,max:7,w:30},{s:'piepser',min:3,max:5,w:20},{s:'klumpf',min:4,max:6,w:15} ], // Herbst
+    3:[ {s:'muffel',min:3,max:6,w:40},{s:'klumpf',min:4,max:6,w:30},{s:'piepser',min:3,max:5,w:20},{s:'nachtflatter',min:4,max:6,w:10} ] // Winter
+  }
+};
+
+// --- STADT LINDGRÜN (Prüfhalle Pflanze) ---
+MAPS.lindgruen = {
+  music:'town', indoor:false,
+  grid:[
+    "#############=#############",
+    "#....FF.....=.....FF......#",
+    "#..HHHHHH..====..HHHHHH...#",
+    "#..HHDHHH..=..=..HHDHHH...#",
+    "#....=.....=..=....=......#",
+    "#....=.....=..=....=......#",
+    "#....========+========....#",
+    "#............=...........#",
+    "#...HHHHHHH..=...S........#",
+    "#...HHHDHHH..=............#",
+    "#.....=......=....FF......#",
+    "#.....=......=...........#",
+    "#FF...========+======....#",
+    "#............=...........#",
+    "############=##############"
+  ],
+  warps:[
+    {x:13,y:0, to:'pfad1', tx:12, ty:13},        // Nord -> Pfad1
+    {x:5,y:3, to:'heilstation', tx:5, ty:7, ret:'lindgruen', rx:5, ry:4},   // Heilstation
+    {x:18,y:3, to:'shop', tx:4, ty:6, ret:'lindgruen', rx:18, ry:4},        // Shop
+    {x:7,y:9, to:'pruefhalle1', tx:6, ty:13},    // Prüfhalle Pflanze
+    {x:11,y:14, to:'felsschlucht', tx:3, ty:1},  // Süd -> Höhle
+  ],
+  npcs:[
+    {x:14,y:7, dir:'down', palette:{shirt:'#3aa05a',hair:'#3a2a1a'}, name:'Stadtbewohner',
+     lines:['Lindgrün ist berühmt für seine Pflanzen-Prüfhalle.','Hallenleiterin Mira wartet schon!']},
+    {x:6,y:8, dir:'down', palette:{shirt:'#5a8ad2',hair:'#7a4a2a'}, name:'Heilerin-Hinweis',
+     lines:['Im Haus mit dem roten Dach kannst du','deine Wesen kostenlos heilen lassen.']}
+  ],
+  signs:{ '17,8':'» LINDGRÜN «\nStadt der grünen Dächer.\nSüden: Felsschlucht-Höhle.' },
+  encounters:{}
+};
+
+// --- Heilstation (gemeinsam genutzt) ---
+MAPS.heilstation = {
+  music:'town', indoor:true, heal:true,
+  grid:[
+    "BBBBBBBBBBB",
+    "B  CCCCC  B",
+    "B         B",
+    "B         B",
+    "B M     M B",
+    "B         B",
+    "BBBBBDBBBBB"
+  ],
+  warps:[ {x:5,y:6, dynamicReturn:true} ],
+  npcs:[
+    {x:4,y:1, dir:'down', palette:{shirt:'#e85a7a',hair:'#c43a5a'}, name:'Pflegerin', special:'nurse',
+     lines:['Willkommen in der Heilstation!','Sollen deine Wesen geheilt werden?']}
+  ],
+  signs:{}, encounters:{}
+};
+
+// --- Shop (gemeinsam genutzt) ---
+MAPS.shop = {
+  music:'town', indoor:true, shop:true,
+  grid:[
+    "BBBBBBBBB",
+    "B CCCCC B",
+    "B       B",
+    "B       B",
+    "B M   M B",
+    "BBBBDBBBB"
+  ],
+  warps:[ {x:4,y:5, dynamicReturn:true} ],
+  npcs:[
+    {x:4,y:1, dir:'down', palette:{shirt:'#4b8bd2',hair:'#3a2a1a'}, name:'Verkäufer', special:'shop',
+     lines:['Willkommen im Wesen-Laden!','Was darf es sein?']}
+  ],
+  signs:{}, encounters:{}
+};
+
+// --- Prüfhalle 1: Pflanze (Leiterin Mira) ---
+MAPS.pruefhalle1 = {
+  music:'town', indoor:true,
+  grid:[
+    "BBBBBBBBBBBBB",
+    "B    Mira   B",
+    "B   ,,,,,   B",
+    "B   ,,,,,   B",
+    "B           B",
+    "B   ,,,,,   B",
+    "B   ,,,,,   B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "BBBBBDBBBBBBB"
+  ],
+  warps:[ {x:5,y:12, to:'lindgruen', tx:7, ty:10} ],
+  npcs:[
+    {x:6,y:1, dir:'down', palette:{shirt:'#3aa05a',hair:'#2a7a3a'}, name:'Hallenleiterin Mira', special:'leader1',
+     trainer:{ name:'Hallenleiterin Mira', team:[['blattling',10],['sprossknu',12]], reward:1500, leader:true, badge:'Blatt-Emblem', music:'boss',
+       intro:['Ich bin Mira, Leiterin der Pflanzen-Halle.','Zeig mir die Kraft eurer Bande!'],
+       win:['Beeindruckend! Hier — das Blatt-Emblem gehört dir.'],
+       lose:['Die Wurzeln meiner Wesen sind tief. Komm wieder!'] }},
+    {x:3,y:6, dir:'right', palette:{shirt:'#5aa05a',hair:'#3a2a1a'}, name:'Hallen-Schüler',
+     trainer:{ name:'Schüler Ben', team:[['blattling',8]], reward:400,
+       intro:['Niemand kommt an Mira vorbei!'], win:['Du bist gut...'], lose:['Mira ist unschlagbar!'] }}
+  ],
+  signs:{}, encounters:{}
+};
+
+// --- FELSSCHLUCHT (Höhle) ---
+MAPS.felsschlucht = {
+  music:'cave', indoor:true, dark:true,
+  grid:[
+    "*************************",
+    "*++O+++*****++++++++++++*",
+    "*+PPP++*****++PPPP++++++*",
+    "*+PPP++++++++PPPP+++O++*",
+    "*++++++*****++++++++++++*",
+    "*****++*****+****+++****",
+    "*++++++++O+++****+++****",
+    "*+PPP+++++++++++++++++O*",
+    "*+PPP++****+++PPPP++++++*",
+    "*++++++****+++PPPP++++++*",
+    "*++O+++****+++++++++++++*",
+    "*++++++++++++++++++D++++*",
+    "*************************"
+  ],
+  warps:[
+    {x:3,y:1, to:'lindgruen', tx:11, ty:13},     // Nord -> Lindgrün
+    {x:18,y:11, to:'wogenfels', tx:13, ty:1},    // Süd-Ost -> Wogenfels
+  ],
+  npcs:[
+    {x:9,y:6, dir:'down', palette:{shirt:'#3a3a4a',hair:'#1a1a1a'}, name:'Orden-Schergin', special:'orden1',
+     trainer:{ name:'Orden-Schergin', team:[['nachtflatter',12],['klumpf',12]], reward:800, music:'boss',
+       intro:['Der Orden Nyx kontrolliert bald jede Höhle Veloras!','Verschwinde — oder kämpfe!'],
+       win:['Tss... das war nur ein Vorgeschmack.'],
+       lose:['Hahaha! Der Orden Nyx siegt immer!'] }}
+  ],
+  signs:{}, encounters:{
+    0:[ {s:'klumpf',min:8,max:11,w:40},{s:'aschling',min:8,max:11,w:25},{s:'kristallit',min:9,max:12,w:20},{s:'nachtflatter',min:8,max:11,w:15} ],
+    1:[ {s:'klumpf',min:8,max:11,w:40},{s:'aschling',min:9,max:12,w:30},{s:'kristallit',min:9,max:12,w:20},{s:'nachtflatter',min:8,max:11,w:10} ],
+    2:[ {s:'klumpf',min:9,max:12,w:40},{s:'kristallit',min:9,max:12,w:25},{s:'aschling',min:8,max:11,w:20},{s:'nachtflatter',min:9,max:12,w:15} ],
+    3:[ {s:'klumpf',min:9,max:13,w:35},{s:'kristallit',min:10,max:13,w:25},{s:'nachtflatter',min:9,max:12,w:25},{s:'aschling',min:8,max:11,w:15} ]
+  }
+};
+
+// --- STADT WOGENFELS (Prüfhalle Wasser + Finale) ---
+MAPS.wogenfels = {
+  music:'town', indoor:false,
+  grid:[
+    "#############=#############",
+    "#....FF.....=.....FF......#",
+    "#..HHHHHH..====..HHHHHH...#",
+    "#..HHDHHH..=..=..HHDHHH...#",
+    "#....=.....=..=....=......#",
+    "#WWW.=.....=..=....=..WWW.#",
+    "#WWW.========+========.WW.#",
+    "#WWW.........=........WWW.#",
+    "#...HHHHHHH..=...S........#",
+    "#...HHHDHHH..=............#",
+    "#.....=......=....FF......#",
+    "#.....=......======......#",
+    "#FF...=...........=...HHH.#",
+    "#.....=...........=..HHDH.#",
+    "###########################"
+  ],
+  warps:[
+    {x:13,y:0, to:'felsschlucht', tx:18, ty:11},                          // Nord -> Höhle
+    {x:5,y:3, to:'heilstation', tx:5, ty:7, ret:'wogenfels', rx:5, ry:4},
+    {x:18,y:3, to:'shop', tx:4, ty:6, ret:'wogenfels', rx:18, ry:4},
+    {x:7,y:9, to:'pruefhalle2', tx:6, ty:13},                             // Prüfhalle Wasser
+    {x:22,y:13, to:'pfad3', tx:14, ty:1},                                 // Ost -> Pfad 3 (neue Region)
+  ],
+  npcs:[
+    {x:14,y:7, dir:'down', palette:{shirt:'#4a90d9',hair:'#3a2a1a'}, name:'Hafenbewohner',
+     lines:['Wogenfels lebt vom Meer.','Doch der Orden Nyx hat sich im Osten verschanzt!']},
+    {x:9,y:11, dir:'up', palette:{shirt:'#5a8ad2',hair:'#c0a030'}, name:'Späher',
+     lines:['Die Wasser-Halle von Leiter Tarek ist hart.','Heil deine Wesen vorher!']}
+  ],
+  signs:{ '17,8':'» WOGENFELS «\nHafenstadt am Westmeer.\nOsten: Küstenpfad nach Sturmkliff.' },
+  encounters:{}
+};
+
+// --- Prüfhalle 2: Wasser (Leiter Tarek) ---
+MAPS.pruefhalle2 = {
+  music:'town', indoor:true,
+  grid:[
+    "BBBBBBBBBBBBB",
+    "B   Tarek   B",
+    "B   WWWWW   B",
+    "B   W   W   B",
+    "B   W   W   B",
+    "B   WWWWW   B",
+    "B           B",
+    "B   WW WW   B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "BBBBBDBBBBBBB"
+  ],
+  warps:[ {x:5,y:12, to:'wogenfels', tx:7, ty:10} ],
+  npcs:[
+    {x:6,y:1, dir:'down', palette:{shirt:'#4a90d9',hair:'#2a5a9a'}, name:'Hallenleiter Tarek', special:'leader2',
+     trainer:{ name:'Hallenleiter Tarek', team:[['tröpflin',14],['aqualon',16,'ueberreste']], reward:2200, leader:true, badge:'Wogen-Emblem', music:'boss',
+       intro:['Ich bin Tarek, Meister der Wasser-Halle.','Meine Flut wird dich fortspülen!'],
+       win:['Eine starke Strömung treibt dich an. Nimm das Wogen-Emblem!'],
+       lose:['Komm wieder, wenn deine Wesen stärker sind.'] }},
+    {x:3,y:7, dir:'right', palette:{shirt:'#5a90c0',hair:'#3a2a1a'}, name:'Hallen-Schüler',
+     trainer:{ name:'Schülerin Noa', team:[['tröpflin',13]], reward:520,
+       intro:['Wasser ist geduldig — aber unaufhaltsam!'], win:['Beachtlich!'], lose:['Tarek wird dich aufhalten!'] }}
+  ],
+  signs:{}, encounters:{}
+};
+
+// --- ORDEN-BASIS (Finale, Boss Nox) ---
+MAPS.ordenbasis = {
+  music:'cave', indoor:true, dark:true,
+  grid:[
+    "BBBBBBBBBBB",
+    "B*  ~~~  *B",
+    "B  *   *  B",
+    "B ~~~~~~~ B",
+    "B  *   *  B",
+    "B *     * B",
+    "B ~~~~~~~ B",
+    "B  *   *  B",
+    "B         B",
+    "B         B",
+    "B         B",
+    "BBBBBDBBBBB"
+  ],
+  warps:[ {x:5,y:11, to:'wolkenburg', tx:11, ty:13} ],
+  npcs:[
+    {x:5,y:5, dir:'down', palette:{shirt:'#2a2a3a',hair:'#1a1a1a'}, name:'Schergin',
+     trainer:{ name:'Orden-Schergin', team:[['nachtflatter',16],['muffrat',16]], reward:1200, music:'boss',
+       intro:['Du kommst nicht an Anführerin Nox vorbei!'], win:['Unmöglich...'], lose:['Der Orden Nyx ist überall!'] }},
+    {x:5,y:1, dir:'down', palette:{shirt:'#1a1a2a',hair:'#6a2a6a'}, name:'Anführerin Nox', special:'boss',
+     trainer:{ name:'Orden-Anführerin Nox', team:[['nachtflatter',18],['felsbrocker',19],['sturmaar',20],['voltik',22,'ueberreste']], reward:5000, boss:true, music:'boss',
+       intro:['Also bist du der lästige Forscher.','Ich bin Nox, Anführerin des Orden Nyx!','Mit der Macht der wilden Wesen beherrsche ich Velora!'],
+       win:['...Unglaublich. Die Bande zu deinen Wesen ist echte Stärke.','Der Orden Nyx löst sich auf. Velora ist frei!'],
+       lose:['Hahaha! Die Dunkelheit verschlingt Velora!'] }}
+  ],
+  signs:{}, encounters:{}
+};
+
+// --- PFAD 3 (Küstenroute östlich von Wogenfels) ---
+MAPS.pfad3 = {
+  music:'overworld', indoor:false,
+  grid:[
+    "######=======##############",
+    "#####.=......#.....#######.#",
+    "###...=,,,,..#..,,,,...###.#",
+    "#.....=,,,,..=..,,,,......##",
+    "#..#..======+======..#....#",
+    "#..#...#....=.....#...#..#.#",
+    "#.....,,,...=...,,,,..#....#",
+    "#.....,,,...=...,,,,..#..#.#",
+    "#..#..======+=====...#....#",
+    "#.....=.....=....#........##",
+    "#..S..=,,,..=..,,,,..####..#",
+    "#.....=,,,..=..,,,,.......##",
+    "#.....======+======......##",
+    "#...........=............#",
+    "######======================"
+  ],
+  warps:[
+    {x:14,y:0, to:'wogenfels', tx:13, ty:1},       // Nord -> Wogenfels (sichere Eingangskachel)
+    {x:12,y:14, to:'sturmkliff', tx:13, ty:1}      // Süd -> Sturmkliff
+  ],
+  npcs:[
+    {x:7,y:6, dir:'right', palette:{shirt:'#e0c233',hair:'#222'}, name:'Klippen-Trainer',
+     trainer:{ name:'Segler Nilo', team:[['wölkchen',15],['funkel',16]], reward:900,
+       intro:['Die Seeluft macht meine Wesen flink!'], win:['Pah, guter Wind für dich.'], lose:['Immer schön gegen den Wind!'] }},
+    {x:18,y:11, dir:'up', palette:{shirt:'#7a7a8a',hair:'#3a2a1a'}, name:'Wanderin',
+     trainer:{ name:'Geologin Per', team:[['geoll',16],['klumpf',15]], reward:880,
+       intro:['Im Pass findet man die härtesten Brocken!'], win:['Beachtlich.'], lose:['Stein schlägt Schere!'] }}
+  ],
+  signs:{ '3,10':'» PFAD 3 «\nWogenfels ↑   Sturmkliff ↓\nWind und Funken liegen in der Luft.' },
+  encounters:{
+    0:[ {s:'piepser',min:13,max:16,w:22},{s:'funkel',min:14,max:17,w:24},{s:'wölkchen',min:13,max:16,w:24},{s:'geoll',min:14,max:17,w:16},{s:'zappel',min:13,max:16,w:14} ]
+  }
+};
+
+// --- STADT STURMKLIFF (Prüfhalle Elektro) ---
+MAPS.sturmkliff = {
+  music:'town', indoor:false,
+  grid:[
+    "#############=#############",
+    "#....FF.....=.....FF......#",
+    "#..HHHHHH..====..HHHHHH...#",
+    "#..HHDHHH..=..=..HHDHHH...#",
+    "#....=.....=..=....=......#",
+    "#....=.....=..=....=......#",
+    "#....========+========....#",
+    "#............=...........#",
+    "#...HHHHHHH..=...S........#",
+    "#...HHHDHHH..=............#",
+    "#.....=......=....FF......#",
+    "#.....=......=...........#",
+    "#FF...========+======....#",
+    "#............=...........#",
+    "############=##############"
+  ],
+  warps:[
+    {x:13,y:0, to:'pfad3', tx:12, ty:13},                                   // Nord -> Pfad 3
+    {x:5,y:3, to:'heilstation', tx:5, ty:7, ret:'sturmkliff', rx:5, ry:4},  // Heilstation
+    {x:18,y:3, to:'shop', tx:4, ty:6, ret:'sturmkliff', rx:18, ry:4},       // Shop
+    {x:7,y:9, to:'pruefhalle3', tx:6, ty:11},                               // Prüfhalle Elektro
+    {x:11,y:14, to:'pfad4', tx:14, ty:1}                                    // Süd -> Pfad 4 (Aufstieg)
+  ],
+  npcs:[
+    {x:14,y:7, dir:'down', palette:{shirt:'#e0c233',hair:'#3a2a1a'}, name:'Klippenbewohner',
+     lines:['Sturmkliff thront hoch über dem Meer.','Hallenleiterin Juna zähmt hier den Blitz!']},
+    {x:9,y:11, dir:'up', palette:{shirt:'#5a8ad2',hair:'#c0a030'}, name:'Späherin',
+     lines:['Der Pfad südlich steigt hinauf zur Wolkenburg.','Dort wartet die letzte Prüfhalle!']}
+  ],
+  signs:{ '17,8':'» STURMKLIFF «\nStadt über den Klippen.\nSüden: Aufstieg zur Wolkenburg.' },
+  encounters:{}
+};
+
+// --- Prüfhalle 3: Elektro (Leiterin Juna) ---
+MAPS.pruefhalle3 = {
+  music:'town', indoor:true,
+  grid:[
+    "BBBBBBBBBBBBB",
+    "B           B",
+    "B   +++++   B",
+    "B   +   +   B",
+    "B   +   +   B",
+    "B   +++++   B",
+    "B           B",
+    "B   ++ ++   B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "BBBBBDBBBBBBB"
+  ],
+  warps:[ {x:5,y:12, to:'sturmkliff', tx:7, ty:10} ],
+  npcs:[
+    {x:6,y:1, dir:'down', palette:{shirt:'#e0c233',hair:'#d8b53a'}, name:'Hallenleiterin Juna', special:'leader3',
+     trainer:{ name:'Hallenleiterin Juna', team:[['funkel',18],['voltik',20,'kraftband']], reward:3000, leader:true, badge:'Funken-Emblem', music:'boss',
+       intro:['Ich bin Juna, Meisterin der Elektro-Halle.','Spürst du schon das Knistern in der Luft?'],
+       win:['Was für eine Energie! Nimm das Funken-Emblem!'],
+       lose:['Komm wieder, wenn deine Bande heller leuchtet.'] }},
+    {x:3,y:7, dir:'right', palette:{shirt:'#e8d24b',hair:'#3a2a1a'}, name:'Hallen-Schülerin',
+     trainer:{ name:'Schülerin Edda', team:[['zappel',15],['funkel',16]], reward:520,
+       intro:['Juna ist elektrisierend stark!'], win:['Wow, du auch!'], lose:['Bleib geerdet!'] }}
+  ],
+  signs:{}, encounters:{}
+};
+
+// --- PFAD 4 (Aufstieg zur Wolkenburg) ---
+MAPS.pfad4 = {
+  music:'overworld', indoor:false,
+  grid:[
+    "######=======##############",
+    "#####.=......#.....#######.#",
+    "###...=,,,,..#..,,,,...###.#",
+    "#.....=,,,,..=..,,,,......##",
+    "#..#..======+======..#....#",
+    "#..#...#....=.....#...#..#.#",
+    "#.....,,,...=...,,,,..#....#",
+    "#.....,,,...=...,,,,..#..#.#",
+    "#..#..======+=====...#....#",
+    "#.....=.....=....#........##",
+    "#..S..=,,,..=..,,,,..####..#",
+    "#.....=,,,..=..,,,,.......##",
+    "#.....======+======......##",
+    "#...........=............#",
+    "######======================"
+  ],
+  warps:[
+    {x:14,y:0, to:'sturmkliff', tx:11, ty:13},     // Nord -> Sturmkliff
+    {x:12,y:14, to:'wolkenburg', tx:13, ty:1}       // Süd -> Wolkenburg
+  ],
+  npcs:[
+    {x:7,y:6, dir:'right', palette:{shirt:'#9ab8e0',hair:'#222'}, name:'Bergsteiger',
+     trainer:{ name:'Bergsteiger Ron', team:[['sturmaar',18],['geoll',18]], reward:1100,
+       intro:['Nur die Stärksten erreichen die Wolkenburg!'], win:['Du hast den Aufstieg verdient.'], lose:['Kehr um und übe!'] }},
+    {x:18,y:11, dir:'up', palette:{shirt:'#cfe0f0',hair:'#3a2a1a'}, name:'Falknerin',
+     trainer:{ name:'Falknerin Win', team:[['wölkchen',17],['schwingfalk',19]], reward:1050,
+       intro:['Meine Vögel reiten den Aufwind!'], win:['Beachtlicher Flug!'], lose:['Höher hinaus!'] }}
+  ],
+  signs:{ '3,10':'» PFAD 4 «\nSturmkliff ↑   Wolkenburg ↓\nDer Wind wird hier oben rauer.' },
+  encounters:{
+    0:[ {s:'wölkchen',min:16,max:19,w:24},{s:'sturmaar',min:18,max:21,w:14},{s:'nachtflatter',min:16,max:19,w:22},{s:'geoll',min:16,max:19,w:22},{s:'funkel',min:16,max:19,w:18} ]
+  }
+};
+
+// --- STADT WOLKENBURG (Prüfhalle Flug) ---
+MAPS.wolkenburg = {
+  music:'town', indoor:false,
+  grid:[
+    "#############=#############",
+    "#....FF.....=.....FF......#",
+    "#..HHHHHH..====..HHHHHH...#",
+    "#..HHDHHH..=..=..HHDHHH...#",
+    "#....=.....=..=....=......#",
+    "#....=.....=..=....=......#",
+    "#....========+========....#",
+    "#............=...........#",
+    "#...HHHHHHH..=...S........#",
+    "#...HHHDHHH..=............#",
+    "#.....=......=....FF......#",
+    "#.....=......=...........#",
+    "#FF...========+======....#",
+    "#............=...........#",
+    "############=##############"
+  ],
+  warps:[
+    {x:13,y:0, to:'pfad4', tx:12, ty:13},                                    // Nord -> Pfad 4
+    {x:5,y:3, to:'heilstation', tx:5, ty:7, ret:'wolkenburg', rx:5, ry:4},   // Heilstation
+    {x:18,y:3, to:'shop', tx:4, ty:6, ret:'wolkenburg', rx:18, ry:4},        // Shop
+    {x:7,y:9, to:'pruefhalle4', tx:6, ty:11},                                // Prüfhalle Flug
+    {x:11,y:14, to:'ordenbasis', tx:5, ty:11}                                // Süd -> Orden-Basis (Finale)
+  ],
+  npcs:[
+    {x:14,y:7, dir:'down', palette:{shirt:'#9ab8e0',hair:'#3a2a1a'}, name:'Wolkenbewohner',
+     lines:['Willkommen auf der Wolkenburg, höchste Stadt Veloras.','Leiter Aero herrscht hier über die Lüfte!']},
+    {x:9,y:11, dir:'up', palette:{shirt:'#5a8ad2',hair:'#c0a030'}, name:'Wächter',
+     lines:['Hinter der Burg wartet der Orden Nyx.','Ohne alle Embleme bist du chancenlos!']}
+  ],
+  signs:{ '17,8':'» WOLKENBURG «\nStadt über den Wolken.\nSüden: Basis des Orden Nyx.' },
+  encounters:{}
+};
+
+// --- Prüfhalle 4: Flug (Leiter Aero) ---
+MAPS.pruefhalle4 = {
+  music:'town', indoor:true,
+  grid:[
+    "BBBBBBBBBBBBB",
+    "B           B",
+    "B   .....   B",
+    "B  ..,,,..  B",
+    "B   .....   B",
+    "B           B",
+    "B  .. F ..  B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "B           B",
+    "BBBBBDBBBBBBB"
+  ],
+  warps:[ {x:5,y:12, to:'wolkenburg', tx:7, ty:10} ],
+  npcs:[
+    {x:6,y:1, dir:'down', palette:{shirt:'#9ab8e0',hair:'#5a6a8a'}, name:'Hallenleiter Aero', special:'leader4',
+     trainer:{ name:'Hallenleiter Aero', team:[['wölkchen',20],['schwingfalk',21],['sturmaar',23,'fokusgurt']], reward:3600, leader:true, badge:'Sturm-Emblem', music:'boss',
+       intro:['Ich bin Aero, Herr der Wolkenburg.','Spürst du den Sturm, der sich zusammenbraut?'],
+       win:['Du reitest den Wind besser als ich! Nimm das Sturm-Emblem!'],
+       lose:['Komm wieder, wenn dein Flug sicherer ist.'] }},
+    {x:3,y:7, dir:'right', palette:{shirt:'#cfe0f0',hair:'#3a2a1a'}, name:'Hallen-Schüler',
+     trainer:{ name:'Schüler Luk', team:[['piepser',18],['wölkchen',19]], reward:640,
+       intro:['Aero fliegt allen davon!'], win:['Saubere Landung!'], lose:['Bleib am Boden!'] }}
+  ],
+  signs:{}, encounters:{}
+};
+
+/* =========================================================================
+   SPIELZUSTAND
+   ========================================================================= */
+let G = null; // globaler Spielstand
+function newGame(){
+  return {
+    map:'spielerhaus', px:4, py:4, dir:'down',
+    party:[], box:[],
+    bag:{ trank:5, fangkugel:5, gegengift:1 },
+    money:1500,
+    badges:[], dex:{}, // dex[speciesKey] = 'seen' | 'caught'
+    flags:{}, // ereignis-flags
+    gameMinutes: 8*60, // Start: 8:00 Uhr
+    dayCount:0, season:0, // 0 Frühling,1 Sommer,2 Herbst,3 Winter
+    playerName:'Kim',
+    lastHeal:{map:'spielerhaus', x:4, y:4}
+  };
+}
+
+/* SAVE / LOAD via localStorage */
+const SAVE_KEY = 'velora_saga_save_v1';
+function saveGame(){
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify(G)); return true; }catch(e){ return false; }
+}
+function loadGame(){
+  try{ const s=localStorage.getItem(SAVE_KEY); if(!s) return null; return JSON.parse(s); }catch(e){ return null; }
+}
+function hasSave(){ try{ return !!localStorage.getItem(SAVE_KEY); }catch(e){ return false; } }
+
+/* =========================================================================
+   SPIELZUSTÄNDE (State Machine)
+   ========================================================================= */
+const STATE = { TITLE:'title', STARTER:'starter', OVERWORLD:'overworld', DIALOG:'dialog',
+                MENU:'menu', BATTLE:'battle', SHOP:'shop', PARTY:'party', BAG:'bag',
+                DEX:'dex', MAP:'map', EVOLVE:'evolve' };
+let state = STATE.TITLE;
+let prevState = STATE.OVERWORLD;
+
+/* =========================================================================
+   OVERWORLD-LOGIK
+   ========================================================================= */
+const ow = {
+  moving:false, fromX:0, fromY:0, toX:0, toY:0, progress:0, speed:6,
+  animFrame:0, animTimer:0, stepCount:0, camX:0, camY:0
+};
+function curMap(){ return MAPS[G.map]; }
+function tileAt(map, x, y){
+  if(y<0||y>=map.grid.length) return 'B';
+  const row=map.grid[y]; if(x<0||x>=row.length) return 'B';
+  return row[x];
+}
+function isSolid(map,x,y){
+  const ch=tileAt(map,x,y); const d=TILE_DEF[ch];
+  return d? d.solid : true;
+}
+function npcAt(map,x,y){ return (map.npcs||[]).find(n=>n.x===x&&n.y===y); }
+
+function tryMove(dx,dy,dir){
+  G.dir=dir;
+  const map=curMap();
+  const nx=G.px+dx, ny=G.py+dy;
+  // Kante (ledge) — nur nach unten springen
+  const targetCh = tileAt(map,nx,ny);
+  if(isSolid(map,nx,ny) || npcAt(map,nx,ny)){
+    Audio2.sfx('bump'); return;
+  }
+  ow.moving=true; ow.fromX=G.px; ow.fromY=G.py; ow.toX=nx; ow.toY=ny; ow.progress=0;
+}
+function finishMove(){
+  const map=curMap();
+  G.px=ow.toX; G.py=ow.toY; ow.moving=false; ow.stepCount++;
+  // Warp?
+  const w=(map.warps||[]).find(w=>w.x===G.px&&w.y===G.py);
+  if(w){ doWarp(w); return; }
+  // Encounter?
+  const ch=tileAt(map,G.px,G.py);
+  const d=TILE_DEF[ch];
+  if(d&&d.encounter && map.encounters && Object.keys(map.encounters).length){
+    if(Math.random()<0.12){ startWildBattle(); return; }
+  }
+}
+function doWarp(w){
+  if(w.dynamicReturn){
+    // Rückkehr aus Heilstation/Shop
+    const r=G._return;
+    if(r){ G.map=r.map; G.px=r.x; G.py=r.y; G.dir='down'; }
+    setWeather();
+    Audio2.play(curMap().music); return;
+  }
+  if(w.ret){ G._return={map:w.ret, x:w.rx, y:w.ry}; }
+  G.map=w.to; G.px=w.tx; G.py=w.ty;
+  const m=curMap();
+  setWeather();
+  Audio2.play(m.music||'overworld');
+}
+
+function interact(){
+  const map=curMap();
+  const dirs={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+  const [dx,dy]=dirs[G.dir];
+  const fx=G.px+dx, fy=G.py+dy;
+  // NPC?
+  const npc=npcAt(map,fx,fy);
+  if(npc){ handleNpc(npc); return; }
+  // Schild?
+  const sign=(map.signs||{})[fx+','+fy];
+  if(sign){ openDialog(sign.split('\n'), null); return; }
+}
+
+/* =========================================================================
+   DIALOG-SYSTEM
+   ========================================================================= */
+const dlg = { lines:[], idx:0, onDone:null, charIdx:0, charTimer:0, full:'', speaker:null };
+function openDialog(lines, onDone, speaker){
+  dlg.lines = Array.isArray(lines)?lines:[lines];
+  dlg.idx=0; dlg.charIdx=0; dlg.charTimer=0; dlg.onDone=onDone||null; dlg.speaker=speaker||null;
+  dlg.full = dlg.lines[0]||'';
+  prevState = state===STATE.DIALOG?prevState:state;
+  state=STATE.DIALOG;
+}
+function advanceDialog(){
+  if(dlg.charIdx < dlg.full.length){ dlg.charIdx=dlg.full.length; return; } // erst Text vervollständigen
+  dlg.idx++;
+  if(dlg.idx>=dlg.lines.length){
+    const cb=dlg.onDone; dlg.onDone=null;
+    state=prevState;
+    if(cb) cb();
+  } else {
+    dlg.full=dlg.lines[dlg.idx]; dlg.charIdx=0; dlg.charTimer=0;
+  }
+}
+
+/* =========================================================================
+   NPC-INTERAKTIONEN
+   ========================================================================= */
+let pendingTrainer=null;
+function handleNpc(npc){
+  // Trainer, der noch nicht besiegt wurde?
+  if(npc.trainer && !(G.flags['beat_'+G.map+'_'+npc.x+'_'+npc.y])){
+    npc._origDir=npc.dir;
+    openDialog(npc.trainer.intro, ()=>{ startTrainerBattle(npc); }, npc.trainer.name);
+    return;
+  }
+  // Professor: Starterwahl
+  if(npc.special==='prof' && !G.flags.gotStarter){
+    openDialog(npc.lines, ()=>{ state=STATE.STARTER; starterSel.idx=0; }, npc.name);
+    return;
+  }
+  // Pflegerin: Heilen
+  if(npc.special==='nurse'){
+    openDialog(['Deine Wesen werden geheilt...'], ()=>{
+      healParty(); Audio2.sfx('heal');
+      G.lastHeal={map:G._return?G._return.map:G.map, x:G.px, y:G.py};
+      openDialog(['Deine Wesen sind wieder topfit!','Komm gut durch Velora!'], null, npc.name);
+    }, npc.name);
+    return;
+  }
+  // Verkäufer: Shop
+  if(npc.special==='shop'){ openShop(); return; }
+  // bereits besiegter Trainer / einfacher NPC
+  if(npc.trainer){ openDialog(npc.trainer.win||['...'], null, npc.trainer.name); return; }
+  openDialog(npc.lines||['...'], null, npc.name);
+}
+
+function healParty(){
+  for(const c of G.party){ c.hp=c.maxhp; c.status=null; c.sleepTurns=0; for(const m of c.moves) m.pp=m.maxpp; }
+}
+
+/* =========================================================================
+   STARTERWAHL
+   ========================================================================= */
+const starterSel = { idx:0, options:['sprossknu','glutfox','tröpflin'] };
+function chooseStarter(){
+  const key=starterSel.options[starterSel.idx];
+  const c=makeCreature(key,5);
+  G.party.push(c);
+  G.dex[key]='caught';
+  G.flags.gotStarter=true;
+  // Rivale wählt das stärkere Gegenstück (vereinfachte Logik)
+  const counter={sprossknu:'glutfox', glutfox:'tröpflin', 'tröpflin':'sprossknu'};
+  G.flags.rivalStarter=counter[key];
+  Audio2.sfx('confirm');
+  state=STATE.OVERWORLD;
+  openDialog([
+    SPECIES[key].name+' schließt sich dir an!',
+    'Professorin Farn: Wunderbar gewählt!',
+    'Hier — nimm ein paar Fangkugeln und Tränke mit.',
+    'Dein Rivale Kjell wartet schon draußen auf ein Duell!'
+  ], ()=>{ G.bag.fangkugel=(G.bag.fangkugel||0)+5; G.bag.trank=(G.bag.trank||0)+5; }, 'Professorin Farn');
+}
+
+/* =========================================================================
+   KAMPFSYSTEM
+   ========================================================================= */
+const battle = {
+  active:false, wild:false, trainer:null, music:'battle',
+  player:null, enemy:null, enemyTeam:[], enemyIdx:0,
+  menu:'main', // main | fight | bag | party
+  cursor:0, sub:0,
+  log:[], logIdx:0, logTimer:0, logChar:0,
+  phase:'intro', // intro | menu | exec | message | anim | end | catch
+  queue:[], anim:0, result:null, animTime:0, animCb:null,
+  playerHpShown:0, enemyHpShown:0,
+  caughtKey:null, runAttempts:0, escaped:false, expGain:0,
+  switching:false, mustSwitch:false, reward:0
+};
+function activePlayer(){ return G.party.find(c=>c.hp>0); }
+
+/* =========================================================================
+   KAMPF-ANIMATIONEN (Pokémon-Schwarz-Stil): Einflug, Idle-Atmen, Angriffs-
+   Vorstoß, Treffer-Blinken, Bildschirm-Shake, Typ-Partikel, KO-Absinken.
+   Rein visuell — die Kampf-Logik (Callback-Kette) bleibt unberührt.
+   ========================================================================= */
+const LUNGE_T=0.34, HIT_T=0.42;
+const BFX = {
+  shake:0, flash:0, intro:0, ambT:0,
+  entry:{player:0, enemy:0},   // 1 = außerhalb, 0 = auf Position
+  hit:{player:0, enemy:0},     // Restzeit Treffer-Rückstoß/Blinken (s)
+  lunge:{player:0, enemy:0},   // Restzeit Angriffs-Vorstoß (s)
+  faint:{player:0, enemy:0},   // 0..1 Absink-Fortschritt
+  parts:[],                    // Partikel {x,y,vx,vy,life,max,color,r,g}
+  fx:[],                       // Attacken-Effekte {ty,x0,y0,x1,y1,t,dur,kind}
+  ball:{on:false, phase:'', t:0}, captureProg:0   // Fangkugel-Animation
+};
+function sideCenter(side){ return side==='enemy'? {x:362,y:92} : {x:110,y:222}; }
+function easeOutCubic(p){ return 1-Math.pow(1-p,3); }
+function bfxReset(side){ BFX.hit[side]=0; BFX.lunge[side]=0; BFX.faint[side]=0; }
+function bfxEntry(side){ BFX.entry[side]=1; bfxReset(side); }
+function bfxFaint(side){ if(BFX.faint[side]<=0) BFX.faint[side]=0.0001; }
+function bfxStart(){ BFX.flash=1; BFX.shake=0; BFX.intro=0.7; BFX.ambT=0; BFX.parts.length=0; BFX.fx.length=0; BFX.ball.on=false; BFX.captureProg=0; bfxEntry('player'); bfxEntry('enemy'); }
+function bfxThrow(){ BFX.ball.on=true; BFX.ball.phase='throw'; BFX.ball.t=0; BFX.captureProg=0; }
+function bfxAbsorb(){ BFX.ball.phase='absorb'; BFX.ball.t=0; }
+function bfxWiggle(){ BFX.ball.phase='wiggle'; BFX.ball.t=0; }
+// Zeichnet eine Fangkugel (klassische Kapsel) bei x,y mit Drehung rot.
+function drawBall(x,y,rot){
+  const c=CTX, r=9; c.save(); c.translate(x,y); c.rotate(rot||0);
+  c.fillStyle='#d23b3b'; c.beginPath(); c.arc(0,0,r,Math.PI,0); c.fill();        // obere Hälfte rot
+  c.fillStyle='#f2f2f2'; c.beginPath(); c.arc(0,0,r,0,Math.PI); c.fill();          // untere Hälfte weiß
+  c.fillStyle='#15151a'; c.fillRect(-r,-1,r*2,2);                                   // Mittelband
+  c.beginPath(); c.arc(0,0,3.2,0,7); c.fill();                                      // Knopf außen
+  c.fillStyle='#f2f2f2'; c.beginPath(); c.arc(0,0,1.6,0,7); c.fill();               // Knopf innen
+  c.restore();
+}
+function drawCatchBall(){
+  if(!BFX.ball.on) return;
+  const fx=110, fy=205, tx=362, ty=120, t=BFX.ball.t;
+  let x=tx, y=ty, rot=0;
+  if(BFX.ball.phase==='throw'){ const p=Math.min(1,t/0.5); x=fx+(tx-fx)*p; y=fy+(ty-fy)*p - Math.sin(p*Math.PI)*80; rot=p*8; }
+  else if(BFX.ball.phase==='wiggle'){ rot=Math.sin(t*16)*0.5*Math.max(0,1-t/0.55); }
+  drawBall(x,y,rot);
+}
+function bfxSpawn(x,y,color,n){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, sp=40+Math.random()*90;
+    BFX.parts.push({x,y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-40, life:0, max:0.4+Math.random()*0.35, color, r:2+rnd(3), g:160});
+  }
+}
+function bfxAttack(who, eff, type){
+  const def = who==='player'?'enemy':'player';
+  BFX.lunge[who]=LUNGE_T;
+  BFX.shake=Math.min(12, 4+eff*3);
+  // Attacken-Projektil/Strahl, das zum Ziel reist; Treffer-Effekt folgt beim Einschlag
+  const a=sideCenter(who), b=sideCenter(def);
+  BFX.fx.push({ty:type, x0:a.x, y0:a.y, x1:b.x, y1:b.y, t:0, dur:0.40, eff:eff, def:def, bursted:false});
+}
+// Treffer-Einschlag am Ziel (Blitz, Stauchen, Partikel-Burst)
+function bfxImpact(def, type, eff){
+  BFX.hit[def]=HIT_T;
+  BFX.shake=Math.min(13, 5+eff*3.5);
+  const p=sideCenter(def);
+  bfxSpawn(p.x, p.y, TYPE_COLORS[type]||'#fff', eff>1?22:15);
+  if(eff>1) bfxSpawn(p.x, p.y, '#ffffff', 8);
+}
+// Dezente typ-spezifische Ambient-Partikel an einem Wesen (Glut, Funken, Blasen …)
+function spawnAmbient(side, c, x, y){
+  if(!c || BFX.faint[side]>0 || BFX.entry[side]>0.1) return;
+  const ty=SPECIES[c.species]?SPECIES[c.species].type:'Normal';
+  let col, vy=-26, life=0.85, r=2, g=22;
+  if(ty==='Feuer'){ col='#ffb13a'; vy=-50; life=0.7; g=10; }
+  else if(ty==='Elektro'){ if(Math.random()<0.55) return; col='#fff27a'; vy=-6; life=0.32; r=2; g=0; }
+  else if(ty==='Wasser'){ if(Math.random()<0.3) return; col='#bfe6ff'; vy=-20; g=8; }
+  else if(ty==='Flug'){ if(Math.random()<0.62) return; col='#e6f2ff'; vy=-14; g=6; }
+  else if(ty==='Pflanze'){ if(Math.random()<0.5) return; col='#9bd86a'; vy=-12; g=14; }
+  else return; // Normal/Gestein: keine Ambient-Partikel
+  BFX.parts.push({x:x+(Math.random()*26-13), y:y+(Math.random()*14-2), vx:(Math.random()*2-1)*9, vy:vy*(0.6+Math.random()*0.7), life:0, max:life, color:col, r, g});
+}
+function updateBFX(dt){
+  if(BFX.shake>0) BFX.shake=Math.max(0, BFX.shake-dt*42);
+  if(BFX.flash>0) BFX.flash=Math.max(0, BFX.flash-dt*2.3);
+  if(BFX.intro>0) BFX.intro=Math.max(0, BFX.intro-dt);
+  for(const s of ['player','enemy']){
+    if(BFX.entry[s]>0) BFX.entry[s]=Math.max(0, BFX.entry[s]-dt*2.4);
+    if(BFX.hit[s]>0)   BFX.hit[s]=Math.max(0, BFX.hit[s]-dt);
+    if(BFX.lunge[s]>0) BFX.lunge[s]=Math.max(0, BFX.lunge[s]-dt);
+    if(BFX.faint[s]>0 && BFX.faint[s]<1) BFX.faint[s]=Math.min(1, BFX.faint[s]+dt*2.1);
+  }
+  if(BFX.ball.on){ BFX.ball.t+=dt; if(BFX.ball.phase==='absorb') BFX.captureProg=Math.min(1, BFX.captureProg+dt*2.4); }
+  BFX.ambT-=dt;
+  if(BFX.ambT<=0 && battle.active && state===STATE.BATTLE){
+    BFX.ambT=0.20;
+    spawnAmbient('enemy', battle.enemy, 362, 96);
+    spawnAmbient('player', battle.player, 110, 226);
+  }
+  for(let i=BFX.parts.length-1;i>=0;i--){
+    const p=BFX.parts[i]; p.life+=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=(p.g==null?160:p.g)*dt;
+    if(p.life>=p.max) BFX.parts.splice(i,1);
+  }
+  // Attacken-Effekte: Projektil reist zum Ziel, hinterlässt Spur, schlägt ein
+  for(let i=BFX.fx.length-1;i>=0;i--){
+    const f=BFX.fx[i]; f.t+=dt; const p=Math.min(1,f.t/f.dur);
+    if(f.ty!=='Elektro'){ // Spurpartikel entlang der Flugbahn (Blitz wird direkt gezeichnet)
+      const hx=f.x0+(f.x1-f.x0)*p, hy=f.y0+(f.y1-f.y0)*p;
+      const col=TYPE_COLORS[f.ty]||'#fff';
+      BFX.parts.push({x:hx+(Math.random()*8-4), y:hy+(Math.random()*8-4), vx:(Math.random()*2-1)*16, vy:(Math.random()*2-1)*16-10, life:0, max:0.3, color:col, r:2+rnd(2), g:30});
+    }
+    if(!f.bursted && p>=0.96){ f.bursted=true; bfxImpact(f.def, f.ty, f.eff); }
+    if(f.t>=f.dur) BFX.fx.splice(i,1);
+  }
+}
+// Zeichnet die reisenden Attacken-Effekte (typ-spezifisch).
+function drawMoveFX(){
+  for(const f of BFX.fx){
+    const p=Math.min(1, f.t/f.dur);
+    const hx=f.x0+(f.x1-f.x0)*p, hy=f.y0+(f.y1-f.y0)*p;
+    const col=TYPE_COLORS[f.ty]||'#fff';
+    if(f.ty==='Elektro'){
+      // zackiger Blitz von Angreifer zu Ziel, flackernd
+      CTX.strokeStyle='#fff27a'; CTX.lineWidth=3; CTX.globalAlpha=0.5+Math.random()*0.5;
+      CTX.beginPath();
+      const seg=8;
+      for(let s=0;s<=seg;s++){ const tt=s/seg; const lx=f.x0+(f.x1-f.x0)*tt+(s>0&&s<seg?(Math.random()*16-8):0); const ly=f.y0+(f.y1-f.y0)*tt+(s>0&&s<seg?(Math.random()*16-8):0); if(s===0)CTX.moveTo(lx,ly); else CTX.lineTo(lx,ly); }
+      CTX.stroke(); CTX.lineWidth=1; CTX.globalAlpha=1;
+    } else {
+      // leuchtender Kern mit kurzem Schweif
+      for(let k=0;k<4;k++){ const tp=Math.max(0,p-k*0.05); const x=f.x0+(f.x1-f.x0)*tp, y=f.y0+(f.y1-f.y0)*tp; CTX.globalAlpha=(1-k*0.22); CTX.fillStyle=k===0?'#fff':col; const r=7-k*1.4; CTX.fillRect(Math.round(x-r/2),Math.round(y-r/2),Math.round(r),Math.round(r)); }
+      CTX.globalAlpha=1;
+    }
+  }
+}
+// Typ-spezifische Idle-Bewegung (Atmen, Schweben, Flackern, Wackeln …)
+function typeMotion(type, t){
+  let bob=Math.sin(t*2.0)*2.0, amp=0.05, spd=2.0, rot=0, jx=0;
+  switch(type){
+    case 'Flug':    bob=Math.sin(t*2.7)*5.2; rot=Math.sin(t*2.7)*0.06; amp=0.085; spd=2.7; break;
+    case 'Feuer':   bob=Math.sin(t*3.1)*1.5; spd=6.2; amp=0.05+Math.abs(Math.sin(t*9.5))*0.035; jx=Math.sin(t*22)*0.7; break;
+    case 'Wasser':  bob=Math.sin(t*1.8)*2.2; jx=Math.sin(t*1.5)*1.6; amp=0.08; spd=1.8; break;
+    case 'Elektro': bob=Math.sin(t*2.4)*2.0; { const ph=t%1.5; if(ph<0.1) jx=(Math.random()*2-1)*1.6; } break;
+    case 'Gestein': bob=Math.sin(t*1.1)*0.9; amp=0.022; spd=1.1; break;
+    case 'Pflanze': bob=Math.sin(t*1.8)*2.0; rot=Math.sin(t*1.5)*0.025; amp=0.055; break;
+  }
+  const breathe=Math.sin(t*spd);
+  return { bob, jx, sx:1 - amp*0.6*breathe, sy:1 + amp*breathe, rot };
+}
+// Zeichnet ein Kampf-Wesen mit voller prozeduraler Animation (am Boden verankert).
+function drawBattler(side, species, bx, by, size, flip){
+  const t=performance.now()/1000 + (side==='enemy'?0.7:0);
+  const type=(SPECIES[species]&&SPECIES[species].type)||'Normal';
+  const m=typeMotion(type, t);
+  let x=bx + m.jx, y=by + m.bob, sx=m.sx, sy=m.sy, rot=m.rot, alpha=1;
+  const dirAway = (side==='enemy'? 1:-1), dirToFoe = -dirAway;
+  // Einflug (eased)
+  if(BFX.entry[side]>0){ const pin=1-BFX.entry[side]; x += dirAway*(1-easeOutCubic(pin))*300; alpha*=easeOutCubic(Math.min(1,pin*1.6)); }
+  // Angriff: Ausholen -> Vorstoß -> zurück
+  if(BFX.lunge[side]>0){
+    const p=1-BFX.lunge[side]/LUNGE_T; let k;
+    if(p<0.22) k=-(p/0.22)*0.34; else k=Math.sin(((p-0.22)/0.78)*Math.PI);
+    x += dirToFoe*k*30; y += (side==='enemy'?1:-1)*Math.max(0,k)*10;
+    sx*=1+0.06*Math.max(0,k); sy*=1-0.05*Math.max(0,k);
+  }
+  // Treffer: Rückstoß + Stauchen + Blinken
+  if(BFX.hit[side]>0){
+    const h=BFX.hit[side]/HIT_T;
+    x += dirAway*h*9*Math.sin(performance.now()/26);
+    sx*=1+0.06*h; sy*=1-0.06*h;
+    if(Math.floor(t*30)%2===0) alpha*=0.32;
+  }
+  // KO: absinken, stauchen, ausblenden
+  if(BFX.faint[side]>0){ const f=BFX.faint[side]; y+=f*46; sy*=Math.max(0.18,1-f*0.85); alpha*=Math.max(0,1-f); }
+  const ax=x+size/2, ay=by+size; // Verankerung an den Füßen
+  CTX.save();
+  CTX.globalAlpha=clamp(alpha,0,1);
+  CTX.translate(ax,ay); CTX.rotate(rot); CTX.scale(sx,sy); CTX.translate(-ax,-ay);
+  drawCreature(species, x, y, size, flip);
+  CTX.restore();
+  CTX.globalAlpha=1;
+}
+function drawBattleParts(){
+  for(const p of BFX.parts){
+    CTX.globalAlpha=Math.max(0, 1-p.life/p.max);
+    CTX.fillStyle=p.color; CTX.fillRect(Math.round(p.x), Math.round(p.y), p.r, p.r);
+  }
+  CTX.globalAlpha=1;
+}
+
+function startWildBattle(){
+  const map=curMap();
+  const table = map.encounters[G.season] || map.encounters[0];
+  if(!table) return;
+  const total = table.reduce((a,b)=>a+b.w,0);
+  let r=rnd(total), pick=table[0];
+  for(const e of table){ if(r<e.w){ pick=e; break; } r-=e.w; }
+  const lvl = pick.min + rnd(pick.max-pick.min+1);
+  const enemy=makeCreature(pick.s, lvl);
+  beginBattle({wild:true, enemy});
+}
+function startTrainerBattle(npc){
+  const t=npc.trainer;
+  const team=t.team.map(([s,l,h])=>makeCreature(s,l,h));
+  beginBattle({wild:false, trainer:t, team, npc});
+}
+function beginBattle(opts){
+  battle.active=true; battle.wild=opts.wild;
+  battle.trainer=opts.trainer||null; battle.npc=opts.npc||null;
+  battle.music = (opts.trainer&&opts.trainer.music)||'battle';
+  battle.enemyTeam = opts.wild? [opts.enemy] : opts.team;
+  battle.enemyIdx=0; battle.enemy=battle.enemyTeam[0];
+  battle.player = activePlayer();
+  battle.menu='main'; battle.cursor=0; battle.sub=0;
+  battle.phase='intro'; battle.queue=[]; battle.runAttempts=0; battle.escaped=false;
+  battle.reward = opts.trainer? opts.trainer.reward : 0;
+  battle.mustSwitch=false; battle.result=null;
+  battle.playerHpShown=battle.player.hp; battle.enemyHpShown=battle.enemy.hp;
+  initVolatile(battle.player); initVolatile(battle.enemy);
+  // Dex: gesehen
+  if(!G.dex[battle.enemy.species]) G.dex[battle.enemy.species]='seen';
+  Audio2.play(battle.music);
+  state=STATE.BATTLE;
+  bfxStart();
+  // Intro-Text
+  const introLines = battle.wild
+    ? ['Ein wildes '+battle.enemy.name+' erscheint!']
+    : [battle.trainer.name+' will kämpfen!'];
+  battleMsg(introLines, ()=>{ battle.phase='menu'; });
+}
+
+let battleMsgQueue=[], battleMsgCb=null, battleMsgChar=0, battleMsgFull='', battleMsgTimer=0;
+function battleMsg(lines, cb){
+  battleMsgQueue = Array.isArray(lines)?lines.slice():[lines];
+  battleMsgCb=cb||null; battleMsgChar=0; battleMsgTimer=0;
+  battleMsgFull=battleMsgQueue[0]||''; battle.phase='message';
+}
+function battleMsgAdvance(){
+  if(battleMsgChar<battleMsgFull.length){ battleMsgChar=battleMsgFull.length; return; }
+  battleMsgQueue.shift();
+  if(battleMsgQueue.length===0){ const cb=battleMsgCb; battleMsgCb=null; if(cb)cb(); }
+  else { battleMsgFull=battleMsgQueue[0]; battleMsgChar=0; battleMsgTimer=0; }
+}
+// Getaktete, nicht-interaktive Animationsphase: spielt dur Sekunden lang die
+// Kampf-Animation, ohne auf Eingabe zu warten, und ruft danach cb auf.
+// Während dieser Phase bleibt die zuletzt gezeigte Nachricht stehen.
+function battleAnim(dur, cb){ battle.phase='anim'; battle.animTime=dur; battle.animCb=cb||null; }
+
+/* ===== TIEFE KAMPFMECHANIK: Fähigkeiten, Statuswert-Stufen, Volltreffer ===== */
+const ABILITY_BY_TYPE={Feuer:'Lodermut',Pflanze:'Wucherung',Wasser:'Sturzbach',Gestein:'Robustheit',Elektro:'Statik',Flug:'Aufwind',Normal:'Wachsamkeit'};
+const ABILITY_DESC={Lodermut:'Feuer-Attacken werden bei wenig KP stärker.',Wucherung:'Pflanzen-Attacken werden bei wenig KP stärker.',Sturzbach:'Wasser-Attacken werden bei wenig KP stärker.',Robustheit:'Überlebt aus voller KP einen K.O.-Treffer mit 1 KP.',Statik:'Berührung kann den Angreifer paralysieren.',Aufwind:'Verleiht etwas mehr Tempo.',Wachsamkeit:'Kann nicht einschlafen.'};
+function abilityOf(c){ const sp=SPECIES[c.species]; return (sp&&sp.ability)||ABILITY_BY_TYPE[sp&&sp.type]||'—'; }
+function stageMul(n){ n=clamp(n||0,-6,6); return n>=0 ? (2+n)/2 : 2/(2-n); }
+function initVolatile(c){ if(!c) return; c.stages={atk:0,def:0,spd:0}; c.confuse=0; }
+function calcDamage(att, def, move){
+  const m=MOVES[move.key];
+  if(m.power===0) return {dmg:0, eff:1, crit:false};
+  const stab = SPECIES[att.species].type===m.type ? 1.5 : 1;
+  const eff = typeEff(m.type, SPECIES[def.species].type);
+  const lvl=att.level;
+  // Wetter (drinnen 'clear')
+  let wx=1; const w=G&&G.weather;
+  if(w==='rain'){ if(m.type==='Wasser') wx=1.3; else if(m.type==='Feuer') wx=0.7; }
+  else if(w==='sun'){ if(m.type==='Feuer') wx=1.3; else if(m.type==='Wasser') wx=0.7; }
+  else if(w==='snow'){ if(m.type==='Gestein') wx=1.15; }
+  // Physisch/Spezial-Split: phys. nutzt Angr./Vert. (mit Stufen), spez. Sp.Angr./Sp.Vert.
+  const physical = m.cat!=='spec';
+  let atkStat = physical ? att.stats.atk * stageMul(att.stages && att.stages.atk) : att.stats.spatk;
+  let defStat = physical ? def.stats.def * stageMul(def.stages && def.stages.def) : def.stats.spdef;
+  if(att.status==='brand' && physical) atkStat*=0.5;   // Verbrennung schwächt nur physische Angriffe
+  // Fähigkeit: Typ-Boost bei wenig KP
+  let abx=1; const ab=abilityOf(att);
+  if(att.hp <= att.maxhp/3){
+    if(ab==='Lodermut'&&m.type==='Feuer') abx=1.5;
+    else if(ab==='Wucherung'&&m.type==='Pflanze') abx=1.5;
+    else if(ab==='Sturzbach'&&m.type==='Wasser') abx=1.5;
+  }
+  const crit = Math.random()<1/16, cx=crit?1.5:1;
+  const itx = (att.held==='kraftband') ? 1.1 : 1;   // getragenes Kraftband: +10% Schaden
+  let dmg = Math.floor( ( (2*lvl/5+2) * m.power * atkStat / Math.max(1,defStat) ) / 50 ) + 2;
+  dmg = Math.floor(dmg * stab * eff * wx * abx * cx * itx * rndRange(0.85,1.0));
+  return {dmg:Math.max(1,dmg), eff, crit};
+}
+function moveHits(move){
+  const m=MOVES[move.key];
+  return Math.random()*100 < m.acc;
+}
+function speedOf(c){
+  let s=c.stats.spd * stageMul(c.stages && c.stages.spd);
+  if(c.status==='paralyse') s=Math.floor(s/2);
+  if(abilityOf(c)==='Aufwind') s=Math.floor(s*1.15);
+  return Math.floor(s);
+}
+
+// Spieleraktion gewählt -> Runde ausführen
+function execTurn(playerAction){
+  const p=battle.player, e=battle.enemy;
+  const actions=[];
+  // Gegner-KI: zufällige Attacke
+  const enemyMove = chooseEnemyMove(e);
+  // Reihenfolge bestimmen
+  let pFirst=true;
+  if(playerAction.type==='move' && enemyMove){
+    pFirst = speedOf(p) >= speedOf(e);
+    if(speedOf(p)===speedOf(e)) pFirst = Math.random()<0.5;
+  }
+  // Aktionen ohne Move (Item/Switch/Run) gehen meist zuerst, dann Gegner-Move
+  const seq=[];
+  if(playerAction.type!=='move'){
+    seq.push({who:'player', action:playerAction});
+    if(enemyMove) seq.push({who:'enemy', action:{type:'move', move:enemyMove}});
+  } else {
+    if(pFirst){ seq.push({who:'player', action:playerAction}); if(enemyMove) seq.push({who:'enemy', action:{type:'move', move:enemyMove}}); }
+    else { if(enemyMove) seq.push({who:'enemy', action:{type:'move', move:enemyMove}}); seq.push({who:'player', action:playerAction}); }
+  }
+  runSequence(seq, 0);
+}
+function chooseEnemyMove(e){
+  const usable=e.moves.filter(m=>m.pp>0);
+  if(usable.length===0) return null;
+  const foe=battle.player;
+  // 75% gezielt: beste erwartete Wirkung; sonst zufällig (etwas Unberechenbarkeit)
+  if(foe && Math.random()<0.75){
+    let best=null, bestScore=-1;
+    for(const mv of usable){ const m=MOVES[mv.key]; let sc;
+      if(m.power>0){ const stab=SPECIES[e.species].type===m.type?1.5:1, ef=typeEff(m.type,SPECIES[foe.species].type); sc=m.power*stab*ef; }
+      else if((m.status||m.confuse) && !foe.status && !foe.confuse) sc=58;   // Status nur wenn Ziel frei
+      else if(m.stat) sc=42;                                                  // Buff/Debuff
+      else sc=15;
+      sc*=(0.85+Math.random()*0.3);
+      if(sc>bestScore){ bestScore=sc; best=mv; }
+    }
+    return best||choice(usable);
+  }
+  return choice(usable);
+}
+
+function runSequence(seq, i){
+  if(i>=seq.length){ endOfTurn(); return; }
+  const step=seq[i];
+  const next=()=>runSequence(seq, i+1);
+  const actor = step.who==='player'?battle.player:battle.enemy;
+  // tot?
+  if(actor.hp<=0){ next(); return; }
+  const act=step.action;
+  if(act.type==='run'){ doRun(next); return; }
+  if(act.type==='item'){ doItem(act, next); return; }
+  if(act.type==='switch'){ doSwitch(act, next); return; }
+  if(act.type==='catch'){ doCatch(next); return; }
+  if(act.type==='move'){ doMove(step.who, act.move, next); return; }
+  next();
+}
+
+function doMove(who, move, next){
+  const attacker = who==='player'?battle.player:battle.enemy;
+  const defender = who==='player'?battle.enemy:battle.player;
+  const side = who==='player'?'player':'enemy';
+  // Frost: 20% Auftauen, sonst festgefroren
+  if(attacker.status==='frost'){
+    if(Math.random()<0.2){ attacker.status=null; battleMsg([attacker.name+' taut wieder auf!'], ()=>doMoveReal(who,move,defender,attacker,next)); return; }
+    battleMsg([attacker.name+' ist eingefroren und kann sich nicht bewegen!'], next); return;
+  }
+  // Schlaf
+  if(attacker.status==='schlaf'){
+    if(attacker.sleepTurns>0){ attacker.sleepTurns--; battleMsg([attacker.name+' schläft tief und fest.'], next); return; }
+    else { attacker.status=null; battleMsg([attacker.name+' wacht auf!'], ()=>doMoveReal(who,move,defender,attacker,next)); return; }
+  }
+  // Verwirrung (flüchtig): 33% Selbsttreffer
+  if(attacker.confuse>0){
+    attacker.confuse--;
+    if(Math.random()<0.33){
+      const self=Math.max(1, Math.floor(attacker.maxhp/8));
+      attacker.hp=Math.max(0, attacker.hp-self);
+      bfxImpact(side, 'Normal', 1);
+      battleMsg([attacker.name+' ist verwirrt!','Es verletzt sich in seiner Verwirrung!'], ()=>{ if(attacker.hp<=0) handleFaint(attacker,next); else next(); });
+      return;
+    }
+  }
+  // Paralyse
+  if(attacker.status==='paralyse' && Math.random()<0.25){
+    battleMsg([attacker.name+' ist paralysiert und kann sich nicht rühren!'], next); return;
+  }
+  doMoveReal(who,move,defender,attacker,next);
+}
+function doMoveReal(who,move,defender,attacker,next){
+  const m=MOVES[move.key];
+  move.pp=Math.max(0,move.pp-1);
+  // 1) Ansage der Attacke (Text stehen lassen)
+  battleMsg([attacker.name+' setzt '+m.name+' ein!'], ()=>{
+    if(!moveHits(move)){ battleMsg(['Die Attacke geht daneben!'], next); return; }
+    let dmg=0, eff=1, crit=false;
+    if(m.power>0){ const r=calcDamage(attacker, defender, move); dmg=r.dmg; eff=r.eff; crit=r.crit; }
+    // 2) Angriffs-Animation: erst Bewegung/Effekt …
+    bfxAttack(who, eff, m.type);
+    if(crit) BFX.shake=Math.min(14, BFX.shake+4);
+    if(m.power>0) Audio2.sfx(eff>1?'superhit':'hit');
+    battleAnim(0.55, ()=>{
+      const lines=[];
+      // 3) … dann Schaden anwenden -> KP-Balken läuft jetzt sichtbar runter
+      if(m.power>0){
+        let survived=false, byItem=false;
+        if(dmg>=defender.hp && defender.hp===defender.maxhp){
+          if(abilityOf(defender)==='Robustheit'){ dmg=defender.hp-1; survived=true; }
+          else if(defender.held==='fokusgurt'){ dmg=defender.hp-1; survived=true; byItem=true; defender.held=null; }
+        }
+        defender.hp=Math.max(0, defender.hp-dmg);
+        if(crit) lines.push('Ein Volltreffer!');
+        if(eff>1) lines.push('Das ist sehr effektiv!');
+        else if(eff<1 && eff>0) lines.push('Das ist nicht sehr effektiv...');
+        else if(eff===0) lines.push('Es zeigt keine Wirkung...');
+        if(survived) lines.push(defender.name+(byItem?' hält dank Fokusgurt durch!':' hält dank Robustheit durch!'));
+      }
+      // Statuswert-Veränderung (Buff/Debuff)
+      if(m.stat){
+        const tgt = m.stat.who==='self'? attacker : defender;
+        if(!(m.stat.who==='foe' && tgt.hp<=0) && tgt.stages){
+          for(const k of ['atk','def','spd']) if(m.stat[k]){
+            const before=tgt.stages[k]; tgt.stages[k]=clamp(before+m.stat[k],-6,6);
+            const sn={atk:'Angriff',def:'Verteidigung',spd:'Tempo'}[k], up=m.stat[k]>0, strong=Math.abs(m.stat[k])>1;
+            if(tgt.stages[k]===before) lines.push(tgt.name+'s '+sn+(up?' geht nicht weiter hoch!':' geht nicht weiter runter!'));
+            else lines.push(tgt.name+'s '+sn+(up?(strong?' steigt stark!':' steigt!'):(strong?' sinkt stark!':' sinkt!')));
+          }
+        }
+      }
+      // Status-Effekt (Gift/Paralyse/Schlaf/Brand/Frost)
+      if(m.status && (!defender.status) && defender.hp>0 && Math.random()*100 < (m.statusChance||0)){
+        if(!(m.status==='schlaf' && abilityOf(defender)==='Wachsamkeit')){
+          defender.status=m.status;
+          if(m.status==='schlaf') defender.sleepTurns=1+rnd(3);
+          const sl={gift:'wurde vergiftet!', paralyse:'ist nun paralysiert!', schlaf:'ist eingeschlafen!', brand:'erleidet nun Verbrennungen!', frost:'ist eingefroren!'};
+          lines.push(defender.name+' '+sl[m.status]);
+        }
+      }
+      // Verwirrung (flüchtig)
+      if(m.confuse && defender.hp>0 && !defender.confuse){ defender.confuse=2+rnd(3); lines.push(defender.name+' ist nun verwirrt!'); }
+      // Fähigkeit Statik: Berührung kann den Angreifer paralysieren
+      if(m.power>0 && m.cat!=='spec' && defender.hp>0 && abilityOf(defender)==='Statik' && !attacker.status && Math.random()<0.3){
+        attacker.status='paralyse'; lines.push(attacker.name+' wurde durch Statik paralysiert!');
+      }
+      const proceed=()=>{ if(defender.hp<=0){ handleFaint(defender, next); } else next(); };
+      if(lines.length) battleMsg(lines, proceed);
+      else battleAnim(0.45, proceed);
+    });
+  });
+}
+
+function handleFaint(c, next){
+  Audio2.sfx('faint');
+  const isEnemy = (c===battle.enemy);
+  bfxFaint(isEnemy?'enemy':'player');
+  battleMsg([c.name+(isEnemy?' wurde besiegt!':' deines Teams wurde besiegt!')], ()=>{
+    if(isEnemy){
+      // EXP vergeben
+      const exp = Math.floor(SPECIES[c.species].baseExp * c.level / 6);
+      grantExp(exp, ()=>{
+        // nächster Gegner?
+        if(battle.enemyIdx < battle.enemyTeam.length-1){
+          battle.enemyIdx++; battle.enemy=battle.enemyTeam[battle.enemyIdx];
+          battle.enemyHpShown=battle.enemy.hp;
+          initVolatile(battle.enemy);
+          if(!G.dex[battle.enemy.species]) G.dex[battle.enemy.species]='seen';
+          bfxEntry('enemy');
+          battleMsg([battle.trainer.name+' schickt '+battle.enemy.name+' in den Kampf!'], ()=>{ battle.phase='menu'; });
+        } else {
+          winBattle();
+        }
+      });
+    } else {
+      // Spieler-Wesen besiegt -> Wechsel erzwingen oder verloren
+      if(G.party.some(x=>x.hp>0)){
+        battle.mustSwitch=true; battle.phase='party'; partyScr.idx=0; partyScr.context='battle';
+      } else {
+        loseBattle();
+      }
+    }
+  });
+}
+
+let pendingExp=0;
+function grantExp(amount, done){
+  const c=battle.player;
+  if(c.hp<=0){ // tote bekommen kein exp; gib aktivem
+    const alt=activePlayer(); if(!alt){ done(); return; }
+  }
+  const gainer = c.hp>0?c:activePlayer();
+  if(!gainer){ done(); return; }
+  gainer.exp += amount;
+  battleMsg([gainer.name+' erhält '+amount+' E-Punkte!'], ()=>checkLevel(gainer, done));
+}
+function checkLevel(c, done){
+  if(c.level>=100){ done(); return; }
+  if(c.exp >= expForLevel(c.level+1)){
+    c.level++;
+    const oldMax=c.maxhp; computeStats(c); c.hp += (c.maxhp-oldMax);
+    Audio2.sfx('levelup');
+    // Neue Attacke?
+    const sp=SPECIES[c.species];
+    const learnable=sp.learn.filter(m=>m[0]===c.level).map(m=>m[1]);
+    const lines=[c.name+' erreicht Level '+c.level+'!'];
+    for(const mk of learnable){
+      if(!c.moves.some(m=>m.key===mk)){
+        if(c.moves.length<4){ c.moves.push({key:mk,pp:MOVES[mk].pp,maxpp:MOVES[mk].pp}); lines.push(c.name+' erlernt '+MOVES[mk].name+'!'); }
+        else { c.moves.shift(); c.moves.push({key:mk,pp:MOVES[mk].pp,maxpp:MOVES[mk].pp}); lines.push(c.name+' erlernt '+MOVES[mk].name+'!'); }
+      }
+    }
+    battleMsg(lines, ()=>{
+      // Entwicklung?
+      if(sp.evo && c.level>=sp.evo.level){ startEvolution(c, ()=>checkLevel(c,done)); }
+      else checkLevel(c, done); // mehrere Level auf einmal möglich
+    });
+  } else done();
+}
+
+let evo={c:null, t:0, from:null, to:null, cb:null};
+function startEvolution(c, cb){
+  evo.c=c; evo.from=c.species; evo.to=SPECIES[c.species].evo.into; evo.t=0; evo.cb=cb;
+  prevState=STATE.BATTLE;
+  state=STATE.EVOLVE;
+  Audio2.sfx('evolve');
+}
+function finishEvolution(){
+  const c=evo.c; const toKey=evo.to;
+  c.species=toKey; c.name=SPECIES[toKey].name;
+  const oldMax=c.maxhp; computeStats(c); c.hp+=(c.maxhp-oldMax);
+  G.dex[toKey]='caught';
+  state=STATE.BATTLE;
+  battleMsg([evo.from!==toKey? SPECIES[evo.from].name+' entwickelt sich zu '+c.name+'!':c.name+'!'], ()=>{ const cb=evo.cb; evo.cb=null; if(cb)cb(); });
+}
+
+function doRun(next){
+  if(!battle.wild){ battleMsg(['Vor einem Duell kann man nicht fliehen!'], ()=>{ next(); }); return; }
+  battle.runAttempts++;
+  const pSpd=speedOf(battle.player), eSpd=speedOf(battle.enemy);
+  const chance = pSpd>=eSpd ? 1 : (pSpd*128/eSpd + 30*battle.runAttempts)/256;
+  if(Math.random()<chance){ battle.escaped=true; battleMsg(['Flucht gelungen!'], ()=>endBattle()); }
+  else battleMsg(['Flucht gescheitert!'], next);
+}
+function doItem(act, next){
+  const c=act.target;
+  const it=ITEMS[act.item];
+  G.bag[act.item]--; if(G.bag[act.item]<=0) delete G.bag[act.item];
+  let line='';
+  if(it.kind==='heal'){ const before=c.hp; c.hp=Math.min(c.maxhp, c.hp+it.amount); line=c.name+' wird um '+(c.hp-before)+' KP geheilt!'; Audio2.sfx('heal'); }
+  else if(it.kind==='revive'){ c.hp=Math.floor(c.maxhp*it.amount); c.status=null; line=c.name+' wurde wiederbelebt!'; Audio2.sfx('heal'); }
+  else if(it.kind==='cure'){ if(c.status===it.cure){ c.status=null; c.sleepTurns=0; line=c.name+' wurde geheilt!'; } else line='Es zeigt keine Wirkung.'; }
+  battleMsg([act.itemName+' eingesetzt!', line], next);
+}
+function doSwitch(act, next){
+  const idx=act.idx;
+  battle.player=G.party[idx];
+  battle.playerHpShown=battle.player.hp;
+  initVolatile(battle.player);
+  bfxEntry('player');
+  battleMsg(['Los, '+battle.player.name+'!'], next);
+}
+function doCatch(next){
+  if(!battle.wild){ battleMsg(['Auf fremde Wesen kann man keine Fangkugel werfen!'], next); return; }
+  const ballKey = battle._ballKey;
+  const it=ITEMS[ballKey];
+  G.bag[ballKey]--; if(G.bag[ballKey]<=0) delete G.bag[ballKey];
+  const e=battle.enemy;
+  const sp=SPECIES[e.species];
+  const statusBonus = e.status? (e.status==='schlaf'?2:1.5):1;
+  const a = ((3*e.maxhp - 2*e.hp) * sp.catchRate * it.ballBonus * statusBonus) / (3*e.maxhp);
+  // Wackel-Checks
+  const shakeProb = Math.min(255, Math.floor(1048560 / Math.floor(Math.sqrt(Math.sqrt(16711680/Math.max(1,a))))));
+  let shakes=0;
+  for(let i=0;i<4;i++){ if(rnd(65536) < shakeProb) shakes++; else break; }
+  const caught = (a>=255) || shakes===4;
+  battle._catchShakes=shakes;
+  // Animierte Sequenz: Wurf -> Einsaugen -> Wackeln -> Ergebnis
+  battleMsg(['Du wirfst die '+it.name+'!'], ()=>{
+    Audio2.sfx('catch'); bfxThrow();
+    battleAnim(0.5, ()=>{               // Ball erreicht den Gegner
+      bfxAbsorb();
+      battleAnim(0.55, ()=>{           // Gegner wird eingesogen
+        const wiggle=(i)=>{
+          if(i >= Math.max(1, shakes)){ resolve(); return; }
+          bfxWiggle(); Audio2.sfx('select');
+          battleAnim(0.6, ()=>wiggle(i+1));
+        };
+        const resolve=()=>{
+          if(caught){
+            Audio2.sfx('caught'); BFX.ball.phase='caught';
+            battleMsg(['Klick! '+e.name+' wurde gefangen!'], ()=>{
+              G.dex[e.species]='caught'; BFX.ball.on=false; BFX.captureProg=0;
+              if(G.party.length<6){ G.party.push(e); battleMsg([e.name+' kommt ins Team!'], ()=>endBattle()); }
+              else { G.box.push(e); battleMsg([e.name+' wird in die Aufbewahrung geschickt!'], ()=>endBattle()); }
+            });
+          } else {
+            BFX.ball.on=false; BFX.captureProg=0;   // Gegner bricht aus -> erscheint wieder
+            const msg = shakes===0?'Oh nein! Das Wesen ist sofort raus!':
+                        shakes===1?'Mist! Es hat sich befreit!':
+                        shakes===2?'Ah! Fast gefangen!':'So nah! Es ist doch entkommen!';
+            battleMsg([msg], next);
+          }
+        };
+        wiggle(0);
+      });
+    });
+  });
+}
+
+function endOfTurn(){
+  // Status-Schaden (Gift)
+  const tickers=[battle.player, battle.enemy];
+  const doTick=(idx)=>{
+    if(idx>=tickers.length){ afterTicks(); return; }
+    const c=tickers[idx];
+    if(c.hp>0 && (c.status==='gift' || c.status==='brand')){
+      const dmg=Math.max(1, Math.floor(c.maxhp/8));
+      c.hp=Math.max(0,c.hp-dmg);
+      const lbl = c.status==='brand' ? ' erleidet Schaden durch die Verbrennung!' : ' erleidet Schaden durch Gift!';
+      const sd = (c===battle.enemy)?'enemy':'player';
+      bfxImpact(sd, c.status==='brand'?'Feuer':'Pflanze', 1);
+      battleMsg([c.name+lbl], ()=>{
+        if(c.hp<=0){ handleFaint(c, ()=>doTick(idx+1)); } else doTick(idx+1);
+      });
+    } else if(c.hp>0 && c.held==='ueberreste' && c.hp<c.maxhp){
+      const heal=Math.max(1, Math.floor(c.maxhp/16));
+      c.hp=Math.min(c.maxhp, c.hp+heal);
+      battleMsg([c.name+' erholt sich durch Überreste etwas.'], ()=>doTick(idx+1));
+    } else doTick(idx+1);
+  };
+  doTick(0);
+}
+function afterTicks(){
+  if(battle.player.hp<=0){
+    if(G.party.some(x=>x.hp>0)){ battle.mustSwitch=true; battle.phase='party'; partyScr.idx=0; partyScr.context='battle'; }
+    else loseBattle();
+    return;
+  }
+  if(battle.enemy.hp<=0){ return; } // wird in handleFaint behandelt
+  battle.phase='menu'; battle.menu='main'; battle.cursor=0;
+}
+
+function winBattle(){
+  if(battle.trainer){
+    const t=battle.trainer;
+    G.money += battle.reward;
+    const lines=(t.win||['Du hast gewonnen!']).slice();
+    lines.unshift(t.name+' wurde besiegt!');
+    lines.push('Du erhältst '+battle.reward+' Velar!');
+    if(t.leader && t.badge){ G.badges.push(t.badge); lines.push('Du erhältst das '+t.badge+'!'); }
+    // Flag setzen, dass Trainer besiegt
+    if(battle.npc){ G.flags['beat_'+G.map+'_'+battle.npc.x+'_'+battle.npc.y]=true; }
+    // Boss besiegt -> Sieg-Flag
+    if(t.boss){ G.flags.gameWon=true; }
+    battleMsg(lines, ()=>{
+      if(t.boss){ endBattle(); showEnding(); }
+      else endBattle();
+    });
+  } else endBattle();
+}
+function loseBattle(){
+  battleMsg(['Alle deine Wesen wurden besiegt...','Du eilst zurück zur letzten Heilstation.'], ()=>{
+    const lh=G.lastHeal;
+    G.map=lh.map; G.px=lh.x; G.py=lh.y;
+    healParty();
+    G.money=Math.floor(G.money*0.9);
+    endBattle();
+  });
+}
+function endBattle(){
+  battle.active=false;
+  state=STATE.OVERWORLD;
+  Audio2.play(curMap().music||'overworld');
+  saveGame();
+}
+function showEnding(){
+  state=STATE.OVERWORLD;
+  Audio2.play('victory');
+  openDialog([
+    '★ GLÜCKWUNSCH! ★',
+    'Der Orden Nyx ist besiegt und Velora ist frei!',
+    'Mit '+G.badges.length+' Emblem(en) und '+Object.values(G.dex).filter(v=>v==='caught').length+' gefangenen Wesen',
+    'bist du zur Heldin/zum Helden von Velora geworden.',
+    'Deine Reise als Wesen-Forscher hat gerade erst begonnen...',
+    '— ENDE — Danke fürs Spielen!'
+  ], ()=>{ saveGame(); });
+}
+
+/* =========================================================================
+   MENÜ (Hauptmenü)
+   ========================================================================= */
+const menu = { idx:0, items:['Team','Beutel','Wesen-Lexikon','Karte','Speichern','Audio','Zurück'] };
+function openMenu(){ prevState=STATE.OVERWORLD; state=STATE.MENU; menu.idx=0; Audio2.sfx('select'); }
+
+/* PARTY-SCREEN */
+const partyScr = { idx:0, context:'menu', sub:0, mode:'list' };
+/* BAG-SCREEN */
+const bagScr = { idx:0, context:'menu', items:[] };
+function refreshBag(){ bagScr.items = Object.keys(G.bag).filter(k=>G.bag[k]>0); }
+/* DEX-SCREEN */
+const dexScr = { idx:0, scroll:0 };
+
+/* SHOP */
+const shopScr = { idx:0, mode:'menu', stock:['trank','supertrank','gegengift','weckruf','lösekraut','fangkugel','edelkugel'], qty:1 };
+function openShop(){
+  // Bessere Items je nach Fortschritt
+  shopScr.stock = G.badges.length>=1
+    ? ['trank','supertrank','hypertrank','beleber','gegengift','weckruf','lösekraut','fangkugel','edelkugel']
+    : ['trank','supertrank','gegengift','weckruf','lösekraut','fangkugel'];
+  shopScr.idx=0; shopScr.mode='list'; shopScr.qty=1;
+  prevState=STATE.OVERWORLD; state=STATE.SHOP;
+}
+
+/* =========================================================================
+   ZEICHNEN: gemeinsame UI-Helfer
+   ========================================================================= */
+function drawTextBox(x,y,w,h){
+  // tiefes Indigo-Panel mit cremefarbenem Rand (einheitlicher UI-Stil)
+  CTX.fillStyle='#080a18'; CTX.fillRect(x,y,w,h);
+  CTX.fillStyle='#e8e0c0'; CTX.fillRect(x+1,y+1,w-2,h-2);
+  CTX.fillStyle='#2b2f5c'; CTX.fillRect(x+3,y+3,w-6,h-6);
+  const g=CTX.createLinearGradient(0,y,0,y+h);
+  g.addColorStop(0,'#33386a'); g.addColorStop(1,'#1c1f3e');
+  CTX.fillStyle=g; CTX.fillRect(x+4,y+4,w-8,h-8);
+  CTX.fillStyle='rgba(255,255,255,0.08)'; CTX.fillRect(x+4,y+4,w-8,2);
+}
+function text(str,x,y,col,size){
+  CTX.fillStyle=col||'#fff';
+  CTX.font=(size||8)+'px monospace';
+  CTX.textBaseline='top';
+  CTX.fillText(str,x,y);
+}
+function textC(str,cx,y,col,size){
+  CTX.font=(size||8)+'px monospace'; CTX.textBaseline='top';
+  const w=CTX.measureText(str).width;
+  CTX.fillStyle=col||'#fff'; CTX.fillText(str, cx-w/2, y);
+}
+
+/* Tag/Nacht-Tönung */
+function nightAmount(){
+  const h = (G.gameMinutes/60)%24;
+  // Nacht 20-5, Übergänge
+  if(h>=20 || h<5) return 0.55;
+  if(h>=18 && h<20) return (h-18)/2*0.55;
+  if(h>=5 && h<7) return (7-h)/2*0.55;
+  return 0;
+}
+function timeStr(){
+  const h=Math.floor((G.gameMinutes/60)%24), m=Math.floor(G.gameMinutes%60);
+  return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
+}
+const SEASON_NAMES=['Frühling','Sommer','Herbst','Winter'];
+
+/* ===== TAG/NACHT-LICHTFARBE + WETTER ===== */
+// Weiche Lichttönung je Tageszeit: Morgenröte, Tag, Abendrot, Nacht.
+function timeTint(){
+  const h=(G.gameMinutes/60)%24;
+  const key=[ [0,18,26,66,0.52],[5,28,30,82,0.48],[6.5,255,150,92,0.24],[9,255,242,214,0.04],
+    [16,255,244,220,0.03],[18.5,255,128,70,0.27],[20,38,40,96,0.42],[24,18,26,66,0.52] ];
+  let a=key[0], b=key[key.length-1];
+  for(let i=0;i<key.length-1;i++){ if(h>=key[i][0] && h<key[i+1][0]){ a=key[i]; b=key[i+1]; break; } }
+  const t=(h-a[0])/((b[0]-a[0])||1), L=(p,q)=>p+(q-p)*t;
+  return { r:Math.round(L(a[1],b[1])), g:Math.round(L(a[2],b[2])), b:Math.round(L(a[3],b[3])), a:L(a[4],b[4]) };
+}
+function applyLighting(dark, scale){
+  const t=timeTint(); let a=t.a*(scale==null?1:scale);
+  if(dark) a=Math.max(a,0.5);
+  if(a<=0.01) return;
+  CTX.fillStyle='rgba('+t.r+','+t.g+','+t.b+','+a.toFixed(3)+')'; CTX.fillRect(0,0,VW,VH);
+}
+// Wetterzustand je Karte/Saison
+let weatherParts=null, weatherTimer=0;
+function pickWeather(map){
+  if(!map || map.indoor || map.dark) return 'clear';
+  if(G.season===3) return Math.random()<0.7?'snow':'clear';
+  const r=Math.random();
+  if(G.season===1){ if(r<0.5) return 'sun'; if(r<0.6) return 'rain'; return 'clear'; }
+  if(r<0.22) return 'rain'; if(r<0.32) return 'fog'; if(r<0.45) return 'sun'; return 'clear';
+}
+function setWeather(){ G.weather=pickWeather(curMap()); weatherParts=null; weatherTimer=45+rnd(60); }
+function ensureWeather(){ if(G.weather==null) setWeather(); }
+function drawWeather(intense){
+  const w=G.weather;
+  if(w==='rain'){
+    if(!weatherParts){ weatherParts=[]; const n=intense?70:54; for(let i=0;i<n;i++) weatherParts.push({x:rnd(VW+40),y:rnd(VH),s:6+Math.random()*5}); }
+    CTX.strokeStyle='rgba(175,205,255,0.5)'; CTX.lineWidth=1; CTX.beginPath();
+    for(const p of weatherParts){ CTX.moveTo(p.x,p.y); CTX.lineTo(p.x-4,p.y+11); p.y+=p.s*2.4; p.x-=p.s*0.6; if(p.y>VH){p.y=-10;p.x=rnd(VW+40);} if(p.x<-12)p.x=VW+10; }
+    CTX.stroke(); CTX.fillStyle='rgba(28,38,68,0.16)'; CTX.fillRect(0,0,VW,VH);
+  } else if(w==='snow'){
+    if(!weatherParts){ weatherParts=[]; const n=intense?60:42; for(let i=0;i<n;i++) weatherParts.push({x:rnd(VW),y:rnd(VH),s:0.3+Math.random()*0.8,r:1+rnd(2)}); }
+    CTX.fillStyle='rgba(255,255,255,0.88)';
+    for(const p of weatherParts){ CTX.fillRect(p.x|0,p.y|0,p.r,p.r); p.y+=p.s+0.5; p.x+=Math.sin(p.y/26)*0.4; if(p.y>VH){p.y=-2;p.x=rnd(VW);} }
+  } else if(w==='fog'){
+    const t=Date.now()/4200;
+    for(let i=0;i<3;i++){ CTX.fillStyle='rgba(212,217,228,'+(0.06+0.045*i)+')'; const off=((t+i*0.4)%1)*VW; CTX.fillRect(-VW+off,30+i*72,VW*2,48); }
+    CTX.fillStyle='rgba(204,209,220,0.12)'; CTX.fillRect(0,0,VW,VH);
+  } else if(w==='sun'){
+    CTX.fillStyle='rgba(255,226,150,0.10)'; CTX.fillRect(0,0,VW,VH);
+    CTX.save(); CTX.globalAlpha=0.05; CTX.fillStyle='#fff6c8';
+    for(let i=0;i<5;i++){ CTX.beginPath(); CTX.moveTo(-20,0); CTX.lineTo(50+i*62,0); CTX.lineTo(14+i*62,VH); CTX.lineTo(-20,VH); CTX.closePath(); CTX.fill(); }
+    CTX.restore();
+  }
+}
+const WEATHER_LABEL={clear:'',rain:'Regen',snow:'Schnee',fog:'Nebel',sun:'Sonnig'};
+
+/* =========================================================================
+   ZEICHNEN: OVERWORLD
+   ========================================================================= */
+function drawOverworld(){
+  const map=curMap();
+  // Kamera zentrieren
+  let pxPix = (ow.moving? ow.fromX + (ow.toX-ow.fromX)*ow.progress : G.px)*TILE;
+  let pyPix = (ow.moving? ow.fromY + (ow.toY-ow.fromY)*ow.progress : G.py)*TILE;
+  const mapW=map.grid[0].length*TILE, mapH=map.grid.length*TILE;
+  let camX = Math.round(pxPix - VW/2 + TILE/2);
+  let camY = Math.round(pyPix - VH/2 + TILE/2);
+  camX=clamp(camX, 0, Math.max(0,mapW-VW));
+  camY=clamp(camY, 0, Math.max(0,mapH-VH));
+  if(mapW<VW) camX=-(VW-mapW)/2;
+  if(mapH<VH) camY=-(VH-mapH)/2;
+  ow.camX=camX; ow.camY=camY;
+  // Hintergrund
+  CTX.fillStyle = map.indoor? '#101418':'#2a3a2a';
+  CTX.fillRect(0,0,VW,VH);
+  // Tiles
+  const x0=Math.floor(camX/TILE), y0=Math.floor(camY/TILE);
+  for(let y=y0; y<=y0+VH/TILE+1; y++){
+    for(let x=x0; x<=x0+VW/TILE+1; x++){
+      if(y<0||x<0||y>=map.grid.length||x>=map.grid[0].length) continue;
+      const ch=map.grid[y][x];
+      drawTile(ch, x*TILE-camX, y*TILE-camY, G.season, x, y);
+    }
+  }
+  // Warps (Türen schon als Tile). NPCs zeichnen
+  for(const n of (map.npcs||[])){
+    // Trainer besiegt -> evtl. andere Pose, egal
+    drawCharacter(n.x*TILE-camX, n.y*TILE-camY, n.dir, 0, n.palette);
+  }
+  // Spieler
+  ow.animFrame = ow.moving? (Math.floor(ow.progress*4)%2===0?0:1) : 0;
+  drawCharacter(Math.round(pxPix-camX), Math.round(pyPix-camY), G.dir, ow.animFrame, {shirt:'#d24b4b',hair:'#5a3a1a'});
+  // Tag/Nacht-Licht + Wetter
+  applyLighting(map.dark);
+  if(!map.indoor && !map.dark) drawWeather(false);
+  // HUD oben
+  drawOwHud();
+}
+let snowFlakes=null;
+function drawSnow(){
+  if(!snowFlakes){ snowFlakes=[]; for(let i=0;i<40;i++) snowFlakes.push({x:rnd(VW),y:rnd(VH),s:0.3+Math.random()*0.7}); }
+  CTX.fillStyle='rgba(255,255,255,0.8)';
+  for(const f of snowFlakes){ CTX.fillRect(f.x|0,f.y|0,2,2); f.y+=f.s; f.x+=Math.sin(f.y/30)*0.3; if(f.y>VH){f.y=-2;f.x=rnd(VW);} }
+}
+function drawOwHud(){
+  // Zeit + Jahreszeit (+ Wetter) oben rechts
+  const wl=WEATHER_LABEL[G.weather]||'';
+  const label = timeStr()+'  '+SEASON_NAMES[G.season]+(wl?'  '+wl:'');
+  CTX.font='8px monospace'; const w=CTX.measureText(label).width+10;
+  CTX.fillStyle='rgba(20,30,50,0.7)'; CTX.fillRect(VW-w-4,4,w,14);
+  text(label, VW-w, 7, '#fff');
+  // Ortsname links oben kurz
+  const placeNames={moosheim:'Moosheim',pfad1:'Pfad 1',lindgruen:'Lindgrün',felsschlucht:'Felsschlucht',wogenfels:'Wogenfels',
+    pfad3:'Pfad 3',sturmkliff:'Sturmkliff',pfad4:'Pfad 4',wolkenburg:'Wolkenburg',pruefhalle4:'Flug-Halle',
+    spielerhaus:'Zuhause',rivalenhaus:'Kjells Haus',labor:'Labor',heilstation:'Heilstation',shop:'Wesen-Laden',
+    pruefhalle1:'Pflanzen-Halle',pruefhalle2:'Wasser-Halle',pruefhalle3:'Elektro-Halle',ordenbasis:'Orden-Basis'};
+  const pn=placeNames[G.map]||G.map;
+  CTX.fillStyle='rgba(20,30,50,0.7)'; CTX.fillRect(4,4,CTX.measureText(pn).width+10,14);
+  text(pn,8,7,'#ffe');
+}
+
+/* =========================================================================
+   ZEICHNEN: DIALOG
+   ========================================================================= */
+function drawDialog(){
+  // Hintergrund (vorheriger Zustand)
+  if(prevState===STATE.OVERWORLD) drawOverworld();
+  else if(prevState===STATE.BATTLE) drawBattle(true);
+  const bx=8, by=VH-72, bw=VW-16, bh=64;
+  drawTextBox(bx,by,bw,bh);
+  if(dlg.speaker){
+    CTX.fillStyle='#2a3a5a'; CTX.fillRect(bx+6, by-10, CTX.measureText(dlg.speaker).width+10, 14);
+    text(dlg.speaker, bx+10, by-7, '#ffe', 8);
+  }
+  const shown=dlg.full.substring(0,dlg.charIdx);
+  wrapText(shown, bx+12, by+12, bw-24, 11, '#fff');
+  // Pfeil
+  if(dlg.charIdx>=dlg.full.length){
+    if((Date.now()/400|0)%2===0){ CTX.fillStyle='#fff'; CTX.fillRect(bx+bw-16, by+bh-14, 6,6); }
+  }
+}
+function wrapText(str,x,y,maxw,lh,col){
+  CTX.font='8px monospace'; CTX.textBaseline='top'; CTX.fillStyle=col||'#fff';
+  const words=str.split(' '); let line=''; let yy=y;
+  for(const w of words){
+    const test=line?line+' '+w:w;
+    if(CTX.measureText(test).width>maxw){ CTX.fillText(line,x,yy); yy+=lh; line=w; }
+    else line=test;
+  }
+  if(line) CTX.fillText(line,x,yy);
+}
+
+/* =========================================================================
+   ZEICHNEN: TITELBILD
+   ========================================================================= */
+const titleSel={idx:0};
+function drawTitle(){
+  CTX.fillStyle='#1a2a4a'; CTX.fillRect(0,0,VW,VH);
+  // Verlaufshimmel
+  for(let i=0;i<VH;i++){ const t=i/VH; CTX.fillStyle='rgb('+(26+t*40|0)+','+(42+t*60|0)+','+(74+t*40|0)+')'; CTX.fillRect(0,i,VW,1); }
+  // ein paar dekorative Wesen
+  drawCreature('florant', 40, 200, 48, false);
+  drawCreature('pyrolux', 200, 210, 48, false);
+  drawCreature('aqualon', 380, 200, 48, true);
+  // Titel
+  CTX.font='bold 32px monospace'; CTX.textBaseline='top';
+  CTX.fillStyle='#0a1428'; textC('VELORA SAGA', VW/2+2, 52, '#0a1428', 32);
+  textC('VELORA SAGA', VW/2, 50, '#ffe45a', 32);
+  CTX.font='10px monospace'; textC('~ Wesen-Abenteuer ~', VW/2, 90, '#cfe', 10);
+  // Menü
+  const opts = hasSave()? ['Weiterspielen','Neues Spiel']:['Neues Spiel'];
+  for(let i=0;i<opts.length;i++){
+    const y=140+i*22; const sel=i===titleSel.idx;
+    CTX.fillStyle = sel?'#ffe45a':'#fff';
+    textC((sel?'▶ ':'  ')+opts[i], VW/2, y, sel?'#ffe45a':'#fff', 12);
+  }
+  textC('Pfeiltasten + Enter', VW/2, 290, '#9ab', 8);
+  titleSel.opts=opts;
+}
+
+/* =========================================================================
+   ZEICHNEN: STARTERWAHL
+   ========================================================================= */
+function drawStarter(){
+  CTX.fillStyle='#243a52'; CTX.fillRect(0,0,VW,VH);
+  textC('Wähle deinen ersten Partner!', VW/2, 16, '#ffe', 12);
+  const labels=['PFLANZE','FEUER','WASSER'];
+  for(let i=0;i<3;i++){
+    const key=starterSel.options[i];
+    const sp=SPECIES[key];
+    const x=40+i*150, y=70, w=120, h=160;
+    const sel=i===starterSel.idx;
+    CTX.fillStyle = sel?'#ffe45a':'#1a2838'; CTX.fillRect(x-4,y-4,w+8,h+8);
+    CTX.fillStyle='#101820'; CTX.fillRect(x,y,w,h);
+    CTX.fillStyle=TYPE_COLORS[sp.type]; CTX.fillRect(x,y,w,16);
+    textC(labels[i], x+w/2, y+4, '#fff', 9);
+    drawCreature(key, x+w/2-32, y+30, 64, false);
+    textC(sp.name, x+w/2, y+100, sel?'#ffe45a':'#fff', 11);
+    text('KP '+sp.base.hp+'  ANG '+sp.base.atk, x+8, y+120, '#cde', 7);
+    text('VER '+sp.base.def+'  TMP '+sp.base.spd, x+8, y+132, '#cde', 7);
+    text('Typ: '+sp.type, x+8, y+144, TYPE_COLORS[sp.type], 7);
+  }
+  // Beschreibung
+  drawTextBox(8, VH-46, VW-16, 40);
+  wrapText(SPECIES[starterSel.options[starterSel.idx]].dex, 16, VH-36, VW-32, 11, '#fff');
+}
+
+/* =========================================================================
+   ZEICHNEN: KAMPF
+   ========================================================================= */
+function hpColor(ratio){ return ratio>0.5?'#48c048':(ratio>0.2?'#e0c020':'#e04040'); }
+// Abgerundetes Rechteck als Pfad (Gen5-UI-Look)
+function rrect(x,y,w,h,r){ r=Math.min(r,h/2,w/2); const c=CTX; c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+function panel(x,y,w,h,fill,border,r){ rrect(x,y,w,h,r==null?6:r); if(fill){ CTX.fillStyle=fill; CTX.fill(); } if(border){ CTX.lineWidth=2; CTX.strokeStyle=border; CTX.stroke(); CTX.lineWidth=1; } }
+function drawHpBar(x,y,w,cur,max){
+  const r=clamp(cur/max,0,1), h=6;
+  panel(x-1,y-1,w+2,h+2,'#0b0e18','#000',(h+2)/2);     // Rahmen
+  rrect(x,y,w,h,h/2); CTX.fillStyle='#2c3a30'; CTX.fill(); // Track
+  if(r>0){ const fw=Math.max(h,Math.round(w*r));
+    rrect(x,y,fw,h,h/2); CTX.fillStyle=hpColor(r); CTX.fill();
+    rrect(x+1,y+1,Math.max(2,fw-2),2,1); CTX.fillStyle='rgba(255,255,255,0.4)'; CTX.fill(); } // Glanz
+}
+function statusTag(c){
+  if(!c.status) return '';
+  return {gift:'GIF',paralyse:'PAR',schlaf:'SLF',brand:'BRN',frost:'FRO'}[c.status]||'';
+}
+function battleBgKey(){
+  if(G.map==='ordenbasis') return 'bg_boss';
+  const m=MAPS[G.map];
+  if(m && (m.dark || G.map==='felsschlucht')) return 'bg_cave';
+  return 'bg_grass';
+}
+function drawBattle(bgOnly){
+  const bgk=battleBgKey();
+  // Bildschirm-Shake (Feld + Wesen, UI bleibt stabil)
+  const sh = BFX.shake>0.3 ? BFX.shake : 0;
+  const ox = sh? Math.round((Math.random()*2-1)*sh):0;
+  const oy = sh? Math.round((Math.random()*2-1)*sh):0;
+  CTX.save();
+  CTX.translate(ox,oy);
+  // Kampfstart-Kino: Feld zoomt sanft heran
+  if(BFX.intro>0){ const z=1+0.14*(BFX.intro/0.7); CTX.translate(VW/2,VH*0.46); CTX.scale(z,z); CTX.translate(-VW/2,-VH*0.46); }
+  // Hintergrund — generiertes 16-bit-Pixel-Art je nach Schauplatz (leicht
+  // übergroß gezeichnet, damit der Shake keine schwarzen Ränder zeigt)
+  if(imgReady(bgk)){
+    CTX.imageSmoothingEnabled=false;
+    CTX.drawImage(IMG[bgk],-14,-14,VW+28,VH+28);
+  } else {
+    for(let i=-14;i<VH+14;i++){ const t=(i+14)/(VH+28); CTX.fillStyle = t<0.6?'#aee0ff':'#7ec850'; CTX.fillRect(-14,i,VW+28,1); }
+    CTX.fillStyle='#7ec850'; CTX.fillRect(-14,VH*0.55,VW+28,VH*0.45);
+    CTX.fillStyle='#6cb840'; CTX.fillRect(-14,VH*0.55,VW+28,6);
+  }
+  // Gegner-Plattform + Wesen
+  CTX.fillStyle='rgba(60,40,20,0.32)'; CTX.beginPath(); CTX.ellipse(360,120,60,16,0,0,7); CTX.fill();
+  const e=battle.enemy;
+  if(BFX.ball.on && BFX.captureProg>0){
+    // Beim Fangen schrumpft der Gegner in die Kugel (verschwindet bei voller Aufnahme)
+    if(BFX.captureProg<1){ const s=1-BFX.captureProg; CTX.save(); CTX.globalAlpha=s;
+      CTX.translate(362,92); CTX.scale(s,s); CTX.translate(-362,-92);
+      drawCreature(e.species, 330,56,64,false); CTX.restore(); CTX.globalAlpha=1; }
+  } else {
+    drawBattler('enemy', e.species, 330, 56, 64, false);
+  }
+  // Spieler-Plattform + Wesen
+  CTX.fillStyle='rgba(120,90,60,0.4)'; CTX.beginPath(); CTX.ellipse(110,250,64,18,0,0,7); CTX.fill();
+  const p=battle.player;
+  drawBattler('player', p.species, 70, 180, 80, true);
+  // Attacken-Effekte (reisende Projektile/Blitze) + Treffer-/Typ-Partikel + Fangkugel
+  drawMoveFX();
+  drawBattleParts();
+  drawCatchBall();
+  CTX.restore();
+  // Außenkampf: Tageslicht-Tönung + Wetter über dem Feld
+  if(battleBgKey()==='bg_grass'){ applyLighting(false,0.8); drawWeather(false); }
+  // Kampfstart-Blitz (ohne Shake, ganzflächig)
+  if(BFX.flash>0){ CTX.fillStyle='rgba(255,255,255,'+(BFX.flash*0.85)+')'; CTX.fillRect(0,0,VW,VH); }
+  // VS-Banner bei Trainer-Kämpfen (gleitet beim Kampfstart ein und blendet aus)
+  if(battle.trainer && BFX.intro>0){
+    const p=BFX.intro/0.7, a=clamp(p*1.4,0,1), bh=44, by=VH/2-bh/2;
+    const sl=Math.round((1-easeOutCubic(1-p))*VW*0.5);
+    CTX.save(); CTX.globalAlpha=a;
+    CTX.fillStyle='#0a0c1c'; CTX.fillRect(0,by,VW,bh);
+    CTX.fillStyle='#ffe45a'; CTX.fillRect(0,by,VW,2); CTX.fillRect(0,by+bh-2,VW,2);
+    CTX.fillStyle='#ff5a6a'; CTX.font='bold 22px monospace'; CTX.textBaseline='top'; CTX.textAlign='center';
+    CTX.fillText('VS', VW/2 - sl, by+10);
+    CTX.fillStyle='#fff'; CTX.font='12px monospace';
+    CTX.fillText(battle.trainer.name, VW/2 + sl, by+15);
+    CTX.textAlign='left'; CTX.restore(); CTX.globalAlpha=1;
+  }
+  // Info-Boxen (stabile UI)
+  drawInfoBox(20,20, e, false);
+  drawInfoBox(250,170, p, true);
+
+  if(bgOnly) return;
+
+  // Untere Box: Menü oder Nachricht
+  if(battle.phase==='message'){
+    drawTextBox(8,VH-72,VW-16,64);
+    wrapText(battleMsgFull.substring(0,battleMsgChar), 20, VH-58, VW-40, 12, '#fff');
+    if(battleMsgChar>=battleMsgFull.length && (Date.now()/400|0)%2===0){ CTX.fillStyle='#fff'; CTX.fillRect(VW-24,VH-22,6,6); }
+  } else if(battle.phase==='anim'){
+    // Während der Angriffs-Animation bleibt die letzte Nachricht stehen
+    drawTextBox(8,VH-72,VW-16,64);
+    wrapText(battleMsgFull, 20, VH-58, VW-40, 12, '#fff');
+  } else if(battle.phase==='menu'){
+    drawBattleMenu();
+  } else if(battle.phase==='fight'){
+    drawFightMenu();
+  } else if(battle.phase==='party'){
+    drawPartyScreen();
+  } else if(battle.phase==='bag'){
+    drawBattleBag();
+  }
+}
+function drawInfoBox(x,y,c,isPlayer){
+  const w=206,h=isPlayer?46:34;
+  panel(x,y,w,h,'#1b1f3a','#e8e0c0',8);
+  // farbiger Typ-Akzent links
+  const tcol=TYPE_COLORS[(SPECIES[c.species]||{}).type]||'#888';
+  rrect(x+4,y+4,5,h-8,2); CTX.fillStyle=tcol; CTX.fill();
+  text(c.name, x+14, y+5, '#fff', 10);
+  text('Lv'+c.level, x+w-32, y+5, '#ffe45a', 9);
+  const st=statusTag(c);
+  if(st){ const sc={GIF:'#a05ad0',PAR:'#d8b53a',SLF:'#7a8aa0',BRN:'#e0623a',FRO:'#6fc7e0'}[st]||'#c03030';
+    panel(x+w-72,y+4,24,11,sc,null,3); text(st,x+w-69,y+5,'#160e1e',7); }
+  drawHpBar(x+32, y+19, w-66, isPlayer? animHp(c,true) : animHp(c,false), c.maxhp);
+  text('KP', x+13, y+16, '#bfe0ff', 7);
+  if(isPlayer){
+    text(Math.round(animHp(c,true))+'/'+c.maxhp, x+w-70, y+27, '#fff', 8);
+    const need=expForLevel(c.level+1)-expForLevel(c.level), cur=c.exp-expForLevel(c.level);
+    panel(x+10,y+h-7,w-20,4,'#0b0e18',null,2);
+    if(need>0){ rrect(x+11,y+h-6,Math.max(0,Math.round((w-22)*clamp(cur/need,0,1))),2,1); CTX.fillStyle='#46b0ff'; CTX.fill(); }
+  }
+}
+function animHp(c, isPlayer){
+  const target=c.hp;
+  if(isPlayer){ battle.playerHpShown += (target-battle.playerHpShown)*0.2; if(Math.abs(target-battle.playerHpShown)<0.5)battle.playerHpShown=target; return battle.playerHpShown; }
+  else { battle.enemyHpShown += (target-battle.enemyHpShown)*0.2; if(Math.abs(target-battle.enemyHpShown)<0.5)battle.enemyHpShown=target; return battle.enemyHpShown; }
+}
+function drawBattleMenu(){
+  // Nachrichtenfeld links
+  panel(8,VH-58,232,50,'#1c2040','#e8e0c0',8);
+  text('Was möchtest du tun?', 22, VH-39, '#fff', 11);
+  // 2x2 Kommando-Buttons rechts (Gen5-Look, farbcodiert)
+  const opts=[['KAMPF','#d24b4b'],['BEUTEL','#e0a83a'],['WESEN','#52b86a'],['FLUCHT','#4a90d9']];
+  const bx=248, by=VH-58, bw=110, bh=23;
+  for(let i=0;i<4;i++){
+    const px=bx+(i%2)*(bw+4), py=by+Math.floor(i/2)*(bh+4), sel=i===battle.cursor, col=opts[i][1];
+    panel(px,py,bw,bh, sel?col:'#161a30', sel?'#fff':col, 6);
+    if(sel) text('▶', px+5, py+7, '#160e1e', 10);
+    text(opts[i][0], px+16, py+7, sel?'#160e1e':'#fff', 11);
+  }
+}
+function drawFightMenu(){
+  const p=battle.player;
+  // Info-Streifen rechts (Typ/AP/Stärke der Auswahl)
+  panel(248,VH-58,110,50,'#1c2040','#e8e0c0',8);
+  const selMv=p.moves[battle.cursor];
+  if(selMv){ const m=MOVES[selMv.key];
+    text('TYP', 258, VH-51, '#9ab', 8);
+    panel(284,VH-52,62,12, TYPE_COLORS[m.type], null,3); textC(m.type, 315, VH-51, '#160e1e', 8);
+    text('AP   '+selMv.pp+'/'+selMv.maxpp, 258, VH-35, '#fff', 9);
+    text('Stärke '+(m.power>0?m.power:'—'), 258, VH-23, '#cde', 8);
+  }
+  // 2x2 typgefärbte Attacken-Buttons links
+  const bx=8, by=VH-58, bw=116, bh=23;
+  for(let i=0;i<4;i++){
+    const px=bx+(i%2)*(bw+4), py=by+Math.floor(i/2)*(bh+4);
+    if(i<p.moves.length){ const mv=p.moves[i], m=MOVES[mv.key], sel=i===battle.cursor, col=TYPE_COLORS[m.type];
+      panel(px,py,bw,bh, sel?col:'#161a30', sel?'#fff':col, 6);
+      text(m.name, px+8, py+4, sel?'#160e1e':'#fff', 9);
+      text('AP '+mv.pp+'/'+mv.maxpp, px+8, py+13, sel?'#2a1a10':'#9ab', 7);
+    } else { panel(px,py,bw,bh,'#10131f','#333',6); text('—', px+8, py+7, '#555', 9); }
+  }
+}
+function drawBattleBag(){
+  drawTextBox(8,VH-72,VW-16,64);
+  text('Beutel:', 14, VH-66, '#fff', 8);
+  refreshBag();
+  const list=bagScr.items;
+  if(list.length===0){ text('Leer.', 20, VH-50, '#fff', 9); return; }
+  const start=Math.max(0, bagScr.idx-2);
+  for(let i=0;i<4 && start+i<list.length;i++){
+    const k=list[start+i]; const sel=(start+i)===bagScr.idx;
+    text((sel?'▶':' ')+ITEMS[k].name+' x'+G.bag[k], 20, VH-54+i*12, sel?'#ffe45a':'#fff', 9);
+  }
+}
+
+/* =========================================================================
+   ZEICHNEN: MENÜ / PARTY / BEUTEL / DEX / KARTE / SHOP / EVOLVE
+   ========================================================================= */
+function drawMenu(){
+  drawOverworld();
+  CTX.fillStyle='rgba(0,0,0,0.4)'; CTX.fillRect(0,0,VW,VH);
+  const bx=VW-150, by=20, bw=140;
+  drawTextBox(bx,by,bw,8+menu.items.length*16+8);
+  for(let i=0;i<menu.items.length;i++){
+    const sel=i===menu.idx;
+    text((sel?'▶ ':'  ')+menu.items[i], bx+14, by+12+i*16, sel?'#ffe45a':'#fff', 10);
+  }
+  // kleine Statusbox
+  drawTextBox(20,20,160,70);
+  text(G.playerName, 32, 30, '#fff', 10);
+  text('Velar: '+G.money, 32, 46, '#ffe', 9);
+  text('Embleme: '+G.badges.length, 32, 60, '#ffe', 9);
+  text('Wesen: '+Object.values(G.dex).filter(v=>v==='caught').length, 32, 74, '#ffe', 9);
+}
+function drawPartyScreen(){
+  if(state===STATE.PARTY){ CTX.fillStyle='#2a3a4a'; CTX.fillRect(0,0,VW,VH); }
+  else { drawTextBox(8,VH-92,VW-16,84); } // im Kampf: kleinere Box oben
+  const inBattle = (state===STATE.BATTLE);
+  if(inBattle){ CTX.fillStyle='rgba(0,0,0,0.6)'; CTX.fillRect(0,0,VW,VH); }
+  textC(inBattle? (battle.mustSwitch?'Wähle ein Wesen!':'Wesen wechseln'):'Dein Team', VW/2, 10, '#ffe', 12);
+  for(let i=0;i<G.party.length;i++){
+    const c=G.party[i]; const y=34+i*40; const sel=i===partyScr.idx;
+    CTX.fillStyle = sel? '#3a5a7a':'#1a2838'; CTX.fillRect(20,y,VW-40,36);
+    if(sel){ CTX.fillStyle='#ffe45a'; CTX.fillRect(20,y,3,36); }
+    drawCreature(c.species, 26, y+2, 32, false);
+    text(c.name, 64, y+4, c.hp>0?'#fff':'#e06060', 10);
+    text('Lv'+c.level+'  '+SPECIES[c.species].type, 64, y+16, '#cde', 8);
+    const st=statusTag(c); if(st){ text(st, 150, y+4, '#e0a040', 8); }
+    drawHpBar(180, y+10, 120, c.hp, c.maxhp);
+    text(c.hp+'/'+c.maxhp+' KP', 180, y+18, '#cde', 8);
+  }
+  if(!inBattle) textC('A: Details/Bestätigen   B: Zurück', VW/2, VH-14, '#9ab', 8);
+}
+function drawBag(){
+  CTX.fillStyle='#2a3a4a'; CTX.fillRect(0,0,VW,VH);
+  textC('Beutel', VW/2, 10, '#ffe', 12);
+  refreshBag();
+  if(bagScr.items.length===0){ textC('Dein Beutel ist leer.', VW/2, 100, '#fff', 10); }
+  for(let i=0;i<bagScr.items.length;i++){
+    const k=bagScr.items[i]; const y=34+i*18; const sel=i===bagScr.idx;
+    CTX.fillStyle= sel?'#3a5a7a':'transparent'; if(sel)CTX.fillRect(20,y-2,VW-40,18);
+    text((sel?'▶ ':'  ')+ITEMS[k].name, 30, y, sel?'#ffe45a':'#fff', 10);
+    text('x'+G.bag[k], VW-70, y, '#cde', 10);
+  }
+  if(bagScr.items.length){ drawTextBox(8,VH-40,VW-16,34); wrapText(ITEMS[bagScr.items[bagScr.idx]].desc, 16, VH-31, VW-32, 11, '#fff'); }
+  textC('A: Benutzen   B: Zurück', VW/2, VH-52, '#9ab', 7);
+}
+function drawDex(){
+  CTX.fillStyle='#2a3a4a'; CTX.fillRect(0,0,VW,VH);
+  const caught=Object.values(G.dex).filter(v=>v==='caught').length;
+  const seen=Object.keys(G.dex).length;
+  textC('Wesen-Lexikon   Gesehen:'+seen+'  Gefangen:'+caught, VW/2, 8, '#ffe', 10);
+  const perPage=8;
+  const list=SPECIES_LIST;
+  dexScr.scroll = clamp(dexScr.idx-3,0,Math.max(0,list.length-perPage));
+  for(let i=0;i<perPage && dexScr.scroll+i<list.length;i++){
+    const key=list[dexScr.scroll+i]; const sp=SPECIES[key]; const st=G.dex[key];
+    const y=28+i*22; const sel=(dexScr.scroll+i)===dexScr.idx;
+    CTX.fillStyle= sel?'#3a5a7a':'#1a2838'; CTX.fillRect(14,y,220,20);
+    const num='#'+('00'+sp.id).slice(-2);
+    if(st){ drawCreature(key, 16, y+2, 16, false); text(num+' '+sp.name, 38, y+5, sel?'#ffe45a':'#fff', 9); }
+    else { CTX.fillStyle='#444'; CTX.fillRect(16,y+2,16,16); text(num+' ??????', 38, y+5, '#888', 9); }
+  }
+  // Detail rechts
+  const key=list[dexScr.idx]; const sp=SPECIES[key]; const st=G.dex[key];
+  CTX.fillStyle='#1a2838'; CTX.fillRect(244,28,228,VH-60);
+  if(st){
+    drawCreature(key, 244+98, 40, 48, false);
+    textC(sp.name, 244+114, 92, TYPE_COLORS[sp.type], 12);
+    textC('Typ: '+sp.type, 244+114, 108, TYPE_COLORS[sp.type], 9);
+    if(st==='caught'){
+      text('KP '+sp.base.hp, 256, 130, '#cde', 8); text('ANG '+sp.base.atk, 360, 130, '#cde', 8);
+      text('VER '+sp.base.def, 256, 144, '#cde', 8); text('TMP '+sp.base.spd, 360, 144, '#cde', 8);
+      wrapText(sp.dex, 256, 164, 200, 11, '#fff');
+    } else { textC('(Noch nicht gefangen)', 244+114, 130, '#999', 8); }
+  } else { textC('Unbekanntes Wesen', 244+114, 100, '#888', 9); }
+  textC('B: Zurück', VW/2, VH-16, '#9ab', 8);
+}
+function drawMap(){
+  CTX.fillStyle='#1a2a3a'; CTX.fillRect(0,0,VW,VH);
+  textC('Region Velora', VW/2, 12, '#ffe', 14);
+  // einfache Knoten-Karte
+  const nodes={
+    moosheim:{x:120,y:70,label:'Moosheim'},
+    pfad1:{x:200,y:120,label:'Pfad 1'},
+    lindgruen:{x:280,y:150,label:'Lindgrün'},
+    felsschlucht:{x:300,y:210,label:'Felsschlucht'},
+    wogenfels:{x:200,y:250,label:'Wogenfels'}
+  };
+  const edges=[['moosheim','pfad1'],['pfad1','lindgruen'],['lindgruen','felsschlucht'],['felsschlucht','wogenfels']];
+  CTX.strokeStyle='#5a7a9a'; CTX.lineWidth=2;
+  for(const [a,b] of edges){ CTX.beginPath(); CTX.moveTo(nodes[a].x,nodes[a].y); CTX.lineTo(nodes[b].x,nodes[b].y); CTX.stroke(); }
+  for(const k in nodes){
+    const n=nodes[k]; const here=(G.map===k)|| (G._return&&G._return.map===k);
+    CTX.fillStyle= here?'#ffe45a':'#7ab0e8'; CTX.fillRect(n.x-6,n.y-6,12,12);
+    text(n.label, n.x-CTX.measureText(n.label).width/2+ (CTX.font='8px monospace',0)*0, n.y+8, here?'#ffe45a':'#cde', 8);
+    if(here){ CTX.strokeStyle='#fff'; CTX.lineWidth=1; CTX.strokeRect(n.x-8,n.y-8,16,16); }
+  }
+  textC('★ = du bist hier', VW/2, VH-30, '#cde', 8);
+  textC('B: Zurück', VW/2, VH-16, '#9ab', 8);
+}
+function drawShop(){
+  drawOverworld? 0:0;
+  CTX.fillStyle='#243240'; CTX.fillRect(0,0,VW,VH);
+  textC('Wesen-Laden', VW/2, 10, '#ffe', 12);
+  text('Velar: '+G.money, VW-110, 14, '#ffe', 9);
+  for(let i=0;i<shopScr.stock.length;i++){
+    const k=shopScr.stock[i]; const it=ITEMS[k]; const y=34+i*20; const sel=i===shopScr.idx;
+    CTX.fillStyle= sel?'#3a5a7a':'#1a2838'; CTX.fillRect(20,y,VW-40,18);
+    text((sel?'▶ ':'  ')+it.name, 30, y+4, sel?'#ffe45a':'#fff', 9);
+    text(it.price+' V', VW-90, y+4, '#cde', 9);
+  }
+  const sel=ITEMS[shopScr.stock[shopScr.idx]];
+  drawTextBox(8,VH-58,VW-16,36); wrapText(sel.desc, 16, VH-49, VW-32, 11, '#fff');
+  if(shopScr.mode==='qty'){
+    drawTextBox(VW/2-70,VH-110,140,40);
+    textC('Menge: '+shopScr.qty, VW/2, VH-100, '#fff', 11);
+    textC('Gesamt: '+(shopScr.qty*sel.price)+' V', VW/2, VH-86, '#ffe', 9);
+  }
+  textC('A: Kaufen   B: Zurück', VW/2, VH-16, '#9ab', 7);
+}
+function drawEvolve(){
+  CTX.fillStyle='#101018'; CTX.fillRect(0,0,VW,VH);
+  evo.t+=0.02;
+  const flash = (Math.sin(evo.t*10)+1)/2;
+  textC('Was? '+SPECIES[evo.from].name+' entwickelt sich!', VW/2, 40, '#ffe', 11);
+  // Übergang von alt zu neu
+  const size=80;
+  CTX.save();
+  CTX.globalAlpha = evo.t<2? 1-flash*0.5 : 1;
+  const showKey = (Math.floor(evo.t*6)%2===0 && evo.t<3)? evo.from : evo.to;
+  CTX.translate(VW/2, 160);
+  const sc=1+Math.sin(evo.t*4)*0.05;
+  CTX.scale(sc,sc);
+  drawCreature(showKey, -size/2, -size/2, size, false);
+  CTX.restore();
+  // Lichtstrahlen
+  CTX.strokeStyle='rgba(255,255,200,'+flash+')'; CTX.lineWidth=1;
+  for(let i=0;i<12;i++){ const a=evo.t+i*Math.PI/6; CTX.beginPath(); CTX.moveTo(VW/2,160); CTX.lineTo(VW/2+Math.cos(a)*120,160+Math.sin(a)*120); CTX.stroke(); }
+  textC('A drücken zum Fortfahren', VW/2, 280, '#9ab', 8);
+}
+
+/* =========================================================================
+   UPDATE-LOGIK pro State
+   ========================================================================= */
+function updateTitle(){
+  const opts=titleSel.opts||['Neues Spiel'];
+  if(consume('up')){ titleSel.idx=(titleSel.idx-1+opts.length)%opts.length; Audio2.sfx('select'); }
+  if(consume('down')){ titleSel.idx=(titleSel.idx+1)%opts.length; Audio2.sfx('select'); }
+  if(consume('a')){
+    Audio2.sfx('confirm');
+    const choice=opts[titleSel.idx];
+    if(choice==='Weiterspielen'){ const s=loadGame(); if(s){ G=s; state=STATE.OVERWORLD; Audio2.play(curMap().music||'overworld'); return; } }
+    G=newGame(); state=STATE.OVERWORLD; Audio2.play(curMap().music||'town');
+    openDialog(['Mutter: Guten Morgen!','Heute beginnt dein großes Abenteuer.','Professorin Farn wartet in ihrem Labor im Westen des Dorfes.'], null, 'Mutter');
+  }
+}
+function updateStarter(){
+  if(consume('left')){ starterSel.idx=(starterSel.idx+2)%3; Audio2.sfx('select'); }
+  if(consume('right')){ starterSel.idx=(starterSel.idx+1)%3; Audio2.sfx('select'); }
+  if(consume('a')){ Audio2.sfx('confirm'); chooseStarter(); }
+}
+function updateOverworld(dt){
+  // Zeit voranschreiten (1 reale Sek ~ 1 Spielminute)
+  G.gameMinutes += dt*1.0;
+  if(G.gameMinutes>=24*60){ G.gameMinutes-=24*60; G.dayCount++; if(G.dayCount%3===0){ G.season=(G.season+1)%4; setWeather(); } }
+  // Wetter: gelegentlich wechseln
+  ensureWeather(); weatherTimer-=dt; if(weatherTimer<=0) setWeather();
+  if(consume('menu')){ openMenu(); return; }
+  if(consume('a')){ interact(); if(state!==STATE.OVERWORLD) return; }
+  if(ow.moving){
+    ow.running = Keys.b;                       // B gedrückt halten = Rennen
+    ow.progress += dt*ow.speed*(ow.running?1.75:1);
+    if(ow.progress>=1){ ow.progress=0; finishMove(); }
+    return;
+  }
+  // Bewegungseingabe (gehalten)
+  if(Keys.up) tryMove(0,-1,'up');
+  else if(Keys.down) tryMove(0,1,'down');
+  else if(Keys.left) tryMove(-1,0,'left');
+  else if(Keys.right) tryMove(1,0,'right');
+}
+function updateDialog(){
+  if(consume('a')||consume('b')){ Audio2.sfx('select'); advanceDialog(); }
+}
+function updateMenu(){
+  if(consume('menu')||consume('b')){ Audio2.sfx('cancel'); state=STATE.OVERWORLD; return; }
+  if(consume('up')){ menu.idx=(menu.idx-1+menu.items.length)%menu.items.length; Audio2.sfx('select'); }
+  if(consume('down')){ menu.idx=(menu.idx+1)%menu.items.length; Audio2.sfx('select'); }
+  if(consume('a')){
+    Audio2.sfx('confirm');
+    const sel=menu.items[menu.idx];
+    if(sel==='Team'){ if(G.party.length){ partyScr.idx=0; partyScr.context='menu'; partyScr.mode='list'; state=STATE.PARTY; } }
+    else if(sel==='Beutel'){ refreshBag(); bagScr.idx=0; bagScr.context='menu'; state=STATE.BAG; }
+    else if(sel==='Wesen-Lexikon'){ dexScr.idx=0; state=STATE.DEX; }
+    else if(sel==='Karte'){ prevState=STATE.MENU; state=STATE.MAP; }
+    else if(sel==='Speichern'){ const ok=saveGame(); openDialog([ok?'Spielstand gespeichert!':'Speichern fehlgeschlagen.'], ()=>{ state=STATE.MENU; }); }
+    else if(sel==='Audio'){ const on=Audio2.toggle(); openDialog(['Musik & Sound: '+(on?'AN':'AUS')], ()=>{ state=STATE.MENU; }); }
+    else if(sel==='Zurück'){ state=STATE.OVERWORLD; }
+  }
+}
+function updateParty(){
+  const inBattle=(state===STATE.BATTLE)|| (battle.active && battle.phase==='party');
+  // Wenn im Kampf, state ist BATTLE aber phase party. Behandeln separat in updateBattle.
+  if(consume('b')){ if(!partyScr.detail){ Audio2.sfx('cancel'); state=STATE.MENU; return; } else { partyScr.detail=false; return; } }
+  if(consume('up')){ partyScr.idx=(partyScr.idx-1+G.party.length)%G.party.length; Audio2.sfx('select'); }
+  if(consume('down')){ partyScr.idx=(partyScr.idx+1)%G.party.length; Audio2.sfx('select'); }
+  if(consume('a')){ Audio2.sfx('select'); partyScr.detail=!partyScr.detail; }
+}
+function updateBag(){
+  refreshBag();
+  if(consume('b')){ Audio2.sfx('cancel'); state=STATE.MENU; return; }
+  if(bagScr.items.length===0) return;
+  if(consume('up')){ bagScr.idx=(bagScr.idx-1+bagScr.items.length)%bagScr.items.length; Audio2.sfx('select'); }
+  if(consume('down')){ bagScr.idx=(bagScr.idx+1)%bagScr.items.length; Audio2.sfx('select'); }
+  if(consume('a')){
+    const k=bagScr.items[bagScr.idx]; const it=ITEMS[k];
+    if(it.kind==='ball'){ openDialog(['Fangkugeln kannst du nur im Kampf werfen!'], ()=>{ state=STATE.BAG; }); return; }
+    // Item auf Team anwenden -> Party-Auswahl
+    bagScr.useItem=k; partyScr.idx=0; partyScr.context='useitem'; partyScr.mode='list';
+    state=STATE.PARTY; partyScr.applyItem=true;
+  }
+  // Item-Anwendung im Party-Screen
+}
+function updateDex(){
+  if(consume('b')){ Audio2.sfx('cancel'); state=STATE.MENU; return; }
+  if(consume('up')){ dexScr.idx=(dexScr.idx-1+SPECIES_LIST.length)%SPECIES_LIST.length; Audio2.sfx('select'); }
+  if(consume('down')){ dexScr.idx=(dexScr.idx+1)%SPECIES_LIST.length; Audio2.sfx('select'); }
+}
+function updateMapScr(){
+  if(consume('b')||consume('menu')){ Audio2.sfx('cancel'); state=prevState; }
+}
+function updateShop(){
+  if(shopScr.mode==='qty'){
+    const it=ITEMS[shopScr.stock[shopScr.idx]];
+    if(consume('up')){ shopScr.qty=Math.min(99,shopScr.qty+1); Audio2.sfx('select'); }
+    if(consume('down')){ shopScr.qty=Math.max(1,shopScr.qty-1); Audio2.sfx('select'); }
+    if(consume('b')){ shopScr.mode='list'; Audio2.sfx('cancel'); }
+    if(consume('a')){
+      const total=shopScr.qty*it.price;
+      if(G.money>=total){ G.money-=total; const k=shopScr.stock[shopScr.idx]; G.bag[k]=(G.bag[k]||0)+shopScr.qty; Audio2.sfx('confirm'); shopScr.mode='list';
+        openDialog([shopScr.qty+'x '+it.name+' gekauft!'], ()=>{ state=STATE.SHOP; }); }
+      else { Audio2.sfx('cancel'); openDialog(['Du hast nicht genug Velar!'], ()=>{ state=STATE.SHOP; }); }
+    }
+    return;
+  }
+  if(consume('b')){ Audio2.sfx('cancel'); state=STATE.OVERWORLD; Audio2.play(curMap().music); return; }
+  if(consume('up')){ shopScr.idx=(shopScr.idx-1+shopScr.stock.length)%shopScr.stock.length; Audio2.sfx('select'); }
+  if(consume('down')){ shopScr.idx=(shopScr.idx+1)%shopScr.stock.length; Audio2.sfx('select'); }
+  if(consume('a')){ shopScr.mode='qty'; shopScr.qty=1; Audio2.sfx('select'); }
+}
+function updateEvolve(){
+  if(consume('a')||consume('b')){ if(evo.t>1.2){ Audio2.sfx('confirm'); finishEvolution(); } }
+}
+
+/* KAMPF-UPDATE */
+function updateBattle(){
+  if(battle.phase==='message'){
+    if(consume('a')||consume('b')){ battleMsgAdvance(); }
+    return;
+  }
+  if(battle.phase==='menu'){
+    if(consume('left')&&battle.cursor%2===1){ battle.cursor--; Audio2.sfx('select'); }
+    else if(consume('right')&&battle.cursor%2===0){ battle.cursor++; Audio2.sfx('select'); }
+    else if(consume('up')&&battle.cursor>=2){ battle.cursor-=2; Audio2.sfx('select'); }
+    else if(consume('down')&&battle.cursor<2){ battle.cursor+=2; Audio2.sfx('select'); }
+    if(consume('a')){
+      Audio2.sfx('confirm');
+      if(battle.cursor===0){ battle.phase='fight'; battle.cursor=0; }
+      else if(battle.cursor===1){ battle.phase='bag'; refreshBag(); bagScr.idx=0; }
+      else if(battle.cursor===2){ battle.phase='party'; partyScr.idx=0; partyScr.context='battle'; battle.mustSwitch=false; }
+      else if(battle.cursor===3){ execTurn({type:'run'}); }
+    }
+    return;
+  }
+  if(battle.phase==='fight'){
+    const p=battle.player;
+    if(consume('b')){ Audio2.sfx('cancel'); battle.phase='menu'; battle.cursor=0; return; }
+    const n=p.moves.length;
+    if(consume('left')&&battle.cursor%2===1){ battle.cursor--; Audio2.sfx('select'); }
+    else if(consume('right')&&battle.cursor%2===0&&battle.cursor+1<n){ battle.cursor++; Audio2.sfx('select'); }
+    else if(consume('up')&&battle.cursor>=2){ battle.cursor-=2; Audio2.sfx('select'); }
+    else if(consume('down')&&battle.cursor+2<n){ battle.cursor+=2; Audio2.sfx('select'); }
+    if(consume('a')){
+      const mv=p.moves[battle.cursor];
+      if(mv && mv.pp>0){ Audio2.sfx('confirm'); execTurn({type:'move', move:mv}); }
+      else if(mv){ openDialogInBattle('Keine AP mehr für diese Attacke!'); }
+    }
+    return;
+  }
+  if(battle.phase==='bag'){
+    refreshBag();
+    if(consume('b')){ Audio2.sfx('cancel'); battle.phase='menu'; battle.cursor=0; return; }
+    const list=bagScr.items;
+    if(list.length===0) return;
+    if(consume('up')){ bagScr.idx=(bagScr.idx-1+list.length)%list.length; Audio2.sfx('select'); }
+    if(consume('down')){ bagScr.idx=(bagScr.idx+1)%list.length; Audio2.sfx('select'); }
+    if(consume('a')){
+      const k=list[bagScr.idx]; const it=ITEMS[k]; Audio2.sfx('confirm');
+      if(it.kind==='ball'){ battle._ballKey=k; execTurn({type:'catch'}); }
+      else {
+        // Ziel = aktives Wesen (vereinfachte Anwendung im Kampf)
+        const c=battle.player;
+        if(it.kind==='heal' && c.hp>=c.maxhp){ openDialogInBattle(c.name+' hat schon volle KP!'); return; }
+        if(it.kind==='revive' && c.hp>0){ openDialogInBattle(c.name+' ist nicht besiegt!'); return; }
+        if(it.kind==='cure' && c.status!==it.cure){ openDialogInBattle('Es zeigt keine Wirkung.'); return; }
+        execTurn({type:'item', item:k, itemName:it.name, target:c});
+      }
+    }
+    return;
+  }
+  if(battle.phase==='party'){
+    if(consume('up')){ partyScr.idx=(partyScr.idx-1+G.party.length)%G.party.length; Audio2.sfx('select'); }
+    if(consume('down')){ partyScr.idx=(partyScr.idx+1)%G.party.length; Audio2.sfx('select'); }
+    if(consume('b') && !battle.mustSwitch){ Audio2.sfx('cancel'); battle.phase='menu'; battle.cursor=0; return; }
+    if(consume('a')){
+      const c=G.party[partyScr.idx];
+      if(c.hp<=0){ openDialogInBattle(c.name+' kann nicht kämpfen!'); return; }
+      if(c===battle.player){ openDialogInBattle(c.name+' ist bereits im Kampf!'); return; }
+      Audio2.sfx('confirm');
+      if(battle.mustSwitch){ battle.mustSwitch=false; battle.player=c; battle.playerHpShown=c.hp; initVolatile(c); bfxEntry('player'); battleMsg(['Los, '+c.name+'!'], ()=>{ battle.phase='menu'; battle.cursor=0; }); }
+      else { execTurn({type:'switch', idx:partyScr.idx}); }
+    }
+    return;
+  }
+}
+function openDialogInBattle(msg){ const back=battle.phase; battleMsg([msg], ()=>{ battle.phase=back; }); }
+
+/* =========================================================================
+   HAUPTSCHLEIFE
+   ========================================================================= */
+let lastT=performance.now();
+function loop(now){
+  let dt=(now-lastT)/1000; lastT=now; if(dt>0.1)dt=0.1;
+  // Warten, bis alle Grafiken geladen sind (Ladebalken)
+  if(!assetsReady()){ clearPressed(); drawLoading(); requestAnimationFrame(loop); return; }
+  // Update
+  switch(state){
+    case STATE.TITLE: updateTitle(); break;
+    case STATE.STARTER: updateStarter(); break;
+    case STATE.OVERWORLD: updateOverworld(dt); break;
+    case STATE.DIALOG: updateDialog(); break;
+    case STATE.MENU: updateMenu(); break;
+    case STATE.PARTY: updateParty(); break;
+    case STATE.BAG: updateBag(); break;
+    case STATE.DEX: updateDex(); break;
+    case STATE.MAP: updateMapScr(); break;
+    case STATE.SHOP: updateShop(); break;
+    case STATE.BATTLE: updateBattle(); break;
+    case STATE.EVOLVE: updateEvolve(); break;
+  }
+  // Kampf-Animationen weiterlaufen lassen (auch während Textphasen)
+  if(state===STATE.BATTLE||state===STATE.EVOLVE) updateBFX(dt);
+  // Getaktete Animationsphase herunterzählen und danach fortsetzen
+  if(state===STATE.BATTLE && battle.phase==='anim'){
+    battle.animTime-=dt;
+    if(battle.animTime<=0){ const cb=battle.animCb; battle.animCb=null; battle.phase='exec'; if(cb)cb(); }
+  }
+  // Party-Screen Item-Anwendung (aus Beutel im Overworld)
+  if(state===STATE.PARTY && partyScr.applyItem){ handlePartyItemApply(); }
+  clearPressed();
+  // Render
+  CTX.fillStyle='#000'; CTX.fillRect(0,0,VW,VH);
+  switch(state){
+    case STATE.TITLE: drawTitle(); break;
+    case STATE.STARTER: drawStarter(); break;
+    case STATE.OVERWORLD: drawOverworld(); break;
+    case STATE.DIALOG: drawDialog(); break;
+    case STATE.MENU: drawMenu(); break;
+    case STATE.PARTY: drawPartyDetailOrList(); break;
+    case STATE.BAG: drawBag(); break;
+    case STATE.DEX: drawDex(); break;
+    case STATE.MAP: drawMap(); break;
+    case STATE.SHOP: drawShop(); break;
+    case STATE.BATTLE: drawBattle(false); break;
+    case STATE.EVOLVE: drawEvolve(); break;
+  }
+  // Dialog-Text-Tippen
+  if(state===STATE.DIALOG && dlg.charIdx<dlg.full.length){ dlg.charTimer+=dt; if(dlg.charTimer>0.02){ dlg.charTimer=0; dlg.charIdx+=2; if(dlg.charIdx>dlg.full.length)dlg.charIdx=dlg.full.length; } }
+  if(state===STATE.BATTLE && battle.phase==='message' && battleMsgChar<battleMsgFull.length){ battleMsgTimer+=dt; if(battleMsgTimer>0.02){ battleMsgTimer=0; battleMsgChar+=2; if(battleMsgChar>battleMsgFull.length)battleMsgChar=battleMsgFull.length; } }
+  requestAnimationFrame(loop);
+}
+
+function handlePartyItemApply(){
+  // erfolgt im updateParty? Wir bauen eigene Logik:
+}
+function drawPartyDetailOrList(){
+  if(partyScr.detail && G.party[partyScr.idx]){ drawPartyDetail(G.party[partyScr.idx]); }
+  else drawPartyScreen();
+}
+function drawPartyDetail(c){
+  CTX.fillStyle='#243a52'; CTX.fillRect(0,0,VW,VH);
+  const sp=SPECIES[c.species];
+  CTX.fillStyle=TYPE_COLORS[sp.type]; CTX.fillRect(0,0,VW,30);
+  text(c.name+'  Lv'+c.level, 16, 8, '#fff', 14);
+  text(sp.type, VW-80, 10, '#fff', 11);
+  drawCreature(c.species, 40, 50, 80, false);
+  // Statuswerte
+  text('KP   '+c.hp+' / '+c.maxhp, 160, 50, '#fff', 10);
+  drawHpBar(160, 64, 200, c.hp, c.maxhp);
+  text('Angriff '+c.stats.atk+'   Sp.Ang '+c.stats.spatk, 160, 82, '#cde', 9);
+  text('Vert.   '+c.stats.def+'   Sp.Ver '+c.stats.spdef, 160, 96, '#cde', 9);
+  text('Tempo   '+c.stats.spd, 160, 110, '#cde', 9);
+  const need=expForLevel(c.level+1)-expForLevel(c.level), cur=c.exp-expForLevel(c.level);
+  text('E-Punkte bis Lv'+(c.level+1)+': '+(need-cur), 160, 128, '#9ce', 8);
+  const ab=abilityOf(c); text('Fähigkeit: '+ab, 160, 140, '#ffe45a', 9);
+  text('Item: '+(c.held?ITEMS[c.held].name:'—'), 160, 152, '#cfe', 9);
+  // Attacken
+  text('Attacken:', 40, 150, '#ffe', 10);
+  for(let i=0;i<c.moves.length;i++){
+    const mv=c.moves[i]; const m=MOVES[mv.key]; const y=168+i*24;
+    CTX.fillStyle='#1a2838'; CTX.fillRect(40,y,VW-80,20);
+    CTX.fillStyle=TYPE_COLORS[m.type]; CTX.fillRect(40,y,4,20);
+    text(m.name, 50, y+5, '#fff', 9);
+    text(m.type, 200, y+5, TYPE_COLORS[m.type], 8);
+    text('Stärke '+(m.power||'—'), 290, y+5, '#cde', 8);
+    text('AP '+mv.pp+'/'+mv.maxpp, 390, y+5, '#cde', 8);
+  }
+  if(c.status){ text('Status: '+{gift:'Vergiftet',paralyse:'Paralysiert',schlaf:'Schläft'}[c.status], 40, 280, '#e0a040', 9); }
+  textC('B: Zurück', VW/2, VH-12, '#9ab', 8);
+}
+
+/* Item aus Beutel auf gewähltes Party-Wesen anwenden */
+(function patchPartyItem(){
+  const origUpdateParty = updateParty;
+  updateParty = function(){
+    if(partyScr.applyItem){
+      if(consume('b')){ Audio2.sfx('cancel'); partyScr.applyItem=false; state=STATE.BAG; return; }
+      if(consume('up')){ partyScr.idx=(partyScr.idx-1+G.party.length)%G.party.length; Audio2.sfx('select'); }
+      if(consume('down')){ partyScr.idx=(partyScr.idx+1)%G.party.length; Audio2.sfx('select'); }
+      if(consume('a')){
+        const k=bagScr.useItem; const it=ITEMS[k]; const c=G.party[partyScr.idx];
+        let line='', ok=false;
+        if(it.kind==='heal'){ if(c.hp<c.maxhp && c.hp>0){ const b=c.hp; c.hp=Math.min(c.maxhp,c.hp+it.amount); line=c.name+' um '+(c.hp-b)+' KP geheilt!'; ok=true; } else line='Keine Wirkung.'; }
+        else if(it.kind==='revive'){ if(c.hp<=0){ c.hp=Math.floor(c.maxhp*it.amount); c.status=null; line=c.name+' wiederbelebt!'; ok=true; } else line='Keine Wirkung.'; }
+        else if(it.kind==='cure'){ if(c.status===it.cure){ c.status=null; c.sleepTurns=0; line=c.name+' geheilt!'; ok=true; } else line='Keine Wirkung.'; }
+        if(ok){ G.bag[k]--; if(G.bag[k]<=0)delete G.bag[k]; Audio2.sfx('heal'); }
+        partyScr.applyItem=false;
+        openDialog([line], ()=>{ refreshBag(); if(bagScr.items.length){ bagScr.idx=Math.min(bagScr.idx,bagScr.items.length-1); state=STATE.BAG; } else state=STATE.MENU; });
+      }
+      return;
+    }
+    origUpdateParty();
+  };
+})();
+
+/* Test-Hook: gibt die Spieldaten für den Headless-Integritätstest frei (harmlos im Browser). */
+function _gameData(){ return { MAPS, SPECIES, MOVES, TILE_DEF, CREATURE_FILE }; }
+
+/* Start */
+state=STATE.TITLE;
+loadAllAssets();
+Audio2.play('town');
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
