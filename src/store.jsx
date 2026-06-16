@@ -56,11 +56,12 @@ export function StoreProvider({ children }) {
   const [account, setAccount] = useState(null); // local account profile or null (guest)
   const [plan, setPlan] = useState('free');     // server-side billing plan ('free' | 'pro')
   const pro = planIsPro(plan);                  // free-for-all until billing is configured
-  // Active TCG. Always starts as '' so every launch opens on the game-selection
-  // landing page (the "home"), on phone and desktop alike — rather than jumping
-  // straight into the last-played game. selectGame still records the choice for
-  // in-session back/forward navigation.
-  const [activeGame, setActiveGame] = useState('');
+  // Active TCG. Restored from the last-selected game so a page refresh keeps you
+  // where you were instead of bouncing back to the landing page. '' = no game
+  // chosen yet (or you explicitly went Home) → show the game-selection landing.
+  const [activeGame, setActiveGame] = useState(() => {
+    try { return localStorage.getItem(ACTIVE_GAME_KEY) || ''; } catch { return ''; }
+  });
 
   const [compareList, setCompareList] = useState([]);
   const [toast, setToast] = useState(null);

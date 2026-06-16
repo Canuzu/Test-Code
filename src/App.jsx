@@ -89,7 +89,13 @@ const TABS = [
 
 function Shell() {
   const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, alerts, account, activeGame, selectGame, leaveGame, pro, billingEnabled } = useStore();
-  const [tab, setTab] = useState('discover');
+  // Restore the last view across a page refresh: the browser keeps history.state
+  // on reload, so we seed the initial view from it. The game itself is restored
+  // by the store (from localStorage); the per-game sub-view (category/open set)
+  // is only reused when it belongs to that same game.
+  const savedView = (() => { try { return window.history.state?.__kw || null; } catch { return null; } })();
+  const viewForGame = savedView && savedView.game === activeGame ? savedView : null;
+  const [tab, setTab] = useState(savedView?.tab || 'discover');
   const [modal, setModal] = useState(null); // { card, tab }
   const [showCompare, setShowCompare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -102,9 +108,9 @@ function Shell() {
   // Discover's primary navigation (which category + which open set) lives here,
   // not inside Discover, so it becomes part of the browser history below — that
   // makes Back/Forward step Set → Set-list → Start instead of straight out of
-  // the game, and lets us restore the exact sub-view on a popstate.
-  const [discCat, setDiscCat] = useState('start');
-  const [discSet, setDiscSet] = useState(null);
+  // the game, and lets us restore the exact sub-view on a popstate or a refresh.
+  const [discCat, setDiscCat] = useState(viewForGame?.discCat || 'start');
+  const [discSet, setDiscSet] = useState(viewForGame?.discSet ?? null);
 
   // PWA install prompt: capture the event so we can offer an install button.
   useEffect(() => {
@@ -143,6 +149,22 @@ function Shell() {
     requestAnimationFrame(tick);
   };
 
+  // After a full page refresh the data (and thus the page height) loads
+  // asynchronously, so keep re-applying the saved offset until the page is tall
+  // enough to reach it (then one final scroll and stop, so we never fight the
+  // user once content is in), capped at ~2.5 s.
+  const restoreScrollAfterReload = (y) => {
+    if (!y) return;
+    let frames = 0;
+    const tick = () => {
+      frames += 1;
+      const tallEnough = (document.documentElement.scrollHeight - window.innerHeight) >= y - 2;
+      window.scrollTo(0, y);
+      if (!tallEnough && frames < 150) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+
   // Take over scroll restoration from the browser (its automatic guess fights
   // our state-driven views) and continuously record the current scroll offset
   // into the active history entry, so a later Back/Forward can restore it.
@@ -162,7 +184,12 @@ function Shell() {
   }, []);
 
   useEffect(() => {
-    window.history.replaceState({ __kw: { game: activeGame, tab: 'discover', discCat: 'start', discSet: null } }, '');
+    // Preserve an existing entry across a reload (Back/Forward + the saved scroll
+    // keep working); only seed a base entry on a genuinely fresh load.
+    if (!window.history.state?.__kw) {
+      window.history.replaceState({ __kw: { game: activeGame, tab, discCat, discSet } }, '');
+    }
+    restoreScrollAfterReload(window.history.state?.kwScroll || 0);
     const onPop = (e) => {
       const v = e.state?.__kw || {};
       isPopping.current = true;
