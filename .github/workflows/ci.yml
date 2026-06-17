@@ -1,0 +1,26 @@
+name: CI
+
+# Fast checks on every push and pull request: unit tests (Vitest) + the data
+# smoke test + a production build. Separate from deploy.yml so a red test is
+# visible on PRs without touching the live site.
+on:
+  push:
+    branches-ignore: []
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Unit tests
+        run: npm test
+      - name: Data smoke test
+        run: npm run smoke
+      - name: Production build
+        run: npm run build

@@ -9,6 +9,8 @@
     "build": "vite build",
     "build:single": "SINGLE=1 vite build",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "smoke": "node scripts/smoke-data.mjs"
   },
   "dependencies": {
@@ -21,6 +23,7 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
     "vite": "^5.4.8",
-    "vite-plugin-singlefile": "^2.3.3"
+    "vite-plugin-singlefile": "^2.3.3",
+    "vitest": "^4.1.9"
   }
 }

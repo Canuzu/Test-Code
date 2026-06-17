@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDialog } from '../lib/useDialog.js';
 import { X, Check, Crown } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C } from '../lib/theme.js';
@@ -9,6 +10,7 @@ import { startCheckout, openPortal, priceLabel } from '../lib/billing.js';
 //   • billing OFF (no Stripe price configured) → honest "everything free" screen.
 //   • billing ON  → real subscription: Stripe Checkout / Customer Portal.
 export default function PricingModal({ onClose }) {
+  const dialogRef = useDialog(onClose);
   const { pro, billingEnabled, account } = useStore();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -21,7 +23,7 @@ export default function PricingModal({ onClose }) {
 
   const Shell = ({ children, maxWidth = 520 }) => (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: '#000000cc', backdropFilter: 'blur(8px)', zIndex: 130, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth, width: '100%', maxHeight: '92vh', overflow: 'auto', padding: 24, position: 'relative' }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} aria-label="Preise und Pro" onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth, width: '100%', maxHeight: '92vh', overflow: 'auto', padding: 24, position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, background: '#ffffff15', border: 'none', color: C.textSoft, width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={15} /></button>
         {children}
       </div>
