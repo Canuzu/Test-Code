@@ -1,12 +1,18 @@
 import { X } from 'lucide-react';
 import { useDialog } from '../lib/useDialog.js';
 import { OPERATOR } from '../lib/site.js';
+import { billingEnabled } from '../lib/pro.js';
 import { C } from '../lib/theme.js';
 
 // Legal / info modal: Impressum (§5 DDG), Datenschutz (DSGVO) and a trademark
 // disclaimer. The operator's details come from lib/site.js (placeholders until
 // launch). Kept as one self-contained screen, opened from the footer, so no
 // routing is needed on this static site.
+//
+// AGB + Widerrufsbelehrung are only rendered once a paid Pro plan is actually
+// live (billingEnabled === a configured VITE_STRIPE_PRICE_ID). They are plain
+// templates for a digital subscription and MUST be reviewed by a lawyer before
+// real money changes hands — see the footer note.
 
 const Section = ({ title, children }) => (
   <section style={{ marginBottom: 22 }}>
@@ -118,10 +124,98 @@ export default function LegalModal({ tab = 'imprint', onClose }) {
           </p>
         </Section>
 
+        {billingEnabled && (
+          <>
+            <Section title="Allgemeine Geschäftsbedingungen (AGB) – Pro-Abo">
+              <p style={{ margin: '0 0 8px' }}>
+                <strong>1. Geltungsbereich & Vertragspartner.</strong> Diese AGB gelten
+                für das kostenpflichtige „Pro“-Abonnement, das {OPERATOR.name},
+                {' '}{OPERATOR.email} (nachfolgend „Betreiber“), über diese Website
+                anbietet. Maßgeblich ist die bei Vertragsschluss gültige Fassung.
+              </p>
+              <p style={{ margin: '0 0 8px' }}>
+                <strong>2. Leistung.</strong> Pro schaltet zusätzliche Funktionen des
+                Preis-Trackers frei (z. B. erweiterte Watchlist/Alerts, Export). Es
+                handelt sich um digitale Inhalte/Dienste ohne Datenträger. Preisangaben
+                bleiben unverbindliche Informationen ohne Gewähr; Pro begründet keine
+                Anlage- oder Kaufberatung und keine Zusicherung bestimmter Marktwerte.
+              </p>
+              <p style={{ margin: '0 0 8px' }}>
+                <strong>3. Vertragsschluss.</strong> Der Vertrag kommt mit Abschluss
+                des Bestellvorgangs (Bestätigung der kostenpflichtigen Buchung) zustande.
+              </p>
+              <p style={{ margin: '0 0 8px' }}>
+                <strong>4. Preise & Zahlung.</strong> Es gelten die im Bestellvorgang
+                angezeigten Preise inkl. gesetzlicher Umsatzsteuer. Die Abwicklung
+                erfolgt über den Zahlungsdienstleister <em>Stripe</em>; es werden keine
+                Zahlungsdaten auf dieser Seite gespeichert.
+              </p>
+              <p style={{ margin: '0 0 8px' }}>
+                <strong>5. Laufzeit & Kündigung.</strong> Das Abo läuft für den
+                gebuchten Zeitraum und verlängert sich, sofern angeboten, automatisch um
+                die gleiche Laufzeit, falls nicht vor Ablauf gekündigt wird. Die
+                Kündigung ist jederzeit zum Laufzeitende per E-Mail an {OPERATOR.email}
+                {' '}oder über die Kontoeinstellungen möglich. Das gesetzliche Recht zur
+                außerordentlichen Kündigung bleibt unberührt.
+              </p>
+              <p style={{ margin: '0 0 8px' }}>
+                <strong>6. Verfügbarkeit.</strong> Der Betreiber bemüht sich um eine
+                hohe Verfügbarkeit, schuldet diese aber nicht ununterbrochen; Wartung,
+                Störungen Dritter (Hosting, Bild-/Datenquellen) oder höhere Gewalt können
+                den Dienst vorübergehend einschränken.
+              </p>
+              <p style={{ margin: '0 0 8px' }}>
+                <strong>7. Haftung.</strong> Der Betreiber haftet unbeschränkt bei
+                Vorsatz und grober Fahrlässigkeit sowie bei Verletzung von Leben, Körper
+                und Gesundheit. Bei einfacher Fahrlässigkeit nur bei Verletzung
+                wesentlicher Vertragspflichten (Kardinalpflichten) und begrenzt auf den
+                vertragstypischen, vorhersehbaren Schaden. Im Übrigen ist die Haftung
+                ausgeschlossen.
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong>8. Schlussbestimmungen.</strong> Es gilt deutsches Recht unter
+                Ausschluss des UN-Kaufrechts; zwingende Verbraucherschutzvorschriften des
+                Wohnsitzstaates bleiben unberührt. Sollte eine Bestimmung unwirksam sein,
+                bleibt der Vertrag im Übrigen wirksam.
+              </p>
+            </Section>
+
+            <Section title="Widerrufsbelehrung (Verbraucher)">
+              <p style={{ margin: '0 0 8px' }}>
+                <strong>Widerrufsrecht.</strong> Sie haben das Recht, binnen vierzehn
+                Tagen ab Vertragsschluss ohne Angabe von Gründen diesen Vertrag zu
+                widerrufen. Zur Ausübung senden Sie eine eindeutige Erklärung (z. B.
+                Brief oder E-Mail an {OPERATOR.name}, {OPERATOR.email}). Zur Wahrung der
+                Frist genügt die rechtzeitige Absendung.
+              </p>
+              <p style={{ margin: '0 0 8px' }}>
+                <strong>Folgen.</strong> Im Falle eines wirksamen Widerrufs erstatten wir
+                alle erhaltenen Zahlungen unverzüglich, spätestens binnen vierzehn Tagen,
+                über dasselbe Zahlungsmittel.
+              </p>
+              <p style={{ margin: '0 0 8px' }}>
+                <strong>Vorzeitiges Erlöschen.</strong> Das Widerrufsrecht erlischt bei
+                einem Vertrag über digitale Inhalte/Dienste, wenn Sie ausdrücklich
+                zugestimmt haben, dass wir vor Ablauf der Widerrufsfrist mit der
+                Ausführung beginnen, und Sie bestätigt haben, dass Sie dadurch Ihr
+                Widerrufsrecht verlieren (§ 356 Abs. 5 BGB). Diese Zustimmung wird im
+                Bestellvorgang abgefragt.
+              </p>
+              <p style={{ margin: 0, color: C.textFaint, fontSize: 11.5 }}>
+                <strong>Muster-Widerrufsformular:</strong> An {OPERATOR.name},
+                {' '}{OPERATOR.email} – Hiermit widerrufe(n) ich/wir den von mir/uns
+                abgeschlossenen Vertrag über das Pro-Abo. Bestellt am … / Name … /
+                Anschrift … / Datum … / (bei Mitteilung auf Papier: Unterschrift).
+              </p>
+            </Section>
+          </>
+        )}
+
         <div style={{ fontSize: 10.5, color: C.textGhost, borderTop: `1px solid ${C.lineStrong}`, paddingTop: 12, lineHeight: 1.6 }}>
           Stand: Juni 2026 · ⚠️ Vorlage ohne Rechtsberatung. Vor der Veröffentlichung
           die Betreiber-Angaben in <code>src/lib/site.js</code> ausfüllen; im Zweifel
-          rechtlich prüfen lassen.
+          rechtlich prüfen lassen.{billingEnabled ? ' AGB und Widerrufsbelehrung für das ' +
+          'kostenpflichtige Pro-Abo vor dem Verkauf zwingend anwaltlich prüfen lassen.' : ''}
         </div>
       </div>
     </div>
