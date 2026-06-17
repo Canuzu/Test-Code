@@ -15,7 +15,7 @@ import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalize } from '../src/data/providers/magic.js';
-import { slimCards } from '../src/lib/cardCodec.js';
+import { slimSnapshot } from '../src/lib/cardCodec.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/data/magic.json');
@@ -112,13 +112,13 @@ async function main() {
 
   const completedSets = [...new Set(out.map((c) => c.setId))];
   await mkdir(dirname(OUT), { recursive: true });
-  await writeFile(OUT, JSON.stringify({
+  await writeFile(OUT, JSON.stringify(slimSnapshot({
     generatedAt: now.toISOString(),
     source: 'Magic: The Gathering · Cardmarket EUR via Scryfall',
     count: out.length,
     completedSets,
-    cards: slimCards(out, 'magic'),
-  }));
+    cards: out,
+  }, 'magic')));
   console.log(`[fetch-magic] ✓ wrote ${out.length} cards · ${completedSets.length} sets · ${pages} pages (cap ${HARD_CAP})`);
 }
 

@@ -321,7 +321,7 @@ export function StoreProvider({ children }) {
       if (list.length === 0) throw new Error('Snapshot leer');
       // Snapshots ship slimmed (see lib/cardCodec.js): restore the constant /
       // derivable fields so the rest of the app sees the full card shape.
-      rehydrateCards(list, g);
+      rehydrateCards(list, g, data.pricesUpdatedAt);
       const ts = data.generatedAt ? new Date(data.generatedAt).getTime() : Date.now();
       setRawCards(list);
       setSource('snapshot');

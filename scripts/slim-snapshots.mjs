@@ -1,6 +1,6 @@
 // One-off: slim the already-committed public/data/*.json snapshots in place, so
 // the branch ships the smaller payload immediately (the daily build also slims
-// its fresh output — see slimCards() wired into each fetch-*.mjs). Idempotent:
+// its fresh output — see slimSnapshot() wired into each fetch-*.mjs). Idempotent:
 // re-running on an already-slim file is a no-op. The app rehydrates on load, so
 // behaviour is unchanged — only the download/parse gets cheaper.
 //
@@ -9,7 +9,7 @@
 import { readFile, writeFile, stat } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { slimCards } from '../src/lib/cardCodec.js';
+import { slimSnapshot } from '../src/lib/cardCodec.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const D = (f) => resolve(__dirname, '../public/data', f);
@@ -29,8 +29,7 @@ for (const [game, file] of FILES) {
   if (!Array.isArray(data.cards)) { console.log(`⚠ ${file}: no cards array — skipped`); continue; }
 
   const before = (await stat(path)).size;
-  data.cards = slimCards(data.cards, game);
-  await writeFile(path, JSON.stringify(data));
+  await writeFile(path, JSON.stringify(slimSnapshot(data, game)));
   const after = (await stat(path)).size;
   const pct = before ? Math.round((1 - after / before) * 100) : 0;
   console.log(`✓ ${file}: ${(before / 1e6).toFixed(1)}MB → ${(after / 1e6).toFixed(1)}MB  (−${pct}%)`);

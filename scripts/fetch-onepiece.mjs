@@ -17,7 +17,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalize, SET_META } from '../src/data/providers/onepiece.js';
 import { fetchCardmarket } from './fetch-cardmarket.mjs';
-import { slimCards } from '../src/lib/cardCodec.js';
+import { slimSnapshot } from '../src/lib/cardCodec.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/data/onepiece.json');
@@ -51,8 +51,7 @@ async function readExisting() {
 
 async function writeSnapshot(payload) {
   await mkdir(dirname(OUT), { recursive: true });
-  const out = payload.cards ? { ...payload, cards: slimCards(payload.cards, 'onepiece') } : payload;
-  await writeFile(OUT, JSON.stringify(out));
+  await writeFile(OUT, JSON.stringify(slimSnapshot(payload, 'onepiece')));
 }
 
 // Limited-concurrency map so we don't fire 50+ requests at once.
