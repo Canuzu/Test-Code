@@ -723,7 +723,7 @@ function ListView({ cards, onOpen }) {
               <div style={{ fontSize: 10, color: C.textFaint }}>{c.set}{c.rarity ? ` · ${c.rarity}` : ''}</div>
             </div>
           </div>
-          <div style={{ textAlign: 'right', fontWeight: 800, fontSize: 13 }}>{fmtEur(c.m.market)}</div>
+          <div style={{ textAlign: 'right', fontWeight: 800, fontSize: 13 }} title={c.prices?.estimated ? 'geschätzt' : undefined}>{c.prices?.estimated ? '≈ ' : ''}{fmtEur(c.m.market)}</div>
           <div style={{ textAlign: 'right' }}><ChangeBadge value={c.m.change7} size={11} /></div>
           <div style={{ textAlign: 'right' }}><ChangeBadge value={c.m.change30} size={11} /></div>
           <div style={{ textAlign: 'right', fontSize: 12, color: C.blue, fontWeight: 700 }}>{fmtNum(c.m.margin, 0)} %</div>
