@@ -1,4 +1,5 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
+import { useDialog } from '../lib/useDialog.js';
 import { X, Upload, FileText, ScanLine, Download, Camera } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C } from '../lib/theme.js';
@@ -17,6 +18,7 @@ const FIELDS = [
 ];
 
 export default function ImportModal({ onClose }) {
+  const dialogRef = useDialog(onClose);
   const { cards, addManyToPortfolio, showToast } = useStore();
   const [tab, setTab] = useState('csv');
   const [text, setText] = useState('');
@@ -81,7 +83,7 @@ export default function ImportModal({ onClose }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: '#000000bb', backdropFilter: 'blur(6px)', zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 760, width: '100%', maxHeight: '92vh', overflow: 'auto', padding: 20, position: 'relative' }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} aria-label="Sammlung importieren" onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 760, width: '100%', maxHeight: '92vh', overflow: 'auto', padding: 20, position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, background: '#ffffff15', border: 'none', color: C.textSoft, width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={15} /></button>
         <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>📥 Massenimport</div>
         <div style={{ fontSize: 11, color: C.textDim, marginBottom: 16 }}>Hunderte Karten auf einmal in die Sammlung übernehmen</div>

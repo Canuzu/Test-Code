@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { useDialog } from '../lib/useDialog.js';
 import { C } from '../lib/theme.js';
 
 // Legal / info modal: Impressum (§5 DDG), Datenschutz (DSGVO) and a trademark
@@ -24,9 +25,10 @@ const Section = ({ title, children }) => (
 );
 
 export default function LegalModal({ tab = 'imprint', onClose }) {
+  const dialogRef = useDialog(onClose);
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: '#000000cc', backdropFilter: 'blur(8px)', zIndex: 130, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 640, width: '100%', maxHeight: '90vh', overflow: 'auto', padding: 24, position: 'relative' }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} aria-label="Rechtliches" onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 640, width: '100%', maxHeight: '90vh', overflow: 'auto', padding: 24, position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, background: '#ffffff15', border: 'none', color: C.textSoft, width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={15} /></button>
 
         <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 16 }}>Rechtliches</div>

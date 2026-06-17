@@ -1,16 +1,18 @@
 import { X } from 'lucide-react';
+import { useDialog } from '../lib/useDialog.js';
 import { useStore } from '../store.jsx';
 import { C } from '../lib/theme.js';
 import { PLATFORM_FEES } from '../lib/fees.js';
 import { GAMES } from '../data/providers/index.js';
 
 export default function SettingsModal({ onClose }) {
+  const dialogRef = useDialog(onClose);
   const { settings, updateSettings, watchlist, portfolio, tags, showToast, activeGame, selectGame } = useStore();
   const label = { fontSize: 11, color: C.textFaint, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' };
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: '#000000bb', backdropFilter: 'blur(6px)', zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 480, width: '100%', maxHeight: '90vh', overflow: 'auto', padding: 20, position: 'relative' }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} aria-label="Einstellungen" onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 480, width: '100%', maxHeight: '90vh', overflow: 'auto', padding: 20, position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, background: '#ffffff15', border: 'none', color: C.textSoft, width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={15} /></button>
         <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>⚙️ Einstellungen</div>
         <div style={{ fontSize: 11, color: C.textDim, marginBottom: 20 }}>Wirken sich auf alle Berechnungen aus</div>
