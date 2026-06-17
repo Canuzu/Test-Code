@@ -147,6 +147,34 @@ alles kostenlos und ungegated.
    (Scryfall, echte Cardmarket-EUR), Pokémon (pokemontcg.io). One Piece / Yu-Gi-Oh!
    sind Schätzungen → kein Live-Preis.
 
+## One Piece / Yu-Gi-Oh!: echte Cardmarket-Preise (statt Schätzung)
+
+Standardmäßig sind diese Kataloge Schätzungen. Mit den vier MKM-Secrets
+(`CM_APP_TOKEN`, `CM_APP_SECRET`, `CM_ACCESS_TOKEN`, `CM_ACCESS_SECRET`, in
+`deploy.yml` bereits verdrahtet) ersetzt der Build echte Cardmarket-Preise:
+
+- **Standard (Namens-Suche):** schnell, ersetzt nur die Top-Karten (die per
+  Suchbegriff gefundenen ~Hunderte).
+- **Vollständige Abdeckung (opt-in):** Repo-**Variable** `CM_ONEPIECE_FULL=1`
+  setzen. Der Build crawlt dann **jede Expansion → jedes Single →
+  `priceGuide`**, sodass **alle ~4.390 One-Piece-Karten** echte MKM-Preise
+  bekommen. Der Crawl ist:
+  - **request-budget- und rate-limit-fest** — er liest MKMs
+    `X-Request-Limit-*`-Header und stoppt rechtzeitig vor dem Tageslimit (≈5k
+    bei nicht-kommerziellen, deutlich mehr bei Professional-Accounts) bzw. bei
+    HTTP 429;
+  - **resümierbar** — bereits bepreiste Produkte werden über `cmPid` im
+    Snapshot gemerkt und in Folgeläufen übersprungen. Mit knappem Tagesbudget
+    füllt sich die Abdeckung so über mehrere (täglich per Cron getriggerte)
+    Läufe auf, ohne Budget doppelt auszugeben.
+  - Optionale Stellschrauben als Repo-Variablen: `CM_MAX_PRODUCTS` (Produkte
+    pro Lauf, Default 4500) und `CM_CONCURRENCY` (parallele Requests, Default 4).
+
+  Mit einem Professional-MKM-Account (hohes Tageslimit) ist die volle Abdeckung
+  in einem Lauf erreicht; mit einem nicht-kommerziellen Account dauert es einige
+  Läufe. Sobald alle Karten echte Preise haben, kennzeichnet der Snapshot
+  `pricesEstimated: false` und die UI zeigt keinen Schätzungs-Hinweis mehr.
+
 ## Recht (wichtig)
 Mit Accounts ändert sich der Datenschutz: Supabase wird **Auftragsverarbeiter**
 (AVV/DPA abschließen, Region wählen, möglichst EU), Account-/Zahlungsdaten in der

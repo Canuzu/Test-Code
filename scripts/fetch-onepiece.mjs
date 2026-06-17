@@ -16,8 +16,14 @@ import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalize, SET_META } from '../src/data/providers/onepiece.js';
-import { fetchCardmarket } from './fetch-cardmarket.mjs';
+import { fetchCardmarket, fetchCardmarketFull } from './fetch-cardmarket.mjs';
 import { slimSnapshot } from '../src/lib/cardCodec.js';
+
+// Opt-in full Cardmarket coverage: walk every expansion → single → priceGuide so
+// ALL cards get real MKM prices (not just name-search hits). Heavy on the MKM
+// request budget, so it is off unless CM_ONEPIECE_FULL is set, and resumes
+// across runs (already-priced products are skipped). See docs/BACKEND.md.
+const FULL_CM = /^(1|true|yes|on)$/i.test(process.env.CM_ONEPIECE_FULL || '');
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/data/onepiece.json');
@@ -42,11 +48,16 @@ async function getJSON(url, tries = 4) {
   }
 }
 
+// Reads the existing snapshot: card count plus the set of MKM product ids we
+// already priced for real (so a resuming full crawl can skip them).
 async function readExisting() {
   try {
     const j = JSON.parse(await readFile(OUT, 'utf8'));
-    return Array.isArray(j.cards) ? j.cards.length : 0;
-  } catch { return 0; }
+    const cards = Array.isArray(j.cards) ? j.cards : [];
+    const pricedIds = new Set();
+    for (const c of cards) if (c?.cmPid != null && c?.prices?.estimated === false) pricedIds.add(c.cmPid);
+    return { count: cards.length, pricedIds };
+  } catch { return { count: 0, pricedIds: new Set() }; }
 }
 
 async function writeSnapshot(payload) {
@@ -66,8 +77,9 @@ async function mapPool(items, limit, fn) {
 }
 
 async function main() {
-  const had = await readExisting();
-  console.log(`[fetch-onepiece] source ${RAW} · existing snapshot: ${had} cards`);
+  const { count: had, pricedIds } = await readExisting();
+  console.log(`[fetch-onepiece] source ${RAW} · existing snapshot: ${had} cards` +
+    (FULL_CM ? ` · full Cardmarket crawl ON (${pricedIds.size} already priced)` : ''));
 
   let packs;
   try {
@@ -104,9 +116,19 @@ async function main() {
   // Optional: official Cardmarket (MKM) API. With the CM_* secrets set, real MKM
   // prices REPLACE the estimate on every card we can match — by collector code
   // (e.g. OP01-001), or by set name + number. No-op without credentials.
+  //   • default: a quick name-search (fast, top cards only).
+  //   • CM_ONEPIECE_FULL: a full expansion crawl so ALL cards get real prices,
+  //     resuming across runs (skips products priced in earlier runs).
   let cmEnriched = 0;
   try {
-    const cmCards = await fetchCardmarket({ game: 'onepiece', limit: 800, perTerm: 20 });
+    let cmCards = [];
+    if (FULL_CM) {
+      const res = await fetchCardmarketFull({ game: 'onepiece', skipIds: pricedIds });
+      cmCards = res.cards;
+      if (res.done) console.log('[fetch-onepiece] full Cardmarket crawl: all outstanding products priced this run');
+    } else {
+      cmCards = await fetchCardmarket({ game: 'onepiece', limit: 800, perTerm: 20 });
+    }
     if (cmCards.length) {
       const nameToCode = new Map(Object.entries(SET_META).map(([code, m]) => [m.name.toLowerCase(), code]));
       const pad3 = (s) => String(s ?? '').replace(/\D/g, '').padStart(3, '0');
@@ -121,6 +143,9 @@ async function main() {
         const base = byId.get(id);
         base.prices = { ...cm.prices, estimated: false };
         if (cm.cardmarketUrl) base.cardmarketUrl = cm.cardmarketUrl;
+        // Remember the MKM product id so a resuming full crawl can skip this card.
+        const pid = Number(String(cm.id).replace(/^cm-/, ''));
+        if (Number.isFinite(pid)) base.cmPid = pid;
         base.source = 'cardmarket';
         cmEnriched++;
       }
@@ -128,6 +153,29 @@ async function main() {
     }
   } catch (e) {
     console.error(`[fetch-onepiece] Cardmarket step failed: ${e.message}`);
+  }
+
+  // Re-apply real prices that earlier runs already fetched (full-crawl resume):
+  // the catalogue is rebuilt fresh each run, so carry the persisted MKM prices
+  // forward instead of reverting those cards to the estimate.
+  let cmCarried = 0;
+  if (FULL_CM && pricedIds.size) {
+    try {
+      const prev = JSON.parse(await readFile(OUT, 'utf8'));
+      for (const c of (Array.isArray(prev.cards) ? prev.cards : [])) {
+        if (c?.cmPid == null || c?.prices?.estimated !== false) continue;
+        const base = byId.get(c.id);
+        if (!base || base.source === 'cardmarket') continue; // freshly priced this run wins
+        base.prices = { ...c.prices, currency: 'EUR', estimated: false };
+        if (c.cardmarketUrl) base.cardmarketUrl = c.cardmarketUrl;
+        base.cmPid = c.cmPid;
+        base.source = 'cardmarket';
+        cmEnriched++; cmCarried++;
+      }
+      if (cmCarried) console.log(`[fetch-onepiece] carried ${cmCarried} real MKM prices forward from the previous snapshot`);
+    } catch (e) {
+      console.error(`[fetch-onepiece] carry-forward failed: ${e.message}`);
+    }
   }
 
   // Newest set first, then by card number within a set.
