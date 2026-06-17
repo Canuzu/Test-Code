@@ -6,7 +6,7 @@ import { GAMES } from '../data/providers/index.js';
 import LogoMark from './LogoMark.jsx';
 import GameMark from './GameMark.jsx';
 
-export default function GameSelect({ onPick, onLegal }) {
+export default function GameSelect({ onPick, onLegal, onFaq }) {
   return (
     <div style={{ minHeight: '100vh', background: `linear-gradient(160deg, ${C.appGrad1} 0%, ${C.appGrad2} 100%)`, color: C.text, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px calc(40px + env(safe-area-inset-bottom))' }}>
       {/* Brand */}
@@ -57,6 +57,7 @@ export default function GameSelect({ onPick, onLegal }) {
       </div>
       <div style={{ fontSize: 10, color: C.textGhost, marginTop: 16, textAlign: 'center', maxWidth: 600, lineHeight: 1.6, opacity: 0.85 }}>
         Inoffizielles Fan-Projekt – nicht verbunden mit Nintendo/The Pokémon Company, Bandai, Konami oder Wizards of the Coast. Marken & Kartenbilder gehören ihren Rechteinhabern.
+        {onFaq && <> · <button onClick={onFaq} style={{ background: 'none', border: 'none', color: C.textFaint, cursor: 'pointer', fontSize: 10, textDecoration: 'underline', padding: 0 }}>Hilfe & FAQ</button></>}
         {onLegal && <> · <button onClick={onLegal} style={{ background: 'none', border: 'none', color: C.textFaint, cursor: 'pointer', fontSize: 10, textDecoration: 'underline', padding: 0 }}>Impressum & Datenschutz</button></>}
       </div>
     </div>

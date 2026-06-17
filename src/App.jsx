@@ -42,6 +42,7 @@ const ImportModal = lazyChunk(() => import('./components/ImportModal.jsx'));
 const PricingModal = lazyChunk(() => import('./components/PricingModal.jsx'));
 const AuthModal = lazyChunk(() => import('./components/AuthModal.jsx'));
 const LegalModal = lazyChunk(() => import('./components/LegalModal.jsx'));
+const FaqModal = lazyChunk(() => import('./components/FaqModal.jsx'));
 
 // Catches any render error inside the lazy modals so a single broken view shows
 // a recoverable message instead of blanking the whole app (white screen).
@@ -104,6 +105,7 @@ function Shell() {
   const [showPricing, setShowPricing] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [showLegal, setShowLegal] = useState(false);
+  const [showFaq, setShowFaq] = useState(false);
   const [installEvt, setInstallEvt] = useState(null);
   const [discoverKey, setDiscoverKey] = useState(0); // bump to reset Discover to its start page
   // Discover's primary navigation (which category + which open set) lives here,
@@ -253,9 +255,10 @@ function Shell() {
   // No game chosen yet → the game-selection landing page is the whole screen.
   if (!activeGame) return (
     <>
-      <GameSelect onPick={pickGame} onLegal={() => setShowLegal(true)} />
+      <GameSelect onPick={pickGame} onLegal={() => setShowLegal(true)} onFaq={() => setShowFaq(true)} />
       <Suspense fallback={null}>
         {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
+        {showFaq && <FaqModal onClose={() => setShowFaq(false)} />}
       </Suspense>
     </>
   );
@@ -351,6 +354,8 @@ function Shell() {
         Keine Anlageberatung. TCG-Investments sind volatil; investiere nur, was du entbehren kannst.
         Der Investment-Score ist eine berechnete Heuristik, keine garantierte Prognose.
         <div style={{ marginTop: 12, display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => setShowFaq(true)} style={{ background: 'none', border: 'none', color: C.textFaint, cursor: 'pointer', fontSize: 10.5, textDecoration: 'underline', padding: 0 }}>Hilfe & FAQ</button>
+          <span style={{ color: C.textGhost }}>·</span>
           <button onClick={() => setShowLegal(true)} style={{ background: 'none', border: 'none', color: C.textFaint, cursor: 'pointer', fontSize: 10.5, textDecoration: 'underline', padding: 0 }}>Impressum & Datenschutz</button>
           <span style={{ color: C.textGhost }}>·</span>
           <span>Inoffizielles Fan-Projekt – alle Marken & Kartenbilder gehören ihren Rechteinhabern.</span>
@@ -385,6 +390,7 @@ function Shell() {
           {showPricing && <PricingModal onClose={() => setShowPricing(false)} />}
           {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
           {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
+          {showFaq && <FaqModal onClose={() => setShowFaq(false)} />}
         </Suspense>
       </ModalBoundary>
 
