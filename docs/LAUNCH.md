@@ -4,9 +4,30 @@ Kurzreferenz für den Go-Live. Stand: Juni 2026.
 
 ## 1. Impressum ausfüllen (Pflicht in DE)
 
-`src/components/LegalModal.jsx` ganz oben das `OPERATOR`-Objekt — alle `[[…]]`
-ersetzen (Name, Anschrift, E-Mail). Repo nach `[[` durchsuchen, es darf danach
-**kein** `[[` mehr geben (auch nicht im Datenschutz-Hinweis unten).
+In `src/lib/site.js` das `OPERATOR`-Objekt — alle `[[…]]` ersetzen (Name,
+Anschrift, E-Mail). Repo nach `[[` durchsuchen, es darf danach **kein** `[[`
+mehr geben. Die Angaben speisen Impressum, Datenschutz und (sofern Pro aktiv)
+AGB/Widerruf zentral.
+
+## 1b. Bezahltes Pro / Stripe aktivieren (optional)
+
+Pro-Abo ist standardmäßig **aus**. Zum Aktivieren `VITE_STRIPE_PRICE_ID` (Live-
+Price-ID) als Build-Env setzen — erst dann gilt `billingEnabled` und im
+Rechtliches-Modal erscheinen automatisch **AGB** und **Widerrufsbelehrung** für
+das Pro-Abo.
+
+- ⚠️ **AGB + Widerrufsbelehrung sind Vorlagen** — vor dem ersten Verkauf
+  **anwaltlich prüfen** lassen (Pflichtangaben, Widerruf bei digitalen
+  Diensten, Verbraucherschutz).
+- ⚠️ **Marken-/Bildrechte:** Kommerzialisierung erhöht das Risiko von
+  Abmahnungen/C&D durch die Rechteinhaber (Pokémon/Nintendo, Bandai, Konami,
+  WotC) deutlich, weil offizielle Namen und Kartenbilder genutzt werden.
+  Mitigation: Pro-Mehrwert von den geschützten Inhalten entkoppeln (eigene
+  Tools/Daten statt fremder Bilder als Verkaufsargument), Bilder nicht spiegeln
+  sondern aus erlaubten Quellen nachladen, ggf. Cardmarket-Affiliate statt Abo,
+  und im Zweifel rechtlich beraten lassen.
+- Stripe-Webhooks/Backend gemäß `docs/BACKEND.md` einrichten; Erstattung &
+  Kündigung müssen funktionieren (siehe AGB §5 / Widerruf).
 
 ## 2. Eigene Domain (#10)
 
