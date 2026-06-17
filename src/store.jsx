@@ -20,11 +20,6 @@ export const useStore = () => useContext(StoreContext);
 
 const DEFAULT_SETTINGS = { game: 'pokemon', apiKey: '', platform: 'cardmarket', includeShipping: true, theme: 'dark', fxEurUsd: 1.08, pro: false, buyRules: null };
 
-// The last-selected game persists at the account level (outside the per-game
-// namespace) so reopening the app returns you to the same TCG. '' = no game
-// chosen yet → show the game-selection landing page.
-const ACTIVE_GAME_KEY = 'kwde_active_game';
-
 // Per-game bundled sample dataset (used until a live snapshot loads).
 const SAMPLES = { pokemon: SAMPLE_CARDS, onepiece: ONE_PIECE_CARDS, yugioh: YUGIOH_CARDS, magic: MAGIC_CARDS };
 const sampleFor = (g) => SAMPLES[g] || [];
@@ -57,12 +52,13 @@ export function StoreProvider({ children }) {
   const [account, setAccount] = useState(null); // local account profile or null (guest)
   const [plan, setPlan] = useState('free');     // server-side billing plan ('free' | 'pro')
   const pro = planIsPro(plan);                  // free-for-all until billing is configured
-  // Active TCG. A shared deep link (#/<game>/...) wins, so opening someone else's
-  // link lands on the right game; otherwise we restore the last-selected game so a
-  // refresh keeps you where you were. '' = no game chosen → landing page.
+  // Active TCG, derived solely from the URL. A deep link (#/<game>/...) — incl.
+  // the hash the app keeps in sync while you browse, so an in-game refresh stays
+  // put — lands on that game. A bare link with no game always opens the
+  // game-selection landing page. '' = no game chosen → landing page.
   const [activeGame, setActiveGame] = useState(() => {
     try { const h = hashToView(window.location.hash); if (h.game) return h.game; } catch { /* ignore */ }
-    try { return localStorage.getItem(ACTIVE_GAME_KEY) || ''; } catch { return ''; }
+    return '';
   });
 
   const [compareList, setCompareList] = useState([]);
@@ -144,12 +140,12 @@ export function StoreProvider({ children }) {
   }, []);
 
   // Pick a game from the landing page (or switch games): re-key storage to that
-  // game's namespace, load its profile + dataset, and remember the choice.
+  // game's namespace and load its profile + dataset. The choice is reflected in
+  // the URL hash (App keeps it in sync), so a refresh stays on this game.
   const selectGame = useCallback((g) => {
     if (!g) return;
     setGameNamespace(g);
     setActiveGame(g);
-    try { localStorage.setItem(ACTIVE_GAME_KEY, g); } catch { /* ignore */ }
     setSettings((prev) => ({ ...prev, game: g }));
     loadAll();
     loadGameData(g);
@@ -158,7 +154,6 @@ export function StoreProvider({ children }) {
   // Return to the game-selection landing page (does not erase any data).
   const leaveGame = useCallback(() => {
     setActiveGame('');
-    try { localStorage.removeItem(ACTIVE_GAME_KEY); } catch { /* ignore */ }
   }, []);
 
   // ---- persistence ------------------------------------------------------
