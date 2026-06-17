@@ -1,21 +1,12 @@
 import { X } from 'lucide-react';
 import { useDialog } from '../lib/useDialog.js';
+import { OPERATOR } from '../lib/site.js';
 import { C } from '../lib/theme.js';
 
 // Legal / info modal: Impressum (§5 DDG), Datenschutz (DSGVO) and a trademark
-// disclaimer. The Impressum fields are PLACEHOLDERS — the operator must fill in
-// their real name + address before going public (a German site legally requires
-// a reachable Impressum). Kept as one self-contained screen, opened from the
-// footer, so no routing is needed on this static site.
-//
-// Placeholders to replace before launch are wrapped in [[ ]] so they're easy to
-// find (search the repo for "[[").
-const OPERATOR = {
-  name: '[[Dein Name]]',
-  street: '[[Straße & Hausnummer]]',
-  city: '[[PLZ Ort]]',
-  email: '[[deine@email.de]]',
-};
+// disclaimer. The operator's details come from lib/site.js (placeholders until
+// launch). Kept as one self-contained screen, opened from the footer, so no
+// routing is needed on this static site.
 
 const Section = ({ title, children }) => (
   <section style={{ marginBottom: 22 }}>
@@ -92,12 +83,24 @@ export default function LegalModal({ tab = 'imprint', onClose }) {
           <p style={{ margin: '0 0 8px' }}>
             <strong>Lokale Speicherung & Cookies:</strong> Deine Sammlung, Watchlist,
             Alerts, Konten und Einstellungen werden ausschließlich <strong>lokal in
-            deinem Browser</strong> (localStorage) gespeichert – sie verlassen dein
-            Gerät nicht und werden nicht an uns übertragen. <strong>Diese Website
-            setzt keine Cookies</strong> – weder eigene noch von Dritten – und es
-            findet <strong>kein Tracking, keine Analyse und keine Werbung</strong>
-            statt. Ein Cookie-Banner ist daher nicht erforderlich; die lokale
-            Speicherung ist für den Betrieb technisch notwendig und einwilligungsfrei.
+            deinem Browser</strong> (localStorage/sessionStorage) gespeichert – sie
+            verlassen dein Gerät nicht und werden nicht an uns übertragen.
+            <strong> Diese Website setzt keine Cookies</strong> – weder eigene noch von
+            Dritten. Die lokale Speicherung ist für den Betrieb technisch notwendig
+            und einwilligungsfrei; solange keine einwilligungspflichtigen Technologien
+            aktiv sind, ist kein Cookie-Banner erforderlich.
+          </p>
+          <p style={{ margin: '0 0 8px' }}>
+            <strong>Reichweitenmessung & Fehler-Monitoring (optional):</strong>
+            Standardmäßig findet <strong>keine Analyse und kein Tracking</strong>
+            statt. Sofern der Betreiber eine <strong>cookielose, anonyme
+            Reichweitenmessung</strong> (z. B. Plausible oder GoatCounter) aktiviert,
+            werden dabei nur aggregierte, nicht-personenbezogene Aufrufdaten ohne
+            Cookies und ohne geräteübergreifende Profile verarbeitet. Ein optionales
+            <strong> Fehler-Monitoring</strong> (z. B. Sentry) überträgt im Fehlerfall
+            technische Diagnosedaten (Fehlermeldung, Seitenpfad ohne Parameter,
+            Browsertyp) zur Stabilitätssicherung. Rechtsgrundlage jeweils Art. 6
+            Abs. 1 lit. f DSGVO (sicherer, verbesserter Betrieb).
           </p>
           <p style={{ margin: '0 0 8px' }}>
             <strong>Konto & Zahlung (optional):</strong> Falls Konten aktiviert sind,
@@ -117,8 +120,8 @@ export default function LegalModal({ tab = 'imprint', onClose }) {
 
         <div style={{ fontSize: 10.5, color: C.textGhost, borderTop: `1px solid ${C.lineStrong}`, paddingTop: 12, lineHeight: 1.6 }}>
           Stand: Juni 2026 · ⚠️ Vorlage ohne Rechtsberatung. Vor der Veröffentlichung
-          die [[Platzhalter]] mit echten Angaben ersetzen; im Zweifel rechtlich
-          prüfen lassen.
+          die Betreiber-Angaben in <code>src/lib/site.js</code> ausfüllen; im Zweifel
+          rechtlich prüfen lassen.
         </div>
       </div>
     </div>
