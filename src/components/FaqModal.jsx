@@ -1,13 +1,11 @@
 import { X } from 'lucide-react';
 import { useDialog } from '../lib/useDialog.js';
+import { SUPPORT_EMAIL } from '../lib/site.js';
 import { C } from '../lib/theme.js';
 
 // Help / FAQ / About — a self-contained screen opened from the footer (and the
 // landing page), so new visitors understand what the app is, where prices come
-// from, and how to reach support. No routing needed on this static site.
-//
-// The support address is a PLACEHOLDER until launch (search the repo for "[[").
-const SUPPORT_EMAIL = '[[deine@email.de]]';
+// from, and how to reach support. The support address comes from lib/site.js.
 
 const Q = ({ q, children }) => (
   <section style={{ marginBottom: 18 }}>
