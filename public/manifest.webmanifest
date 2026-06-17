@@ -1,7 +1,8 @@
 {
+  "id": "./",
   "name": "Cartograph — TCG Preistracker",
   "short_name": "Cartograph",
-  "description": "Live-Preistracker für Pokémon-Karten (Cardmarket EU): interaktive Charts, Buylist, Grading, Lagerbestand und Preis-Alerts.",
+  "description": "Live-Preistracker für Sammelkarten (Pokémon, Magic, One Piece, Yu-Gi-Oh!) mit Fokus auf den europäischen Markt (Cardmarket EU): Preisentwicklung, interaktive Charts, Investment-Score, Watchlist, Sammlung & Preis-Alerts.",
   "lang": "de",
   "dir": "ltr",
   "start_url": "./",
@@ -10,6 +11,7 @@
   "orientation": "portrait-primary",
   "background_color": "#0a0a18",
   "theme_color": "#0a0a18",
+  "prefer_related_applications": false,
   "categories": ["finance", "shopping", "productivity"],
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

@@ -16,7 +16,7 @@ import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalize, rarityLabel } from '../src/data/providers/yugioh.js';
-import { slimCards } from '../src/lib/cardCodec.js';
+import { slimSnapshot } from '../src/lib/cardCodec.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/data/yugioh.json');
@@ -155,14 +155,14 @@ async function main() {
 
   const completedSets = [...new Set(out.map((c) => c.setId))];
   await mkdir(dirname(OUT), { recursive: true });
-  await writeFile(OUT, JSON.stringify({
+  await writeFile(OUT, JSON.stringify(slimSnapshot({
     generatedAt: now.toISOString(),
     source: 'Yu-Gi-Oh! (official art) via YGOJSON · prices estimated',
     pricesEstimated: true,
     count: out.length,
     completedSets,
-    cards: slimCards(out, 'yugioh'),
-  }));
+    cards: out,
+  }, 'yugioh')));
   console.log(`[fetch-yugioh] ✓ wrote ${out.length} cards · ${completedSets.length} sets`);
 }
 
