@@ -12,6 +12,7 @@ import GameMark from './components/GameMark.jsx';
 import GameSelect from './components/GameSelect.jsx';
 import { getGame } from './data/providers/index.js';
 import { clearDiscoverMemo } from './lib/discoverMemo.js';
+import { trackView } from './lib/analytics.js';
 
 // Heavy / on-demand views are code-split so the charting library (recharts)
 // and modals are not part of the initial bundle.
@@ -41,6 +42,7 @@ const ImportModal = lazyChunk(() => import('./components/ImportModal.jsx'));
 const PricingModal = lazyChunk(() => import('./components/PricingModal.jsx'));
 const AuthModal = lazyChunk(() => import('./components/AuthModal.jsx'));
 const LegalModal = lazyChunk(() => import('./components/LegalModal.jsx'));
+const FaqModal = lazyChunk(() => import('./components/FaqModal.jsx'));
 
 // Catches any render error inside the lazy modals so a single broken view shows
 // a recoverable message instead of blanking the whole app (white screen).
@@ -89,7 +91,13 @@ const TABS = [
 
 function Shell() {
   const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, alerts, account, activeGame, selectGame, leaveGame, pro, billingEnabled } = useStore();
-  const [tab, setTab] = useState('discover');
+  // Restore the last view across a page refresh: the browser keeps history.state
+  // on reload, so we seed the initial view from it. The game itself is restored
+  // by the store (from localStorage); the per-game sub-view (category/open set)
+  // is only reused when it belongs to that same game.
+  const savedView = (() => { try { return window.history.state?.__kw || null; } catch { return null; } })();
+  const viewForGame = savedView && savedView.game === activeGame ? savedView : null;
+  const [tab, setTab] = useState(savedView?.tab || 'discover');
   const [modal, setModal] = useState(null); // { card, tab }
   const [showCompare, setShowCompare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -97,14 +105,24 @@ function Shell() {
   const [showPricing, setShowPricing] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [showLegal, setShowLegal] = useState(false);
+  const [showFaq, setShowFaq] = useState(false);
   const [installEvt, setInstallEvt] = useState(null);
   const [discoverKey, setDiscoverKey] = useState(0); // bump to reset Discover to its start page
   // Discover's primary navigation (which category + which open set) lives here,
   // not inside Discover, so it becomes part of the browser history below — that
   // makes Back/Forward step Set → Set-list → Start instead of straight out of
-  // the game, and lets us restore the exact sub-view on a popstate.
-  const [discCat, setDiscCat] = useState('start');
-  const [discSet, setDiscSet] = useState(null);
+  // the game, and lets us restore the exact sub-view on a popstate or a refresh.
+  const [discCat, setDiscCat] = useState(viewForGame?.discCat || 'start');
+  const [discSet, setDiscSet] = useState(viewForGame?.discSet ?? null);
+
+  // Privacy-friendly view tracking: a coarse path only (game + tab + whether a
+  // set is open), never card names or IDs. No-op unless analytics is configured.
+  useEffect(() => {
+    const path = activeGame
+      ? `/${activeGame}/${tab}${tab === 'discover' && discSet ? '/set' : ''}`
+      : '/home';
+    trackView(path);
+  }, [activeGame, tab, discSet]);
 
   // PWA install prompt: capture the event so we can offer an install button.
   useEffect(() => {
@@ -143,6 +161,22 @@ function Shell() {
     requestAnimationFrame(tick);
   };
 
+  // After a full page refresh the data (and thus the page height) loads
+  // asynchronously, so keep re-applying the saved offset until the page is tall
+  // enough to reach it (then one final scroll and stop, so we never fight the
+  // user once content is in), capped at ~2.5 s.
+  const restoreScrollAfterReload = (y) => {
+    if (!y) return;
+    let frames = 0;
+    const tick = () => {
+      frames += 1;
+      const tallEnough = (document.documentElement.scrollHeight - window.innerHeight) >= y - 2;
+      window.scrollTo(0, y);
+      if (!tallEnough && frames < 150) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+
   // Take over scroll restoration from the browser (its automatic guess fights
   // our state-driven views) and continuously record the current scroll offset
   // into the active history entry, so a later Back/Forward can restore it.
@@ -162,7 +196,12 @@ function Shell() {
   }, []);
 
   useEffect(() => {
-    window.history.replaceState({ __kw: { game: activeGame, tab: 'discover', discCat: 'start', discSet: null } }, '');
+    // Preserve an existing entry across a reload (Back/Forward + the saved scroll
+    // keep working); only seed a base entry on a genuinely fresh load.
+    if (!window.history.state?.__kw) {
+      window.history.replaceState({ __kw: { game: activeGame, tab, discCat, discSet } }, '');
+    }
+    restoreScrollAfterReload(window.history.state?.kwScroll || 0);
     const onPop = (e) => {
       const v = e.state?.__kw || {};
       isPopping.current = true;
@@ -216,9 +255,10 @@ function Shell() {
   // No game chosen yet → the game-selection landing page is the whole screen.
   if (!activeGame) return (
     <>
-      <GameSelect onPick={pickGame} onLegal={() => setShowLegal(true)} />
+      <GameSelect onPick={pickGame} onLegal={() => setShowLegal(true)} onFaq={() => setShowFaq(true)} />
       <Suspense fallback={null}>
         {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
+        {showFaq && <FaqModal onClose={() => setShowFaq(false)} />}
       </Suspense>
     </>
   );
@@ -314,6 +354,8 @@ function Shell() {
         Keine Anlageberatung. TCG-Investments sind volatil; investiere nur, was du entbehren kannst.
         Der Investment-Score ist eine berechnete Heuristik, keine garantierte Prognose.
         <div style={{ marginTop: 12, display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => setShowFaq(true)} style={{ background: 'none', border: 'none', color: C.textFaint, cursor: 'pointer', fontSize: 10.5, textDecoration: 'underline', padding: 0 }}>Hilfe & FAQ</button>
+          <span style={{ color: C.textGhost }}>·</span>
           <button onClick={() => setShowLegal(true)} style={{ background: 'none', border: 'none', color: C.textFaint, cursor: 'pointer', fontSize: 10.5, textDecoration: 'underline', padding: 0 }}>Impressum & Datenschutz</button>
           <span style={{ color: C.textGhost }}>·</span>
           <span>Inoffizielles Fan-Projekt – alle Marken & Kartenbilder gehören ihren Rechteinhabern.</span>
@@ -348,6 +390,7 @@ function Shell() {
           {showPricing && <PricingModal onClose={() => setShowPricing(false)} />}
           {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
           {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
+          {showFaq && <FaqModal onClose={() => setShowFaq(false)} />}
         </Suspense>
       </ModalBoundary>
 

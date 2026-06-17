@@ -1,34 +1,42 @@
 // Snapshot slimming / rehydration — shared by the build scripts (Node) and the
 // app (browser), so the on-disk shape and the in-memory shape never drift.
 //
-// The committed public/data/*.json snapshots are 11–14 MB each, which makes the
-// very first load slow (download + JSON.parse). A large share of those bytes is
-// either CONSTANT for a whole file or trivially DERIVABLE per card:
+// The committed public/data/*.json snapshots are several MB each, which makes
+// the very first load slow (download + JSON.parse). A large share of those bytes
+// is either CONSTANT for a whole file or trivially DERIVABLE per card. We strip
+// those at build time and rehydrate them on load, so every component still sees
+// the full, unchanged card shape.
 //
 //   • game            – the same value for every card in a file
 //   • image.large     – Pokémon: small + "_hires"; every other game: identical
-//                        to image.small (so it is pure duplication)
+//                        to image.small (pure duplication)
 //   • prices.currency – always "EUR"
+//   • prices.updatedAt– usually one date for the whole snapshot → hoisted to a
+//                        snapshot-level `pricesUpdatedAt`, kept per-card only when
+//                        it differs (Pokémon's incremental build mixes dates)
+//   • series          – not shown anywhere in the UI
+//   • baseName        – almost always equals nameEn → kept only when it differs
 //   • cardmarketUrl   – Pokémon: the prices.pokemontcg.io/cardmarket/<id> redirect
 //                        (rebuilt from id); Yu-Gi-Oh!/One Piece: a name+set search
 //                        URL that cmUrl() rederives; Magic: the exact product page,
 //                        kept as a compact numeric `cmId` instead of the full URL.
-//
-// `slimCards` strips those at build time; `rehydrateCards` puts them back on load
-// so every component still sees the full, unchanged card shape.
 
 // --- slim (build time) -----------------------------------------------------
-export function slimCard(card, game) {
+function slimCard(card, game, defaultUpdatedAt) {
   const c = { ...card };
-  delete c.game; // constant per file → re-added on load from the snapshot's game
+  delete c.game;   // constant per file → re-added on load from the snapshot's game
+  delete c.series; // unused in the UI
+
+  // baseName almost always duplicates nameEn (or name) → keep only when it differs.
+  if (c.baseName != null && c.baseName === (c.nameEn || c.name)) delete c.baseName;
 
   // Keep only image.small; large is derivable (Pokémon) or identical (others).
   if (c.image && c.image.small) c.image = { small: c.image.small };
 
-  // prices.currency is always EUR.
-  if (c.prices && c.prices.currency != null) {
+  if (c.prices && (c.prices.currency != null || c.prices.updatedAt === defaultUpdatedAt)) {
     c.prices = { ...c.prices };
-    delete c.prices.currency;
+    delete c.prices.currency;                                   // always EUR
+    if (c.prices.updatedAt === defaultUpdatedAt) delete c.prices.updatedAt; // == snapshot default
   }
 
   // cardmarketUrl: drop when derivable; keep Magic's exact product as a number.
@@ -46,16 +54,38 @@ export function slimCard(card, game) {
   return c;
 }
 
-export function slimCards(cards, game) {
-  return (cards || []).map((c) => slimCard(c, game));
+// Most common prices.updatedAt across a snapshot (so the per-card field can be
+// hoisted to the snapshot level for the majority and kept only for outliers).
+function modeUpdatedAt(cards) {
+  const counts = new Map();
+  for (const c of cards) {
+    const u = c && c.prices && c.prices.updatedAt;
+    if (u) counts.set(u, (counts.get(u) || 0) + 1);
+  }
+  let best = null; let n = -1;
+  for (const [u, k] of counts) if (k > n) { n = k; best = u; }
+  return best;
+}
+
+// Slim a whole snapshot object: hoists pricesUpdatedAt and slims every card.
+export function slimSnapshot(snap, game) {
+  const cards = Array.isArray(snap && snap.cards) ? snap.cards : [];
+  const mode = modeUpdatedAt(cards);
+  return {
+    ...snap,
+    pricesUpdatedAt: mode || (snap && snap.pricesUpdatedAt) || undefined,
+    cards: cards.map((c) => slimCard(c, game, mode)),
+  };
 }
 
 // --- rehydrate (load time) -------------------------------------------------
 // Mutates in place (the parsed JSON is owned by the caller) and returns the card.
-export function rehydrateCard(card, game) {
+export function rehydrateCard(card, game, pricesUpdatedAt) {
   if (!card) return card;
   const g = card.game || game;
   if (g && !card.game) card.game = g;
+
+  if (card.baseName == null) card.baseName = card.nameEn || card.name;
 
   if (card.image && card.image.small && !card.image.large) {
     card.image.large = g === 'pokemon'
@@ -63,7 +93,10 @@ export function rehydrateCard(card, game) {
       : card.image.small;
   }
 
-  if (card.prices && card.prices.currency == null) card.prices.currency = 'EUR';
+  if (card.prices) {
+    if (card.prices.currency == null) card.prices.currency = 'EUR';
+    if (card.prices.updatedAt == null && pricesUpdatedAt) card.prices.updatedAt = pricesUpdatedAt;
+  }
 
   if (!card.cardmarketUrl) {
     if (g === 'pokemon' && card.id) {
@@ -75,7 +108,7 @@ export function rehydrateCard(card, game) {
   return card;
 }
 
-export function rehydrateCards(cards, game) {
-  if (Array.isArray(cards)) for (const c of cards) rehydrateCard(c, game);
+export function rehydrateCards(cards, game, pricesUpdatedAt) {
+  if (Array.isArray(cards)) for (const c of cards) rehydrateCard(c, game, pricesUpdatedAt);
   return cards;
 }
