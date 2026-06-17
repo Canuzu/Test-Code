@@ -3,8 +3,10 @@ import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
 import './index.css';
 import { initAnalytics } from './lib/analytics.js';
+import { initErrorReporting } from './lib/errorReporting.js';
 
-// Privacy-friendly, cookieless analytics (no-op unless configured via env).
+// Error monitoring + privacy-friendly analytics (both no-ops unless configured).
+initErrorReporting();
 initAnalytics();
 
 createRoot(document.getElementById('root')).render(

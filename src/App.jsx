@@ -13,6 +13,7 @@ import GameSelect from './components/GameSelect.jsx';
 import { getGame } from './data/providers/index.js';
 import { clearDiscoverMemo } from './lib/discoverMemo.js';
 import { trackView } from './lib/analytics.js';
+import { reportError } from './lib/errorReporting.js';
 
 // Heavy / on-demand views are code-split so the charting library (recharts)
 // and modals are not part of the initial bundle.
@@ -49,7 +50,7 @@ const FaqModal = lazyChunk(() => import('./components/FaqModal.jsx'));
 class ModalBoundary extends Component {
   constructor(props) { super(props); this.state = { error: null }; }
   static getDerivedStateFromError(error) { return { error }; }
-  componentDidCatch(error) { console.error('[modal] render error:', error); }
+  componentDidCatch(error, info) { console.error('[modal] render error:', error); reportError(error, { source: 'modal-boundary', componentStack: info?.componentStack }); }
   render() {
     if (this.state.error) {
       return (
