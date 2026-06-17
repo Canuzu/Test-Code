@@ -9,6 +9,7 @@ import * as billing from './lib/billing.js';
 import { applyTheme } from './lib/theme.js';
 import { gameSnapshot } from './data/providers/index.js';
 import { rehydrateCards } from './lib/cardCodec.js';
+import { hashToView } from './lib/viewUrl.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
 import { ONE_PIECE_CARDS } from './data/onePieceCards.js';
 import { YUGIOH_CARDS } from './data/yugiohCards.js';
@@ -56,10 +57,11 @@ export function StoreProvider({ children }) {
   const [account, setAccount] = useState(null); // local account profile or null (guest)
   const [plan, setPlan] = useState('free');     // server-side billing plan ('free' | 'pro')
   const pro = planIsPro(plan);                  // free-for-all until billing is configured
-  // Active TCG. Restored from the last-selected game so a page refresh keeps you
-  // where you were instead of bouncing back to the landing page. '' = no game
-  // chosen yet (or you explicitly went Home) → show the game-selection landing.
+  // Active TCG. A shared deep link (#/<game>/...) wins, so opening someone else's
+  // link lands on the right game; otherwise we restore the last-selected game so a
+  // refresh keeps you where you were. '' = no game chosen → landing page.
   const [activeGame, setActiveGame] = useState(() => {
+    try { const h = hashToView(window.location.hash); if (h.game) return h.game; } catch { /* ignore */ }
     try { return localStorage.getItem(ACTIVE_GAME_KEY) || ''; } catch { return ''; }
   });
 
