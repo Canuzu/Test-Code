@@ -6,6 +6,17 @@
     <meta name="theme-color" content="#0a0a18" />
     <meta name="referrer" content="no-referrer" />
 
+    <!-- Content Security Policy. GitHub Pages can't send HTTP headers, so we set a
+         baseline CSP via meta: scripts only from us + the optional analytics/Stripe
+         hosts, no <object>/<embed>, no base-tag hijack. img/connect stay https:-wide
+         so the many card-image CDNs and the (per-project) Supabase/analytics
+         endpoints keep working. NB: frame-ancestors / X-Frame-Options need a real
+         header — set those at the CDN/custom-domain layer for clickjacking cover. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; manifest-src 'self'; worker-src 'self'; img-src 'self' data: https:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' https://plausible.io https://gc.zgo.at https://js.stripe.com; connect-src 'self' https:; frame-src https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com;"
+    />
+
     <!-- Perf: warm up connections to the image hosts hit on first paint. -->
     <link rel="preconnect" href="https://wsrv.nl" crossorigin />
     <link rel="preconnect" href="https://images.pokemontcg.io" crossorigin />
