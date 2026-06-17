@@ -13,6 +13,8 @@ import GameSelect from './components/GameSelect.jsx';
 import { getGame } from './data/providers/index.js';
 import { clearDiscoverMemo } from './lib/discoverMemo.js';
 import { trackView } from './lib/analytics.js';
+import { reportError } from './lib/errorReporting.js';
+import { viewToHash, hashToView } from './lib/viewUrl.js';
 
 // Heavy / on-demand views are code-split so the charting library (recharts)
 // and modals are not part of the initial bundle.
@@ -49,7 +51,7 @@ const FaqModal = lazyChunk(() => import('./components/FaqModal.jsx'));
 class ModalBoundary extends Component {
   constructor(props) { super(props); this.state = { error: null }; }
   static getDerivedStateFromError(error) { return { error }; }
-  componentDidCatch(error) { console.error('[modal] render error:', error); }
+  componentDidCatch(error, info) { console.error('[modal] render error:', error); reportError(error, { source: 'modal-boundary', componentStack: info?.componentStack }); }
   render() {
     if (this.state.error) {
       return (
@@ -91,14 +93,19 @@ const TABS = [
 
 function Shell() {
   const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, alerts, account, activeGame, selectGame, leaveGame, pro, billingEnabled } = useStore();
-  // Restore the last view across a page refresh: the browser keeps history.state
-  // on reload, so we seed the initial view from it. The game itself is restored
-  // by the store (from localStorage); the per-game sub-view (category/open set)
-  // is only reused when it belongs to that same game.
+  // Seed the initial view from (in priority): a shared deep link in the URL hash,
+  // then the history entry the browser preserves across a reload. The game is
+  // resolved by the store; the per-game sub-view (open set) is only reused when
+  // it belongs to that same game.
   const savedView = (() => { try { return window.history.state?.__kw || null; } catch { return null; } })();
-  const viewForGame = savedView && savedView.game === activeGame ? savedView : null;
-  const [tab, setTab] = useState(savedView?.tab || 'discover');
+  const hashView = (() => { try { return hashToView(window.location.hash); } catch { return null; } })();
+  const initView = (hashView && hashView.game) ? hashView : savedView;
+  const viewForGame = initView && initView.game === activeGame ? initView : null;
+  const [tab, setTab] = useState(initView?.tab || 'discover');
   const [modal, setModal] = useState(null); // { card, tab }
+  // A card deep link (#/.../card/<id>) can't open until the dataset has loaded;
+  // remember it and open the modal once the card appears.
+  const pendingCardId = useRef((hashView && hashView.game === activeGame && hashView.modalId) || null);
   const [showCompare, setShowCompare] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -112,8 +119,28 @@ function Shell() {
   // not inside Discover, so it becomes part of the browser history below — that
   // makes Back/Forward step Set → Set-list → Start instead of straight out of
   // the game, and lets us restore the exact sub-view on a popstate or a refresh.
-  const [discCat, setDiscCat] = useState(viewForGame?.discCat || 'start');
+  // A restored/shared open set implies the "singles" category (the set detail
+  // only renders under it); the hash carries the set but not the category.
   const [discSet, setDiscSet] = useState(viewForGame?.discSet ?? null);
+  const [discCat, setDiscCat] = useState(viewForGame?.discCat || (viewForGame?.discSet ? 'singles' : 'start'));
+
+  // Open a card deep link once its dataset has loaded (then forget it).
+  useEffect(() => {
+    if (!pendingCardId.current || !cards.length) return;
+    const c = cards.find((x) => x.id === pendingCardId.current);
+    pendingCardId.current = null;
+    if (c) setModal({ card: c, tab: 'overview' });
+  }, [cards]);
+
+  // Keep the document title in sync with the view (better browser tabs, shares,
+  // and a stronger SEO signal than a single static title).
+  useEffect(() => {
+    const g = activeGame ? getGame(activeGame).label : null;
+    const tabLabel = TABS.find((t) => t.id === tab)?.label;
+    document.title = g
+      ? `Cartograph – ${g}${tabLabel ? ` · ${tabLabel}` : ''}`
+      : 'Cartograph – TCG Live-Preistracker';
+  }, [activeGame, tab]);
 
   // Privacy-friendly view tracking: a coarse path only (game + tab + whether a
   // set is open), never card names or IDs. No-op unless analytics is configured.
@@ -199,7 +226,10 @@ function Shell() {
     // Preserve an existing entry across a reload (Back/Forward + the saved scroll
     // keep working); only seed a base entry on a genuinely fresh load.
     if (!window.history.state?.__kw) {
-      window.history.replaceState({ __kw: { game: activeGame, tab, discCat, discSet } }, '');
+      window.history.replaceState(
+        { __kw: { game: activeGame, tab, discCat, discSet } }, '',
+        viewToHash({ game: activeGame, tab, discSet, modalId: modal ? modal.card.id : null }),
+      );
     }
     restoreScrollAfterReload(window.history.state?.kwScroll || 0);
     const onPop = (e) => {
@@ -231,7 +261,10 @@ function Shell() {
   useEffect(() => {
     if (firstNav.current) { firstNav.current = false; return; }
     if (isPopping.current) { isPopping.current = false; return; }
-    window.history.pushState({ __kw: navView }, '');
+    window.history.pushState(
+      { __kw: navView }, '',
+      viewToHash({ game: activeGame, tab, discSet, modalId: modal ? modal.card.id : null }),
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGame, tab, discCat, discSet, modal, showCompare, showSettings, showImport, showPricing, showAuth]);
 

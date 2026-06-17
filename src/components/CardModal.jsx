@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDialog } from '../lib/useDialog.js';
 import { X, Info, TrendingUp, Calculator, Tag as TagIcon, Globe, Award, Receipt, Maximize2, Package } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, riskColor, riskPhrase, riskAdjDative, rarityColor, trendColor, trendIcon, trendLabel } from '../lib/theme.js';
@@ -20,6 +21,7 @@ const mpBtn = (color) => ({
 });
 
 export default function CardModal({ card, initialTab = 'overview', onClose }) {
+  const dialogRef = useDialog(onClose);
   const { notes, tags, settings, addToPortfolio, saveNote, addTag, removeTag, addAlert, inBuylist, addToBuylist, inPortfolio } = useStore();
   const sectionLabel = { fontSize: 11, color: C.textFaint, fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' };
   const [tab, setTab] = useState(initialTab === 'buy' ? 'overview' : initialTab);
@@ -103,7 +105,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
   return (
     <>
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: '#000000bb', backdropFilter: 'blur(6px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 660, width: '100%', maxHeight: '92vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} aria-label="Kartendetails" onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 660, width: '100%', maxHeight: '92vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, background: '#ffffff15', border: 'none', color: C.textSoft, width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}><X size={15} /></button>
 
         {/* Header */}

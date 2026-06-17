@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useDialog } from '../lib/useDialog.js';
 import { X, User, LogOut, ShieldCheck } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C } from '../lib/theme.js';
 
 export default function AuthModal({ onClose }) {
+  const dialogRef = useDialog(onClose);
   const { account, login, register, logout, cloudEnabled } = useStore();
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
@@ -25,7 +27,7 @@ export default function AuthModal({ onClose }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: '#000000cc', backdropFilter: 'blur(8px)', zIndex: 130, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 420, width: '100%', padding: 22, position: 'relative' }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} aria-label="Anmelden" onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 420, width: '100%', padding: 22, position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, background: '#ffffff15', border: 'none', color: C.textSoft, width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={15} /></button>
 
         {account ? (

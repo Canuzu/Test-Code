@@ -65,8 +65,10 @@ export default function CardTile({ card, onOpen }) {
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: 10 }}>
-            <div style={{ fontSize: 11, color: C.textFaint }}>Marktpreis</div>
-            <div style={{ fontSize: 25, fontWeight: 800, color: C.text, lineHeight: 1.1 }}>{fmtEur(m.market)}</div>
+            <div style={{ fontSize: 11, color: C.textFaint }}>{card.prices?.estimated ? 'Marktpreis (geschätzt)' : 'Marktpreis'}</div>
+            <div style={{ fontSize: 25, fontWeight: 800, color: C.text, lineHeight: 1.1 }} title={card.prices?.estimated ? 'Transparente Schätzung – echter Tagespreis auf Cardmarket' : undefined}>
+              {card.prices?.estimated && <span style={{ fontSize: 16, color: C.textFaint, fontWeight: 700 }}>≈ </span>}{fmtEur(m.market)}
+            </div>
           </div>
         </div>
       </div>
