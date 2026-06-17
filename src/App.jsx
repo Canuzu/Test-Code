@@ -12,6 +12,7 @@ import GameMark from './components/GameMark.jsx';
 import GameSelect from './components/GameSelect.jsx';
 import { getGame } from './data/providers/index.js';
 import { clearDiscoverMemo } from './lib/discoverMemo.js';
+import { trackView } from './lib/analytics.js';
 
 // Heavy / on-demand views are code-split so the charting library (recharts)
 // and modals are not part of the initial bundle.
@@ -111,6 +112,15 @@ function Shell() {
   // the game, and lets us restore the exact sub-view on a popstate or a refresh.
   const [discCat, setDiscCat] = useState(viewForGame?.discCat || 'start');
   const [discSet, setDiscSet] = useState(viewForGame?.discSet ?? null);
+
+  // Privacy-friendly view tracking: a coarse path only (game + tab + whether a
+  // set is open), never card names or IDs. No-op unless analytics is configured.
+  useEffect(() => {
+    const path = activeGame
+      ? `/${activeGame}/${tab}${tab === 'discover' && discSet ? '/set' : ''}`
+      : '/home';
+    trackView(path);
+  }, [activeGame, tab, discSet]);
 
   // PWA install prompt: capture the event so we can offer an install button.
   useEffect(() => {
