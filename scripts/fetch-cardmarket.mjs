@@ -58,12 +58,29 @@ function oauthHeader(method, fullUrl) {
   return `OAuth realm="${realm}", ` + Object.entries(header).map(([k, v]) => `${k}="${enc(v)}"`).join(', ');
 }
 
+// MKM caps requests per day (≈5k for non-commercial apps, far more for
+// professional ones) and reports usage on every response. We mirror those
+// counters so the full crawl can stop *before* hitting the wall, regardless of
+// the account tier. `rateExceeded` is thrown on a real 429 so callers abort.
+const rate = { max: null, count: null };
+class RateLimitError extends Error {}
+
 async function mkmGet(url) {
   const res = await fetch(url, { headers: { Authorization: oauthHeader('GET', url) } });
+  const max = Number(res.headers.get('X-Request-Limit-Max'));
+  const cnt = Number(res.headers.get('X-Request-Limit-Count'));
+  if (Number.isFinite(max) && max > 0) rate.max = max;
+  if (Number.isFinite(cnt) && cnt >= 0) rate.count = cnt;
+  if (res.status === 429) throw new RateLimitError('HTTP 429 (request limit)');
   if (res.status === 204) return null; // MKM returns 204 for empty results
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+
+// True once we are within `margin` requests of the reported daily cap, so we
+// can leave the remaining budget for the next scheduled run.
+const nearRateLimit = (margin = 50) =>
+  rate.max != null && rate.count != null && rate.count >= rate.max - margin;
 
 // Per-game default search terms (used when the CM_SEARCH* env is unset).
 const DEFAULT_TERMS = {
@@ -137,6 +154,97 @@ export async function fetchCardmarket({ game = 'pokemon', gameId, terms, limit =
   }
   console.log(`[cardmarket] ✓ ${out.length} priced ${game} products via official API`);
   return out;
+}
+
+// Limited-concurrency map (keeps us well under MKM's burst limits).
+async function mapPool(items, limit, fn) {
+  const out = [];
+  let i = 0;
+  const workers = Array.from({ length: Math.max(1, Math.min(limit, items.length)) }, async () => {
+    while (i < items.length) { const idx = i++; out[idx] = await fn(items[idx], idx); }
+  });
+  await Promise.all(workers);
+  return out;
+}
+
+// FULL expansion crawl (opt-in): instead of a handful of name searches, walk
+// EVERY expansion of the game → every single in it → its priceGuide, so all of
+// the catalogue's cards can get real Cardmarket prices (the roadmap's "full
+// coverage" item). Heavy on requests, so it is:
+//   • opt-in (callers pass it only when CM_*_FULL is set),
+//   • bounded by `maxProducts` (a per-run product budget), and
+//   • rate-limit-safe — it stops as soon as MKM reports we are near the daily
+//     cap or returns a 429, returning whatever it gathered so far.
+// `skipIds` is a Set of MKM idProduct values already priced in a previous run,
+// so repeated daily runs converge to full coverage without re-spending budget.
+export async function fetchCardmarketFull({
+  game = 'onepiece', gameId, maxProducts = Number(process.env.CM_MAX_PRODUCTS) || 4500,
+  concurrency = Number(process.env.CM_CONCURRENCY) || 4, skipIds = new Set(),
+} = {}) {
+  if (!isConfigured()) {
+    console.log('[cardmarket] credentials not set — skipping full crawl (snapshot prices are used).');
+    return { cards: [], done: false };
+  }
+  const gid = await gameIdFor(game, gameId);
+  if (!gid) {
+    console.error(`[cardmarket] could not resolve idGame for "${game}" — set CM_GAME_ID_ONEPIECE. Skipping.`);
+    return { cards: [], done: false };
+  }
+
+  // 1) All expansions of the game.
+  let expansions = [];
+  try {
+    const data = await mkmGet(`${MKM_BASE}/games/${gid}/expansions`);
+    expansions = Array.isArray(data?.expansion) ? data.expansion : [];
+  } catch (e) {
+    console.error(`[cardmarket] expansions lookup failed: ${e.message}`);
+    return { cards: [], done: false };
+  }
+  console.log(`[cardmarket] (${game}) full crawl: ${expansions.length} expansions`);
+
+  // 2) Every single (= product) in each expansion → unique idProduct list.
+  const ids = [];
+  const seen = new Set();
+  let aborted = false;
+  await mapPool(expansions, Math.min(concurrency, 6), async (exp) => {
+    if (aborted || nearRateLimit()) { aborted = true; return; }
+    try {
+      const data = await mkmGet(`${MKM_BASE}/expansions/${exp.idExpansion}/singles`);
+      for (const s of (Array.isArray(data?.single) ? data.single : [])) {
+        const id = s.idProduct;
+        if (id == null || seen.has(id) || skipIds.has(id) || skipIds.has(String(id))) continue;
+        seen.add(id);
+        ids.push(id);
+      }
+    } catch (e) {
+      if (e instanceof RateLimitError) { aborted = true; return; }
+      console.error(`[cardmarket] singles for expansion ${exp.idExpansion} failed: ${e.message}`);
+    }
+  });
+  console.log(`[cardmarket] (${game}) ${ids.length} new products to price${skipIds.size ? ` (skipping ${skipIds.size} already priced)` : ''}`);
+
+  // 3) priceGuide per product, budget- and rate-limit-bounded.
+  const budget = ids.slice(0, Math.max(0, maxProducts));
+  const out = [];
+  await mapPool(budget, concurrency, async (idProduct) => {
+    if (aborted || nearRateLimit()) { aborted = true; return; }
+    try {
+      const detail = await mkmGet(`${MKM_BASE}/products/${idProduct}`);
+      const card = normalizeProduct(detail?.product, { game });
+      if (card?.prices?.market != null) out.push(card);
+    } catch (e) {
+      if (e instanceof RateLimitError) { aborted = true; return; }
+      console.error(`[cardmarket] product ${idProduct} failed: ${e.message}`);
+    }
+  });
+
+  // "done" = we priced every outstanding product this run (no budget/rate cut-off
+  // and nothing left over), i.e. the catalogue's coverage is now complete.
+  const done = !aborted && budget.length === ids.length;
+  console.log(`[cardmarket] ✓ full crawl: ${out.length} priced ${game} products` +
+    `${aborted ? ' (stopped early — near daily limit; next run resumes)' : ''}` +
+    `${!aborted && !done ? ` (budget ${maxProducts} reached; next run resumes)` : ''}`);
+  return { cards: out, done };
 }
 
 // Allow running standalone for a quick credential/signature check:

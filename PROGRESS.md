@@ -137,13 +137,17 @@
   Schätzung durch echte MKM-Preise (idGame via `/games` auto-aufgelöst). **Der
   Nutzer muss nur noch die Secrets im Repo hinterlegen** (cardmarket.com →
   Account → API; i. d. R. Professional-Account nötig).
-- ⬜ **OFFEN / auf Wunsch des Nutzers umzusetzen:** optionaler **vollständiger
-  Expansions-Crawl** (`/games/{id}/expansions` → `/expansions/{id}/singles` →
-  pro Produkt `priceGuide`), damit **alle ~4.390 Karten** echte Preise bekommen
-  statt nur der per-Suchbegriff gefundenen. Als opt-in (z. B. `CM_ONEPIECE_FULL=1`)
-  in `scripts/fetch-cardmarket.mjs` + Aufruf in `fetch-onepiece.mjs` bauen,
-  defensiv/paginiert/rate-limit-fest. Alternative: kostenpflichtige TCG-Preis-API
-  (JustTCG/apitcg) mit Key.
+- ✅ **ERLEDIGT:** optionaler **vollständiger Expansions-Crawl**
+  (`/games/{id}/expansions` → `/expansions/{id}/singles` → pro Produkt
+  `priceGuide`), damit **alle ~4.390 Karten** echte Preise bekommen statt nur
+  der per-Suchbegriff gefundenen. `fetchCardmarketFull()` in
+  `scripts/fetch-cardmarket.mjs` (opt-in via `CM_ONEPIECE_FULL=1`), eingehängt
+  in `fetch-onepiece.mjs`. Defensiv: request-budget (`CM_MAX_PRODUCTS`) +
+  rate-limit-fest (liest MKMs `X-Request-Limit-*`-Header, stoppt vor dem
+  Tageslimit / bei 429) + **resümierbar** (bepreiste Produkte via `cmPid` im
+  Snapshot gemerkt → Folgeläufe überspringen sie, Preise werden vorgetragen).
+  Workflow-Env + `docs/BACKEND.md` aktualisiert. Alternative bleibt: kostenpfl.
+  TCG-Preis-API (JustTCG/apitcg).
 
 ## Folge-Batch 5 (Magic & Yu-Gi-Oh! aktiviert – wie Pokémon/One Piece)
 - [x] L. **Yu-Gi-Oh!** voll ausgebaut: Quelle YGOJSON (`iconmaster5326/YGOJSON`,

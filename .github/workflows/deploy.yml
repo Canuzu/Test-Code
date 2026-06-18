@@ -52,6 +52,12 @@ jobs:
           CM_ACCESS_SECRET: ${{ secrets.CM_ACCESS_SECRET }}
           CM_GAME_ID_ONEPIECE: ${{ vars.CM_GAME_ID_ONEPIECE }}
           CM_SEARCH_ONEPIECE: ${{ vars.CM_SEARCH_ONEPIECE }}
+          # Set repo variable CM_ONEPIECE_FULL=1 to crawl every expansion so ALL
+          # cards get real MKM prices (resumes across runs). Optional budget knobs:
+          # CM_MAX_PRODUCTS (per-run product cap), CM_CONCURRENCY.
+          CM_ONEPIECE_FULL: ${{ vars.CM_ONEPIECE_FULL }}
+          CM_MAX_PRODUCTS: ${{ vars.CM_MAX_PRODUCTS }}
+          CM_CONCURRENCY: ${{ vars.CM_CONCURRENCY }}
       - name: Build Yu-Gi-Oh! catalogue (all sets/cards + official art, server-side)
         run: node scripts/fetch-yugioh.mjs
       - name: Build Magic catalogue (Scryfall, real Cardmarket EUR prices)
