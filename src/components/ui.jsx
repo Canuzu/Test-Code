@@ -41,33 +41,35 @@ export function Spark({ series, width = 96, height = 30, strokeWidth = 2 }) {
 //   2. otherwise the card's own image (pokemontcg.io, Scryfall) loaded directly
 //      with no-referrer so Referer-based hot-link protection doesn't block it;
 //   3. a clean placeholder tile if everything fails.
-const proxied = (u, w) => `https://wsrv.nl/?url=${encodeURIComponent(u)}&output=png${w ? `&w=${w}` : ''}&maxage=30d`;
-// Hosts known to block hot-linking / lack CORS → must go through the proxy.
-const NEEDS_PROXY = /onepiece-cardgame\.com|ygoprodeck\.com|yugipedia\.com/i;
+// wsrv.nl proxy: fetches the origin server-side (CORS-friendly, beats Referer
+// hot-link protection) and — crucially for speed — resizes to the display width
+// and serves modern WebP, so a grid tile pulls ~15–30 KB instead of a full
+// Scryfall/pokemontcg PNG. `w` is the pixel width to render at.
+const proxied = (u, w) => `https://wsrv.nl/?url=${encodeURIComponent(u)}&output=webp&q=82${w ? `&w=${w}` : ''}&maxage=30d`;
+// Standard TCG card aspect ratio (63 mm × 88 mm) → keeps the box stable so the
+// grid doesn't reflow as images arrive.
+const CARD_RATIO = 0.716;
 // Collapse accidental double slashes in the path (some Yu-Gi-Oh! image URLs
 // arrive as ".../com//f/fd/...") without touching the "https://" scheme.
 const cleanUrl = (u) => (u ? u.replace(/([^:])\/{2,}/g, '$1/') : u);
 
 export function CardImage({ card, height = 150, radius = 10 }) {
   const [stage, setStage] = useState(0);
+  const width = Math.max(1, Math.round(height * CARD_RATIO));
+  const reqW = Math.min(660, width * 2); // retina-sharp but capped
   // Try image.small → image.large → a constructed pokemontcg.io CDN URL.
   const constructed = (card?.setId && card?.number && card?.game !== 'onepiece')
     ? `https://images.pokemontcg.io/${card.setId}/${card.number}.png`
     : null;
   const primary = cleanUrl(card?.image?.small || card?.image?.large || constructed);
-  // One Piece (Bandai) and Yu-Gi-Oh! (ygoprodeck / yugipedia) hot-link-block
-  // unreliably, so we load those through the wsrv.nl proxy FIRST (CORS-friendly,
-  // cached, reaches the origin server-side) and keep the direct URL as fallback.
-  const needsProxy = !!primary && NEEDS_PROXY.test(primary);
+  // Resized WebP via the proxy FIRST for every host (small + cached + fast),
+  // then the direct origin URL as a fallback if the proxy ever fails.
   const candidates = [];
-  if (primary) {
-    if (needsProxy) candidates.push(proxied(primary, 600), primary);
-    else candidates.push(primary);
-  }
+  if (primary) candidates.push(proxied(primary, reqW), primary);
   const src = candidates[stage];
   if (!src) {
     return (
-      <div style={{ height, width: height * 0.72, borderRadius: radius, background: 'linear-gradient(160deg,#23234a,#161630)', border: `1px solid ${C.lineStrong}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, flexShrink: 0 }}>
+      <div style={{ height, width, borderRadius: radius, background: 'linear-gradient(160deg,#23234a,#161630)', border: `1px solid ${C.lineStrong}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, flexShrink: 0 }}>
         <span style={{ fontSize: 26 }}>🃏</span>
         <span style={{ fontSize: 9, color: C.textFaint, padding: '0 6px', textAlign: 'center', lineHeight: 1.2 }}>{card?.name?.slice(0, 24) || 'Karte'}</span>
       </div>
@@ -77,10 +79,13 @@ export function CardImage({ card, height = 150, radius = 10 }) {
     <img
       src={src}
       alt={card?.name || 'Karte'}
+      width={width}
+      height={height}
       loading="lazy"
+      decoding="async"
       referrerPolicy="no-referrer"
       onError={() => setStage((s) => s + 1)}
-      style={{ height, width: 'auto', borderRadius: radius, display: 'block', flexShrink: 0, boxShadow: '0 4px 14px #00000060' }}
+      style={{ height, width, borderRadius: radius, display: 'block', flexShrink: 0, boxShadow: '0 4px 14px #00000060', background: '#1416268c' }}
     />
   );
 }

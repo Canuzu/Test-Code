@@ -288,7 +288,7 @@ function Shell() {
   // No game chosen yet → the game-selection landing page is the whole screen.
   if (!activeGame) return (
     <>
-      <GameSelect onPick={pickGame} onLegal={() => setShowLegal(true)} onFaq={() => setShowFaq(true)} />
+      <GameSelect onPick={pickGame} onLegal={() => setShowLegal(true)} onFaq={() => setShowFaq(true)} theme={theme} onToggleTheme={toggleTheme} />
       <Suspense fallback={null}>
         {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
         {showFaq && <FaqModal onClose={() => setShowFaq(false)} />}

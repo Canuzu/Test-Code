@@ -61,6 +61,21 @@ export const store = {
   },
 };
 
+// Global preferences that must NOT be namespaced per account/game — e.g. the
+// colour theme, which is a device-wide choice and may only change when the user
+// flips it (never silently on a game switch). Stored under a fixed key.
+const GLOBAL_PREFIX = `${PREFIX}global_`;
+export const globalStore = {
+  get(key, fallback = null) {
+    try { const raw = localStorage.getItem(`${GLOBAL_PREFIX}${key}`); return raw == null ? fallback : JSON.parse(raw); }
+    catch { return fallback; }
+  },
+  set(key, value) {
+    try { localStorage.setItem(`${GLOBAL_PREFIX}${key}`, JSON.stringify(value)); return true; }
+    catch { return false; }
+  },
+};
+
 export const KEYS = {
   cards: 'cards_cache',
   watchlist: 'watchlist',

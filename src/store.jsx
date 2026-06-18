@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef } from 'react';
-import { store, KEYS, setNamespace, setGameNamespace, setWriteHook } from './lib/storage.js';
+import { store, globalStore, KEYS, setNamespace, setGameNamespace, setWriteHook } from './lib/storage.js';
 import { enrich } from './lib/metrics.js';
 import { ruleHit, fireNotification } from './lib/alerts.js';
 import { restore as authRestore, register as authRegister, login as authLogin, logout as authLogout, cloudEnabled } from './lib/authBackend.js';
@@ -66,15 +66,21 @@ export function StoreProvider({ children }) {
   const toastTimer = useRef(null);
   const firingRef = useRef({}); // ruleId -> currently-firing (debounces repeats)
 
-  // Theme: apply synchronously during render so children read the right palette,
-  // and reflect it on <html data-theme> for the CSS-variable based styles.
-  const theme = settings.theme === 'light' ? 'light' : 'dark';
+  // Theme is a DEVICE-WIDE preference, kept OUTSIDE the per-account/per-game
+  // namespace, so switching games (or signing in) never changes it — it only
+  // flips when the user presses the toggle. Applied synchronously during render
+  // so children read the right palette, and mirrored onto <html data-theme>.
+  const [theme, setTheme] = useState(() => (globalStore.get('theme') === 'light' ? 'light' : 'dark'));
   applyTheme(theme);
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
   const toggleTheme = useCallback(() => {
-    setSettings((prev) => ({ ...prev, theme: prev.theme === 'light' ? 'dark' : 'light' }));
+    setTheme((prev) => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      globalStore.set('theme', next);
+      return next;
+    });
   }, []);
 
   // Loads ALL persisted user data for the CURRENT namespace into state. Always

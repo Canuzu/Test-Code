@@ -29,6 +29,10 @@ export default function CardTile({ card, onOpen }) {
         cursor: 'pointer',
         position: 'relative',
         boxShadow: comparing ? '0 0 16px #448aff30' : undefined,
+        // Skip rendering tiles that are off-screen → far smoother scrolling on
+        // long grids. The intrinsic size keeps the scrollbar stable.
+        contentVisibility: 'auto',
+        containIntrinsicSize: 'auto 360px',
       }}
     >
       <div style={{ position: 'absolute', top: -9, right: 12 }}>

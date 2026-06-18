@@ -7,6 +7,7 @@
 // floating logo, a shimmering wordmark and rich per-card hover effects. Per-game
 // colours are passed to the CSS as inline custom properties (--accent etc.). All
 // motion is disabled under prefers-reduced-motion.
+import { Sun, Moon } from 'lucide-react';
 import { C } from '../lib/theme.js';
 import { GAMES } from '../data/providers/index.js';
 import LogoMark from './LogoMark.jsx';
@@ -31,7 +32,7 @@ const FLOAT_CARDS = [
   { left: '72%', s: 1.05, dur: 18, delay: 12, r0: '-16deg', r1: '6deg' },
 ];
 
-export default function GameSelect({ onPick, onLegal, onFaq }) {
+export default function GameSelect({ onPick, onLegal, onFaq, theme = 'dark', onToggleTheme }) {
   return (
     <div style={{ position: 'relative', minHeight: '100vh', background: `linear-gradient(160deg, ${C.appGrad1} 0%, ${C.appGrad2} 100%)`, color: C.text, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 20px calc(40px + env(safe-area-inset-bottom))' }}>
       {/* Animated backdrop */}
@@ -71,6 +72,20 @@ export default function GameSelect({ onPick, onLegal, onFaq }) {
             <span key={f} className="ls-chip" style={{ fontSize: 11, fontWeight: 600, color: C.textDim, background: `${C.surface}cc`, border: `1px solid ${C.line}`, borderRadius: 20, padding: '5px 12px' }}>{f}</span>
           ))}
         </div>
+
+        {/* Theme toggle (device-wide, manual only) */}
+        {onToggleTheme && (
+          <button
+            onClick={onToggleTheme}
+            className="ls-chip"
+            aria-label={theme === 'dark' ? 'Helles Design' : 'Dunkles Design'}
+            title={theme === 'dark' ? 'Helles Design' : 'Dunkles Design'}
+            style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontSize: 11.5, fontWeight: 600, color: C.textDim, background: `${C.surface}cc`, border: `1px solid ${C.line}`, borderRadius: 20, padding: '7px 14px' }}
+          >
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+            {theme === 'dark' ? 'Helles Design' : 'Dunkles Design'}
+          </button>
+        )}
       </div>
 
       {/* Game cards */}
