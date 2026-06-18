@@ -93,7 +93,9 @@ export default function GameSelect({ onPick, onLegal, onFaq }) {
             <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(120% 100% at 0% 0%, ${g.accent}22, transparent 55%)`, pointerEvents: 'none' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative' }}>
               <div className="ls-iconwrap" style={{ flexShrink: 0 }}>
-                <div className="ls-icon" style={{ width: 56, height: 56, position: 'relative', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${g.accent}, ${g.accent2})`, boxShadow: `0 4px 18px ${g.accent}44` }}>
+                <div className="ls-icon" style={{ width: 56, height: 56, position: 'relative', borderRadius: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `linear-gradient(140deg, ${g.accent}, ${g.accent2})`, boxShadow: `0 6px 16px ${g.accent}55, inset 0 1px 0 #ffffff80, inset 0 0 0 1px #ffffff24` }}>
+                  {/* top sheen for an app-icon look (sits behind the glyph) */}
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: 15, background: 'linear-gradient(180deg, #ffffff42, #ffffff00 52%)', pointerEvents: 'none' }} />
                   <GameMark id={g.id} size={34} />
                 </div>
               </div>
