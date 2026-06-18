@@ -239,6 +239,60 @@ button, input, select, textarea { font-family: inherit; }
   background-size: 800px 100%;
 }
 
+/* ---- Game-selection landing page ----
+   Animated backdrop (drifting colour blobs + slowly rising translucent cards),
+   a gently floating logo, a shimmering wordmark, and rich per-card hover
+   interactions. Per-game colours come in as CSS custom properties (--accent,
+   --accent2, --accentGlow, --accentSoft) set inline in GameSelect.jsx. */
+.ls-backdrop { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.ls-blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.55; will-change: transform; }
+.ls-blob-a { width: 44vw; height: 44vw; max-width: 460px; max-height: 460px; top: -8%; left: -6%;
+  background: radial-gradient(circle, #ffd70055, transparent 70%); animation: lsDrift 19s ease-in-out infinite; }
+.ls-blob-b { width: 50vw; height: 50vw; max-width: 520px; max-height: 520px; bottom: -14%; right: -8%;
+  background: radial-gradient(circle, #8b5cf655, transparent 70%); animation: lsDrift 24s ease-in-out infinite reverse; }
+.ls-blob-c { width: 38vw; height: 38vw; max-width: 400px; max-height: 400px; top: 28%; right: 16%;
+  background: radial-gradient(circle, #e23b3b44, transparent 70%); animation: lsDrift2 27s ease-in-out infinite; }
+@keyframes lsDrift { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(36px, 28px) scale(1.14); } }
+@keyframes lsDrift2 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-40px, -26px) scale(1.1); } }
+
+.ls-card { position: absolute; bottom: -70px; width: 34px; height: 48px; border-radius: 5px;
+  border: 1px solid #ffffff26; opacity: 0; will-change: transform, opacity; animation: lsRise linear infinite; }
+@keyframes lsRise {
+  0% { transform: translateY(0) rotate(var(--r0)); opacity: 0; }
+  12% { opacity: 0.18; }
+  88% { opacity: 0.18; }
+  100% { transform: translateY(-118vh) rotate(var(--r1)); opacity: 0; }
+}
+
+.ls-logo { animation: lsFloat 4.6s ease-in-out infinite; }
+@keyframes lsFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+
+.ls-title { background-size: 220% auto; animation: lsShimmer 5s linear infinite; }
+@keyframes lsShimmer { to { background-position: 220% center; } }
+
+.ls-game { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
+.ls-game:hover { transform: translateY(-5px); box-shadow: 0 18px 44px #00000075; border-color: var(--accent) !important; }
+.ls-game::after { content: ''; position: absolute; top: 0; left: -130%; width: 65%; height: 100%;
+  background: linear-gradient(100deg, transparent, #ffffff1f, transparent); transform: skewX(-18deg);
+  transition: left 0.6s ease; pointer-events: none; }
+.ls-game:hover::after { left: 140%; }
+.ls-icon { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.ls-game:hover .ls-icon { transform: scale(1.07) rotate(-3deg); box-shadow: 0 8px 26px var(--accentGlow); }
+.ls-iconwrap { position: relative; }
+.ls-iconwrap::before { content: ''; position: absolute; inset: -5px; border-radius: 17px;
+  background: radial-gradient(circle, var(--accentGlow), transparent 70%); opacity: 0; animation: lsPulse 3.4s ease-in-out infinite; }
+@keyframes lsPulse { 0%, 100% { opacity: 0; } 50% { opacity: 0.7; } }
+.ls-arrow { transition: transform 0.2s ease, color 0.2s ease; }
+.ls-game:hover .ls-arrow { transform: translateX(5px); color: var(--accent); }
+
+.ls-chip { transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease; }
+.ls-chip:hover { transform: translateY(-2px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ls-blob, .ls-card, .ls-logo, .ls-title, .ls-iconwrap::before { animation: none !important; }
+  .ls-card { display: none; }
+}
+
 /* ---- Printing (Buylist PDF) ----
    The print sheet lives off-screen on screen, and becomes the only visible
    element when printing. */
