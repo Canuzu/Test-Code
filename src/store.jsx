@@ -8,7 +8,7 @@ import { planIsPro, billingEnabled } from './lib/pro.js';
 import * as billing from './lib/billing.js';
 import { applyTheme } from './lib/theme.js';
 import { gameSnapshot } from './data/providers/index.js';
-import { rehydrateCards } from './lib/cardCodec.js';
+import { loadSnapshotData } from './lib/snapshotLoader.js';
 import { hashToView } from './lib/viewUrl.js';
 import { SAMPLE_CARDS } from './data/sampleCards.js';
 import { ONE_PIECE_CARDS } from './data/onePieceCards.js';
@@ -318,28 +318,23 @@ export function StoreProvider({ children }) {
     setLoading(true);
     if (!silent) setError(null);
     try {
-      // 'default' lets the HTTP cache + service worker serve the snapshot
-      // instantly (stale-while-revalidate) instead of blocking on a revalidation
-      // round-trip every load — the single biggest first-paint win for a daily
-      // snapshot that changes at most once per day.
-      const res = await fetch(url, { cache: 'default' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const list = Array.isArray(data?.cards) ? data.cards : [];
+      // Fetch + parse + rehydrate happen in a Web Worker (snapshotLoader), so the
+      // 8–9 MB catalogue no longer blocks the UI thread on a game's first load.
+      // Falls back to the main thread automatically if Workers are unavailable.
+      const { cards: list, meta } = await loadSnapshotData({ url, game: g });
       if (list.length === 0) throw new Error('Snapshot leer');
-      // Snapshots ship slimmed (see lib/cardCodec.js): restore the constant /
-      // derivable fields so the rest of the app sees the full card shape.
-      rehydrateCards(list, g, data.pricesUpdatedAt);
-      const ts = data.generatedAt ? new Date(data.generatedAt).getTime() : Date.now();
+      const ts = meta.generatedAt ? new Date(meta.generatedAt).getTime() : Date.now();
       setRawCards(list);
       setSource('snapshot');
-      setSnapshotInfo({ cmEnriched: data.cmEnriched || 0, pricesEstimated: !!data.pricesEstimated });
+      setSnapshotInfo({ cmEnriched: meta.cmEnriched || 0, pricesEstimated: !!meta.pricesEstimated });
       setLastUpdated(new Date(ts));
       // NB: we deliberately do NOT cache the (8–9 MB) card list in localStorage —
       // it overflows the ~5 MB quota and the failed write wasted a full
       // JSON.stringify of the dataset on every load. The service worker's Cache
       // API holds the snapshot instead (no size limit), serving repeat loads.
-      accumulateHistory(list, ts);
+      // Price-history bookkeeping walks the whole list, so run it just after the
+      // cards have painted instead of blocking the first render.
+      setTimeout(() => accumulateHistory(list, ts), 0);
       if (!silent) showToast(`✓ Aktuelle Marktdaten geladen · ${list.length} Karten`);
       return true;
     } catch (e) {
