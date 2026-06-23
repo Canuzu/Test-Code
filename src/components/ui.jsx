@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { C, changeColor } from '../lib/theme.js';
 import { fmtPct } from '../lib/format.js';
 
@@ -42,31 +42,58 @@ export function Spark({ series, width = 96, height = 30, strokeWidth = 2 }) {
 //      with no-referrer so Referer-based hot-link protection doesn't block it;
 //   3. a clean placeholder tile if everything fails.
 // wsrv.nl proxy: fetches the origin server-side (CORS-friendly, beats Referer
-// hot-link protection) and — crucially for speed — resizes to the display width
-// and serves modern WebP, so a grid tile pulls ~15–30 KB instead of a full
-// Scryfall/pokemontcg PNG. `w` is the pixel width to render at.
+// hot-link protection) and resizes to a WebP of the display width. Used FIRST
+// only for hosts that block hot-linking; fast CORS CDNs load direct (below) to
+// avoid the extra proxy hop.
 const proxied = (u, w) => `https://wsrv.nl/?url=${encodeURIComponent(u)}&output=webp&q=82${w ? `&w=${w}` : ''}&maxage=30d`;
 // Standard TCG card aspect ratio (63 mm × 88 mm) → keeps the box stable so the
 // grid doesn't reflow as images arrive.
 const CARD_RATIO = 0.716;
+// Hosts that block hot-linking / lack CORS → must go through the proxy.
+const NEEDS_PROXY = /onepiece-cardgame\.com|ygoprodeck\.com|yugipedia\.com/i;
+const SCRYFALL = /cards\.scryfall\.io/i;
 // Collapse accidental double slashes in the path (some Yu-Gi-Oh! image URLs
 // arrive as ".../com//f/fd/...") without touching the "https://" scheme.
 const cleanUrl = (u) => (u ? u.replace(/([^:])\/{2,}/g, '$1/') : u);
+// Scryfall serves fixed size variants; swap to a small (146px) or normal (488px)
+// image so a grid tile pulls ~10–15 KB directly from Scryfall's fast CDN instead
+// of the oversized "normal" we store. `big` is used for the large modal view.
+const scryfallSized = (u, big) => u.replace(/\/(small|normal|large|png|art_crop|border_crop)\//, big ? '/normal/' : '/small/');
 
 export function CardImage({ card, height = 150, radius = 10 }) {
   const [stage, setStage] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef(null);
   const width = Math.max(1, Math.round(height * CARD_RATIO));
   const reqW = Math.min(660, width * 2); // retina-sharp but capped
+  const big = height >= 260; // modal / detail view wants a sharper image
   // Try image.small → image.large → a constructed pokemontcg.io CDN URL.
   const constructed = (card?.setId && card?.number && card?.game !== 'onepiece')
     ? `https://images.pokemontcg.io/${card.setId}/${card.number}.png`
     : null;
   const primary = cleanUrl(card?.image?.small || card?.image?.large || constructed);
-  // Resized WebP via the proxy FIRST for every host (small + cached + fast),
-  // then the direct origin URL as a fallback if the proxy ever fails.
+  // Routing: hot-link-blocked hosts go through the resized proxy FIRST; fast CORS
+  // CDNs (Scryfall, pokemontcg.io) load DIRECTLY at a tile-appropriate size so
+  // they appear instantly, with the proxy kept only as a fallback.
   const candidates = [];
-  if (primary) candidates.push(proxied(primary, reqW), primary);
+  if (primary) {
+    if (NEEDS_PROXY.test(primary)) {
+      candidates.push(proxied(primary, reqW), primary);
+    } else if (SCRYFALL.test(primary)) {
+      const direct = scryfallSized(primary, big);
+      candidates.push(direct, proxied(direct, reqW), primary);
+    } else {
+      candidates.push(primary, proxied(primary, reqW));
+    }
+  }
   const src = candidates[stage];
+  // Reset/raise the fade-in when the source changes (handles cached images that
+  // never fire onLoad after mount).
+  useEffect(() => {
+    setLoaded(false);
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) setLoaded(true);
+  }, [src]);
+
   if (!src) {
     return (
       <div style={{ height, width, borderRadius: radius, background: 'linear-gradient(160deg,#23234a,#161630)', border: `1px solid ${C.lineStrong}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, flexShrink: 0 }}>
@@ -77,6 +104,7 @@ export function CardImage({ card, height = 150, radius = 10 }) {
   }
   return (
     <img
+      ref={imgRef}
       src={src}
       alt={card?.name || 'Karte'}
       width={width}
@@ -84,8 +112,9 @@ export function CardImage({ card, height = 150, radius = 10 }) {
       loading="lazy"
       decoding="async"
       referrerPolicy="no-referrer"
+      onLoad={() => setLoaded(true)}
       onError={() => setStage((s) => s + 1)}
-      style={{ height, width, borderRadius: radius, display: 'block', flexShrink: 0, boxShadow: '0 4px 14px #00000060', background: '#1416268c' }}
+      style={{ height, width, borderRadius: radius, display: 'block', flexShrink: 0, boxShadow: '0 4px 14px #00000060', background: 'linear-gradient(160deg,#23234a,#161630)', opacity: loaded ? 1 : 0, transition: 'opacity 0.25s ease' }}
     />
   );
 }
