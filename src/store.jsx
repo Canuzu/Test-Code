@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef, useDeferredValue } from 'react';
 import { store, globalStore, KEYS, setNamespace, setGameNamespace, setWriteHook } from './lib/storage.js';
 import { enrich } from './lib/metrics.js';
 import { ruleHit, fireNotification } from './lib/alerts.js';
@@ -175,12 +175,17 @@ export function StoreProvider({ children }) {
   useEffect(() => { store.set(KEYS.settings, settings); }, [settings]);
 
   // ---- derived ----------------------------------------------------------
-  const cards = useMemo(() => rawCards.map(enrich), [rawCards]);
+  // Enriching the WHOLE catalogue (localize + metrics over up to ~19k cards) is
+  // the one heavy synchronous step when a game's snapshot swaps in. Deferring it
+  // lets React keep the UI responsive (the instant sample stays interactive)
+  // and compute the big set at lower priority instead of freezing the page.
+  const deferredRaw = useDeferredValue(rawCards);
+  const cards = useMemo(() => deferredRaw.map(enrich), [deferredRaw]);
   const cardById = useMemo(() => {
     const m = new Map();
-    rawCards.forEach((c) => m.set(c.id, c));
+    deferredRaw.forEach((c) => m.set(c.id, c));
     return m;
-  }, [rawCards]);
+  }, [deferredRaw]);
 
   // ---- toast ------------------------------------------------------------
   const showToast = useCallback((msg) => {
