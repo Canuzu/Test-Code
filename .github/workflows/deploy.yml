@@ -4,7 +4,12 @@ on:
   push:
     branches: [main, claude/pensive-euler-SFLHH]
   schedule:
-    - cron: '0 5 * * *' # daily 05:00 UTC: rebuild with fresh prices
+    # Twice daily (05:00 & 17:00 UTC): rebuild with fresh prices and pick up any
+    # newly released set. Each fetcher queries the live set list / full bulk, and
+    # the Pokémon fetcher always re-pulls the newest sets, so a brand-new set is
+    # added on the next run after its source publishes it.
+    - cron: '0 5 * * *'
+    - cron: '0 17 * * *'
   workflow_dispatch:
 
 permissions:
