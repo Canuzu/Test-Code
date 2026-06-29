@@ -69,10 +69,19 @@ export default function CardTile({ card, onOpen }) {
           </div>
 
           <div style={{ marginTop: 'auto', paddingTop: 10 }}>
-            <div style={{ fontSize: 11, color: C.textFaint }}>{card.prices?.estimated ? 'Marktpreis (geschätzt)' : 'Marktpreis'}</div>
-            <div style={{ fontSize: 25, fontWeight: 800, color: C.text, lineHeight: 1.1 }} title={card.prices?.estimated ? 'Transparente Schätzung – echter Tagespreis auf Cardmarket' : undefined}>
-              {card.prices?.estimated && <span style={{ fontSize: 16, color: C.textFaint, fontWeight: 700 }}>≈ </span>}{fmtEur(m.market)}
-            </div>
+            {card.prices?.pricePending && m.market == null ? (
+              <>
+                <div style={{ fontSize: 11, color: C.textFaint }}>Neu erschienen</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: C.gold, lineHeight: 1.1, paddingTop: 4 }} title="Karte ist neu – der Marktpreis folgt, sobald er auf Cardmarket verfügbar ist.">⏳ Preis folgt</div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 11, color: C.textFaint }}>{card.prices?.estimated ? 'Marktpreis (geschätzt)' : 'Marktpreis'}</div>
+                <div style={{ fontSize: 25, fontWeight: 800, color: C.text, lineHeight: 1.1 }} title={card.prices?.estimated ? 'Transparente Schätzung – echter Tagespreis auf Cardmarket' : undefined}>
+                  {card.prices?.estimated && <span style={{ fontSize: 16, color: C.textFaint, fontWeight: 700 }}>≈ </span>}{fmtEur(m.market)}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

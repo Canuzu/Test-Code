@@ -160,21 +160,32 @@ async function main() {
   const work = [...recent, ...pending]
     .filter((s) => (seen.has(s.id) ? false : seen.add(s.id)))
     .sort((a, b) => b.releaseDate.localeCompare(a.releaseDate));
+  // A just-released set often has no Cardmarket prices yet. For the newest sets we
+  // still include those cards (flagged pricePending) so the set is fully browsable
+  // on day one; the UI shows "Preis folgt" and the price fills in on a later run.
+  // Older sets keep the strict "must be priced" rule so the archive stays clean.
+  const recentIds = new Set(recent.map((s) => s.id));
   console.log(`[fetch-prices] this run: refresh ${recent.length} newest + ${pending.length} new = ${work.length} sets`);
 
   for (const s of work) {
     const isNew = !completed.has(s.id);
     if (isNew && byId.size >= HARD_CAP) continue; // bound growth at a set boundary
+    const allowUnpriced = recentIds.has(s.id);
     try {
       const raw = await allCardsInSet(s.id); // full set before moving on
       anyOk = true;
       let kept = 0;
+      let pendingPrices = 0;
       for (const r of raw) {
         const c = normalize(r);
         if (c.prices.market != null) { byId.set(c.id, c); kept++; }
+        else if (allowUnpriced) {
+          c.prices = { ...c.prices, pricePending: true };
+          byId.set(c.id, c); kept++; pendingPrices++;
+        }
       }
       completed.add(s.id);
-      console.log(`[fetch-prices] ${isNew ? '＋' : '↻'} ${s.name} (${s.id}, ${s.releaseDate}): ${kept} priced · total ${byId.size}`);
+      console.log(`[fetch-prices] ${isNew ? '＋' : '↻'} ${s.name} (${s.id}, ${s.releaseDate}): ${kept} kept${pendingPrices ? ` (${pendingPrices} price pending)` : ''} · total ${byId.size}`);
     } catch (e) {
       console.error(`[fetch-prices] set ${s.id} (${s.name}) failed, skipping: ${e.message}`);
     }

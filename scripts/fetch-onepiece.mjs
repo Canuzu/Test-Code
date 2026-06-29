@@ -94,6 +94,37 @@ async function main() {
   const now = new Date();
   const stamp = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
 
+  // Build a set-metadata map LIVE from the source's pack list so a newly released
+  // set automatically gets a proper name and is treated as the newest — no manual
+  // SET_META edit needed. Curated SET_META wins (nicer names + real dates); any
+  // set not yet in it is named from the pack title and dated just after the
+  // latest known set so it sorts to the top.
+  const bumpDay = (ymd) => {
+    const d = new Date(`${ymd.replace(/\//g, '-')}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + 1);
+    return `${d.getUTCFullYear()}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${String(d.getUTCDate()).padStart(2, '0')}`;
+  };
+  const titleCase = (s) => (s || '').toLowerCase().replace(/(^|\s)([a-z])/g, (_, sp, c) => sp + c.toUpperCase());
+  // Parse only the FIRST "LETTERS[-]DIGITS" token of a pack label (some packs
+  // carry compound labels like "OP-14 [EB-04]") so we never invent bogus codes.
+  const codeOfLabel = (label) => {
+    const m = String(label || '').match(/^\s*([A-Za-z]{1,4})-?(\d{1,3})?/);
+    return m ? (m[1] + (m[2] || '')).toUpperCase() : '';
+  };
+  const latestKnown = Object.values(SET_META).map((m) => m.releaseDate).filter(Boolean).sort().pop() || '2020/01/01';
+  const newSetDate = bumpDay(latestKnown);
+  const metaByCode = { ...SET_META };
+  let newSets = 0;
+  for (const p of Object.values(packs || {})) {
+    const code = codeOfLabel(p?.title_parts?.label);
+    const title = p?.title_parts?.title;
+    if (!code || metaByCode[code]) continue;
+    metaByCode[code] = { name: title ? titleCase(title) : code, releaseDate: newSetDate };
+    newSets++;
+    console.log(`[fetch-onepiece] ＋ new set auto-added: ${code} "${metaByCode[code].name}" (${newSetDate})`);
+  }
+  if (!newSets) console.log('[fetch-onepiece] no unseen sets in pack list (SET_META covers all)');
+
   // Pull every pack's card list (concurrency-limited), dedupe by card id.
   const byId = new Map();
   let okPacks = 0;
@@ -104,7 +135,7 @@ async function main() {
   for (const list of lists) {
     for (const raw of list || []) {
       if (!raw?.id || byId.has(raw.id)) continue;
-      try { byId.set(raw.id, normalize(raw, stamp)); } catch { /* skip malformed */ }
+      try { byId.set(raw.id, normalize(raw, stamp, metaByCode)); } catch { /* skip malformed */ }
     }
   }
 
@@ -130,7 +161,7 @@ async function main() {
       cmCards = await fetchCardmarket({ game: 'onepiece', limit: 800, perTerm: 20 });
     }
     if (cmCards.length) {
-      const nameToCode = new Map(Object.entries(SET_META).map(([code, m]) => [m.name.toLowerCase(), code]));
+      const nameToCode = new Map(Object.entries(metaByCode).map(([code, m]) => [m.name.toLowerCase(), code]));
       const pad3 = (s) => String(s ?? '').replace(/\D/g, '').padStart(3, '0');
       for (const cm of cmCards) {
         let id = cm.code && byId.has(cm.code) ? cm.code : null;

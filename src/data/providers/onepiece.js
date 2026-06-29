@@ -193,10 +193,14 @@ const cmSearchUrl = (nameEn, setName) =>
   `https://www.cardmarket.com/de/OnePiece/Products/Search?searchString=${enc(`${nameEn} ${setName}`.trim())}`;
 
 // Normalises a raw punk-records card into the app's common Card shape.
-export const normalize = (raw, updatedAt = null) => {
+// `metaByCode` (optional) lets the build pass set names/dates derived live from
+// the source's pack list, so a newly released set gets a proper name and sorts
+// as newest WITHOUT anyone editing SET_META by hand. Falls back to the curated
+// SET_META, then to the bare code.
+export const normalize = (raw, updatedAt = null, metaByCode = null) => {
   const id = raw.id;
   const code = setCodeFromId(id);
-  const info = SET_META[code] || { name: code, releaseDate: '' };
+  const info = (metaByCode && metaByCode[code]) || SET_META[code] || { name: code, releaseDate: '' };
   const isAlt = /_p\d+/i.test(id);
   const altN = (id.match(/_p(\d+)/i) || [])[1];
   const nameEn = prettyName(raw.name);
