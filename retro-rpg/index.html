@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monsterwald – Retro RPG</title>
+<style>
+  /* ================= DS-inspiriertes Layout ================= */
+  :root {
+    --shell: #2b2b33;
+    --shell-dark: #1c1c22;
+    --accent: #4cc2ff;
+    --scale: 2.4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(circle at 50% 20%, #3d4a5c 0%, #1b2230 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Courier New", ui-monospace, monospace;
+    color: #e8e8e8;
+    user-select: none;
+    overflow: hidden;
+  }
+  #ds {
+    background: linear-gradient(180deg, var(--shell) 0%, var(--shell-dark) 100%);
+    border-radius: 18px;
+    padding: 16px 22px;
+    box-shadow: 0 18px 50px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .screen-frame {
+    background: #0a0a0e;
+    border-radius: 8px;
+    padding: 8px;
+    box-shadow: inset 0 0 0 2px #000, inset 0 4px 14px rgba(0,0,0,.8);
+  }
+  #top {
+    display: block;
+    width: calc(256px * var(--scale));
+    height: calc(192px * var(--scale));
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    background: #000;
+  }
+  .hinge {
+    height: 8px;
+    margin: 0 40px;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #14141a, #34343e, #14141a);
+  }
+  /* ================= Unterer Screen (Touch-UI) ================= */
+  #bottom {
+    width: calc(256px * var(--scale));
+    height: calc(140px * var(--scale));
+    background: #10131c;
+    border-radius: 4px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+  }
+  .panel-title {
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: #7f8aa3;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ds-btn {
+    font-family: inherit;
+    font-weight: bold;
+    font-size: 16px;
+    letter-spacing: 1px;
+    padding: 14px 10px;
+    border-radius: 8px;
+    border: 2px solid #2e3850;
+    background: linear-gradient(180deg, #232c42 0%, #181f31 100%);
+    color: #dfe6f5;
+    cursor: pointer;
+    transition: transform .05s ease;
+    text-align: center;
+  }
+  .ds-btn:active { transform: scale(.97); }
+  .ds-btn.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(76,194,255,.35), 0 0 14px rgba(76,194,255,.25);
+    color: #fff;
+  }
+  .ds-btn.back { grid-column: 1 / -1; padding: 8px; font-size: 13px; color: #93a0bd; }
+  .ds-btn small { display: block; font-weight: normal; font-size: 11px; margin-top: 4px; color: #93a0bd; }
+  .type-chip {
+    display: inline-block; font-size: 10px; padding: 1px 8px; border-radius: 6px;
+    color: #fff; margin-top: 4px; letter-spacing: 1px;
+  }
+  .t-normal { background: #8a8a7a; } .t-feuer { background: #e2673a; }
+  .t-pflanze { background: #58a04a; } .t-wasser { background: #3f7fd6; }
+  /* Party-Karte im Overworld-Modus */
+  .party-card {
+    border: 2px solid #2e3850; border-radius: 8px; padding: 10px 14px;
+    background: linear-gradient(180deg, #1b2338, #141a2b);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .party-card canvas { image-rendering: pixelated; width: 48px; height: 48px; }
+  .party-info { flex: 1; }
+  .party-info .name { font-weight: bold; font-size: 15px; letter-spacing: 1px; }
+  .party-info .lvl { color: #93a0bd; font-size: 12px; }
+  .hp-outer {
+    height: 10px; border-radius: 5px; background: #0a0d15;
+    border: 1px solid #2e3850; margin-top: 6px; overflow: hidden;
+  }
+  .hp-inner { height: 100%; background: #4ade80; transition: width .3s ease; }
+  .hp-num { font-size: 11px; color: #93a0bd; margin-top: 3px; text-align: right; }
+  .hint { font-size: 12px; color: #6c7893; text-align: center; line-height: 1.7; }
+  .hint b { color: #aeb9d4; }
+  /* ================= Start-Overlay ================= */
+  #title-overlay {
+    position: fixed; inset: 0; z-index: 10;
+    background: rgba(8, 10, 18, .92);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .title-box {
+    max-width: 520px; text-align: center; padding: 40px;
+    border: 2px solid #2e3850; border-radius: 14px;
+    background: linear-gradient(180deg, #161c2c, #0e1220);
+    box-shadow: 0 20px 60px rgba(0,0,0,.7);
+  }
+  .title-box h1 {
+    font-size: 34px; letter-spacing: 4px; color: #fff;
+    text-shadow: 0 3px 0 #1c4a6e, 0 0 24px rgba(76,194,255,.5);
+    margin-bottom: 6px;
+  }
+  .title-box .sub { color: var(--accent); font-size: 13px; letter-spacing: 3px; margin-bottom: 26px; }
+  .title-box .rules { text-align: left; font-size: 14px; line-height: 2.1; color: #b9c3da; margin-bottom: 28px; }
+  .title-box .rules b { color: #fff; }
+  .key {
+    display: inline-block; border: 1px solid #4a5878; border-bottom-width: 3px;
+    border-radius: 5px; padding: 0 7px; font-size: 12px; background: #232c42; color: #fff;
+  }
+  #start-btn {
+    font-family: inherit; font-size: 18px; font-weight: bold; letter-spacing: 2px;
+    padding: 14px 46px; border-radius: 10px; cursor: pointer;
+    border: 2px solid var(--accent); color: #06121c;
+    background: linear-gradient(180deg, #7fd8ff, #38b6f5);
+    box-shadow: 0 6px 0 #1c6f9e, 0 10px 24px rgba(56,182,245,.35);
+  }
+  #start-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #1c6f9e; }
+  @media (max-height: 980px) { :root { --scale: 2; } }
+  @media (max-height: 820px) { :root { --scale: 1.6; } }
+  @media (max-width: 700px), (max-height: 700px) { :root { --scale: 1.3; } }
+</style>
+</head>
+<body>
+
+<div id="ds">
+  <div class="screen-frame"><canvas id="top" width="256" height="192"></canvas></div>
+  <div class="hinge"></div>
+  <div class="screen-frame"><div id="bottom"></div></div>
+</div>
+
+<div id="title-overlay">
+  <div class="title-box">
+    <h1>MONSTERWALD</h1>
+    <div class="sub">EIN RETRO-ABENTEUER</div>
+    <div class="rules">
+      <b>So spielst du:</b><br>
+      <span class="key">&#8592;&#8593;&#8595;&#8594;</span> / <span class="key">WASD</span> &nbsp;Bewegen<br>
+      <span class="key">Enter</span> / <span class="key">Leertaste</span> &nbsp;Bestätigen &amp; Schilder lesen<br>
+      <span class="key">X</span> &nbsp;Zurück im Kampfmenü<br><br>
+      Streife durchs <b>hohe Gras</b>, um wilde Monster zu finden!<br>
+      Besiege sie im rundenbasierten Kampf und sammle EP.<br>
+      Wird dein Monster müde, heilt es sich <b>zu Hause an der Tür</b>.
+    </div>
+    <button id="start-btn">LOS GEHT'S!</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+ * MONSTERWALD – ein kleines Retro-RPG im Stil der DS-Ära
+ * Module: DATA · SPRITES · SFX · INPUT · TEXTBOX · OVERWORLD · BATTLE · UI · LOOP
+ * ===================================================================== */
+
+/* ============================ DATA =============================== */
+const TILE = 16, VIEW_W = 256, VIEW_H = 192;
+const ENCOUNTER_RATE = 0.14;
+
+// Legende: T Baum · G Gras · H hohes Gras · P Weg · W Wasser ·
+//          F Zaun · R Haus · D Tür (heilt) · S Schild · B Blumen
+const MAP_ROWS = [
+  "TTTTTTTTTTTTTTTTTTTTTTTT",
+  "TGGGGGGGGGGGPPGGGGGGGGGT",
+  "TGRRRRRGGGGGPPGGHHHHHHGT",
+  "TGRRRRRGBBGGPPGGHHHHHHGT",
+  "TGRRDRRGBBGGPPGGHHHHHHGT",
+  "TGGGPGGGGGGGPPGGHHHHHHGT",
+  "TGGGPPPPPPPPPPGGHHHHHHGT",
+  "TGGGPGGGGGGGGGGGGGGGGGGT",
+  "TGGGPGGFFFFGGGGSGGGGGGGT",
+  "TGGGPGGFFFFGGGGGGGGGGGGT",
+  "TGGGPPPPPPPPPPPPPPPPGGGT",
+  "TGGGGGGGWWWWGGGGGGGPGGGT",
+  "TGGGGGGWWWWWWGGHHHHPGGGT",
+  "TGGGGGGWWWWWWGGHHHHPGGGT",
+  "TGGGGGGGWWWWGGGHHHHPGGGT",
+  "TGGGGGGGGGGGGGGHHHHPGGGT",
+  "TGGBBGGGGGGGGGGGGGGGGGGT",
+  "TTTTTTTTTTTTTTTTTTTTTTTT",
+];
+const MAP_W = MAP_ROWS[0].length, MAP_H = MAP_ROWS.length;
+const SOLID = new Set(["T", "W", "F", "R", "S"]);
+
+const TYPE_CHART = { // Angreifer -> { Verteidiger: Faktor }
+  feuer:   { pflanze: 2, wasser: .5, feuer: .5 },
+  wasser:  { feuer: 2, pflanze: .5, wasser: .5 },
+  pflanze: { wasser: 2, feuer: .5, pflanze: .5 },
+  normal:  {},
+};
+const MOVES = {
+  tackle:     { name: "Tackle",      type: "normal",  power: 35 },
+  glut:       { name: "Glut",        type: "feuer",   power: 40 },
+  rankenhieb: { name: "Rankenhieb",  type: "pflanze", power: 40 },
+  aquaknarre: { name: "Aquaknarre",  type: "wasser",  power: 40 },
+  ruckzuck:   { name: "Ruckzuckhieb",type: "normal",  power: 30 },
+};
+const SPECIES = {
+  flaro:   { name: "FLARO",   type: "feuer",   base: { hp: 44, atk: 52, def: 43, spd: 65 }, moves: ["tackle", "glut"],       sprite: "flaro" },
+  blattel: { name: "BLATTEL", type: "pflanze", base: { hp: 45, atk: 49, def: 49, spd: 45 }, moves: ["tackle", "rankenhieb"], sprite: "blattel" },
+  hoppli:  { name: "HOPPLI",  type: "normal",  base: { hp: 55, atk: 47, def: 52, spd: 56 }, moves: ["tackle", "ruckzuck"],   sprite: "hoppli" },
+  aquani:  { name: "AQUANI",  type: "wasser",  base: { hp: 44, atk: 48, def: 65, spd: 43 }, moves: ["tackle", "aquaknarre"], sprite: "aquani" },
+};
+const WILD_POOL = ["blattel", "hoppli", "aquani"];
+
+function makeMon(speciesId, level) {
+  const s = SPECIES[speciesId];
+  const stat = b => Math.floor(b * level / 25) + 5;
+  const maxHp = Math.floor(s.base.hp * level / 20) + level + 10;
+  return {
+    speciesId, name: s.name, type: s.type, level,
+    maxHp, hp: maxHp, dispHp: maxHp,
+    atk: stat(s.base.atk), def: stat(s.base.def), spd: stat(s.base.spd),
+    moves: s.moves.map(id => MOVES[id]),
+    exp: 0, expNext: level * 20,
+  };
+}
+
+/* =========================== SPRITES ============================== */
+// Pixel-Art als String-Raster; '.' = transparent
+const PAL = {
+  X: "#20222e", K: "#20222e", W: "#f5f5f5",
+};
+const SPRITE_DATA = {
+  flaro: { pal: { O: "#ef8b3a", C: "#fcd9a8", F: "#ffd23e", Y: "#ff6b35" }, rows: [
+    "...X........X...",
+    "..XOX......XOX..",
+    "..XOOX....XOOX..",
+    "..XOCOX..XOCOX..",
+    "...XOOXXXXOOX...",
+    "..XOOOOOOOOOOX..",
+    ".XOOKWOOOOKWOOX.",
+    ".XOOOOOOOOOOOOX.",
+    ".XOOOOXKKXOOOOXF",
+    "..XOOOOOOOOOOXFY",
+    "..XOOOOOOOOOOXYF",
+    "..XOOOOOOOOOOXF.",
+    "...XOOOOOOOOX...",
+    "...XXOOXXOOXX...",
+    "....XOX..XOX....",
+    "....XX....XX....",
+  ]},
+  blattel: { pal: { O: "#5cb85c", L: "#a2e05f", S: "#3d7a35" }, rows: [
+    ".......SS.......",
+    "......SLLS......",
+    ".....SLLLLS.....",
+    "......XSSX......",
+    "....XXOOOOXX....",
+    "...XOOOOOOOOX...",
+    "..XOOOOOOOOOOX..",
+    ".XOOKWOOOOKWOOX.",
+    ".XOOOOOOOOOOOOX.",
+    ".XOOOXKKKKXOOOX.",
+    ".XOOOOXXXXOOOOX.",
+    "..XOOOOOOOOOOX..",
+    "..XLOOOOOOOOLX..",
+    "...XOOOOOOOOX...",
+    "....XXOXXOXX....",
+    "................",
+  ]},
+  hoppli: { pal: { B: "#b08a5e", C: "#f2e2c4" }, rows: [
+    "...XX......XX...",
+    "..XBBX....XBBX..",
+    "..XBCBX..XBCBX..",
+    "..XBCBX..XBCBX..",
+    "...XBBXXXXBBX...",
+    "..XBBBBBBBBBBX..",
+    ".XBBKWBBBBKWBBX.",
+    ".XBBBBBXXBBBBBX.",
+    ".XBBBBXKKXBBBBX.",
+    "..XBBBBBBBBBBX..",
+    "..XBCCCCCCCCBX..",
+    ".XBBCCCCCCCCBBX.",
+    ".XBBCCCCCCCCBBX.",
+    "..XBBBBBBBBBBX..",
+    "...XBBX..XBBX...",
+    "..XXXX....XXXX..",
+  ]},
+  aquani: { pal: { O: "#4a90e2", L: "#a8d4f5" }, rows: [
+    ".......XX.......",
+    "......XOOX......",
+    ".....XOOOOX.....",
+    "....XOOOOOOX....",
+    "...XOOLOOOOOX...",
+    "..XOOLLOOOOOOX..",
+    ".XOOLLOOOOOOOOX.",
+    ".XOKWOOOOOKWOOX.",
+    ".XOOOOOOOOOOOOX.",
+    ".XOOOXKKKKXOOOX.",
+    ".XOOOOXXXXOOOOX.",
+    ".XOOOOOOOOOOOOX.",
+    "..XOOOOOOOOOOX..",
+    "...XOOOOOOOOX...",
+    "....XXOOOOXX....",
+    "......XXXX......",
+  ]},
+  heroDown: { pal: { H: "#5a3d2b", S: "#f0c8a0", C: "#3f6fb5", J: "#3a4a6b", B: "#874d2c" }, rows: [
+    "................",
+    "....XXXXXXX.....",
+    "...XHHHHHHHX....",
+    "..XHHHHHHHHHX...",
+    "..XHSSSSSSSHX...",
+    "..XSSKSSSKSSX...",
+    "...XSSSSSSSX....",
+    "....XSSSSSX.....",
+    "...XCCCCCCCX....",
+    "..XCSCCCCCSCX...",
+    "..XCSCCCCCSCX...",
+    "...XCCCCCCCX....",
+    "....XJJXJJX.....",
+    "....XJJXJJX.....",
+    "....XBBXBBX.....",
+    "................",
+  ]},
+  heroUp: { pal: { H: "#5a3d2b", S: "#f0c8a0", C: "#3f6fb5", J: "#3a4a6b", B: "#874d2c" }, rows: [
+    "................",
+    "....XXXXXXX.....",
+    "...XHHHHHHHX....",
+    "..XHHHHHHHHHX...",
+    "..XHHHHHHHHHX...",
+    "..XSHHHHHHHSX...",
+    "...XHHHHHHHX....",
+    "....XHHHHHX.....",
+    "...XCCCCCCCX....",
+    "..XCSCCCCCSCX...",
+    "..XCSCCCCCSCX...",
+    "...XCCCCCCCX....",
+    "....XJJXJJX.....",
+    "....XJJXJJX.....",
+    "....XBBXBBX.....",
+    "................",
+  ]},
+  heroLeft: { pal: { H: "#5a3d2b", S: "#f0c8a0", C: "#3f6fb5", J: "#3a4a6b", B: "#874d2c" }, rows: [
+    "................",
+    "....XXXXXXX.....",
+    "...XHHHHHHHX....",
+    "..XHHHHHHHHHX...",
+    "..XHSSSSSHHHX...",
+    "..XSSKSSSHHHX...",
+    "...XSSSSSHHX....",
+    "....XSSSSX......",
+    "...XCCCCCCCX....",
+    "...XSCCCCCCX....",
+    "...XSCCCCCCX....",
+    "...XCCCCCCCX....",
+    "....XJJXJJX.....",
+    "....XJJXJJX.....",
+    "....XBBXBBX.....",
+    "................",
+  ]},
+};
+
+const sprites = {};
+function buildSprites() {
+  for (const [id, def] of Object.entries(SPRITE_DATA)) {
+    const h = def.rows.length, w = def.rows[0].length;
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    const cx = c.getContext("2d");
+    def.rows.forEach((row, y) => {
+      for (let x = 0; x < w; x++) {
+        const ch = row[x];
+        if (ch === ".") continue;
+        cx.fillStyle = def.pal[ch] || PAL[ch] || "#f0f";
+        cx.fillRect(x, y, 1, 1);
+      }
+    });
+    sprites[id] = c;
+  }
+  // Rechts-Sprite = gespiegeltes Links-Sprite
+  const l = sprites.heroLeft;
+  const r = document.createElement("canvas");
+  r.width = l.width; r.height = l.height;
+  const rc = r.getContext("2d");
+  rc.translate(l.width, 0); rc.scale(-1, 1); rc.drawImage(l, 0, 0);
+  sprites.heroRight = r;
+  // Rücken-Sprites für den Kampf: gespiegelte Monster
+  for (const id of ["flaro", "blattel", "hoppli", "aquani"]) {
+    const s = sprites[id];
+    const b = document.createElement("canvas");
+    b.width = s.width; b.height = s.height;
+    const bc = b.getContext("2d");
+    bc.translate(s.width, 0); bc.scale(-1, 1); bc.drawImage(s, 0, 0);
+    sprites[id + "Back"] = b;
+  }
+}
+
+/* ============================= SFX ================================ */
+const SFX = (() => {
+  let ctx = null;
+  function ensure() {
+    if (!ctx) { try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { /* kein Audio */ } }
+    if (ctx && ctx.state === "suspended") ctx.resume();
+  }
+  function tone(freq, dur, type = "square", vol = 0.04, when = 0) {
+    if (!ctx) return;
+    const t = ctx.currentTime + when;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t); o.stop(t + dur);
+  }
+  return {
+    ensure,
+    blip:    () => tone(880, .05),
+    select:  () => tone(660, .07),
+    bump:    () => tone(120, .07, "triangle", .05),
+    hit:     () => { tone(200, .12, "sawtooth", .05); tone(150, .1, "square", .04, .04); },
+    faint:   () => { tone(300, .15); tone(220, .15, "square", .04, .12); tone(140, .3, "square", .04, .24); },
+    victory: () => { tone(523, .12); tone(659, .12, "square", .04, .12); tone(784, .25, "square", .05, .24); },
+    flee:    () => { tone(500, .06); tone(700, .06, "square", .04, .06); tone(900, .1, "square", .04, .12); },
+    heal:    () => { tone(659, .1); tone(880, .1, "square", .04, .1); tone(1047, .2, "square", .04, .2); },
+    encounter:() => { tone(440, .08, "sawtooth", .05); tone(415, .08, "sawtooth", .05, .08); tone(392, .2, "sawtooth", .05, .16); },
+  };
+})();
+
+/* ============================ INPUT =============================== */
+const Input = (() => {
+  const down = new Set();
+  const pressed = new Set(); // einmalige Tastendrücke pro Frame
+  const MAPPING = {
+    arrowup: "up", w: "up", arrowdown: "down", s: "down",
+    arrowleft: "left", a: "left", arrowright: "right", d: "right",
+    enter: "confirm", " ": "confirm", z: "confirm",
+    x: "back", backspace: "back", escape: "back",
+  };
+  window.addEventListener("keydown", e => {
+    const k = MAPPING[e.key.toLowerCase()];
+    if (!k) return;
+    e.preventDefault();
+    if (!down.has(k)) pressed.add(k);
+    down.add(k);
+  });
+  window.addEventListener("keyup", e => {
+    const k = MAPPING[e.key.toLowerCase()];
+    if (k) down.delete(k);
+  });
+  return {
+    isDown: k => down.has(k),
+    wasPressed: k => pressed.has(k),
+    endFrame: () => pressed.clear(),
+  };
+})();
+
+/* =========================== TEXTBOX ============================== */
+// Klassische Textbox am unteren Rand des oberen Screens (Canvas-gezeichnet)
+const Textbox = {
+  active: false, text: "", shown: 0, done: false, speed: 0.9,
+  show(text) { this.active = true; this.text = text; this.shown = 0; this.done = false; },
+  hide() { this.active = false; },
+  update() {
+    if (!this.active || this.done) return;
+    this.shown += this.speed;
+    if (this.shown >= this.text.length) { this.shown = this.text.length; this.done = true; }
+    else if (Math.floor(this.shown) % 3 === 0) SFX.blip();
+  },
+  confirm() { // true, wenn die Box "fertig gelesen" bestätigt wurde
+    if (!this.active) return false;
+    if (!this.done) { this.shown = this.text.length; this.done = true; return false; }
+    return true;
+  },
+  draw(g) {
+    if (!this.active) return;
+    const x = 4, y = VIEW_H - 52, w = VIEW_W - 8, h = 48;
+    g.fillStyle = "#f8f8f0"; g.fillRect(x, y, w, h);
+    g.fillStyle = "#20222e"; g.fillRect(x, y, w, 2); g.fillRect(x, y + h - 2, w, 2);
+    g.fillRect(x, y, 2, h); g.fillRect(x + w - 2, y, 2, h);
+    g.fillStyle = "#4cc2ff"; g.fillRect(x + 2, y + 2, w - 4, 2);
+    g.fillStyle = "#20222e";
+    g.font = "bold 9px 'Courier New', monospace";
+    const visible = this.text.slice(0, Math.floor(this.shown));
+    const words = visible.split(" ");
+    let line = "", lines = [];
+    for (const wd of words) {
+      const test = line ? line + " " + wd : wd;
+      if (g.measureText(test).width > w - 20) { lines.push(line); line = wd; }
+      else line = test;
+    }
+    lines.push(line);
+    lines.slice(0, 3).forEach((l, i) => g.fillText(l, x + 8, y + 16 + i * 13));
+    if (this.done) {
+      g.fillStyle = "#e2673a";
+      const bob = Math.floor(performance.now() / 300) % 2;
+      g.beginPath();
+      g.moveTo(x + w - 14, y + h - 12 + bob);
+      g.lineTo(x + w - 6, y + h - 12 + bob);
+      g.lineTo(x + w - 10, y + h - 7 + bob);
+      g.fill();
+    }
+  },
+};
+
+/* ========================== OVERWORLD ============================= */
+const player = {
+  x: 13, y: 10,          // Grid-Position
+  px: 13 * TILE, py: 10 * TILE, // Pixel-Position (für sanfte Bewegung)
+  dir: "down", moving: false, tx: 13, ty: 10,
+  mon: makeMon("flaro", 5),
+  steps: 0,
+};
+
+function tileAt(x, y) {
+  if (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H) return "T";
+  return MAP_ROWS[y][x];
+}
+
+function tryStep(dx, dy, dir) {
+  player.dir = dir;
+  const nx = player.x + dx, ny = player.y + dy;
+  const t = tileAt(nx, ny);
+  if (SOLID.has(t)) { if (!player.bumpCd) { SFX.bump(); player.bumpCd = 20; } return; }
+  player.moving = true; player.tx = nx; player.ty = ny;
+}
+
+function finishStep() {
+  player.x = player.tx; player.y = player.ty;
+  player.px = player.x * TILE; player.py = player.y * TILE;
+  player.moving = false;
+  player.steps++;
+  const t = tileAt(player.x, player.y);
+  if (t === "D") {
+    if (player.mon.hp < player.mon.maxHp) {
+      player.mon.hp = player.mon.maxHp; player.mon.dispHp = player.mon.maxHp;
+      SFX.heal();
+      game.state = "owText";
+      Textbox.show("Willkommen zu Hause! " + player.mon.name + " wurde vollständig geheilt!");
+      renderBottom();
+    }
+  } else if (t === "H" && Math.random() < ENCOUNTER_RATE) {
+    startEncounter();
+  }
+}
+
+function updateOverworld() {
+  if (player.bumpCd) player.bumpCd--;
+  if (player.moving) {
+    const speed = 2;
+    const txp = player.tx * TILE, typ = player.ty * TILE;
+    player.px += Math.sign(txp - player.px) * Math.min(speed, Math.abs(txp - player.px));
+    player.py += Math.sign(typ - player.py) * Math.min(speed, Math.abs(typ - player.py));
+    if (player.px === txp && player.py === typ) finishStep();
+    return;
+  }
+  // Interaktion: Schild lesen
+  if (Input.wasPressed("confirm")) {
+    const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[player.dir];
+    const t = tileAt(player.x + d[0], player.y + d[1]);
+    if (t === "S") {
+      SFX.select();
+      game.state = "owText";
+      Textbox.show("ACHTUNG: Im hohen Gras leben wilde Monster! Halte dein Team bereit.");
+      return;
+    }
+  }
+  if (Input.isDown("up")) tryStep(0, -1, "up");
+  else if (Input.isDown("down")) tryStep(0, 1, "down");
+  else if (Input.isDown("left")) tryStep(-1, 0, "left");
+  else if (Input.isDown("right")) tryStep(1, 0, "right");
+}
+
+/* --- Kachel-Rendering (prozedural, deterministisch dekoriert) --- */
+function noise(x, y) { return ((x * 31 + y * 57) ^ (x * 13)) % 100; }
+
+function drawTile(g, t, x, y, sx, sy, time) {
+  switch (t) {
+    case "G": case "B": case "D": case "S": case "H": {
+      g.fillStyle = "#7ec850"; g.fillRect(sx, sy, TILE, TILE);
+      if (noise(x, y) < 30) { g.fillStyle = "#8fd75f"; g.fillRect(sx + noise(x, y) % 12, sy + noise(y, x) % 12, 2, 2); }
+      break;
+    }
+    case "P": {
+      g.fillStyle = "#e0c48c"; g.fillRect(sx, sy, TILE, TILE);
+      g.fillStyle = "#d1b276";
+      if (noise(x, y) < 40) g.fillRect(sx + 3 + noise(x, y) % 8, sy + 3 + noise(y, x) % 8, 2, 2);
+      break;
+    }
+    case "W": {
+      g.fillStyle = "#3f7fd6"; g.fillRect(sx, sy, TILE, TILE);
+      g.fillStyle = "#6aa3e8";
+      const off = Math.floor(time / 400 + x + y) % 4;
+      g.fillRect(sx + 2 + off, sy + 4, 6, 1);
+      g.fillRect(sx + 6 - off, sy + 11, 5, 1);
+      break;
+    }
+    case "T": {
+      g.fillStyle = "#7ec850"; g.fillRect(sx, sy, TILE, TILE);
+      g.fillStyle = "#6b4226"; g.fillRect(sx + 6, sy + 10, 4, 6);
+      g.fillStyle = "#2e7d32";
+      g.beginPath(); g.arc(sx + 8, sy + 6, 7, 0, 7); g.fill();
+      g.fillStyle = "#43a047";
+      g.beginPath(); g.arc(sx + 5, sy + 5, 4, 0, 7); g.fill();
+      break;
+    }
+    case "F": {
+      g.fillStyle = "#7ec850"; g.fillRect(sx, sy, TILE, TILE);
+      g.fillStyle = "#a8763e";
+      g.fillRect(sx + 1, sy + 5, 3, 9); g.fillRect(sx + 12, sy + 5, 3, 9);
+      g.fillRect(sx, sy + 7, TILE, 2); g.fillRect(sx, sy + 11, TILE, 2);
+      g.fillStyle = "#8a5a2b"; g.fillRect(sx + 1, sy + 5, 3, 1); g.fillRect(sx + 12, sy + 5, 3, 1);
+      break;
+    }
+    case "R": {
+      const roof = tileAt(x, y - 1) !== "R";
+      if (roof) {
+        g.fillStyle = "#c94f4f"; g.fillRect(sx, sy, TILE, TILE);
+        g.fillStyle = "#a83c3c"; g.fillRect(sx, sy + 6, TILE, 2); g.fillRect(sx, sy + 13, TILE, 2);
+      } else {
+        g.fillStyle = "#f0e3c8"; g.fillRect(sx, sy, TILE, TILE);
+        g.fillStyle = "#d8c8a8"; g.fillRect(sx, sy, TILE, 2);
+        if (noise(x, y) < 50) { // Fenster
+          g.fillStyle = "#8fc7e8"; g.fillRect(sx + 4, sy + 5, 8, 7);
+          g.fillStyle = "#5a8bb0"; g.fillRect(sx + 4, sy + 5, 8, 1); g.fillRect(sx + 7, sy + 5, 1, 7);
+        }
+      }
+      break;
+    }
+  }
+  // Overlays auf Gras-Basis
+  if (t === "H") {
+    g.fillStyle = "#3e8e41";
+    for (const gx of [2, 7, 12]) {
+      g.fillRect(sx + gx, sy + 6, 1, 8);
+      g.fillRect(sx + gx - 1, sy + 8, 1, 6);
+      g.fillRect(sx + gx + 1, sy + 8, 1, 6);
+    }
+    g.fillStyle = "#2e7d32";
+    g.fillRect(sx + 4, sy + 9, 1, 5); g.fillRect(sx + 10, sy + 9, 1, 5);
+  } else if (t === "B") {
+    g.fillStyle = "#e85d75"; g.fillRect(sx + 3, sy + 3, 3, 3); g.fillRect(sx + 10, sy + 9, 3, 3);
+    g.fillStyle = "#ffd23e"; g.fillRect(sx + 4, sy + 4, 1, 1); g.fillRect(sx + 11, sy + 10, 1, 1);
+  } else if (t === "D") {
+    g.fillStyle = "#6b4226"; g.fillRect(sx + 3, sy + 1, 10, 14);
+    g.fillStyle = "#8a5a35"; g.fillRect(sx + 4, sy + 2, 8, 12);
+    g.fillStyle = "#ffd23e"; g.fillRect(sx + 10, sy + 8, 2, 2);
+  } else if (t === "S") {
+    g.fillStyle = "#6b4226"; g.fillRect(sx + 7, sy + 8, 2, 7);
+    g.fillStyle = "#c9a165"; g.fillRect(sx + 2, sy + 2, 12, 7);
+    g.fillStyle = "#8a6a40"; g.fillRect(sx + 4, sy + 4, 8, 1); g.fillRect(sx + 4, sy + 6, 6, 1);
+  }
+}
+
+function drawOverworld(g, time) {
+  // Kamera zentriert den Spieler, an Kartenrändern begrenzt
+  let camX = Math.round(player.px + TILE / 2 - VIEW_W / 2);
+  let camY = Math.round(player.py + TILE / 2 - VIEW_H / 2);
+  camX = Math.max(0, Math.min(MAP_W * TILE - VIEW_W, camX));
+  camY = Math.max(0, Math.min(MAP_H * TILE - VIEW_H, camY));
+
+  const x0 = Math.floor(camX / TILE), y0 = Math.floor(camY / TILE);
+  for (let y = y0; y <= y0 + Math.ceil(VIEW_H / TILE); y++) {
+    for (let x = x0; x <= x0 + Math.ceil(VIEW_W / TILE); x++) {
+      if (x >= MAP_W || y >= MAP_H) continue;
+      drawTile(g, tileAt(x, y), x, y, x * TILE - camX, y * TILE - camY, time);
+    }
+  }
+  // Spieler (mit leichtem Hüpfen beim Laufen)
+  const bob = player.moving && Math.floor((player.px + player.py) / 8) % 2 ? -1 : 0;
+  const heroSprite = { down: "heroDown", up: "heroUp", left: "heroLeft", right: "heroRight" }[player.dir];
+  g.drawImage(sprites[heroSprite], Math.round(player.px - camX), Math.round(player.py - camY - 2 + bob));
+  // Steht der Spieler im hohen Gras, verdeckt es seine Beine
+  if (tileAt(player.moving ? player.tx : player.x, player.moving ? player.ty : player.y) === "H") {
+    const sx = Math.round(player.px - camX), sy = Math.round(player.py - camY);
+    g.fillStyle = "#3e8e41";
+    for (const gx of [2, 7, 12]) g.fillRect(sx + gx, sy + 9, 2, 6);
+  }
+}
+
+/* =========================== BATTLE =============================== */
+const battle = {
+  active: false, enemy: null, queue: [], phase: "script",
+  flashTimer: 0, flashTarget: null, shake: 0,
+};
+
+const step = {
+  text: t => ({ type: "text", text: t }),
+  hp: target => ({ type: "hp", target }),
+  call: fn => ({ type: "call", fn }),
+  pause: frames => ({ type: "pause", frames }),
+};
+
+function startEncounter() {
+  SFX.encounter();
+  game.state = "encounterFlash";
+  game.flashFrames = 40;
+}
+
+function beginBattle() {
+  const level = 2 + Math.floor(Math.random() * 3); // Level 2–4
+  const speciesId = WILD_POOL[Math.floor(Math.random() * WILD_POOL.length)];
+  battle.enemy = makeMon(speciesId, level);
+  battle.active = true;
+  battle.queue = [
+    step.text("Wildes " + battle.enemy.name + " erscheint!"),
+    step.text("Los, " + player.mon.name + "!"),
+    step.call(() => { toMenu(); }),
+  ];
+  battle.phase = "script";
+  game.state = "battle";
+  renderBottom();
+}
+
+function toMenu() {
+  battle.phase = "menu";
+  Textbox.show("Was soll " + player.mon.name + " tun?");
+  Textbox.shown = Textbox.text.length; Textbox.done = true;
+  renderBottom();
+}
+
+function typeFactor(moveType, defType) {
+  return (TYPE_CHART[moveType] && TYPE_CHART[moveType][defType]) || 1;
+}
+
+function calcDamage(attacker, defender, move) {
+  const eff = typeFactor(move.type, defender.type);
+  const crit = Math.random() < 1 / 16 ? 1.5 : 1;
+  const rand = 0.85 + Math.random() * 0.15;
+  const stab = move.type === attacker.type ? 1.25 : 1;
+  let dmg = ((2 * attacker.level / 5 + 2) * move.power * attacker.atk / defender.def) / 50 + 2;
+  dmg = Math.max(1, Math.floor(dmg * eff * crit * rand * stab));
+  return { dmg, eff, crit: crit > 1 };
+}
+
+// Liefert die Skript-Schritte für einen einzelnen Angriff
+function attackSteps(attacker, defender, move) {
+  const isPlayer = attacker === player.mon;
+  const label = isPlayer ? attacker.name : "Wildes " + attacker.name;
+  return [
+    step.text(label + " nutzt " + move.name + "!"),
+    step.call(() => {
+      const { dmg, eff, crit } = calcDamage(attacker, defender, move);
+      defender.hp = Math.max(0, defender.hp - dmg);
+      battle.flashTarget = defender; battle.flashTimer = 24;
+      battle.shake = defender === player.mon ? 10 : 0;
+      SFX.hit();
+      const extra = [];
+      if (crit) extra.push(step.text("Ein Volltreffer!"));
+      if (eff > 1) extra.push(step.text("Das ist sehr effektiv!"));
+      else if (eff < 1) extra.push(step.text("Das ist nicht sehr effektiv..."));
+      return [step.hp(defender), ...extra, step.call(() => checkFaint(defender))];
+    }),
+  ];
+}
+
+function checkFaint(mon) {
+  if (mon.hp > 0) return null;
+  battle.queue = []; // restliche Zug-Schritte verwerfen
+  SFX.faint();
+  if (mon === battle.enemy) {
+    const gained = battle.enemy.level * 15;
+    return [
+      step.pause(20),
+      step.text("Wildes " + battle.enemy.name + " wurde besiegt!"),
+      step.call(() => { SFX.victory(); return null; }),
+      step.text(player.mon.name + " erhält " + gained + " EP!"),
+      step.call(() => gainExp(gained)),
+      step.call(() => { endBattle(); return null; }),
+    ];
+  }
+  return [
+    step.pause(20),
+    step.text(player.mon.name + " ist erschöpft!"),
+    step.text("Du eilst mit letzter Kraft nach Hause..."),
+    step.call(() => {
+      player.mon.hp = player.mon.maxHp; player.mon.dispHp = player.mon.maxHp;
+      player.x = player.tx = 4; player.y = player.ty = 5; // vor der Haustür
+      player.px = 4 * TILE; player.py = 5 * TILE; player.dir = "down"; player.moving = false;
+      SFX.heal();
+      endBattle();
+      return null;
+    }),
+  ];
+}
+
+function gainExp(amount) {
+  const mon = player.mon;
+  mon.exp += amount;
+  const ups = [];
+  while (mon.exp >= mon.expNext) {
+    mon.exp -= mon.expNext;
+    mon.level++;
+    mon.expNext = mon.level * 20;
+    mon.maxHp += 3; mon.hp = Math.min(mon.maxHp, mon.hp + 3); mon.dispHp = mon.hp;
+    mon.atk += 2; mon.def += 2; mon.spd += 2;
+    ups.push(step.call(() => { SFX.heal(); return null; }));
+    ups.push(step.text(mon.name + " erreicht Level " + mon.level + "!"));
+  }
+  return ups.length ? ups : null;
+}
+
+function playerChooseMove(index) {
+  const pMove = player.mon.moves[index];
+  const eMove = battle.enemy.moves[Math.floor(Math.random() * battle.enemy.moves.length)];
+  const playerFirst = player.mon.spd >= battle.enemy.spd;
+  const first  = playerFirst ? player.mon : battle.enemy;
+  const second = playerFirst ? battle.enemy : player.mon;
+  const firstMove  = playerFirst ? pMove : eMove;
+  const secondMove = playerFirst ? eMove : pMove;
+  battle.queue = [
+    ...attackSteps(first, second, firstMove),
+    step.call(() => second.hp > 0 ? attackSteps(second, first, secondMove) : null),
+    step.call(() => { toMenu(); return null; }),
+  ];
+  battle.phase = "script";
+  renderBottom();
+}
+
+function playerFlee() {
+  battle.queue = [
+    step.text("Du versuchst zu fliehen..."),
+    step.call(() => {
+      if (Math.random() < 0.8) {
+        SFX.flee();
+        return [step.text("Du bist entkommen!"), step.call(() => { endBattle(); return null; })];
+      }
+      const eMove = battle.enemy.moves[Math.floor(Math.random() * battle.enemy.moves.length)];
+      return [
+        step.text("Flucht gescheitert!"),
+        ...attackSteps(battle.enemy, player.mon, eMove),
+        step.call(() => { toMenu(); return null; }),
+      ];
+    }),
+  ];
+  battle.phase = "script";
+  renderBottom();
+}
+
+function endBattle() {
+  battle.active = false;
+  battle.queue = [];
+  Textbox.hide();
+  game.state = "overworld";
+  renderBottom();
+}
+
+function updateBattle() {
+  if (battle.flashTimer > 0) battle.flashTimer--;
+  if (battle.shake > 0) battle.shake--;
+  // HP-Anzeigen weich nachziehen
+  for (const mon of [player.mon, battle.enemy]) {
+    if (!mon) continue;
+    if (mon.dispHp > mon.hp) mon.dispHp = Math.max(mon.hp, mon.dispHp - mon.maxHp / 60);
+    if (mon.dispHp < mon.hp) mon.dispHp = Math.min(mon.hp, mon.dispHp + mon.maxHp / 60);
+  }
+  if (battle.phase !== "script") return;
+  const cur = battle.queue[0];
+  if (!cur) return;
+  switch (cur.type) {
+    case "text":
+      if (!cur.started) { cur.started = true; Textbox.show(cur.text); }
+      else if (Input.wasPressed("confirm") && Textbox.confirm()) battle.queue.shift();
+      break;
+    case "hp":
+      if (Math.abs(cur.target.dispHp - cur.target.hp) < 0.5) {
+        cur.target.dispHp = cur.target.hp;
+        battle.queue.shift();
+      }
+      break;
+    case "pause":
+      cur.frames--;
+      if (cur.frames <= 0) battle.queue.shift();
+      break;
+    case "call": {
+      battle.queue.shift();
+      const result = cur.fn();
+      if (Array.isArray(result)) battle.queue.unshift(...result);
+      break;
+    }
+  }
+}
+
+/* --- Kampf-Rendering --- */
+function drawHpBar(g, x, y, w, mon) {
+  const ratio = Math.max(0, mon.dispHp / mon.maxHp);
+  g.fillStyle = "#20222e"; g.fillRect(x - 1, y - 1, w + 2, 6);
+  g.fillStyle = "#555"; g.fillRect(x, y, w, 4);
+  g.fillStyle = ratio > 0.5 ? "#4ade80" : ratio > 0.2 ? "#facc15" : "#ef4444";
+  g.fillRect(x, y, Math.round(w * ratio), 4);
+}
+
+function drawBattleBox(g, x, y, mon, isPlayer) {
+  const w = 104, h = isPlayer ? 42 : 32;
+  g.fillStyle = "#f8f8f0"; g.fillRect(x, y, w, h);
+  g.strokeStyle = "#20222e"; g.lineWidth = 2; g.strokeRect(x + 1, y + 1, w - 2, h - 2);
+  g.fillStyle = "#20222e";
+  g.font = "bold 8px 'Courier New', monospace";
+  g.fillText(mon.name, x + 6, y + 11);
+  g.fillText("Lv" + mon.level, x + w - 28, y + 11);
+  drawHpBar(g, x + 24, y + 16, w - 32, mon);
+  g.font = "bold 7px 'Courier New', monospace";
+  g.fillText("HP", x + 6, y + 21);
+  if (isPlayer) {
+    g.fillText(Math.ceil(mon.dispHp) + "/" + mon.maxHp, x + w - 44, y + 30);
+    // EP-Leiste
+    g.fillStyle = "#555"; g.fillRect(x + 24, y + 34, w - 32, 3);
+    g.fillStyle = "#4cc2ff";
+    g.fillRect(x + 24, y + 34, Math.round((w - 32) * Math.min(1, mon.exp / mon.expNext)), 3);
+    g.fillStyle = "#20222e"; g.fillText("EP", x + 6, y + 38);
+  }
+}
+
+function drawBattle(g, time) {
+  const shakeX = battle.shake > 0 ? (battle.shake % 2 ? 2 : -2) : 0;
+  g.save();
+  g.translate(shakeX, 0);
+  // Hintergrund
+  const grad = g.createLinearGradient(0, 0, 0, VIEW_H);
+  grad.addColorStop(0, "#bfe8ff"); grad.addColorStop(0.6, "#e8f8d8"); grad.addColorStop(1, "#c8e8a8");
+  g.fillStyle = grad; g.fillRect(-4, 0, VIEW_W + 8, VIEW_H);
+  // Plattformen
+  g.fillStyle = "#a8d078";
+  g.beginPath(); g.ellipse(196, 92, 46, 12, 0, 0, 7); g.fill();
+  g.beginPath(); g.ellipse(62, 148, 52, 14, 0, 0, 7); g.fill();
+  g.fillStyle = "#8fb862";
+  g.beginPath(); g.ellipse(196, 94, 46, 10, 0, 0, 7); g.fill();
+  g.beginPath(); g.ellipse(62, 150, 52, 12, 0, 0, 7); g.fill();
+
+  const bounce = Math.sin(time / 400) * 1.5;
+  // Gegner (oben rechts)
+  if (battle.enemy && !(battle.flashTarget === battle.enemy && battle.flashTimer % 6 >= 3)) {
+    const s = sprites[SPECIES[battle.enemy.speciesId].sprite];
+    const faintDrop = battle.enemy.hp <= 0 ? Math.min(40, (24 - battle.flashTimer) * 3) : 0;
+    g.imageSmoothingEnabled = false;
+    g.drawImage(s, 172, 40 + bounce + faintDrop, 48, 48);
+  }
+  // Spieler-Monster (unten links, Rückansicht, größer)
+  if (!(battle.flashTarget === player.mon && battle.flashTimer % 6 >= 3)) {
+    const s = sprites[SPECIES[player.mon.speciesId].sprite + "Back"];
+    g.imageSmoothingEnabled = false;
+    g.drawImage(s, 30, 90 - bounce, 64, 64);
+  }
+  g.restore();
+  // Status-Boxen
+  if (battle.enemy) drawBattleBox(g, 8, 10, battle.enemy, false);
+  drawBattleBox(g, VIEW_W - 112, 94, player.mon, true);
+  Textbox.draw(g);
+}
+
+/* ======================= UI (unterer Screen) ====================== */
+const bottomEl = document.getElementById("bottom");
+let menuButtons = [], menuIndex = 0;
+
+function typeChip(type) {
+  const label = { normal: "NORMAL", feuer: "FEUER", pflanze: "PFLANZE", wasser: "WASSER" }[type];
+  return '<span class="type-chip t-' + type + '">' + label + "</span>";
+}
+
+function hpColor(ratio) { return ratio > 0.5 ? "#4ade80" : ratio > 0.2 ? "#facc15" : "#ef4444"; }
+
+function renderBottom() {
+  const mon = player.mon;
+  if (game.state === "battle" && battle.phase === "menu") {
+    if (game.bottomMode === "moves") {
+      bottomEl.innerHTML =
+        '<div class="panel-title">Attacke wählen</div>' +
+        '<div class="btn-grid">' +
+        mon.moves.map((m, i) =>
+          '<button class="ds-btn" data-action="move" data-i="' + i + '">' + m.name +
+          '<small>Stärke ' + m.power + "</small>" + typeChip(m.type) + "</button>").join("") +
+        '<button class="ds-btn back" data-action="back">&#8617; Zurück (X)</button></div>';
+    } else {
+      bottomEl.innerHTML =
+        '<div class="panel-title">Kampf</div>' +
+        '<div class="btn-grid">' +
+        '<button class="ds-btn" data-action="fight">ANGRIFF</button>' +
+        '<button class="ds-btn" data-action="flee">FLUCHT</button></div>';
+    }
+  } else if (game.state === "battle" || game.state === "encounterFlash") {
+    bottomEl.innerHTML = '<div class="panel-title">Kampf läuft...</div>' +
+      '<div class="hint">Mit <b>Enter</b> / <b>Leertaste</b> weiterblättern</div>';
+  } else {
+    const ratio = mon.hp / mon.maxHp;
+    bottomEl.innerHTML =
+      '<div class="panel-title">Dein Team</div>' +
+      '<div class="party-card"><canvas id="party-icon" width="16" height="16"></canvas>' +
+      '<div class="party-info"><span class="name">' + mon.name + '</span> <span class="lvl">Lv' + mon.level + "</span>" +
+      '<div class="hp-outer"><div class="hp-inner" style="width:' + (ratio * 100) + "%;background:" + hpColor(ratio) + '"></div></div>' +
+      '<div class="hp-num">' + mon.hp + " / " + mon.maxHp + " KP &middot; EP " + mon.exp + "/" + mon.expNext + "</div></div></div>" +
+      '<div class="hint"><b>Pfeiltasten / WASD</b> bewegen &middot; <b>Enter</b> lesen<br>' +
+      "Wilde Monster lauern im hohen Gras!</div>";
+    const pc = document.getElementById("party-icon");
+    if (pc) pc.getContext("2d").drawImage(sprites[SPECIES[mon.speciesId].sprite], 0, 0);
+  }
+  menuButtons = [...bottomEl.querySelectorAll(".ds-btn")];
+  menuIndex = 0;
+  highlightMenu();
+}
+
+function highlightMenu() {
+  menuButtons.forEach((b, i) => b.classList.toggle("selected", i === menuIndex));
+}
+
+function activateButton(btn) {
+  if (!btn) return;
+  SFX.select();
+  const action = btn.dataset.action;
+  if (action === "fight") { game.bottomMode = "moves"; renderBottom(); }
+  else if (action === "back") { game.bottomMode = "main"; renderBottom(); }
+  else if (action === "move") { game.bottomMode = "main"; playerChooseMove(+btn.dataset.i); }
+  else if (action === "flee") { game.bottomMode = "main"; playerFlee(); }
+}
+
+bottomEl.addEventListener("click", e => {
+  const btn = e.target.closest(".ds-btn");
+  if (btn) activateButton(btn);
+});
+
+function updateMenuInput() {
+  if (!menuButtons.length) return;
+  const cols = 2;
+  if (Input.wasPressed("left") && menuIndex % cols > 0) { menuIndex--; SFX.blip(); }
+  else if (Input.wasPressed("right") && menuIndex % cols < cols - 1 && menuIndex + 1 < menuButtons.length) { menuIndex++; SFX.blip(); }
+  else if (Input.wasPressed("up") && menuIndex - cols >= 0) { menuIndex -= cols; SFX.blip(); }
+  else if (Input.wasPressed("down") && menuIndex + cols < menuButtons.length) { menuIndex += cols; SFX.blip(); }
+  highlightMenu();
+  if (Input.wasPressed("confirm")) activateButton(menuButtons[menuIndex]);
+  if (Input.wasPressed("back") && game.bottomMode === "moves") { SFX.blip(); game.bottomMode = "main"; renderBottom(); }
+}
+
+/* ========================= GAME LOOP ============================== */
+const game = { state: "title", bottomMode: "main", flashFrames: 0 };
+const canvas = document.getElementById("top");
+const g = canvas.getContext("2d");
+g.imageSmoothingEnabled = false;
+
+function update() {
+  switch (game.state) {
+    case "overworld":
+      updateOverworld();
+      break;
+    case "owText":
+      Textbox.update();
+      if (Input.wasPressed("confirm") && Textbox.confirm()) {
+        Textbox.hide();
+        game.state = "overworld";
+        renderBottom();
+      }
+      break;
+    case "encounterFlash":
+      game.flashFrames--;
+      if (game.flashFrames <= 0) beginBattle();
+      break;
+    case "battle":
+      Textbox.update();
+      updateBattle();
+      if (battle.phase === "menu") updateMenuInput();
+      break;
+  }
+}
+
+function draw(time) {
+  g.clearRect(0, 0, VIEW_W, VIEW_H);
+  if (game.state === "battle") {
+    drawBattle(g, time);
+  } else if (game.state === "encounterFlash") {
+    drawOverworld(g, time);
+    // Blitz-Übergang
+    const f = game.flashFrames;
+    g.fillStyle = f % 10 < 5 ? "rgba(255,255,255,.9)" : "rgba(0,0,0,.85)";
+    g.fillRect(0, 0, VIEW_W, VIEW_H);
+  } else {
+    drawOverworld(g, time);
+    Textbox.draw(g);
+  }
+}
+
+function frame(time) {
+  update();
+  draw(time || 0);
+  Input.endFrame();
+  requestAnimationFrame(frame);
+}
+
+document.getElementById("start-btn").addEventListener("click", () => {
+  SFX.ensure();
+  SFX.select();
+  document.getElementById("title-overlay").style.display = "none";
+  game.state = "overworld";
+  renderBottom();
+});
+
+buildSprites();
+renderBottom();
+requestAnimationFrame(frame);
+
+// Debug-Zugriff (z.B. game.debug.startBattle() in der Konsole)
+game.debug = { startEncounter, beginBattle, player, battle };
+window.game = game;
+</script>
+</body>
+</html>
