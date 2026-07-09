@@ -131,11 +131,17 @@ body {
   color: #063b39; background: linear-gradient(135deg, #7ff0dd, #34d3bd);
   box-shadow: 0 6px 16px -6px rgba(0,0,0,0.5);
 }
+.fund-headmain { min-width: 0; }
 .fund-name { font-weight: 800; font-size: 1.08rem; letter-spacing: -0.01em; }
 .fund-sub { font-size: 0.78rem; opacity: 0.8; margin-top: 2px; }
-.fund-tag {
-  margin-left: auto; align-self: flex-start; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em;
-  padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.22);
+/* Debeka-Wortmarke (Fondsanbieter) */
+.debeka-logo {
+  margin-left: auto; align-self: flex-start; flex: none;
+  display: inline-flex; align-items: center;
+  background: #ffffff; color: #004a93;
+  font-weight: 800; font-size: 0.92rem; letter-spacing: -0.015em;
+  padding: 5px 11px; border-radius: 8px;
+  box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.45);
 }
 .fund-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
 @media (max-width: 460px) { .fund-facts { grid-template-columns: 1fr; gap: 8px; } }
@@ -267,6 +273,12 @@ input[type="range"]::-moz-range-thumb {
 .pill-btn:hover { border-color: var(--teal-400); color: var(--text); }
 .pill-btn:focus-visible { outline: 2px solid var(--teal-500); outline-offset: 2px; }
 .pill-btn.active { background: var(--teal-600); color: #fff; border-color: var(--teal-600); }
+
+/* Steuer-Box (statisch, Aktien-Dachfonds) */
+.taxbox { background: var(--card-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 15px; }
+.taxbox-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 0.86rem; font-weight: 600; color: var(--text-2); padding: 3px 0; }
+.taxbox-row b { color: var(--text); font-weight: 800; font-variant-numeric: tabular-nums; }
+.taxbox .field-hint { margin-top: 8px; }
 
 /* ---------- Result hero ---------- */
 .hero {

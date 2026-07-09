@@ -177,16 +177,10 @@ function shell() {
 
         <div class="divider"></div>
         <div class="section-title">Steuern bei Auszahlung</div>
-        <div class="field">
-          <div class="field-label">Anlageform
-            <i class="info" data-tip="Aktienfonds/-ETFs erhalten 30 % Teilfreistellung, Mischfonds 15 %. Das senkt die Steuer auf den Gewinn. Der Debeka Global Shares ist ein Aktien-Dachfonds."></i>
-          </div>
-          <div class="seg" id="fondstyp" role="group" aria-label="Anlageform">
-            <button type="button" data-v="aktien">Aktienfonds</button>
-            <button type="button" data-v="misch">Mischfonds</button>
-            <button type="button" data-v="none">Sonstige</button>
-          </div>
-          <div class="field-hint" id="fondstypHint"></div>
+        <div class="taxbox">
+          <div class="taxbox-row"><span>Teilfreistellung (Aktienfonds)</span><b>30 %</b></div>
+          <div class="taxbox-row"><span>Abgeltungsteuer inkl. Soli</span><b>26,375 %</b></div>
+          <div class="field-hint">Der Debeka Global Shares ist ein Aktien-Dachfonds: 30 % des Kursgewinns bleiben steuerfrei, der Rest wird mit 26,375 % besteuert – effektiv rund 18,5 % auf den Gewinn.</div>
         </div>
 
         <div class="divider"></div>
@@ -203,11 +197,11 @@ function shell() {
         <section class="fundcard" aria-label="Fonds">
           <div class="fund-head">
             <div class="fund-badge">DGS</div>
-            <div>
+            <div class="fund-headmain">
               <div class="fund-name">${FUND.name}</div>
               <div class="fund-sub">${FUND.sub}</div>
             </div>
-            <div class="fund-tag">ESG</div>
+            <span class="debeka-logo" role="img" aria-label="Debeka">Debeka</span>
           </div>
           <div class="fund-facts">
             <div class="ff"><span class="ff-v">${num2.format(FUND.paSince)} %</span><span class="ff-k">Rendite p.a. seit ${FUND.since}<sup>*</sup></span></div>
@@ -315,7 +309,7 @@ function shell() {
           </section>
         </div>
 
-        <div class="footer">Rechnet primär mit dem Debeka Global Shares · läuft komplett im Browser.</div>
+        <div class="footer">Rechner für den Debeka Global Shares · Fondsdaten der Debeka · unabhängige Modellrechnung, kein Angebot der Debeka.</div>
       </div>
     </div>
   </div>`;
@@ -373,18 +367,9 @@ function refreshInputs() {
       el.value = new Intl.NumberFormat("de-DE").format(state[k]);
     }
   });
-  document.querySelectorAll("#fondstyp button").forEach((b) => {
-    b.setAttribute("aria-pressed", String(b.dataset.v === state.fondstyp));
-  });
   document.querySelectorAll("#renditePreset button").forEach((b) => {
     b.setAttribute("aria-pressed", String(Math.abs(parseFloat(b.dataset.v) - state.rendite) < 0.001));
   });
-  const hints = {
-    aktien: "Aktienfonds · 30 % Teilfreistellung → effektiv ~18,5 % Steuer auf den Gewinn.",
-    misch: "Mischfonds · 15 % Teilfreistellung → effektiv ~22,4 % Steuer auf den Gewinn.",
-    none: "Ohne Teilfreistellung · volle 26,375 % Steuer auf den Gewinn.",
-  };
-  document.getElementById("fondstypHint").textContent = hints[state.fondstyp];
 }
 
 function render(animate) {
@@ -631,11 +616,6 @@ function bind() {
   document.getElementById("renditePreset").addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b) return;
     state.rendite = clamp("rendite", parseFloat(b.dataset.v)); render(true);
-  });
-
-  document.getElementById("fondstyp").addEventListener("click", (e) => {
-    const b = e.target.closest("button"); if (!b) return;
-    state.fondstyp = b.dataset.v; render(true);
   });
 
   document.getElementById("realBtn").addEventListener("click", (e) => {
