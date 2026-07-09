@@ -148,6 +148,28 @@ body {
 .fund-note { font-size: 0.68rem; opacity: 0.68; margin-top: 12px; line-height: 1.5; }
 .fund-note sup, .ff-k sup { font-size: 0.7em; }
 
+/* Fonds-Wertentwicklung (Balken) */
+.fund-perf { margin-top: 16px; }
+.fp-title {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
+  opacity: 0.85; margin-bottom: 11px;
+}
+.fp-cap { font-weight: 600; letter-spacing: 0.02em; opacity: 0.7; text-transform: none; }
+.perf-row {
+  display: grid; grid-template-columns: 84px 1fr auto; align-items: center; gap: 11px;
+  margin-top: 9px; font-size: 0.82rem;
+}
+.pr-lab { opacity: 0.85; }
+.pr-bar { height: 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.10); overflow: hidden; }
+.pr-bar i {
+  display: block; height: 100%; border-radius: 999px; transform-origin: left;
+  background: linear-gradient(90deg, #7ff0dd, #2dd4bf);
+  transform: scaleX(var(--w)); animation: growbar 0.95s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes growbar { from { transform: scaleX(0); } to { transform: scaleX(var(--w)); } }
+.pr-val { font-variant-numeric: tabular-nums; font-weight: 800; }
+
 /* ---------- Inputs ---------- */
 .field { margin-bottom: 20px; }
 .field:last-child { margin-bottom: 0; }

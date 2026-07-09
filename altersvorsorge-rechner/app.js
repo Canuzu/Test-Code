@@ -19,14 +19,23 @@
 const FUND = {
   name: "Debeka Global Shares",
   sub: "Globaler Aktien-Dachfonds · ESG · Debeka Fondspolice",
-  histReturn: 8.9,     // % p.a. seit Auflegung 22.04.2016 (≈ +133 %)
-  runningCost: 0.30,   // % p.a. laufende Fondskosten (0,025 %/Monat)
+  paSince: 9.99,        // % p.a. seit Auflegung 22.04.2016
+  totalSince: 164.42,   // % Gesamtentwicklung seit Auflegung
+  runningCost: 0.30,    // % p.a. laufende Fondskosten (0,025 %/Monat)
   since: 2016,
+  sinceDate: "22.04.2016",
+  // Öffentliche Wertentwicklung laut Debeka (Anteilswert, netto):
+  perf: [
+    { label: "1 Jahr", v: 24.77 },
+    { label: "3 Jahre", v: 58.71 },
+    { label: "5 Jahre", v: 61.99 },
+    { label: "seit Auflage", v: 164.42 },
+  ],
 };
 
 /* Renditeszenarien, mit denen gerechnet werden kann. */
 const RENDITE_PRESETS = [
-  { key: "hist", label: "Historisch 8,9 %", v: 8.9 },
+  { key: "hist", label: "Ø seit 2016 · 10 %", v: 10 },
   { key: "solide", label: "Solide 7 %", v: 7 },
   { key: "vorsichtig", label: "Vorsichtig 5 %", v: 5 },
 ];
@@ -43,7 +52,7 @@ const state = {
   dynamik: 2,
   alter: 34,
   rentenalter: 67,
-  rendite: FUND.histReturn,   // Voreinstellung: historische Fondsrendite
+  rendite: 10,                // Voreinstellung ≈ Ø-Rendite p.a. seit Auflegung
   ter: FUND.runningCost,      // laufende Fondskosten
   policy: 0,                  // Effektivkosten der Police (variiert je Vertrag)
   inflation: 2,
@@ -56,6 +65,7 @@ const state = {
 /* --------------------------- Formatting ------------------------------ */
 const eur0 = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 const num1 = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const num2 = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const pct1 = (v) => num1.format(v) + " %";
 const money = (v) => eur0.format(Math.round(v));
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -156,8 +166,8 @@ function shell() {
           <div class="seg" id="renditePreset" role="group" aria-label="Renditeannahme">${presets}</div>
         </div>
 
-        ${slider("Erwartete Rendite p.a.", "rendite", 1, 10, 0.1, "%",
-          "Angenommene durchschnittliche Wertentwicklung pro Jahr. Der Debeka Global Shares erzielte seit 2016 rund 8,9 % p.a. – frei anpassbar.")}
+        ${slider("Erwartete Rendite p.a.", "rendite", 1, 12, 0.1, "%",
+          "Angenommene durchschnittliche Wertentwicklung pro Jahr. Der Debeka Global Shares erzielte seit Auflegung 2016 rund 9,99 % p.a. – frei anpassbar.")}
         ${slider("Laufende Fondskosten", "ter", 0, 2, 0.05, "%",
           "Kosten des Debeka Global Shares: rund 0,30 % pro Jahr (0,025 % pro Monat). Sie schmälern die Rendite direkt.")}
         ${slider("Kosten der Police", "policy", 0, 2, 0.1, "%",
@@ -200,11 +210,15 @@ function shell() {
             <div class="fund-tag">ESG</div>
           </div>
           <div class="fund-facts">
-            <div class="ff"><span class="ff-v">8,9 %</span><span class="ff-k">Rendite p.a. seit ${FUND.since}<sup>*</sup></span></div>
-            <div class="ff"><span class="ff-v">0,30 %</span><span class="ff-k">Laufende Fondskosten</span></div>
-            <div class="ff"><span class="ff-v">Aktien&nbsp;weltweit</span><span class="ff-k">Anlageschwerpunkt</span></div>
+            <div class="ff"><span class="ff-v">${num2.format(FUND.paSince)} %</span><span class="ff-k">Rendite p.a. seit ${FUND.since}<sup>*</sup></span></div>
+            <div class="ff"><span class="ff-v">+${num2.format(FUND.totalSince)} %</span><span class="ff-k">Gesamt seit Auflegung</span></div>
+            <div class="ff"><span class="ff-v">${num2.format(FUND.runningCost)} %</span><span class="ff-k">Laufende Fondskosten</span></div>
           </div>
-          <div class="fund-note"><sup>*</sup> Wertentwicklung seit Auflegung 22.04.2016 laut Debeka-Factsheet. Vergangene Wertentwicklung ist keine Garantie für die Zukunft.</div>
+          <div class="fund-perf">
+            <div class="fp-title"><span>Historische Wertentwicklung</span><span class="fp-cap">Anteilswert, netto</span></div>
+            ${perfBars()}
+          </div>
+          <div class="fund-note"><sup>*</sup> Öffentliche Wertentwicklung seit Auflegung ${FUND.sinceDate} laut Debeka. Vergangene Wertentwicklung ist keine Garantie für die Zukunft.</div>
         </section>
 
         <section class="card hero" aria-label="Ergebnis">
@@ -305,6 +319,17 @@ function shell() {
       </div>
     </div>
   </div>`;
+}
+
+/* Horizontale Balken der öffentlichen Fonds-Wertentwicklung. */
+function perfBars() {
+  const max = Math.max(...FUND.perf.map((p) => p.v));
+  return FUND.perf.map((p) => {
+    const w = (p.v / max);
+    return `<div class="perf-row"><span class="pr-lab">${p.label}</span>` +
+      `<span class="pr-bar"><i style="--w:${w.toFixed(3)}"></i></span>` +
+      `<span class="pr-val">+${num2.format(p.v)} %</span></div>`;
+  }).join("");
 }
 
 function field(label, key, unit, tip, kind) {
@@ -570,7 +595,7 @@ function parseNum(str) {
 
 const LIMITS = {
   startkapital: [0, 10000000], sparrate: [0, 100000], dynamik: [0, 8],
-  alter: [16, 80], rentenalter: [30, 90], rendite: [1, 10], ter: [0, 2],
+  alter: [16, 80], rentenalter: [30, 90], rendite: [1, 12], ter: [0, 2],
   policy: [0, 2], inflation: [0, 5], entnahmeJahre: [5, 40], renditeRente: [0, 7],
 };
 function clamp(k, v) { const [lo, hi] = LIMITS[k] || [-Infinity, Infinity]; return Math.min(hi, Math.max(lo, v)); }
