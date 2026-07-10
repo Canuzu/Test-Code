@@ -378,54 +378,43 @@ function shell() {
           </div>
         </section>
 
-        <!-- Entnahme + Erklärung -->
-        <div class="split">
-          <section class="card panel pension" aria-label="Optionen bei Rentenbeginn">
-            <div class="section-title">Deine Wahl bei Rentenbeginn mit <span id="pAge">67</span></div>
-            <div class="opt-grid">
-              <div class="opt">
-                <div class="opt-k">Lebenslange Rente · garantierter Rentenfaktor</div>
-                <div class="opt-v big" id="pLebens">–</div>
-                <div class="opt-sub" id="pLebensSub">–</div>
-              </div>
-              <div class="opt">
-                <div class="opt-k">… oder Kapitalabfindung inkl. Fondsguthaben</div>
-                <div class="opt-v" id="pKapital">–</div>
-                <div class="opt-sub" id="pKapitalSub">–</div>
-              </div>
-              <div class="opt">
-                <div class="opt-k">Alternativ: Kapitalverzehr über <span id="pJahre">25</span> Jahre</div>
-                <div class="opt-v" id="pRente">–</div>
-                <div class="opt-sub" id="pRenteSub">–</div>
-              </div>
-              <div class="opt hide" id="pSteigBox">
-                <div class="opt-k">Steigende Rente · Startbetrag</div>
-                <div class="opt-v" id="pSteig">–</div>
-                <div class="opt-sub" id="pSteigSub">–</div>
-              </div>
+        <!-- Optionen bei Rentenbeginn (volle Breite) -->
+        <section class="card panel pension chart-card" aria-label="Optionen bei Rentenbeginn">
+          <div class="section-title">Deine Wahl bei Rentenbeginn mit <span id="pAge">67</span></div>
+          <div class="opt-grid opt-grid-wide">
+            <div class="opt">
+              <div class="opt-k">Lebenslange Rente · garantierter Rentenfaktor</div>
+              <div class="opt-v big" id="pLebens">–</div>
+              <div class="opt-sub" id="pLebensSub">–</div>
             </div>
-            <div class="field-hint" id="pGar" style="margin-top:12px"></div>
-            <div class="field-hint" id="pTod" style="margin-top:6px"></div>
-          </section>
-
-          <section class="card panel explain">
-            <h3>So rechnen wir</h3>
-            <ul>
-              <li><svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Monatliche Verzinsung mit <b id="eEff">–</b> effektiver Rendite (Rendite minus Fonds- und Policenkosten).</span></li>
-              <li><svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Steuer auf den Gewinn: 26,375 % Abgeltungsteuer, gemindert um die Teilfreistellung.</span></li>
-              <li><svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Die effektive Rendite berücksichtigt bereits die Fonds- und Policenkosten.</span></li>
-            </ul>
-            <div class="note">
-              Modell auf Basis Tarif ${POLICY.tarif} (Bedingungen ${POLICY.bedingungen}):
-              lebenslange Rente über den garantierten Rentenfaktor, Policenkosten als
-              Effektivkosten. Unabhängige, unverbindliche Modellrechnung – keine Anlage- oder
-              Steuerberatung und kein Angebot der Debeka. Maßgeblich sind die Bedingungen und dein
-              persönliches Angebot; Erträge schwanken, vergangene Wertentwicklungen sind kein
-              Indikator für die Zukunft. Sparer-Pauschbetrag (1.000 €) und individuelle
-              Steuermerkmale sind nicht berücksichtigt.
+            <div class="opt">
+              <div class="opt-k">… oder Kapitalabfindung inkl. Fondsguthaben</div>
+              <div class="opt-v" id="pKapital">–</div>
+              <div class="opt-sub" id="pKapitalSub">–</div>
             </div>
-          </section>
-        </div>
+            <div class="opt">
+              <div class="opt-k">Alternativ: Kapitalverzehr über <span id="pJahre">25</span> Jahre</div>
+              <div class="opt-v" id="pRente">–</div>
+              <div class="opt-sub" id="pRenteSub">–</div>
+            </div>
+            <div class="opt hide" id="pSteigBox">
+              <div class="opt-k">Steigende Rente · Startbetrag</div>
+              <div class="opt-v" id="pSteig">–</div>
+              <div class="opt-sub" id="pSteigSub">–</div>
+            </div>
+          </div>
+          <div class="field-hint" id="pGar" style="margin-top:12px"></div>
+          <div class="field-hint" id="pTod" style="margin-top:6px"></div>
+          <div class="note">
+            Modell auf Basis Tarif ${POLICY.tarif} (Bedingungen ${POLICY.bedingungen}):
+            lebenslange Rente über den garantierten Rentenfaktor, Policenkosten als
+            Effektivkosten. Unabhängige, unverbindliche Modellrechnung – keine Anlage- oder
+            Steuerberatung und kein Angebot der Debeka. Maßgeblich sind die Bedingungen und dein
+            persönliches Angebot; Erträge schwanken, vergangene Wertentwicklungen sind kein
+            Indikator für die Zukunft. Sparer-Pauschbetrag (1.000 €) und individuelle
+            Steuermerkmale sind nicht berücksichtigt.
+          </div>
+        </section>
 
         <div class="footer">Rechner für den Debeka Global Shares · Fondsdaten der Debeka · unabhängige Modellrechnung, kein Angebot der Debeka.</div>
       </div>
