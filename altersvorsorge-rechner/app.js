@@ -575,7 +575,7 @@ function parseNum(str) {
 
 const LIMITS = {
   startkapital: [0, 10000000], sparrate: [0, 100000], dynamik: [0, 8],
-  alter: [16, 80], rentenalter: [30, 90], rendite: [1, 12], ter: [0, 2],
+  alter: [0, 85], rentenalter: [30, 90], rendite: [1, 12], ter: [0, 2],
   policy: [0, 2], inflation: [0, 5], entnahmeJahre: [5, 40], renditeRente: [0, 7],
 };
 function clamp(k, v) { const [lo, hi] = LIMITS[k] || [-Infinity, Infinity]; return Math.min(hi, Math.max(lo, v)); }
