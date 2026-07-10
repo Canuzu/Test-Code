@@ -43,6 +43,27 @@ const RENDITE_PRESETS = [
   { key: "vorsichtig", label: "Vorsichtig 5 %", v: 5 },
 ];
 
+/* ---------------------- Produkt-/Tarif-Hintergrund --------------------- */
+/* Grundlage: Allgemeine Bedingungen der Debeka Rentenversicherung mit auf-
+   geschobener Rentenzahlung und Fondskomponenten, Tarif CA6I (BLV 86,
+   Stand 01.07.2026). Wird für die Modellierung/Tooltips genutzt.
+   Kostenarten (§ 17, § 48):
+     · Abschluss- und Vertriebskosten (im Tarif enthalten, Verrechnung § 4 DeckRV)
+     · Verwaltungskosten (laufend, im Tarif enthalten)
+     · Fondsverwaltungskosten (§ 48: fester %-Satz p. M. des Fondsguthabens)
+   Die konkreten Werte stehen in den persönlichen Vertragsinformationen
+   (§ 48 Abs. 2); sie werden hier über "Effektivkosten der Police" abgebildet.
+   Auszahlung: lebenslange Rente über einen garantierten Rentenfaktor
+   (§ 34/§ 47). Todesfall vor Rentenbeginn: Fondsguthaben an Hinterbliebene
+   (§ 35). Kapitalwahlrecht bei Rentenbeginn (§ 45). */
+const POLICY = {
+  tarif: "CA6I",
+  bedingungen: "BLV 86 (01.07.2026)",
+  // Beispiel-Rentenfaktor (€ mtl. je 10.000 € Kapital); exakter, garantierter
+  // Wert steht im persönlichen Angebot. Nur Vorbelegung, frei anpassbar.
+  rentenfaktorBeispiel: 27,
+};
+
 const SOLI = 1.055;
 const ABGELT = 0.25;
 const TAX_RATE = ABGELT * SOLI; // = 0,26375
@@ -65,6 +86,7 @@ const state = {
   entnahmeJahre: 25,
   renditeRente: 3,
   rentensteigerung: 0,        // jährliche Rentensteigerung (steigende Rente)
+  rentenfaktor: POLICY.rentenfaktorBeispiel, // € mtl. je 10.000 € (lebenslange Rente)
   realView: false,
 };
 
@@ -124,10 +146,14 @@ function compute(s) {
       : (netto * (rR - gm)) / (1 - q);
   }
 
+  // Lebenslange Rente über den (garantierten) Rentenfaktor: € je 10.000 €
+  // Netto-Kapital pro Monat (§ 34/§ 47).
+  const lebensrente = (netto / 10000) * s.rentenfaktor;
+
   return {
     years, beitragsJahre, effAnnual: effAnnual * 100,
     series, brutto, contributed, gewinn, steuer, netto,
-    monatsrente, steigStart, nMonths,
+    monatsrente, steigStart, lebensrente, nMonths,
   };
 }
 
@@ -200,8 +226,8 @@ function shell() {
           "Angenommene durchschnittliche Wertentwicklung pro Jahr. Der Debeka Global Shares erzielte seit Auflegung 2016 rund 9,99 % p.a. – frei anpassbar.")}
         ${slider("Laufende Fondskosten", "ter", 0, 2, 0.05, "%",
           "Kosten des Debeka Global Shares: rund 0,30 % pro Jahr (0,025 % pro Monat). Sie schmälern die Rendite direkt.")}
-        ${slider("Kosten der Police", "policy", 0, 2, 0.1, "%",
-          "Der Debeka Global Shares steckt in einer Fondspolice. Trag hier die Effektivkosten deines Angebots ein – 0 rechnet nur mit den reinen Fondskosten.")}
+        ${slider("Effektivkosten der Police", "policy", 0, 4, 0.1, "%",
+          "Bündelt die Policenkosten des Tarifs CA6I: Abschluss-/Vertriebs- und Verwaltungskosten (§ 17) sowie die Fondsverwaltungskosten (§ 48). Den genauen Effektivkosten-Wert (Renditeminderung p. a.) findest du in deinem persönlichen Angebot – 0 rechnet nur mit den reinen Fondskosten.")}
         ${slider("Inflation p.a.", "inflation", 0, 5, 0.1, "%",
           "Erwartete jährliche Geldentwertung. Sie bestimmt, wie viel dein Vermögen später real wert ist.")}
 
@@ -214,9 +240,10 @@ function shell() {
         </div>
 
         <div class="divider"></div>
-        <div class="section-title">Später: Entnahme in der Rente</div>
-        ${slider("Auszahldauer", "entnahmeJahre", 5, 40, 1, "Jahre",
-          "Über wie viele Jahre möchtest du dir das Kapital als monatliche Rente auszahlen lassen?")}
+        <div class="section-title">Später: Rente</div>
+        ${field("Garantierter Rentenfaktor", "rentenfaktor", "€/10.000", "So zahlt der Fondsrentenvertrag aus (§ 34/§ 47): pro 10.000 € Kapital eine lebenslange Monatsrente in dieser Höhe. Der garantierte Rentenfaktor steht in deinem Angebot – hier als Beispiel vorbelegt.", "int")}
+        ${slider("Auszahldauer (Alternative)", "entnahmeJahre", 5, 40, 1, "Jahre",
+          "Nur für die Alternative „Kapitalverzehr“: Über wie viele Jahre würde das Kapital stattdessen verrentet, bis es aufgebraucht ist?")}
         ${slider("Rendite in der Rente", "renditeRente", 0, 7, 0.1, "%",
           "Das verbleibende Kapital bleibt in der Auszahlphase meist konservativer angelegt und wirft weiter Rendite ab.")}
         ${selectField("Steigende Rente", "rentensteigerung", "Optional: eine jährlich steigende Rente startet niedriger, wächst dann aber jedes Jahr um den gewählten Prozentsatz – ein Inflationsausgleich in der Rente.", [[0, "keine (konstante Rente)"], [1, "+1 % pro Jahr"], [2, "+2 % pro Jahr"], [3, "+3 % pro Jahr"]])}
@@ -325,13 +352,18 @@ function shell() {
             <div class="section-title">Deine Wahl bei Rentenbeginn mit <span id="pAge">67</span></div>
             <div class="opt-grid">
               <div class="opt">
-                <div class="opt-k">Kapitalabfindung inkl. Fondsguthaben</div>
+                <div class="opt-k">Lebenslange Rente · garantierter Rentenfaktor</div>
+                <div class="opt-v big" id="pLebens">–</div>
+                <div class="opt-sub" id="pLebensSub">–</div>
+              </div>
+              <div class="opt">
+                <div class="opt-k">… oder Kapitalabfindung inkl. Fondsguthaben</div>
                 <div class="opt-v" id="pKapital">–</div>
                 <div class="opt-sub" id="pKapitalSub">–</div>
               </div>
               <div class="opt">
-                <div class="opt-k">… oder monatliche Rente</div>
-                <div class="opt-v big" id="pRente">–</div>
+                <div class="opt-k">Alternativ: Kapitalverzehr über <span id="pJahre">25</span> Jahre</div>
+                <div class="opt-v" id="pRente">–</div>
                 <div class="opt-sub" id="pRenteSub">–</div>
               </div>
               <div class="opt hide" id="pSteigBox">
@@ -341,6 +373,7 @@ function shell() {
               </div>
             </div>
             <div class="field-hint" id="pGar" style="margin-top:12px"></div>
+            <div class="field-hint" id="pTod" style="margin-top:6px"></div>
           </section>
 
           <section class="card panel explain">
@@ -351,10 +384,13 @@ function shell() {
               <li><svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Die effektive Rendite berücksichtigt bereits die Fonds- und Policenkosten.</span></li>
             </ul>
             <div class="note">
-              Unabhängige, unverbindliche Modellrechnung – keine Anlage- oder Steuerberatung und
-              kein Angebot der Debeka. Erträge von Kapitalanlagen schwanken; vergangene
-              Wertentwicklungen sind kein Indikator für die Zukunft. Sparer-Pauschbetrag (1.000 €)
-              und individuelle Steuermerkmale sind nicht berücksichtigt.
+              Modell auf Basis Tarif ${POLICY.tarif} (Bedingungen ${POLICY.bedingungen}):
+              lebenslange Rente über den garantierten Rentenfaktor, Policenkosten als
+              Effektivkosten. Unabhängige, unverbindliche Modellrechnung – keine Anlage- oder
+              Steuerberatung und kein Angebot der Debeka. Maßgeblich sind die Bedingungen und dein
+              persönliches Angebot; Erträge schwanken, vergangene Wertentwicklungen sind kein
+              Indikator für die Zukunft. Sparer-Pauschbetrag (1.000 €) und individuelle
+              Steuermerkmale sind nicht berücksichtigt.
             </div>
           </section>
         </div>
@@ -459,10 +495,13 @@ function render(animate) {
 
   // Optionen bei Rentenbeginn
   setText("pAge", state.rentenalter);
+  setText("pLebens", money(R.lebensrente) + " / Monat");
+  setText("pLebensSub", `garantiert lebenslang · Rentenfaktor ${state.rentenfaktor} € je 10.000 € (aus dem Angebot)`);
   setText("pKapital", money(R.brutto));
   setText("pKapitalSub", `netto nach Steuer: ${money(R.netto)}`);
+  setText("pJahre", state.entnahmeJahre);
   setText("pRente", money(R.monatsrente) + " / Monat");
-  setText("pRenteSub", `konstant über ${state.entnahmeJahre} Jahre · ${pct1(state.renditeRente)} Restrendite`);
+  setText("pRenteSub", `Kapital in ${state.entnahmeJahre} Jahren aufgebraucht · ${pct1(state.renditeRente)} Restrendite`);
   const steigBox = document.getElementById("pSteigBox");
   if (state.rentensteigerung > 0) {
     steigBox.classList.remove("hide");
@@ -472,6 +511,7 @@ function render(animate) {
     steigBox.classList.add("hide");
   }
   setText("pGar", "Garantierente & garantierte Kapitalabfindung: keine – „Chance Invest“ ist die volle Fondsanlage ohne Beitragsgarantie.");
+  setText("pTod", "Todesfall vor Rentenbeginn: das aktuelle Fondsguthaben geht an die Hinterbliebenen (§ 35).");
 
   setText("eEff", pct1(R.effAnnual));
 
@@ -659,7 +699,8 @@ function parseNum(str) {
 const LIMITS = {
   startkapital: [0, 10000000], sparrate: [0, 100000], dynamik: [0, 10],
   alter: [0, 85], rentenalter: [30, 90], rendite: [1, 12], ter: [0, 2],
-  policy: [0, 2], inflation: [0, 5], entnahmeJahre: [5, 40], renditeRente: [0, 7],
+  policy: [0, 4], inflation: [0, 5], entnahmeJahre: [5, 40], renditeRente: [0, 7],
+  rentenfaktor: [10, 50],
 };
 function clamp(k, v) { const [lo, hi] = LIMITS[k] || [-Infinity, Infinity]; return Math.min(hi, Math.max(lo, v)); }
 
