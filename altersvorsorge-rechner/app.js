@@ -24,7 +24,10 @@ const FUND = {
   runningCost: 0.30,    // % p.a. laufende Fondskosten (0,025 %/Monat)
   since: 2016,
   sinceDate: "22.04.2016",
-  // Öffentliche Wertentwicklung laut Debeka (Anteilswert, netto):
+  updatedAt: "10.07.2026",
+  // Öffentliche Wertentwicklung laut Debeka (Anteilswert, netto).
+  // Diese Werte sind der Fallback; zur Laufzeit werden sie – wenn erreichbar –
+  // aus fund-data.json überschrieben (siehe loadFundData()).
   perf: [
     { label: "1 Jahr", v: 24.77 },
     { label: "3 Jahre", v: 58.71 },
@@ -240,7 +243,7 @@ function shell() {
             <div class="fp-title"><span>Historische Wertentwicklung</span><span class="fp-cap">Anteilswert, netto</span></div>
             ${perfBars()}
           </div>
-          <div class="fund-note"><sup>*</sup> Öffentliche Wertentwicklung seit Auflegung ${FUND.sinceDate} laut Debeka. Vergangene Wertentwicklung ist keine Garantie für die Zukunft.</div>
+          <div class="fund-note"><sup>*</sup> Öffentliche Wertentwicklung seit Auflegung ${FUND.sinceDate} laut Debeka · Stand: <span id="fundStand">${FUND.updatedAt}</span>. Vergangene Wertentwicklung ist keine Garantie für die Zukunft.</div>
         </section>
 
         <section class="card hero" aria-label="Ergebnis">
@@ -725,7 +728,36 @@ function toggleTheme() {
 }
 
 /* ============================ Init ================================= */
-function init() {
+/* Lädt die aktuellen Fondszahlen aus fund-data.json (auf GitHub Pages / eigenem
+   Server). Offline oder in der Artifact-Vorschau (CSP) schlägt der Abruf fehl –
+   dann bleiben die oben eingebauten Werte stehen. */
+async function loadFundData() {
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 2500);
+    const res = await fetch("fund-data.json", { cache: "no-store", signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!res.ok) return;
+    const d = await res.json();
+    const ok = (x) => typeof x === "number" && isFinite(x);
+    if (ok(d.paSince)) FUND.paSince = d.paSince;
+    if (ok(d.totalSince)) FUND.totalSince = d.totalSince;
+    if (ok(d.runningCost)) FUND.runningCost = d.runningCost;
+    if (d.sinceDate) FUND.sinceDate = d.sinceDate;
+    if (ok(d.since)) FUND.since = d.since;
+    if (d.updatedAt) FUND.updatedAt = d.updatedAt;
+    if (Array.isArray(d.perf) && d.perf.length &&
+        d.perf.every((p) => p && ok(p.v) && typeof p.label === "string")) {
+      FUND.perf = d.perf;
+    }
+  } catch (e) {
+    /* offline / CSP → eingebaute Werte behalten */
+  }
+}
+
+async function init() {
+  await loadFundData();
+  state.ter = FUND.runningCost;   // Fondskosten-Default aus (evtl.) aktuellen Daten
   document.getElementById("app").innerHTML = shell();
   bind();
   let t = "light";
