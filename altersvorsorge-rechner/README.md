@@ -15,6 +15,32 @@ beliebigen Static-Server bzw. GitHub Pages ausliefern:
 python3 -m http.server 8000   # dann http://localhost:8000 aufrufen
 ```
 
+## Fondszahlen aktuell halten
+
+Die Kennzahlen des Debeka Global Shares (Rendite p. a., Gesamt seit Auflegung,
+laufende Kosten, 1/3/5-Jahres-Wertentwicklung) liegen in **`fund-data.json`**.
+Die Seite lädt diese Datei beim Start und zeigt ihr `updatedAt` als „Stand" an.
+
+- **Beim Ausliefern über einen Server / GitHub Pages** werden die Werte damit
+  automatisch aus `fund-data.json` übernommen – ohne Code-Änderung.
+- **Offline (Doppelklick auf `index.html`) oder in der Artifact-Vorschau** blockt
+  der Browser den Datei-Abruf; dann greifen die in `app.js` eingebauten
+  Fallback-Werte.
+
+Aktualisiert wird `fund-data.json` über den Workflow
+`.github/workflows/update-fund-data.yml`:
+
+- **wöchentlich** – als Best-Effort-Versuch, die Werte aus dem öffentlichen
+  Debeka-Factsheet (PDF) zu lesen. Schlägt der Abruf fehl (Debeka blockt teils
+  automatisierte Zugriffe), bleibt die Datei unverändert.
+- **manuell** über *Actions → „Debeka Global Shares – Daten aktualisieren" →
+  Run workflow* – dort die Werte aus dem aktuellen Factsheet eintragen. Das ist
+  der zuverlässige Weg und braucht keine externe Quelle.
+
+Das Skript schreibt nur plausible Werte und aktualisiert das „Stand"-Datum nur
+bei tatsächlicher Änderung. `fund-data.json` lässt sich auch direkt von Hand
+bearbeiten.
+
 ## Was der Rechner kann
 
 - **Live-Berechnung** bei jeder Eingabe – Slider und Felder aktualisieren alles

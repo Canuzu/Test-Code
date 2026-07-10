@@ -1,0 +1,73 @@
+name: Debeka Global Shares – Daten aktualisieren
+
+# Hält altersvorsorge-rechner/fund-data.json aktuell.
+# - läuft wöchentlich (best effort: Versuch, das Debeka-Factsheet zu lesen)
+# - kann jederzeit manuell gestartet werden; dann können die Werte direkt
+#   im Formular eingetragen werden (zuverlässig, ohne externe Quelle).
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"   # jeden Montag 06:17 UTC
+  workflow_dispatch:
+    inputs:
+      paSince:
+        description: "Rendite p.a. seit Auflegung in % (z. B. 9,99)"
+        required: false
+      totalSince:
+        description: "Gesamt seit Auflegung in % (z. B. 164,42)"
+        required: false
+      runningCost:
+        description: "Laufende Fondskosten in % (z. B. 0,30)"
+        required: false
+      y1:
+        description: "Wertentwicklung 1 Jahr in % (z. B. 24,77)"
+        required: false
+      y3:
+        description: "Wertentwicklung 3 Jahre in % (z. B. 58,71)"
+        required: false
+      y5:
+        description: "Wertentwicklung 5 Jahre in % (z. B. 61,99)"
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-fund-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Nur für den Factsheet-Weg nötig; nicht in package.json aufgenommen.
+      - name: PDF-Parser bereitstellen
+        run: npm install --no-save pdf-parse@1 || true
+
+      - name: fund-data.json aktualisieren
+        env:
+          INPUT_PASINCE: ${{ inputs.paSince }}
+          INPUT_TOTALSINCE: ${{ inputs.totalSince }}
+          INPUT_RUNNINGCOST: ${{ inputs.runningCost }}
+          INPUT_Y1: ${{ inputs.y1 }}
+          INPUT_Y3: ${{ inputs.y3 }}
+          INPUT_Y5: ${{ inputs.y5 }}
+        run: node altersvorsorge-rechner/scripts/update-fund-data.mjs
+
+      - name: Änderungen committen
+        run: |
+          if git diff --quiet -- altersvorsorge-rechner/fund-data.json; then
+            echo "Keine Änderung – nichts zu committen."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add altersvorsorge-rechner/fund-data.json
+          git commit -m "data: Debeka Global Shares Kennzahlen aktualisiert [skip ci]"
+          git push
