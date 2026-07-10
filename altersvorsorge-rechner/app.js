@@ -162,7 +162,7 @@ function shell() {
         ${field("Monatliche Sparrate", "sparrate", "€", "Dein monatlicher Beitrag in den Fonds – entspricht dem Inkassobeitrag der Fondspolice.", "money")}
         ${field("Startkapital", "startkapital", "€", "Einmalbetrag, mit dem du heute startest (optional).", "money")}
 
-        ${slider("Jährliche Dynamik", "dynamik", 0, 8, 0.5, "%",
+        ${slider("Jährliche Dynamik", "dynamik", 0, 10, 0.5, "%",
           "Um diesen Prozentsatz erhöhst du deine Sparrate jedes Jahr – z. B. zum Ausgleich von Gehalts- und Preissteigerungen.")}
 
         <div class="divider"></div>
@@ -653,7 +653,7 @@ function parseNum(str) {
 }
 
 const LIMITS = {
-  startkapital: [0, 10000000], sparrate: [0, 100000], dynamik: [0, 8],
+  startkapital: [0, 10000000], sparrate: [0, 100000], dynamik: [0, 10],
   alter: [0, 85], rentenalter: [30, 90], rendite: [1, 12], ter: [0, 2],
   policy: [0, 2], inflation: [0, 5], entnahmeJahre: [5, 40], renditeRente: [0, 7],
 };
