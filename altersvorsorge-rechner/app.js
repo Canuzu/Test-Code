@@ -133,9 +133,12 @@ function shell() {
           <p>Debeka Global Shares · Endvermögen, Steuern &amp; Monatsrente – live</p>
         </div>
       </div>
-      <button class="theme-toggle" id="themeBtn" type="button" aria-label="Design wechseln">
-        <span id="themeIcon"></span><span id="themeTxt">Dunkel</span>
-      </button>
+      <div class="mast-right">
+        <span class="debeka-word" role="img" aria-label="Debeka">Debeka</span>
+        <button class="theme-toggle" id="themeBtn" type="button" aria-label="Design wechseln">
+          <span id="themeIcon"></span><span id="themeTxt">Dunkel</span>
+        </button>
+      </div>
     </header>
 
     <div class="grid">
@@ -237,10 +240,6 @@ function shell() {
                 <div class="hero-label">Netto-Endvermögen mit <span id="rAge">67</span></div>
                 <div class="amount" id="rNetto">–</div>
                 <div class="sub" id="rGain">–</div>
-                <div class="badge-real">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                  Kaufkraft heute: <b id="rReal" style="margin-left:2px">–</b>
-                </div>
               </div>
             </div>
           </div>
@@ -289,8 +288,7 @@ function shell() {
           <section class="card panel pension" aria-label="Monatsrente">
             <div class="section-title">Deine mögliche Monatsrente</div>
             <div class="big" id="pRente">–</div>
-            <div class="cap" id="pReal">–</div>
-            <div class="cap" id="pDesc" style="margin-top:12px"></div>
+            <div class="cap" id="pDesc" style="margin-top:10px"></div>
           </section>
 
           <section class="card panel explain">
@@ -298,7 +296,7 @@ function shell() {
             <ul>
               <li><svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Monatliche Verzinsung mit <b id="eEff">–</b> effektiver Rendite (Rendite minus Fonds- und Policenkosten).</span></li>
               <li><svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Steuer auf den Gewinn: 26,375 % Abgeltungsteuer, gemindert um die Teilfreistellung.</span></li>
-              <li><svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Kaufkraft heute = Netto ÷ Inflation über <b id="eYears">–</b> Jahre.</span></li>
+              <li><svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Die effektive Rendite berücksichtigt bereits die Fonds- und Policenkosten.</span></li>
             </ul>
             <div class="note">
               Unabhängige, unverbindliche Modellrechnung – keine Anlage- oder Steuerberatung und
@@ -382,7 +380,6 @@ function render(animate) {
   setMoney("rNetto", R.netto, animate);
   setText("rAge", state.rentenalter);
   setText("rGain", `Davon ${money(R.gewinn)} Gewinn – dein Geld hat für dich gearbeitet.`);
-  setText("rReal", money(R.kaufkraft));
 
   setText("tContrib", money(R.contributed));
   setText("tGain", money(R.gewinn));
@@ -391,11 +388,9 @@ function render(animate) {
   setText("tEff", pct1(R.effAnnual));
 
   setText("pRente", money(R.monatsrente) + " / Monat");
-  setText("pReal", `Kaufkraft heute: ${money(R.monatsrenteReal)} pro Monat`);
   setText("pDesc", `Dein Netto-Kapital von ${money(R.netto)} über ${state.entnahmeJahre} Jahre ausgezahlt, bei ${pct1(state.renditeRente)} Restrendite. Danach ist das Kapital aufgebraucht.`);
 
   setText("eEff", pct1(R.effAnnual));
-  setText("eYears", R.years);
 
   drawChart();
 }

@@ -6,18 +6,18 @@
 :root {
   --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-  /* Brand */
-  --teal-600: #0f766e;
-  --teal-500: #14b8a6;
-  --teal-400: #2dd4bf;
-  --teal-300: #5eead4;
-  --blue-500: #6366f1;
-  --blue-400: #818cf8;
+  /* Debeka-Blau (Markenfarbe). Variablennamen bewusst beibehalten. */
+  --teal-600: #0077b6;   /* dunkleres Debeka-Blau (Text/Hover auf Hell) */
+  --teal-500: #009ee0;   /* Debeka-Blau, Primär */
+  --teal-400: #33b3e8;
+  --teal-300: #9bdcf5;
+  --blue-500: #0b5e8e;   /* Einzahlungen – dunkleres Blau (Kontrast) */
+  --blue-400: #4aa8d8;
   --amber: #f59e0b;
   --rose: #f43f5e;
 
   /* Light theme surfaces */
-  --bg-grad-a: #e7f0ee;
+  --bg-grad-a: #e5f1fa;
   --bg-grad-b: #eef2f7;
   --card: #ffffff;
   --card-2: #f8fafc;
@@ -28,7 +28,7 @@
   --text-3: #94a3b8;
   --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.18);
   --shadow-lg: 0 24px 60px -28px rgba(15, 23, 42, 0.35);
-  --ring: rgba(20, 184, 166, 0.28);
+  --ring: rgba(0, 158, 224, 0.28);
   --input-bg: #ffffff;
   --track: #e2e8f0;
 
@@ -48,7 +48,7 @@
   --text-3: #64748b;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 40px -24px rgba(0, 0, 0, 0.7);
   --shadow-lg: 0 30px 70px -30px rgba(0, 0, 0, 0.8);
-  --ring: rgba(45, 212, 191, 0.35);
+  --ring: rgba(51, 179, 232, 0.35);
   --input-bg: #0e1626;
   --track: #23304a;
 }
@@ -60,8 +60,8 @@ body {
   font-family: var(--font);
   color: var(--text);
   background:
-    radial-gradient(1200px 600px at 85% -10%, rgba(20, 184, 166, 0.12), transparent 60%),
-    radial-gradient(1000px 500px at -10% 10%, rgba(99, 102, 241, 0.10), transparent 55%),
+    radial-gradient(1200px 600px at 85% -10%, rgba(0, 158, 224, 0.14), transparent 60%),
+    radial-gradient(1000px 500px at -10% 10%, rgba(0, 119, 182, 0.10), transparent 55%),
     linear-gradient(160deg, var(--bg-grad-a), var(--bg-grad-b));
   background-attachment: fixed;
   min-height: 100vh;
@@ -82,11 +82,17 @@ body {
   width: 46px; height: 46px; border-radius: 13px;
   background: linear-gradient(135deg, var(--teal-600), var(--teal-400));
   display: grid; place-items: center;
-  box-shadow: 0 10px 24px -10px rgba(15, 118, 110, 0.7); flex: none;
+  box-shadow: 0 10px 24px -10px rgba(0, 119, 182, 0.7); flex: none;
 }
 .brand-mark svg { width: 26px; height: 26px; }
 .brand h1 { font-size: clamp(1.15rem, 2.4vw, 1.5rem); font-weight: 800; letter-spacing: -0.02em; }
 .brand p { color: var(--text-2); font-size: 0.85rem; margin-top: 1px; }
+
+.mast-right { display: flex; align-items: center; gap: 16px; }
+.debeka-word {
+  color: var(--teal-500); font-weight: 800; font-style: italic;
+  font-size: 1.35rem; letter-spacing: -0.02em; line-height: 1;
+}
 
 .theme-toggle {
   display: inline-flex; align-items: center; gap: 8px;
@@ -117,31 +123,29 @@ body {
   position: relative; overflow: hidden;
   border-radius: var(--radius); margin-bottom: 14px;
   padding: 18px 20px;
-  color: #eafcf8;
+  color: #eaf7ff;
   background:
-    radial-gradient(520px 200px at 100% -30%, rgba(94, 234, 212, 0.22), transparent 60%),
-    linear-gradient(135deg, #0c5e57 0%, #0a4f4a 60%, #0b3b39 100%);
-  border: 1px solid rgba(94, 234, 212, 0.18);
-  box-shadow: 0 18px 44px -26px rgba(6, 60, 54, 0.9);
+    radial-gradient(520px 200px at 100% -30%, rgba(255, 255, 255, 0.20), transparent 60%),
+    linear-gradient(135deg, #0098da 0%, #0079b8 60%, #00618f 100%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 18px 44px -26px rgba(0, 70, 110, 0.9);
 }
 .fund-head { display: flex; align-items: center; gap: 13px; }
 .fund-badge {
   width: 42px; height: 42px; border-radius: 11px; flex: none;
   display: grid; place-items: center; font-weight: 850; font-size: 0.82rem; letter-spacing: 0.03em;
-  color: #063b39; background: linear-gradient(135deg, #7ff0dd, #34d3bd);
-  box-shadow: 0 6px 16px -6px rgba(0,0,0,0.5);
+  color: #0077b6; background: #ffffff;
+  box-shadow: 0 6px 16px -6px rgba(0,0,0,0.35);
 }
 .fund-headmain { min-width: 0; }
 .fund-name { font-weight: 800; font-size: 1.08rem; letter-spacing: -0.01em; }
 .fund-sub { font-size: 0.78rem; opacity: 0.8; margin-top: 2px; }
-/* Debeka-Wortmarke (Fondsanbieter) */
+/* Debeka-Wortmarke (Fondsanbieter) – weiß auf Debeka-Blau, wie das Logo */
 .debeka-logo {
   margin-left: auto; align-self: flex-start; flex: none;
-  display: inline-flex; align-items: center;
-  background: #ffffff; color: #004a93;
-  font-weight: 800; font-size: 0.92rem; letter-spacing: -0.015em;
-  padding: 5px 11px; border-radius: 8px;
-  box-shadow: 0 4px 12px -6px rgba(0, 0, 0, 0.45);
+  color: #ffffff; font-weight: 800; font-style: italic;
+  font-size: 1.28rem; letter-spacing: -0.02em; line-height: 1;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.18);
 }
 .fund-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
 @media (max-width: 460px) { .fund-facts { grid-template-columns: 1fr; gap: 8px; } }
@@ -167,10 +171,10 @@ body {
   margin-top: 9px; font-size: 0.82rem;
 }
 .pr-lab { opacity: 0.85; }
-.pr-bar { height: 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.10); overflow: hidden; }
+.pr-bar { height: 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); overflow: hidden; }
 .pr-bar i {
   display: block; height: 100%; border-radius: 999px; transform-origin: left;
-  background: linear-gradient(90deg, #7ff0dd, #2dd4bf);
+  background: linear-gradient(90deg, #eaf7ff, #7fd0f5);
   transform: scaleX(var(--w)); animation: growbar 0.95s cubic-bezier(.22,1,.36,1) both;
 }
 @keyframes growbar { from { transform: scaleX(0); } to { transform: scaleX(var(--w)); } }
@@ -282,10 +286,10 @@ input[type="range"]::-moz-range-thumb {
 
 /* ---------- Result hero ---------- */
 .hero {
-  border: 0; position: relative; overflow: hidden; color: #ecfeff;
+  border: 0; position: relative; overflow: hidden; color: #eaf7ff;
   background:
-    radial-gradient(600px 300px at 100% 0%, rgba(45, 212, 191, 0.18), transparent 55%),
-    linear-gradient(135deg, #0f766e 0%, #115e59 55%, #134e4a 100%);
+    radial-gradient(600px 300px at 100% 0%, rgba(255, 255, 255, 0.18), transparent 55%),
+    linear-gradient(135deg, #0098da 0%, #0077b6 55%, #00608f 100%);
 }
 .hero .panel { padding: clamp(20px, 2.4vw, 30px); }
 .hero-grid { display: grid; grid-template-columns: 1fr auto 1.2fr; gap: 18px; align-items: center; }
