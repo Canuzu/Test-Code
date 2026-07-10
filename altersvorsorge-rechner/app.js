@@ -69,12 +69,32 @@ const ABGELT = 0.25;
 const TAX_RATE = ABGELT * SOLI; // = 0,26375
 const TEILFREISTELLUNG = { aktien: 0.30, misch: 0.15, none: 0.0 };
 
+/* ----------------------------- Datum --------------------------------- */
+function todayISO() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+function parseDate(s) { const d = new Date(s + "T00:00:00"); return isNaN(d) ? null : d; }
+function addYears(d, y) { return new Date(d.getFullYear() + y, d.getMonth(), d.getDate()); }
+function monthsBetween(a, b) {
+  let m = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+  if (b.getDate() < a.getDate()) m -= 1;
+  return m;
+}
+function formatYM(months) {
+  if (!months || months <= 0) return "0 J.";
+  const y = Math.floor(months / 12), mo = months % 12;
+  return mo ? `${y} J. ${mo} Mon.` : `${y} J.`;
+}
+
 /* ---------------------------- State ---------------------------------- */
 const state = {
   startkapital: 5000,
   sparrate: 200,
   dynamik: 2,
-  alter: 34,
+  geburtsdatum: "1992-01-01",
+  vertragsbeginn: todayISO(),
   rentenalter: 67,
   rendite: 10,                // Voreinstellung ≈ Ø-Rendite p.a. seit Auflegung
   ter: FUND.runningCost,      // laufende Fondskosten
@@ -94,32 +114,41 @@ const state = {
 const eur0 = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 const num1 = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const num2 = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const dtf = new Intl.DateTimeFormat("de-DE", { month: "2-digit", year: "numeric" });
 const pct1 = (v) => num1.format(v) + " %";
 const money = (v) => eur0.format(Math.round(v));
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ------------------------- Kernberechnung ---------------------------- */
 function compute(s) {
-  const years = Math.max(0, Math.round(s.rentenalter - s.alter));
+  // Alter & Zeiträume exakt aus Geburtsdatum und Vertragsbeginn.
+  const geb = parseDate(s.geburtsdatum);
+  const start = parseDate(s.vertragsbeginn);
+  const MS_YEAR = 365.25 * 86400000;
+  const ageAtStart = geb && start ? (start - geb) / MS_YEAR : 0;
+  const rentenDate = geb ? addYears(geb, s.rentenalter) : null;
+  const totalMonths = start && rentenDate ? Math.max(0, monthsBetween(start, rentenDate)) : 0;
+  const years = totalMonths / 12; // Aufschubzeit in Jahren
+
   const effAnnual = (s.rendite - s.ter - s.policy) / 100;
   const rMonth = Math.pow(1 + effAnnual, 1 / 12) - 1;
 
   let balance = s.startkapital;
   let contributed = s.startkapital;
   let monthly = s.sparrate;
-  const beitragsJahre = Math.min(s.beitragsdauer, years); // Beiträge max. bis Rentenbeginn
+  const beitragsMonths = Math.min(Math.round(s.beitragsdauer * 12), totalMonths);
 
-  const series = [{ age: s.alter, year: 0, contributed, balance, real: balance }];
-
-  for (let y = 1; y <= years; y++) {
-    const paying = y <= beitragsJahre;
-    for (let m = 0; m < 12; m++) {
-      balance = balance * (1 + rMonth) + (paying ? monthly : 0);
-      if (paying) contributed += monthly;
+  const series = [{ age: ageAtStart, year: 0, contributed, balance, real: balance }];
+  for (let m = 1; m <= totalMonths; m++) {
+    const paying = m <= beitragsMonths;
+    balance = balance * (1 + rMonth) + (paying ? monthly : 0);
+    if (paying) contributed += monthly;
+    if (paying && m % 12 === 0) monthly *= 1 + s.dynamik / 100; // Dynamik jährlich
+    if (m % 12 === 0 || m === totalMonths) {
+      const ye = m / 12;
+      const real = balance / Math.pow(1 + s.inflation / 100, ye);
+      series.push({ age: ageAtStart + ye, year: ye, contributed, balance, real });
     }
-    const real = balance / Math.pow(1 + s.inflation / 100, y);
-    series.push({ age: s.alter + y, year: y, contributed, balance, real });
-    if (paying) monthly *= 1 + s.dynamik / 100;
   }
 
   const brutto = balance;
@@ -151,7 +180,8 @@ function compute(s) {
   const lebensrente = (netto / 10000) * s.rentenfaktor;
 
   return {
-    years, beitragsJahre, effAnnual: effAnnual * 100,
+    years, ageAtStart, totalMonths, beitragsMonths, rentenDate,
+    effAnnual: effAnnual * 100,
     series, brutto, contributed, gewinn, steuer, netto,
     monatsrente, steigStart, lebensrente, nMonths,
   };
@@ -196,9 +226,10 @@ function shell() {
 
         <div class="divider"></div>
         <div class="section-title">Zeithorizont</div>
+        ${dateField("Geburtsdatum", "geburtsdatum", "Dein genaues Geburtsdatum – daraus ergeben sich Alter, Aufschubzeit und der Rentenbeginn monatsgenau.")}
         <div class="split" style="margin-top:0">
-          ${field("Aktuelles Alter", "alter", "J.", "Dein heutiges Alter.", "int")}
-          ${field("Rentenbeginn mit", "rentenalter", "J.", "Alter, zu dem die Rentenzahlung beginnt.", "int")}
+          ${dateField("Vertragsbeginn", "vertragsbeginn", "Ab wann der Vertrag startet (i. d. R. heute). Ab hier wird angespart.")}
+          ${field("Rentenbeginn mit", "rentenalter", "J.", "Alter, zu dem die Rentenzahlung beginnt (z. B. 67).", "int")}
         </div>
 
         <div class="divider"></div>
@@ -321,9 +352,10 @@ function shell() {
 
         <div class="meta-strip">
           <div class="ms"><span class="ms-k">Kombination</span><span class="ms-v">Chance Invest</span></div>
-          <div class="ms"><span class="ms-k">Rentenbeginn</span><span class="ms-v"><span id="mRb">67</span> J.</span></div>
-          <div class="ms"><span class="ms-k">Aufschubzeit</span><span class="ms-v"><span id="mAuf">–</span> J.</span></div>
-          <div class="ms"><span class="ms-k">Beitragsdauer</span><span class="ms-v"><span id="mBd">–</span> J.</span></div>
+          <div class="ms"><span class="ms-k">Alter bei Start</span><span class="ms-v" id="mAge">–</span></div>
+          <div class="ms"><span class="ms-k">Rentenbeginn</span><span class="ms-v" id="mRb">–</span></div>
+          <div class="ms"><span class="ms-k">Aufschubzeit</span><span class="ms-v" id="mAuf">–</span></div>
+          <div class="ms"><span class="ms-k">Beitragsdauer</span><span class="ms-v" id="mBd">–</span></div>
           <div class="ms"><span class="ms-k">Rentengarantiezeit</span><span class="ms-v" id="mGz">–</span></div>
         </div>
 
@@ -423,6 +455,16 @@ function field(label, key, unit, tip, kind) {
   </div>`;
 }
 
+function dateField(label, key, tip) {
+  return `
+  <div class="field">
+    <div class="field-label">${label} <i class="info" data-tip="${tip}"></i></div>
+    <div class="input-shell">
+      <input type="date" id="in_${key}" data-key="${key}" data-kind="date" aria-label="${label}" />
+    </div>
+  </div>`;
+}
+
 function selectField(label, key, tip, opts) {
   const o = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
   return `
@@ -460,6 +502,8 @@ function refreshInputs() {
         unit === "%" ? disp + " %" : disp + " " + unit;
     } else if (kind === "select") {
       el.value = String(state[k]);
+    } else if (kind === "date") {
+      el.value = state[k];
     } else if (document.activeElement !== el) {
       el.value = new Intl.NumberFormat("de-DE").format(state[k]);
     }
@@ -488,9 +532,10 @@ function render(animate) {
   setText("tEff", pct1(R.effAnnual));
 
   // Vertrags-Eckdaten
-  setText("mRb", state.rentenalter);
-  setText("mAuf", R.years);
-  setText("mBd", R.beitragsJahre);
+  setText("mAge", formatYM(Math.round(R.ageAtStart * 12)));
+  setText("mRb", state.rentenalter + " J." + (R.rentenDate ? " · " + dtf.format(R.rentenDate) : ""));
+  setText("mAuf", formatYM(R.totalMonths));
+  setText("mBd", formatYM(R.beitragsMonths));
   setText("mGz", state.garantiezeit > 0 ? state.garantiezeit + " J." : "keine");
 
   // Optionen bei Rentenbeginn
@@ -577,10 +622,10 @@ function drawChart() {
   let xlabels = "";
   const step = Math.max(1, Math.round((n - 1) / 6));
   for (let i = 0; i < n; i += step) {
-    xlabels += `<text x="${x(i).toFixed(1)}" y="${CH - 8}" class="xlab" text-anchor="middle">${s[i].age}</text>`;
+    xlabels += `<text x="${x(i).toFixed(1)}" y="${CH - 8}" class="xlab" text-anchor="middle">${Math.round(s[i].age)}</text>`;
   }
   const lastI = n - 1;
-  xlabels += `<text x="${x(lastI).toFixed(1)}" y="${CH - 8}" class="xlab" text-anchor="end">${s[lastI].age}</text>`;
+  xlabels += `<text x="${x(lastI).toFixed(1)}" y="${CH - 8}" class="xlab" text-anchor="end">${Math.round(s[lastI].age)}</text>`;
 
   // Endpunkt-Label
   const endV = balArr[lastI], endX = x(lastI), endY = y(endV);
@@ -667,7 +712,7 @@ function attachHover(svg, s, x, y, useReal) {
 
     const gain = Math.max(0, bal - p.contributed);
     tip.innerHTML = `
-      <div class="t-age">Alter ${p.age} · in ${p.year} Jahr${p.year === 1 ? "" : "en"}</div>
+      <div class="t-age">Alter ${Math.round(p.age)} · in ${Math.round(p.year)} Jahr${Math.round(p.year) === 1 ? "" : "en"}</div>
       <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--green-500)"></span>${useReal ? "Kaufkraft" : "Gesamt"}</span><span class="val">${money(bal)}</span></div>
       <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--blue-500)"></span>Eingezahlt</span><span class="val">${money(p.contributed)}</span></div>
       <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--green-500)"></span>Gewinn</span><span class="val">${money(gain)}</span></div>`;
@@ -698,7 +743,7 @@ function parseNum(str) {
 
 const LIMITS = {
   startkapital: [0, 10000000], sparrate: [0, 100000], dynamik: [0, 10],
-  alter: [0, 85], rentenalter: [30, 90], rendite: [1, 12], ter: [0, 2],
+  rentenalter: [30, 90], rendite: [1, 12], ter: [0, 2],
   policy: [0, 4], inflation: [0, 5], entnahmeJahre: [5, 40], renditeRente: [0, 7],
   rentenfaktor: [10, 50],
 };
@@ -717,6 +762,9 @@ function bind() {
     } else if (kind === "select") {
       state[k] = parseFloat(el.value);
       render(true);
+    } else if (kind === "date") {
+      state[k] = el.value;
+      render(false);
     } else {
       let v = parseNum(el.value);
       if (kind === "int") v = Math.round(v);
@@ -727,11 +775,9 @@ function bind() {
 
   app.addEventListener("blur", (e) => {
     const el = e.target;
-    if (el.dataset && el.dataset.key && el.dataset.kind !== "range") {
+    const kind = el.dataset && el.dataset.kind;
+    if (el.dataset && el.dataset.key && kind !== "range" && kind !== "select" && kind !== "date") {
       state[el.dataset.key] = clamp(el.dataset.key, state[el.dataset.key]);
-      if (el.dataset.key === "alter" || el.dataset.key === "rentenalter") {
-        if (state.rentenalter <= state.alter) state.rentenalter = state.alter + 1;
-      }
       render(true);
     }
   }, true);
