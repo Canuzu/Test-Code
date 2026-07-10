@@ -284,6 +284,48 @@ input[type="range"]::-moz-range-thumb {
 .taxbox-row b { color: var(--text); font-weight: 800; font-variant-numeric: tabular-nums; }
 .taxbox .field-hint { margin-top: 8px; }
 
+/* Select (Dropdown) */
+.sel {
+  width: 100%; font: inherit; font-size: 0.95rem; font-weight: 650; color: var(--text);
+  background: var(--input-bg); border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm);
+  padding: 11px 13px; cursor: pointer; outline: none;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+.sel:focus { border-color: var(--teal-500); box-shadow: 0 0 0 4px var(--ring); }
+
+/* Read-only-Feld (feste Vorgabe, z. B. Chance Invest) */
+.ro-field {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: var(--card-2); border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm);
+  padding: 12px 14px; font-weight: 700; color: var(--text);
+}
+.ro-tag {
+  font-size: 0.68rem; font-weight: 800; letter-spacing: 0.05em; color: #fff;
+  background: var(--teal-500); padding: 3px 9px; border-radius: 999px;
+}
+
+/* Vertrags-Eckdaten-Leiste */
+.meta-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.ms {
+  flex: 1 1 auto; min-width: 118px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 13px; box-shadow: var(--shadow);
+}
+.ms-k { display: block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-3); }
+.ms-v { display: block; margin-top: 4px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text); }
+
+/* Optionen bei Rentenbeginn */
+.opt-grid { display: grid; gap: 12px; margin-top: 4px; }
+.opt { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; background: var(--card-2); }
+.opt.hide { display: none; }
+.opt-k { font-size: 0.78rem; color: var(--text-2); font-weight: 650; }
+.opt-v {
+  font-variant-numeric: tabular-nums; font-weight: 850; font-size: 1.3rem; margin-top: 4px;
+  color: var(--teal-600); letter-spacing: -0.01em;
+}
+.opt-v.big { font-size: 1.65rem; }
+:root[data-theme="dark"] .opt-v { color: var(--teal-300); }
+.opt-sub { font-size: 0.75rem; color: var(--text-3); margin-top: 3px; }
+
 /* ---------- Result hero ---------- */
 .hero {
   border: 0; position: relative; overflow: hidden; color: #eaf7ff;

@@ -57,8 +57,11 @@ const state = {
   policy: 0,                  // Effektivkosten der Police (variiert je Vertrag)
   inflation: 2,
   fondstyp: "aktien",
+  beitragsdauer: 33,          // Jahre, in denen Beiträge gezahlt werden
+  garantiezeit: 15,           // Rentengarantiezeit in Jahren (informativ)
   entnahmeJahre: 25,
   renditeRente: 3,
+  rentensteigerung: 0,        // jährliche Rentensteigerung (steigende Rente)
   realView: false,
 };
 
@@ -79,17 +82,19 @@ function compute(s) {
   let balance = s.startkapital;
   let contributed = s.startkapital;
   let monthly = s.sparrate;
+  const beitragsJahre = Math.min(s.beitragsdauer, years); // Beiträge max. bis Rentenbeginn
 
   const series = [{ age: s.alter, year: 0, contributed, balance, real: balance }];
 
   for (let y = 1; y <= years; y++) {
+    const paying = y <= beitragsJahre;
     for (let m = 0; m < 12; m++) {
-      balance = balance * (1 + rMonth) + monthly;
-      contributed += monthly;
+      balance = balance * (1 + rMonth) + (paying ? monthly : 0);
+      if (paying) contributed += monthly;
     }
     const real = balance / Math.pow(1 + s.inflation / 100, y);
     series.push({ age: s.alter + y, year: y, contributed, balance, real });
-    monthly *= 1 + s.dynamik / 100;
+    if (paying) monthly *= 1 + s.dynamik / 100;
   }
 
   const brutto = balance;
@@ -98,20 +103,28 @@ function compute(s) {
   const steuer = gewinn * (1 - tf) * TAX_RATE;
   const netto = brutto - steuer;
 
-  const realFactor = Math.pow(1 + s.inflation / 100, years);
-  const kaufkraft = netto / realFactor;
-
   const nMonths = Math.max(1, Math.round(s.entnahmeJahre * 12));
   const rR = Math.pow(1 + s.renditeRente / 100, 1 / 12) - 1;
   let monatsrente;
   if (Math.abs(rR) < 1e-9) monatsrente = netto / nMonths;
   else monatsrente = (netto * rR) / (1 - Math.pow(1 + rR, -nMonths));
-  const monatsrenteReal = monatsrente / realFactor;
+
+  // Steigende Rente: Startbetrag einer jährlich um g % wachsenden Rente,
+  // sodass das Netto-Kapital über die Auszahldauer aufgebraucht wird.
+  let steigStart = 0;
+  const g = s.rentensteigerung / 100;
+  if (g > 0) {
+    const gm = Math.pow(1 + g, 1 / 12) - 1;
+    const q = Math.pow((1 + gm) / (1 + rR), nMonths);
+    steigStart = Math.abs(rR - gm) < 1e-9
+      ? netto / nMonths
+      : (netto * (rR - gm)) / (1 - q);
+  }
 
   return {
-    years, effAnnual: effAnnual * 100,
+    years, beitragsJahre, effAnnual: effAnnual * 100,
     series, brutto, contributed, gewinn, steuer, netto,
-    kaufkraft, monatsrente, monatsrenteReal, nMonths,
+    monatsrente, steigStart, nMonths,
   };
 }
 
@@ -146,7 +159,7 @@ function shell() {
       <section class="card panel" aria-label="Eingaben">
         <div class="section-title">Dein Sparplan</div>
 
-        ${field("Monatliche Sparrate", "sparrate", "€", "Der Betrag, den du jeden Monat in den Fonds investierst.", "money")}
+        ${field("Monatliche Sparrate", "sparrate", "€", "Dein monatlicher Beitrag in den Fonds – entspricht dem Inkassobeitrag der Fondspolice.", "money")}
         ${field("Startkapital", "startkapital", "€", "Einmalbetrag, mit dem du heute startest (optional).", "money")}
 
         ${slider("Jährliche Dynamik", "dynamik", 0, 8, 0.5, "%",
@@ -156,8 +169,19 @@ function shell() {
         <div class="section-title">Zeithorizont</div>
         <div class="split" style="margin-top:0">
           ${field("Aktuelles Alter", "alter", "J.", "Dein heutiges Alter.", "int")}
-          ${field("Renteneintritt", "rentenalter", "J.", "Alter, zu dem du das Kapital nutzen möchtest.", "int")}
+          ${field("Rentenbeginn mit", "rentenalter", "J.", "Alter, zu dem die Rentenzahlung beginnt.", "int")}
         </div>
+
+        <div class="divider"></div>
+        <div class="section-title">Fondspolice</div>
+        <div class="field">
+          <div class="field-label">Garantie-/Fondskombination
+            <i class="info" data-tip="„Chance Invest“ ist die chancenorientierte Kombination der Debeka-Fondspolice: volle Anlage im Debeka Global Shares, ohne Beitragsgarantie."></i>
+          </div>
+          <div class="ro-field"><span>Chance Invest</span><span class="ro-tag">Fonds pur</span></div>
+        </div>
+        ${field("Beitragszahlungsdauer", "beitragsdauer", "J.", "Über wie viele Jahre zahlst du Beiträge? Danach bleibt das Kapital bis zum Rentenbeginn investiert. Höchstens die Aufschubzeit (Jahre bis zur Rente).", "int")}
+        ${selectField("Rentengarantiezeit", "garantiezeit", "Zeitraum, in dem die Rente auch nach dem Tod an Hinterbliebene weitergezahlt wird.", [[0, "keine"], [5, "5 Jahre"], [10, "10 Jahre"], [15, "15 Jahre"], [20, "20 Jahre"]])}
 
         <div class="divider"></div>
         <div class="section-title">Rendite &amp; Kosten des Fonds</div>
@@ -192,6 +216,7 @@ function shell() {
           "Über wie viele Jahre möchtest du dir das Kapital als monatliche Rente auszahlen lassen?")}
         ${slider("Rendite in der Rente", "renditeRente", 0, 7, 0.1, "%",
           "Das verbleibende Kapital bleibt in der Auszahlphase meist konservativer angelegt und wirft weiter Rendite ab.")}
+        ${selectField("Steigende Rente", "rentensteigerung", "Optional: eine jährlich steigende Rente startet niedriger, wächst dann aber jedes Jahr um den gewählten Prozentsatz – ein Inflationsausgleich in der Rente.", [[0, "keine (konstante Rente)"], [1, "+1 % pro Jahr"], [2, "+2 % pro Jahr"], [3, "+3 % pro Jahr"]])}
       </section>
 
       <!-- ======== Ergebnisse ======== -->
@@ -264,6 +289,14 @@ function shell() {
           </div>
         </div>
 
+        <div class="meta-strip">
+          <div class="ms"><span class="ms-k">Kombination</span><span class="ms-v">Chance Invest</span></div>
+          <div class="ms"><span class="ms-k">Rentenbeginn</span><span class="ms-v"><span id="mRb">67</span> J.</span></div>
+          <div class="ms"><span class="ms-k">Aufschubzeit</span><span class="ms-v"><span id="mAuf">–</span> J.</span></div>
+          <div class="ms"><span class="ms-k">Beitragsdauer</span><span class="ms-v"><span id="mBd">–</span> J.</span></div>
+          <div class="ms"><span class="ms-k">Rentengarantiezeit</span><span class="ms-v" id="mGz">–</span></div>
+        </div>
+
         <!-- Chart -->
         <section class="card panel chart-card" aria-label="Vermögensentwicklung">
           <div class="chart-head">
@@ -285,10 +318,26 @@ function shell() {
 
         <!-- Entnahme + Erklärung -->
         <div class="split">
-          <section class="card panel pension" aria-label="Monatsrente">
-            <div class="section-title">Deine mögliche Monatsrente</div>
-            <div class="big" id="pRente">–</div>
-            <div class="cap" id="pDesc" style="margin-top:10px"></div>
+          <section class="card panel pension" aria-label="Optionen bei Rentenbeginn">
+            <div class="section-title">Deine Wahl bei Rentenbeginn mit <span id="pAge">67</span></div>
+            <div class="opt-grid">
+              <div class="opt">
+                <div class="opt-k">Kapitalabfindung inkl. Fondsguthaben</div>
+                <div class="opt-v" id="pKapital">–</div>
+                <div class="opt-sub" id="pKapitalSub">–</div>
+              </div>
+              <div class="opt">
+                <div class="opt-k">… oder monatliche Rente</div>
+                <div class="opt-v big" id="pRente">–</div>
+                <div class="opt-sub" id="pRenteSub">–</div>
+              </div>
+              <div class="opt hide" id="pSteigBox">
+                <div class="opt-k">Steigende Rente · Startbetrag</div>
+                <div class="opt-v" id="pSteig">–</div>
+                <div class="opt-sub" id="pSteigSub">–</div>
+              </div>
+            </div>
+            <div class="field-hint" id="pGar" style="margin-top:12px"></div>
           </section>
 
           <section class="card panel explain">
@@ -335,6 +384,15 @@ function field(label, key, unit, tip, kind) {
   </div>`;
 }
 
+function selectField(label, key, tip, opts) {
+  const o = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
+  return `
+  <div class="field">
+    <div class="field-label">${label} <i class="info" data-tip="${tip}"></i></div>
+    <select class="sel" id="in_${key}" data-key="${key}" data-kind="select" aria-label="${label}">${o}</select>
+  </div>`;
+}
+
 function slider(label, key, min, max, step, unit, tip) {
   return `
   <div class="field">
@@ -351,9 +409,9 @@ let R = null;
 const anim = {}; // laufende Count-up-Animationen je Element-ID
 
 function refreshInputs() {
-  document.querySelectorAll("input[data-key]").forEach((el) => {
-    const k = el.dataset.key;
-    if (el.dataset.kind === "range") {
+  document.querySelectorAll("[data-key]").forEach((el) => {
+    const k = el.dataset.key, kind = el.dataset.kind;
+    if (kind === "range") {
       el.value = state[k];
       const pos = (state[k] - el.min) / (el.max - el.min) * 100;
       el.style.setProperty("--fill", pos + "%");
@@ -361,6 +419,8 @@ function refreshInputs() {
       const disp = Number.isInteger(state[k]) ? state[k] : num1.format(state[k]);
       document.getElementById("lbl_" + k).textContent =
         unit === "%" ? disp + " %" : disp + " " + unit;
+    } else if (kind === "select") {
+      el.value = String(state[k]);
     } else if (document.activeElement !== el) {
       el.value = new Intl.NumberFormat("de-DE").format(state[k]);
     }
@@ -387,8 +447,27 @@ function render(animate) {
   setText("tRatio", pct1(ratio));
   setText("tEff", pct1(R.effAnnual));
 
+  // Vertrags-Eckdaten
+  setText("mRb", state.rentenalter);
+  setText("mAuf", R.years);
+  setText("mBd", R.beitragsJahre);
+  setText("mGz", state.garantiezeit > 0 ? state.garantiezeit + " J." : "keine");
+
+  // Optionen bei Rentenbeginn
+  setText("pAge", state.rentenalter);
+  setText("pKapital", money(R.brutto));
+  setText("pKapitalSub", `netto nach Steuer: ${money(R.netto)}`);
   setText("pRente", money(R.monatsrente) + " / Monat");
-  setText("pDesc", `Dein Netto-Kapital von ${money(R.netto)} über ${state.entnahmeJahre} Jahre ausgezahlt, bei ${pct1(state.renditeRente)} Restrendite. Danach ist das Kapital aufgebraucht.`);
+  setText("pRenteSub", `konstant über ${state.entnahmeJahre} Jahre · ${pct1(state.renditeRente)} Restrendite`);
+  const steigBox = document.getElementById("pSteigBox");
+  if (state.rentensteigerung > 0) {
+    steigBox.classList.remove("hide");
+    setText("pSteig", money(R.steigStart) + " / Monat");
+    setText("pSteigSub", `Start – steigt +${state.rentensteigerung} % pro Jahr`);
+  } else {
+    steigBox.classList.add("hide");
+  }
+  setText("pGar", "Garantierente & garantierte Kapitalabfindung: keine – „Chance Invest“ ist die volle Fondsanlage ohne Beitragsgarantie.");
 
   setText("eEff", pct1(R.effAnnual));
 
@@ -586,15 +665,19 @@ function bind() {
   app.addEventListener("input", (e) => {
     const el = e.target;
     if (!el.dataset || !el.dataset.key) return;
-    const k = el.dataset.key;
-    if (el.dataset.kind === "range") {
+    const k = el.dataset.key, kind = el.dataset.kind;
+    if (kind === "range") {
       state[k] = clamp(k, parseFloat(el.value));
+      render(false);
+    } else if (kind === "select") {
+      state[k] = parseFloat(el.value);
+      render(true);
     } else {
       let v = parseNum(el.value);
-      if (el.dataset.kind === "int") v = Math.round(v);
+      if (kind === "int") v = Math.round(v);
       state[k] = v;
+      render(false);
     }
-    render(false);
   });
 
   app.addEventListener("blur", (e) => {
