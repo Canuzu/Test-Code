@@ -107,6 +107,17 @@ jobs:
           node velora-saga/scripts/headless-run.mjs || true
           mkdir -p dist/velora-saga
           cp -r velora-saga/index.html velora-saga/assets dist/velora-saga/
+      - name: Add Altersvorsorge-Rechner into /altersvorsorge-rechner subpath
+        # Eigenständige, statische Web-App (kein Build). Wird unter
+        # <pages>/altersvorsorge-rechner/ ausgeliefert; fund-data.json liegt dann
+        # same-origin, sodass die Fondszahlen live geladen werden.
+        run: |
+          mkdir -p dist/altersvorsorge-rechner
+          cp altersvorsorge-rechner/index.html \
+             altersvorsorge-rechner/styles.css \
+             altersvorsorge-rechner/app.js \
+             altersvorsorge-rechner/fund-data.json \
+             dist/altersvorsorge-rechner/
       - uses: actions/configure-pages@v5
         with:
           enablement: true
