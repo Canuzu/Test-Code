@@ -59,9 +59,12 @@ const RENDITE_PRESETS = [
 const POLICY = {
   tarif: "CA6I",
   bedingungen: "BLV 86 (01.07.2026)",
-  // Beispiel-Rentenfaktor (€ mtl. je 10.000 € Kapital); exakter, garantierter
-  // Wert steht im persönlichen Angebot. Nur Vorbelegung, frei anpassbar.
-  rentenfaktorBeispiel: 27,
+  // Auf die Debeka-Musterrechnung kalibrierte Kostensätze (50 €/Monat, 34 Jahre,
+  // 5 % Fondsentwicklung → Kapitalabfindung 43.758,23 €, Rente 127,31 €).
+  // Exakte Werte stehen im persönlichen Angebot; alle Felder sind anpassbar.
+  abschlussPct: 2.5,    // Abschluss-/Vertriebskosten in % der Beitragssumme (§ 17), 5-J.-Zillmer
+  verwaltungPct: 6.48,  // Verwaltungskosten in % je Beitrag (§ 17)
+  rentenfaktor: 29.09,  // € mtl. je 10.000 € Fondsguthaben (§ 34/§ 47)
 };
 
 const SOLI = 1.055;
@@ -97,16 +100,16 @@ const state = {
   vertragsbeginn: todayISO(),
   rentenalter: 67,
   rendite: 10,                // Voreinstellung ≈ Ø-Rendite p.a. seit Auflegung
-  ter: FUND.runningCost,      // laufende Fondskosten
-  policy: 0,                  // Effektivkosten der Police (variiert je Vertrag)
+  ter: FUND.runningCost,      // laufende Fondskosten (0,30 %)
+  abschluss: POLICY.abschlussPct,   // Abschlusskosten in % der Beitragssumme
+  verwaltung: POLICY.verwaltungPct, // Verwaltungskosten in % je Beitrag
   inflation: 2,
-  fondstyp: "aktien",
   beitragsdauer: 33,          // Jahre, in denen Beiträge gezahlt werden
   garantiezeit: 15,           // Rentengarantiezeit in Jahren (informativ)
   entnahmeJahre: 25,
   renditeRente: 3,
   rentensteigerung: 0,        // jährliche Rentensteigerung (steigende Rente)
-  rentenfaktor: POLICY.rentenfaktorBeispiel, // € mtl. je 10.000 € (lebenslange Rente)
+  rentenfaktor: POLICY.rentenfaktor, // € mtl. je 10.000 € (lebenslange Rente)
   realView: false,
 };
 
@@ -130,19 +133,36 @@ function compute(s) {
   const totalMonths = start && rentenDate ? Math.max(0, monthsBetween(start, rentenDate)) : 0;
   const years = totalMonths / 12; // Aufschubzeit in Jahren
 
-  const effAnnual = (s.rendite - s.ter - s.policy) / 100;
-  const rMonth = Math.pow(1 + effAnnual, 1 / 12) - 1;
+  const fundNet = (s.rendite - s.ter) / 100;      // Fondsentwicklung minus Fondskosten
+  const rMonth = Math.pow(1 + fundNet, 1 / 12) - 1;
+
+  const beitragsMonths = Math.min(Math.round(s.beitragsdauer * 12), totalMonths);
+  const zillmerMonths = Math.min(60, beitragsMonths) || 1;
+
+  // Beitragssumme (inkl. Dynamik) als Basis der Abschlusskosten (§ 17).
+  let bs = 0, pm = s.sparrate;
+  for (let m = 1; m <= beitragsMonths; m++) { bs += pm; if (m % 12 === 0) pm *= 1 + s.dynamik / 100; }
+  const abschlussPerMonth = ((s.abschluss / 100) * bs) / zillmerMonths;
 
   let balance = s.startkapital;
   let contributed = s.startkapital;
+  let kosten = 0;
   let monthly = s.sparrate;
-  const beitragsMonths = Math.min(Math.round(s.beitragsdauer * 12), totalMonths);
-
+  const premiums = [];
   const series = [{ age: ageAtStart, year: 0, contributed, balance, real: balance }];
+
   for (let m = 1; m <= totalMonths; m++) {
     const paying = m <= beitragsMonths;
-    balance = balance * (1 + rMonth) + (paying ? monthly : 0);
-    if (paying) contributed += monthly;
+    let spar = 0;
+    if (paying) {
+      const verw = (s.verwaltung / 100) * monthly;              // Verwaltungskosten (§ 17)
+      const absch = m <= zillmerMonths ? abschlussPerMonth : 0; // Abschlusskosten (§ 17, Zillmer)
+      spar = Math.max(0, monthly - verw - absch);               // investierter Sparanteil
+      kosten += monthly - spar;
+      contributed += monthly;
+      premiums.push({ m, p: monthly });
+    }
+    balance = balance * (1 + rMonth) + spar;
     if (paying && m % 12 === 0) monthly *= 1 + s.dynamik / 100; // Dynamik jährlich
     if (m % 12 === 0 || m === totalMonths) {
       const ye = m / 12;
@@ -151,40 +171,48 @@ function compute(s) {
     }
   }
 
-  const brutto = balance;
+  const brutto = balance;                       // Kapitalabfindung inkl. Fondsguthaben (brutto)
   const gewinn = Math.max(0, brutto - contributed);
-  const tf = TEILFREISTELLUNG[s.fondstyp] ?? 0;
-  const steuer = gewinn * (1 - tf) * TAX_RATE;
-  const netto = brutto - steuer;
+  const effAnnual = irr(premiums, s.startkapital, totalMonths, brutto) * 100; // Rendite nach allen Kosten
 
+  // Lebenslange Rente aus dem Fondsguthaben über den Rentenfaktor (§ 34/§ 47).
+  const lebensrente = (brutto / 10000) * s.rentenfaktor;
+
+  // Alternative: Kapitalverzehr über die Auszahldauer.
   const nMonths = Math.max(1, Math.round(s.entnahmeJahre * 12));
   const rR = Math.pow(1 + s.renditeRente / 100, 1 / 12) - 1;
-  let monatsrente;
-  if (Math.abs(rR) < 1e-9) monatsrente = netto / nMonths;
-  else monatsrente = (netto * rR) / (1 - Math.pow(1 + rR, -nMonths));
+  const monatsrente = Math.abs(rR) < 1e-9
+    ? brutto / nMonths
+    : (brutto * rR) / (1 - Math.pow(1 + rR, -nMonths));
 
-  // Steigende Rente: Startbetrag einer jährlich um g % wachsenden Rente,
-  // sodass das Netto-Kapital über die Auszahldauer aufgebraucht wird.
+  // Steigende Rente (Kapitalverzehr): Startbetrag einer jährlich steigenden Rente.
   let steigStart = 0;
   const g = s.rentensteigerung / 100;
   if (g > 0) {
     const gm = Math.pow(1 + g, 1 / 12) - 1;
     const q = Math.pow((1 + gm) / (1 + rR), nMonths);
-    steigStart = Math.abs(rR - gm) < 1e-9
-      ? netto / nMonths
-      : (netto * (rR - gm)) / (1 - q);
+    steigStart = Math.abs(rR - gm) < 1e-9 ? brutto / nMonths : (brutto * (rR - gm)) / (1 - q);
   }
-
-  // Lebenslange Rente über den (garantierten) Rentenfaktor: € je 10.000 €
-  // Netto-Kapital pro Monat (§ 34/§ 47).
-  const lebensrente = (netto / 10000) * s.rentenfaktor;
 
   return {
     years, ageAtStart, totalMonths, beitragsMonths, rentenDate,
-    effAnnual: effAnnual * 100,
-    series, brutto, contributed, gewinn, steuer, netto,
+    effAnnual, series, brutto, contributed, gewinn, kosten,
     monatsrente, steigStart, lebensrente, nMonths,
   };
+}
+
+// Geldgewichtete Jahresrendite nach allen Kosten (Bisektion).
+function irr(premiums, startkapital, totalMonths, target) {
+  if (!(target > 0) || totalMonths <= 0) return 0;
+  const fv = (gy) => {
+    const gm = Math.pow(1 + gy, 1 / 12) - 1;
+    let v = startkapital * Math.pow(1 + gm, totalMonths);
+    for (const { m, p } of premiums) v += p * Math.pow(1 + gm, totalMonths - m);
+    return v;
+  };
+  let lo = -0.9, hi = 1.0;
+  for (let i = 0; i < 80; i++) { const mid = (lo + hi) / 2; if (fv(mid) > target) hi = mid; else lo = mid; }
+  return (lo + hi) / 2;
 }
 
 /* ============================ UI Markup ============================== */
@@ -256,23 +284,25 @@ function shell() {
         ${slider("Erwartete Rendite p.a.", "rendite", 1, 12, 0.1, "%",
           "Angenommene durchschnittliche Wertentwicklung pro Jahr. Der Debeka Global Shares erzielte seit Auflegung 2016 rund 9,99 % p.a. – frei anpassbar.")}
         ${slider("Laufende Fondskosten", "ter", 0, 2, 0.05, "%",
-          "Kosten des Debeka Global Shares: rund 0,30 % pro Jahr (0,025 % pro Monat). Sie schmälern die Rendite direkt.")}
-        ${slider("Effektivkosten der Police", "policy", 0, 4, 0.1, "%",
-          "Bündelt die Policenkosten des Tarifs CA6I: Abschluss-/Vertriebs- und Verwaltungskosten (§ 17) sowie die Fondsverwaltungskosten (§ 48). Den genauen Effektivkosten-Wert (Renditeminderung p. a.) findest du in deinem persönlichen Angebot – 0 rechnet nur mit den reinen Fondskosten.")}
+          "Kosten des Debeka Global Shares: rund 0,30 % pro Jahr. Sie schmälern die Fondsentwicklung direkt.")}
+        ${slider("Abschlusskosten", "abschluss", 0, 4, 0.1, "%",
+          "Abschluss-/Vertriebskosten des Tarifs CA6I (§ 17) in % der Beitragssumme, über die ersten 5 Jahre verrechnet (Zillmer). Gesetzlicher Höchstsatz 2,5 %. Voreingestellt auf die Debeka-Musterrechnung – exakter Wert laut Angebot.")}
+        ${slider("Verwaltungskosten", "verwaltung", 0, 15, 0.1, "%",
+          "Laufende Verwaltungskosten des Tarifs CA6I (§ 17) als Anteil jedes Beitrags. Voreingestellt auf die Debeka-Musterrechnung – exakter Wert laut Angebot.")}
         ${slider("Inflation p.a.", "inflation", 0, 5, 0.1, "%",
           "Erwartete jährliche Geldentwertung. Sie bestimmt, wie viel dein Vermögen später real wert ist.")}
 
         <div class="divider"></div>
         <div class="section-title">Steuern bei Auszahlung</div>
         <div class="taxbox">
-          <div class="taxbox-row"><span>Teilfreistellung (Aktienfonds)</span><b>30 %</b></div>
-          <div class="taxbox-row"><span>Abgeltungsteuer inkl. Soli</span><b>26,375 %</b></div>
-          <div class="field-hint">Der Debeka Global Shares ist ein Aktien-Dachfonds: 30 % des Kursgewinns bleiben steuerfrei, der Rest wird mit 26,375 % besteuert – effektiv rund 18,5 % auf den Gewinn.</div>
+          <div class="taxbox-row"><span>Lebenslange Rente</span><b>Ertragsanteil</b></div>
+          <div class="taxbox-row"><span>Kapitalabfindung (ab 62 &amp; ≥ 12 J.)</span><b>½ Ertrag</b></div>
+          <div class="field-hint">Rentenversicherung: Die lebenslange Rente wird nur mit dem niedrigen Ertragsanteil besteuert. Bei Kapitalauszahlung ab Alter 62 und mindestens 12 Jahren Laufzeit ist nur die Hälfte des Gewinns mit deinem persönlichen Steuersatz zu versteuern (§ 20 EStG). Angezeigt werden – wie bei Debeka – Brutto-Werte vor persönlicher Steuer.</div>
         </div>
 
         <div class="divider"></div>
         <div class="section-title">Später: Rente</div>
-        ${field("Garantierter Rentenfaktor", "rentenfaktor", "€/10.000", "So zahlt der Fondsrentenvertrag aus (§ 34/§ 47): pro 10.000 € Kapital eine lebenslange Monatsrente in dieser Höhe. Der garantierte Rentenfaktor steht in deinem Angebot – hier als Beispiel vorbelegt.", "int")}
+        ${field("Garantierter Rentenfaktor", "rentenfaktor", "€/10.000", "So zahlt der Fondsrentenvertrag aus (§ 34/§ 47): pro 10.000 € Fondsguthaben eine lebenslange Monatsrente in dieser Höhe. Voreingestellt auf die Debeka-Musterrechnung – der garantierte Wert steht in deinem Angebot.", "money")}
         ${slider("Auszahldauer (Alternative)", "entnahmeJahre", 5, 40, 1, "Jahre",
           "Nur für die Alternative „Kapitalverzehr“: Über wie viele Jahre würde das Kapital stattdessen verrentet, bis es aufgebraucht ist?")}
         ${slider("Rendite in der Rente", "renditeRente", 0, 7, 0.1, "%",
@@ -313,18 +343,18 @@ function shell() {
                   <div class="amount" id="rContrib">–</div>
                 </div>
                 <div>
-                  <div class="hero-label">Brutto-Endvermögen</div>
-                  <div class="amount" id="rBrutto">–</div>
+                  <div class="hero-label">Kosten gesamt</div>
+                  <div class="amount" id="rKosten">–</div>
                 </div>
                 <div>
-                  <div class="hero-label">− Steuern bei Auszahlung</div>
-                  <div class="amount neg" id="rTax">–</div>
+                  <div class="hero-label">Effektive Rendite p.a.</div>
+                  <div class="amount" id="rEff">–</div>
                 </div>
               </div>
               <div class="hero-sep"></div>
               <div class="hero-big">
-                <div class="hero-label">Netto-Endvermögen mit <span id="rAge">67</span></div>
-                <div class="amount" id="rNetto">–</div>
+                <div class="hero-label">Kapitalabfindung inkl. Fondsguthaben mit <span id="rAge">67</span></div>
+                <div class="amount" id="rBrutto">–</div>
                 <div class="sub" id="rGain">–</div>
               </div>
             </div>
@@ -406,13 +436,13 @@ function shell() {
           <div class="field-hint" id="pGar" style="margin-top:12px"></div>
           <div class="field-hint" id="pTod" style="margin-top:6px"></div>
           <div class="note">
-            Modell auf Basis Tarif ${POLICY.tarif} (Bedingungen ${POLICY.bedingungen}):
-            lebenslange Rente über den garantierten Rentenfaktor, Policenkosten als
-            Effektivkosten. Unabhängige, unverbindliche Modellrechnung – keine Anlage- oder
-            Steuerberatung und kein Angebot der Debeka. Maßgeblich sind die Bedingungen und dein
-            persönliches Angebot; Erträge schwanken, vergangene Wertentwicklungen sind kein
-            Indikator für die Zukunft. Sparer-Pauschbetrag (1.000 €) und individuelle
-            Steuermerkmale sind nicht berücksichtigt.
+            Modell auf Basis Tarif ${POLICY.tarif} (Bedingungen ${POLICY.bedingungen}) mit
+            Abschluss-, Verwaltungs- und Fondskosten; die Kostensätze sind auf die
+            Debeka-Musterrechnung kalibriert (50 €/Monat, 34 J., 5 % → 43.758 € / 127,31 €) und frei
+            anpassbar. Alle Beträge sind – wie bei Debeka – Brutto vor persönlicher Steuer.
+            Unabhängige, unverbindliche Modellrechnung, keine Anlage-/Steuerberatung und kein Angebot
+            der Debeka; maßgeblich sind die Bedingungen und dein persönliches Angebot. Erträge
+            schwanken, vergangene Wertentwicklungen sind kein Indikator für die Zukunft.
           </div>
         </section>
 
@@ -507,9 +537,9 @@ function render(animate) {
   refreshInputs();
 
   setMoney("rContrib", R.contributed, animate);
+  setMoney("rKosten", R.kosten, animate);
+  setText("rEff", pct1(R.effAnnual));
   setMoney("rBrutto", R.brutto, animate);
-  setText("rTax", "−" + money(R.steuer));
-  setMoney("rNetto", R.netto, animate);
   setText("rAge", state.rentenalter);
   const gainEl = document.getElementById("rGain");
   if (gainEl) gainEl.innerHTML = `Davon <b style="color:#86efac">${money(R.gewinn)}</b> Gewinn – dein Geld arbeitet für dich.`;
@@ -530,9 +560,9 @@ function render(animate) {
   // Optionen bei Rentenbeginn
   setText("pAge", state.rentenalter);
   setText("pLebens", money(R.lebensrente) + " / Monat");
-  setText("pLebensSub", `garantiert lebenslang · Rentenfaktor ${state.rentenfaktor} € je 10.000 € (aus dem Angebot)`);
+  setText("pLebensSub", `garantiert lebenslang · Rentenfaktor ${num2.format(state.rentenfaktor)} € je 10.000 €`);
   setText("pKapital", money(R.brutto));
-  setText("pKapitalSub", `netto nach Steuer: ${money(R.netto)}`);
+  setText("pKapitalSub", "brutto – vor persönlicher Steuer (wie Debeka)");
   setText("pJahre", state.entnahmeJahre);
   setText("pRente", money(R.monatsrente) + " / Monat");
   setText("pRenteSub", `Kapital in ${state.entnahmeJahre} Jahren aufgebraucht · ${pct1(state.renditeRente)} Restrendite`);
@@ -733,8 +763,8 @@ function parseNum(str) {
 const LIMITS = {
   startkapital: [0, 10000000], sparrate: [0, 100000], dynamik: [0, 10],
   rentenalter: [30, 90], rendite: [1, 12], ter: [0, 2],
-  policy: [0, 4], inflation: [0, 5], entnahmeJahre: [5, 40], renditeRente: [0, 7],
-  rentenfaktor: [10, 50],
+  abschluss: [0, 4], verwaltung: [0, 15], inflation: [0, 5],
+  entnahmeJahre: [5, 40], renditeRente: [0, 7], rentenfaktor: [10, 50],
 };
 function clamp(k, v) { const [lo, hi] = LIMITS[k] || [-Infinity, Infinity]; return Math.min(hi, Math.max(lo, v)); }
 
