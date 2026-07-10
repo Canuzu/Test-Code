@@ -276,15 +276,15 @@ function shell() {
             <div class="v" id="tContrib">–</div>
           </div>
           <div class="tile accent-teal">
-            <div class="k"><span class="dot" style="background:var(--teal-500)"></span>Kursgewinn</div>
+            <div class="k"><span class="dot" style="background:var(--green-500)"></span>Kursgewinn</div>
             <div class="v" id="tGain">–</div>
           </div>
           <div class="tile accent-amber">
-            <div class="k"><span class="dot" style="background:var(--amber)"></span>Zinseszins-Anteil</div>
+            <div class="k"><span class="dot" style="background:var(--green-500)"></span>Zinseszins-Anteil</div>
             <div class="v" id="tRatio">–</div>
           </div>
           <div class="tile accent-rose">
-            <div class="k"><span class="dot" style="background:var(--rose)"></span>Effektive Rendite</div>
+            <div class="k"><span class="dot" style="background:var(--green-500)"></span>Effektive Rendite</div>
             <div class="v" id="tEff">–</div>
           </div>
         </div>
@@ -304,7 +304,7 @@ function shell() {
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
               <div class="legend">
                 <span class="item"><span class="swatch" style="background:var(--blue-500)"></span>Einzahlungen</span>
-                <span class="item"><span class="swatch" style="background:var(--teal-500)"></span>Kursgewinn</span>
+                <span class="item"><span class="swatch" style="background:var(--green-500)"></span>Kursgewinn</span>
                 <span class="item"><span class="swatch" style="background:var(--text-3);opacity:.7"></span>Kaufkraft</span>
               </div>
               <button class="pill-btn" id="realBtn" type="button">Kaufkraft anzeigen</button>
@@ -439,7 +439,8 @@ function render(animate) {
   setText("rTax", "−" + money(R.steuer));
   setMoney("rNetto", R.netto, animate);
   setText("rAge", state.rentenalter);
-  setText("rGain", `Davon ${money(R.gewinn)} Gewinn – dein Geld hat für dich gearbeitet.`);
+  const gainEl = document.getElementById("rGain");
+  if (gainEl) gainEl.innerHTML = `Davon <b style="color:#86efac">${money(R.gewinn)}</b> Gewinn – dein Geld arbeitet für dich.`;
 
   setText("tContrib", money(R.contributed));
   setText("tGain", money(R.gewinn));
@@ -543,8 +544,8 @@ function drawChart() {
   const labY = Math.max(PAD_T + 8, endY - 12);
   const endLabel = `
     <g class="end-marker">
-      <circle cx="${endX.toFixed(1)}" cy="${endY.toFixed(1)}" r="4.5" fill="var(--teal-500)" stroke="var(--card)" stroke-width="2"/>
-      <rect x="${(endX - 78).toFixed(1)}" y="${(labY - 14).toFixed(1)}" width="74" height="19" rx="6" fill="var(--teal-600)"/>
+      <circle cx="${endX.toFixed(1)}" cy="${endY.toFixed(1)}" r="4.5" fill="var(--green-500)" stroke="var(--card)" stroke-width="2"/>
+      <rect x="${(endX - 78).toFixed(1)}" y="${(labY - 14).toFixed(1)}" width="74" height="19" rx="6" fill="var(--green-600)"/>
       <text x="${(endX - 41).toFixed(1)}" y="${(labY - 0.5).toFixed(1)}" text-anchor="middle" class="end-text">${compactEur(endV)}</text>
     </g>`;
 
@@ -557,8 +558,8 @@ function drawChart() {
   svg.innerHTML = `
     <defs>
       <linearGradient id="gGain" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="var(--teal-400)" stop-opacity="0.6"/>
-        <stop offset="100%" stop-color="var(--teal-400)" stop-opacity="0.04"/>
+        <stop offset="0%" stop-color="var(--green-500)" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="var(--green-500)" stop-opacity="0.04"/>
       </linearGradient>
       <linearGradient id="gCon" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stop-color="var(--blue-500)" stop-opacity="0.5"/>
@@ -568,7 +569,7 @@ function drawChart() {
     <style>
       .gline{stroke:var(--border);stroke-width:1;stroke-dasharray:3 5;}
       .ylab,.xlab{fill:var(--text-3);font-size:11px;font-weight:600;font-family:var(--font);}
-      .balStroke{stroke:var(--teal-500);stroke-width:3;fill:none;stroke-linejoin:round;stroke-linecap:round;}
+      .balStroke{stroke:var(--green-500);stroke-width:3;fill:none;stroke-linejoin:round;stroke-linecap:round;}
       .conStroke{stroke:var(--blue-500);stroke-width:2.5;fill:none;stroke-linejoin:round;stroke-linecap:round;}
       .end-text{fill:#fff;font-size:11px;font-weight:800;font-family:var(--font);}
     </style>
@@ -581,7 +582,7 @@ function drawChart() {
     ${ylabels}${xlabels}${endLabel}
     <g id="hoverG" style="opacity:0">
       <line id="hLine" y1="${PAD_T}" y2="${CH - PAD_B}" stroke="var(--text-3)" stroke-width="1" stroke-dasharray="3 3"/>
-      <circle id="hBal" r="5.5" fill="var(--teal-500)" stroke="var(--card)" stroke-width="2.5"/>
+      <circle id="hBal" r="5.5" fill="var(--green-500)" stroke="var(--card)" stroke-width="2.5"/>
       <circle id="hCon" r="5" fill="var(--blue-500)" stroke="var(--card)" stroke-width="2.5"/>
     </g>
     <rect id="hitbox" x="0" y="0" width="${CW}" height="${CH}" fill="transparent" style="cursor:crosshair"/>
@@ -624,9 +625,9 @@ function attachHover(svg, s, x, y, useReal) {
     const gain = Math.max(0, bal - p.contributed);
     tip.innerHTML = `
       <div class="t-age">Alter ${p.age} · in ${p.year} Jahr${p.year === 1 ? "" : "en"}</div>
-      <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--teal-500)"></span>${useReal ? "Kaufkraft" : "Gesamt"}</span><span class="val">${money(bal)}</span></div>
+      <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--green-500)"></span>${useReal ? "Kaufkraft" : "Gesamt"}</span><span class="val">${money(bal)}</span></div>
       <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--blue-500)"></span>Eingezahlt</span><span class="val">${money(p.contributed)}</span></div>
-      <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--teal-300)"></span>Gewinn</span><span class="val">${money(gain)}</span></div>`;
+      <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--green-500)"></span>Gewinn</span><span class="val">${money(gain)}</span></div>`;
 
     const wpx = (xx / CW) * wrap.clientWidth;
     const topPx = (y(bal) / CH) * wrap.clientHeight;
