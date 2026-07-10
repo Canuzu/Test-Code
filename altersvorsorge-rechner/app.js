@@ -59,9 +59,12 @@ const RENDITE_PRESETS = [
 const POLICY = {
   tarif: "CA6I",
   bedingungen: "BLV 86 (01.07.2026)",
-  // Beispiel-Rentenfaktor (€ mtl. je 10.000 € Kapital); exakter, garantierter
-  // Wert steht im persönlichen Angebot. Nur Vorbelegung, frei anpassbar.
-  rentenfaktorBeispiel: 27,
+  // Auf die Debeka-Musterrechnung kalibrierte Kostensätze (50 €/Monat, 34 Jahre,
+  // 5 % Fondsentwicklung → Kapitalabfindung 43.758,23 €, Rente 127,31 €).
+  // Exakte Werte stehen im persönlichen Angebot; alle Felder sind anpassbar.
+  abschlussPct: 2.5,    // Abschluss-/Vertriebskosten in % der Beitragssumme (§ 17), 5-J.-Zillmer
+  verwaltungPct: 6.48,  // Verwaltungskosten in % je Beitrag (§ 17)
+  rentenfaktor: 29.09,  // € mtl. je 10.000 € Fondsguthaben (§ 34/§ 47)
 };
 
 const SOLI = 1.055;
@@ -69,24 +72,45 @@ const ABGELT = 0.25;
 const TAX_RATE = ABGELT * SOLI; // = 0,26375
 const TEILFREISTELLUNG = { aktien: 0.30, misch: 0.15, none: 0.0 };
 
+/* ----------------------------- Datum --------------------------------- */
+function todayISO() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+function parseDate(s) { const d = new Date(s + "T00:00:00"); return isNaN(d) ? null : d; }
+function addYears(d, y) { return new Date(d.getFullYear() + y, d.getMonth(), d.getDate()); }
+function monthsBetween(a, b) {
+  let m = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+  if (b.getDate() < a.getDate()) m -= 1;
+  return m;
+}
+function formatYM(months) {
+  if (!months || months <= 0) return "0 J.";
+  const y = Math.floor(months / 12), mo = months % 12;
+  return mo ? `${y} J. ${mo} Mon.` : `${y} J.`;
+}
+
 /* ---------------------------- State ---------------------------------- */
 const state = {
   startkapital: 5000,
   sparrate: 200,
   dynamik: 2,
-  alter: 34,
+  geburtsdatum: "1992-01-01",
+  vertragsbeginn: todayISO(),
   rentenalter: 67,
   rendite: 10,                // Voreinstellung ≈ Ø-Rendite p.a. seit Auflegung
-  ter: FUND.runningCost,      // laufende Fondskosten
-  policy: 0,                  // Effektivkosten der Police (variiert je Vertrag)
+  ter: FUND.runningCost,      // laufende Fondskosten (0,30 %)
+  abschluss: POLICY.abschlussPct,   // Abschlusskosten in % der Beitragssumme
+  verwaltung: POLICY.verwaltungPct, // Verwaltungskosten in % je Beitrag
   inflation: 2,
-  fondstyp: "aktien",
   beitragsdauer: 33,          // Jahre, in denen Beiträge gezahlt werden
   garantiezeit: 15,           // Rentengarantiezeit in Jahren (informativ)
+  steuersatz: 30,             // persönlicher Steuersatz (Halbeinkünfte b. Kapitalabfindung)
   entnahmeJahre: 25,
   renditeRente: 3,
   rentensteigerung: 0,        // jährliche Rentensteigerung (steigende Rente)
-  rentenfaktor: POLICY.rentenfaktorBeispiel, // € mtl. je 10.000 € (lebenslange Rente)
+  rentenfaktor: POLICY.rentenfaktor, // € mtl. je 10.000 € (lebenslange Rente)
   realView: false,
 };
 
@@ -94,67 +118,107 @@ const state = {
 const eur0 = new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 const num1 = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const num2 = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const dtf = new Intl.DateTimeFormat("de-DE", { month: "2-digit", year: "numeric" });
 const pct1 = (v) => num1.format(v) + " %";
 const money = (v) => eur0.format(Math.round(v));
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ------------------------- Kernberechnung ---------------------------- */
 function compute(s) {
-  const years = Math.max(0, Math.round(s.rentenalter - s.alter));
-  const effAnnual = (s.rendite - s.ter - s.policy) / 100;
-  const rMonth = Math.pow(1 + effAnnual, 1 / 12) - 1;
+  // Alter & Zeiträume exakt aus Geburtsdatum und Vertragsbeginn.
+  const geb = parseDate(s.geburtsdatum);
+  const start = parseDate(s.vertragsbeginn);
+  const MS_YEAR = 365.25 * 86400000;
+  const ageAtStart = geb && start ? (start - geb) / MS_YEAR : 0;
+  const rentenDate = geb ? addYears(geb, s.rentenalter) : null;
+  const totalMonths = start && rentenDate ? Math.max(0, monthsBetween(start, rentenDate)) : 0;
+  const years = totalMonths / 12; // Aufschubzeit in Jahren
+
+  const fundNet = (s.rendite - s.ter) / 100;      // Fondsentwicklung minus Fondskosten
+  const rMonth = Math.pow(1 + fundNet, 1 / 12) - 1;
+
+  const beitragsMonths = Math.min(Math.round(s.beitragsdauer * 12), totalMonths);
+  const zillmerMonths = Math.min(60, beitragsMonths) || 1;
+
+  // Beitragssumme (inkl. Dynamik) als Basis der Abschlusskosten (§ 17).
+  let bs = 0, pm = s.sparrate;
+  for (let m = 1; m <= beitragsMonths; m++) { bs += pm; if (m % 12 === 0) pm *= 1 + s.dynamik / 100; }
+  const abschlussPerMonth = ((s.abschluss / 100) * bs) / zillmerMonths;
 
   let balance = s.startkapital;
   let contributed = s.startkapital;
+  let kosten = 0;
   let monthly = s.sparrate;
-  const beitragsJahre = Math.min(s.beitragsdauer, years); // Beiträge max. bis Rentenbeginn
+  const premiums = [];
+  const series = [{ age: ageAtStart, year: 0, contributed, balance, real: balance }];
 
-  const series = [{ age: s.alter, year: 0, contributed, balance, real: balance }];
-
-  for (let y = 1; y <= years; y++) {
-    const paying = y <= beitragsJahre;
-    for (let m = 0; m < 12; m++) {
-      balance = balance * (1 + rMonth) + (paying ? monthly : 0);
-      if (paying) contributed += monthly;
+  for (let m = 1; m <= totalMonths; m++) {
+    const paying = m <= beitragsMonths;
+    let spar = 0;
+    if (paying) {
+      const verw = (s.verwaltung / 100) * monthly;              // Verwaltungskosten (§ 17)
+      const absch = m <= zillmerMonths ? abschlussPerMonth : 0; // Abschlusskosten (§ 17, Zillmer)
+      spar = Math.max(0, monthly - verw - absch);               // investierter Sparanteil
+      kosten += monthly - spar;
+      contributed += monthly;
+      premiums.push({ m, p: monthly });
     }
-    const real = balance / Math.pow(1 + s.inflation / 100, y);
-    series.push({ age: s.alter + y, year: y, contributed, balance, real });
-    if (paying) monthly *= 1 + s.dynamik / 100;
+    balance = balance * (1 + rMonth) + spar;
+    if (paying && m % 12 === 0) monthly *= 1 + s.dynamik / 100; // Dynamik jährlich
+    if (m % 12 === 0 || m === totalMonths) {
+      const ye = m / 12;
+      const real = balance / Math.pow(1 + s.inflation / 100, ye);
+      series.push({ age: ageAtStart + ye, year: ye, contributed, balance, real });
+    }
   }
 
-  const brutto = balance;
+  const brutto = balance;                       // Kapitalabfindung inkl. Fondsguthaben (brutto)
   const gewinn = Math.max(0, brutto - contributed);
-  const tf = TEILFREISTELLUNG[s.fondstyp] ?? 0;
-  const steuer = gewinn * (1 - tf) * TAX_RATE;
+  const effAnnual = irr(premiums, s.startkapital, totalMonths, brutto) * 100; // Rendite nach allen Kosten
+
+  // Steuer bei Kapitalauszahlung: ab Alter 62 und ≥ 12 Jahren Laufzeit ist nur
+  // die Hälfte des Gewinns mit dem persönlichen Steuersatz zu versteuern (§ 20 EStG).
+  const steuer = gewinn * 0.5 * (s.steuersatz / 100);
   const netto = brutto - steuer;
 
+  // Lebenslange Rente aus dem Fondsguthaben über den Rentenfaktor (§ 34/§ 47).
+  const lebensrente = (brutto / 10000) * s.rentenfaktor;
+
+  // Alternative: Kapitalverzehr über die Auszahldauer.
   const nMonths = Math.max(1, Math.round(s.entnahmeJahre * 12));
   const rR = Math.pow(1 + s.renditeRente / 100, 1 / 12) - 1;
-  let monatsrente;
-  if (Math.abs(rR) < 1e-9) monatsrente = netto / nMonths;
-  else monatsrente = (netto * rR) / (1 - Math.pow(1 + rR, -nMonths));
+  const monatsrente = Math.abs(rR) < 1e-9
+    ? brutto / nMonths
+    : (brutto * rR) / (1 - Math.pow(1 + rR, -nMonths));
 
-  // Steigende Rente: Startbetrag einer jährlich um g % wachsenden Rente,
-  // sodass das Netto-Kapital über die Auszahldauer aufgebraucht wird.
+  // Steigende Rente (Kapitalverzehr): Startbetrag einer jährlich steigenden Rente.
   let steigStart = 0;
   const g = s.rentensteigerung / 100;
   if (g > 0) {
     const gm = Math.pow(1 + g, 1 / 12) - 1;
     const q = Math.pow((1 + gm) / (1 + rR), nMonths);
-    steigStart = Math.abs(rR - gm) < 1e-9
-      ? netto / nMonths
-      : (netto * (rR - gm)) / (1 - q);
+    steigStart = Math.abs(rR - gm) < 1e-9 ? brutto / nMonths : (brutto * (rR - gm)) / (1 - q);
   }
 
-  // Lebenslange Rente über den (garantierten) Rentenfaktor: € je 10.000 €
-  // Netto-Kapital pro Monat (§ 34/§ 47).
-  const lebensrente = (netto / 10000) * s.rentenfaktor;
-
   return {
-    years, beitragsJahre, effAnnual: effAnnual * 100,
-    series, brutto, contributed, gewinn, steuer, netto,
+    years, ageAtStart, totalMonths, beitragsMonths, rentenDate,
+    effAnnual, series, brutto, contributed, gewinn, kosten, steuer, netto,
     monatsrente, steigStart, lebensrente, nMonths,
   };
+}
+
+// Geldgewichtete Jahresrendite nach allen Kosten (Bisektion).
+function irr(premiums, startkapital, totalMonths, target) {
+  if (!(target > 0) || totalMonths <= 0) return 0;
+  const fv = (gy) => {
+    const gm = Math.pow(1 + gy, 1 / 12) - 1;
+    let v = startkapital * Math.pow(1 + gm, totalMonths);
+    for (const { m, p } of premiums) v += p * Math.pow(1 + gm, totalMonths - m);
+    return v;
+  };
+  let lo = -0.9, hi = 1.0;
+  for (let i = 0; i < 80; i++) { const mid = (lo + hi) / 2; if (fv(mid) > target) hi = mid; else lo = mid; }
+  return (lo + hi) / 2;
 }
 
 /* ============================ UI Markup ============================== */
@@ -196,9 +260,10 @@ function shell() {
 
         <div class="divider"></div>
         <div class="section-title">Zeithorizont</div>
+        ${dateField("Geburtsdatum", "geburtsdatum", "Dein genaues Geburtsdatum – daraus ergeben sich Alter, Aufschubzeit und der Rentenbeginn monatsgenau.")}
         <div class="split" style="margin-top:0">
-          ${field("Aktuelles Alter", "alter", "J.", "Dein heutiges Alter.", "int")}
-          ${field("Rentenbeginn mit", "rentenalter", "J.", "Alter, zu dem die Rentenzahlung beginnt.", "int")}
+          ${dateField("Vertragsbeginn", "vertragsbeginn", "Ab wann der Vertrag startet (i. d. R. heute). Ab hier wird angespart.")}
+          ${field("Rentenbeginn mit", "rentenalter", "J.", "Alter, zu dem die Rentenzahlung beginnt (z. B. 67).", "int")}
         </div>
 
         <div class="divider"></div>
@@ -225,23 +290,27 @@ function shell() {
         ${slider("Erwartete Rendite p.a.", "rendite", 1, 12, 0.1, "%",
           "Angenommene durchschnittliche Wertentwicklung pro Jahr. Der Debeka Global Shares erzielte seit Auflegung 2016 rund 9,99 % p.a. – frei anpassbar.")}
         ${slider("Laufende Fondskosten", "ter", 0, 2, 0.05, "%",
-          "Kosten des Debeka Global Shares: rund 0,30 % pro Jahr (0,025 % pro Monat). Sie schmälern die Rendite direkt.")}
-        ${slider("Effektivkosten der Police", "policy", 0, 4, 0.1, "%",
-          "Bündelt die Policenkosten des Tarifs CA6I: Abschluss-/Vertriebs- und Verwaltungskosten (§ 17) sowie die Fondsverwaltungskosten (§ 48). Den genauen Effektivkosten-Wert (Renditeminderung p. a.) findest du in deinem persönlichen Angebot – 0 rechnet nur mit den reinen Fondskosten.")}
+          "Kosten des Debeka Global Shares: rund 0,30 % pro Jahr. Sie schmälern die Fondsentwicklung direkt.")}
+        ${slider("Abschlusskosten", "abschluss", 0, 4, 0.1, "%",
+          "Abschluss-/Vertriebskosten des Tarifs CA6I (§ 17) in % der Beitragssumme, über die ersten 5 Jahre verrechnet (Zillmer). Gesetzlicher Höchstsatz 2,5 %. Voreingestellt auf die Debeka-Musterrechnung – exakter Wert laut Angebot.")}
+        ${slider("Verwaltungskosten", "verwaltung", 0, 15, 0.1, "%",
+          "Laufende Verwaltungskosten des Tarifs CA6I (§ 17) als Anteil jedes Beitrags. Voreingestellt auf die Debeka-Musterrechnung – exakter Wert laut Angebot.")}
         ${slider("Inflation p.a.", "inflation", 0, 5, 0.1, "%",
           "Erwartete jährliche Geldentwertung. Sie bestimmt, wie viel dein Vermögen später real wert ist.")}
 
         <div class="divider"></div>
         <div class="section-title">Steuern bei Auszahlung</div>
+        ${slider("Persönlicher Steuersatz", "steuersatz", 0, 45, 1, "%",
+          "Dein persönlicher Einkommensteuersatz. Bei Kapitalauszahlung ab Alter 62 und mindestens 12 Jahren Laufzeit wird nur die Hälfte des Gewinns damit besteuert (§ 20 EStG).")}
         <div class="taxbox">
-          <div class="taxbox-row"><span>Teilfreistellung (Aktienfonds)</span><b>30 %</b></div>
-          <div class="taxbox-row"><span>Abgeltungsteuer inkl. Soli</span><b>26,375 %</b></div>
-          <div class="field-hint">Der Debeka Global Shares ist ein Aktien-Dachfonds: 30 % des Kursgewinns bleiben steuerfrei, der Rest wird mit 26,375 % besteuert – effektiv rund 18,5 % auf den Gewinn.</div>
+          <div class="taxbox-row"><span>Kapitalabfindung (ab 62 &amp; ≥ 12 J.)</span><b>½ Gewinn × Satz</b></div>
+          <div class="taxbox-row"><span>Lebenslange Rente</span><b>nur Ertragsanteil</b></div>
+          <div class="field-hint">Rentenversicherung: Bei Kapitalauszahlung ab 62 und mindestens 12 Jahren Laufzeit ist nur die Hälfte des Gewinns mit deinem persönlichen Steuersatz zu versteuern (§ 20 EStG) – so wird das „Netto-Endvermögen“ oben berechnet. Die lebenslange Rente wird stattdessen nur mit dem niedrigen Ertragsanteil besteuert.</div>
         </div>
 
         <div class="divider"></div>
         <div class="section-title">Später: Rente</div>
-        ${field("Garantierter Rentenfaktor", "rentenfaktor", "€/10.000", "So zahlt der Fondsrentenvertrag aus (§ 34/§ 47): pro 10.000 € Kapital eine lebenslange Monatsrente in dieser Höhe. Der garantierte Rentenfaktor steht in deinem Angebot – hier als Beispiel vorbelegt.", "int")}
+        ${field("Garantierter Rentenfaktor", "rentenfaktor", "€/10.000", "So zahlt der Fondsrentenvertrag aus (§ 34/§ 47): pro 10.000 € Fondsguthaben eine lebenslange Monatsrente in dieser Höhe. Voreingestellt auf die Debeka-Musterrechnung – der garantierte Wert steht in deinem Angebot.", "money")}
         ${slider("Auszahldauer (Alternative)", "entnahmeJahre", 5, 40, 1, "Jahre",
           "Nur für die Alternative „Kapitalverzehr“: Über wie viele Jahre würde das Kapital stattdessen verrentet, bis es aufgebraucht ist?")}
         ${slider("Rendite in der Rente", "renditeRente", 0, 7, 0.1, "%",
@@ -321,9 +390,10 @@ function shell() {
 
         <div class="meta-strip">
           <div class="ms"><span class="ms-k">Kombination</span><span class="ms-v">Chance Invest</span></div>
-          <div class="ms"><span class="ms-k">Rentenbeginn</span><span class="ms-v"><span id="mRb">67</span> J.</span></div>
-          <div class="ms"><span class="ms-k">Aufschubzeit</span><span class="ms-v"><span id="mAuf">–</span> J.</span></div>
-          <div class="ms"><span class="ms-k">Beitragsdauer</span><span class="ms-v"><span id="mBd">–</span> J.</span></div>
+          <div class="ms"><span class="ms-k">Alter bei Start</span><span class="ms-v" id="mAge">–</span></div>
+          <div class="ms"><span class="ms-k">Rentenbeginn</span><span class="ms-v" id="mRb">–</span></div>
+          <div class="ms"><span class="ms-k">Aufschubzeit</span><span class="ms-v" id="mAuf">–</span></div>
+          <div class="ms"><span class="ms-k">Beitragsdauer</span><span class="ms-v" id="mBd">–</span></div>
           <div class="ms"><span class="ms-k">Rentengarantiezeit</span><span class="ms-v" id="mGz">–</span></div>
         </div>
 
@@ -346,54 +416,43 @@ function shell() {
           </div>
         </section>
 
-        <!-- Entnahme + Erklärung -->
-        <div class="split">
-          <section class="card panel pension" aria-label="Optionen bei Rentenbeginn">
-            <div class="section-title">Deine Wahl bei Rentenbeginn mit <span id="pAge">67</span></div>
-            <div class="opt-grid">
-              <div class="opt">
-                <div class="opt-k">Lebenslange Rente · garantierter Rentenfaktor</div>
-                <div class="opt-v big" id="pLebens">–</div>
-                <div class="opt-sub" id="pLebensSub">–</div>
-              </div>
-              <div class="opt">
-                <div class="opt-k">… oder Kapitalabfindung inkl. Fondsguthaben</div>
-                <div class="opt-v" id="pKapital">–</div>
-                <div class="opt-sub" id="pKapitalSub">–</div>
-              </div>
-              <div class="opt">
-                <div class="opt-k">Alternativ: Kapitalverzehr über <span id="pJahre">25</span> Jahre</div>
-                <div class="opt-v" id="pRente">–</div>
-                <div class="opt-sub" id="pRenteSub">–</div>
-              </div>
-              <div class="opt hide" id="pSteigBox">
-                <div class="opt-k">Steigende Rente · Startbetrag</div>
-                <div class="opt-v" id="pSteig">–</div>
-                <div class="opt-sub" id="pSteigSub">–</div>
-              </div>
+        <!-- Optionen bei Rentenbeginn (volle Breite) -->
+        <section class="card panel pension chart-card" aria-label="Optionen bei Rentenbeginn">
+          <div class="section-title">Deine Wahl bei Rentenbeginn mit <span id="pAge">67</span></div>
+          <div class="opt-grid opt-grid-wide">
+            <div class="opt">
+              <div class="opt-k">Lebenslange Rente · garantierter Rentenfaktor</div>
+              <div class="opt-v big" id="pLebens">–</div>
+              <div class="opt-sub" id="pLebensSub">–</div>
             </div>
-            <div class="field-hint" id="pGar" style="margin-top:12px"></div>
-            <div class="field-hint" id="pTod" style="margin-top:6px"></div>
-          </section>
-
-          <section class="card panel explain">
-            <h3>So rechnen wir</h3>
-            <ul>
-              <li><svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Monatliche Verzinsung mit <b id="eEff">–</b> effektiver Rendite (Rendite minus Fonds- und Policenkosten).</span></li>
-              <li><svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Steuer auf den Gewinn: 26,375 % Abgeltungsteuer, gemindert um die Teilfreistellung.</span></li>
-              <li><svg class="check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span>Die effektive Rendite berücksichtigt bereits die Fonds- und Policenkosten.</span></li>
-            </ul>
-            <div class="note">
-              Modell auf Basis Tarif ${POLICY.tarif} (Bedingungen ${POLICY.bedingungen}):
-              lebenslange Rente über den garantierten Rentenfaktor, Policenkosten als
-              Effektivkosten. Unabhängige, unverbindliche Modellrechnung – keine Anlage- oder
-              Steuerberatung und kein Angebot der Debeka. Maßgeblich sind die Bedingungen und dein
-              persönliches Angebot; Erträge schwanken, vergangene Wertentwicklungen sind kein
-              Indikator für die Zukunft. Sparer-Pauschbetrag (1.000 €) und individuelle
-              Steuermerkmale sind nicht berücksichtigt.
+            <div class="opt">
+              <div class="opt-k">… oder Kapitalabfindung inkl. Fondsguthaben</div>
+              <div class="opt-v" id="pKapital">–</div>
+              <div class="opt-sub" id="pKapitalSub">–</div>
             </div>
-          </section>
-        </div>
+            <div class="opt">
+              <div class="opt-k">Alternativ: Kapitalverzehr über <span id="pJahre">25</span> Jahre</div>
+              <div class="opt-v" id="pRente">–</div>
+              <div class="opt-sub" id="pRenteSub">–</div>
+            </div>
+            <div class="opt hide" id="pSteigBox">
+              <div class="opt-k">Steigende Rente · Startbetrag</div>
+              <div class="opt-v" id="pSteig">–</div>
+              <div class="opt-sub" id="pSteigSub">–</div>
+            </div>
+          </div>
+          <div class="field-hint" id="pGar" style="margin-top:12px"></div>
+          <div class="field-hint" id="pTod" style="margin-top:6px"></div>
+          <div class="note">
+            Modell auf Basis Tarif ${POLICY.tarif} (Bedingungen ${POLICY.bedingungen}) mit
+            Abschluss-, Verwaltungs- und Fondskosten; die Kostensätze sind auf die
+            Debeka-Musterrechnung kalibriert (50 €/Monat, 34 J., 5 % → 43.758 € / 127,31 €) und frei
+            anpassbar. Alle Beträge sind – wie bei Debeka – Brutto vor persönlicher Steuer.
+            Unabhängige, unverbindliche Modellrechnung, keine Anlage-/Steuerberatung und kein Angebot
+            der Debeka; maßgeblich sind die Bedingungen und dein persönliches Angebot. Erträge
+            schwanken, vergangene Wertentwicklungen sind kein Indikator für die Zukunft.
+          </div>
+        </section>
 
         <div class="footer">Rechner für den Debeka Global Shares · Fondsdaten der Debeka · unabhängige Modellrechnung, kein Angebot der Debeka.</div>
       </div>
@@ -419,6 +478,16 @@ function field(label, key, unit, tip, kind) {
     <div class="input-shell">
       <input id="in_${key}" inputmode="${kind === "int" ? "numeric" : "decimal"}" data-key="${key}" data-kind="${kind}" aria-label="${label}" />
       <span class="unit">${unit}</span>
+    </div>
+  </div>`;
+}
+
+function dateField(label, key, tip) {
+  return `
+  <div class="field">
+    <div class="field-label">${label} <i class="info" data-tip="${tip}"></i></div>
+    <div class="input-shell">
+      <input type="date" id="in_${key}" data-key="${key}" data-kind="date" aria-label="${label}" />
     </div>
   </div>`;
 }
@@ -460,6 +529,8 @@ function refreshInputs() {
         unit === "%" ? disp + " %" : disp + " " + unit;
     } else if (kind === "select") {
       el.value = String(state[k]);
+    } else if (kind === "date") {
+      el.value = state[k];
     } else if (document.activeElement !== el) {
       el.value = new Intl.NumberFormat("de-DE").format(state[k]);
     }
@@ -488,15 +559,16 @@ function render(animate) {
   setText("tEff", pct1(R.effAnnual));
 
   // Vertrags-Eckdaten
-  setText("mRb", state.rentenalter);
-  setText("mAuf", R.years);
-  setText("mBd", R.beitragsJahre);
+  setText("mAge", formatYM(Math.round(R.ageAtStart * 12)));
+  setText("mRb", state.rentenalter + " J." + (R.rentenDate ? " · " + dtf.format(R.rentenDate) : ""));
+  setText("mAuf", formatYM(R.totalMonths));
+  setText("mBd", formatYM(R.beitragsMonths));
   setText("mGz", state.garantiezeit > 0 ? state.garantiezeit + " J." : "keine");
 
   // Optionen bei Rentenbeginn
   setText("pAge", state.rentenalter);
   setText("pLebens", money(R.lebensrente) + " / Monat");
-  setText("pLebensSub", `garantiert lebenslang · Rentenfaktor ${state.rentenfaktor} € je 10.000 € (aus dem Angebot)`);
+  setText("pLebensSub", `garantiert lebenslang · Rentenfaktor ${num2.format(state.rentenfaktor)} € je 10.000 €`);
   setText("pKapital", money(R.brutto));
   setText("pKapitalSub", `netto nach Steuer: ${money(R.netto)}`);
   setText("pJahre", state.entnahmeJahre);
@@ -577,10 +649,10 @@ function drawChart() {
   let xlabels = "";
   const step = Math.max(1, Math.round((n - 1) / 6));
   for (let i = 0; i < n; i += step) {
-    xlabels += `<text x="${x(i).toFixed(1)}" y="${CH - 8}" class="xlab" text-anchor="middle">${s[i].age}</text>`;
+    xlabels += `<text x="${x(i).toFixed(1)}" y="${CH - 8}" class="xlab" text-anchor="middle">${Math.round(s[i].age)}</text>`;
   }
   const lastI = n - 1;
-  xlabels += `<text x="${x(lastI).toFixed(1)}" y="${CH - 8}" class="xlab" text-anchor="end">${s[lastI].age}</text>`;
+  xlabels += `<text x="${x(lastI).toFixed(1)}" y="${CH - 8}" class="xlab" text-anchor="end">${Math.round(s[lastI].age)}</text>`;
 
   // Endpunkt-Label
   const endV = balArr[lastI], endX = x(lastI), endY = y(endV);
@@ -667,7 +739,7 @@ function attachHover(svg, s, x, y, useReal) {
 
     const gain = Math.max(0, bal - p.contributed);
     tip.innerHTML = `
-      <div class="t-age">Alter ${p.age} · in ${p.year} Jahr${p.year === 1 ? "" : "en"}</div>
+      <div class="t-age">Alter ${Math.round(p.age)} · in ${Math.round(p.year)} Jahr${Math.round(p.year) === 1 ? "" : "en"}</div>
       <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--green-500)"></span>${useReal ? "Kaufkraft" : "Gesamt"}</span><span class="val">${money(bal)}</span></div>
       <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--blue-500)"></span>Eingezahlt</span><span class="val">${money(p.contributed)}</span></div>
       <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--green-500)"></span>Gewinn</span><span class="val">${money(gain)}</span></div>`;
@@ -698,9 +770,10 @@ function parseNum(str) {
 
 const LIMITS = {
   startkapital: [0, 10000000], sparrate: [0, 100000], dynamik: [0, 10],
-  alter: [0, 85], rentenalter: [30, 90], rendite: [1, 12], ter: [0, 2],
-  policy: [0, 4], inflation: [0, 5], entnahmeJahre: [5, 40], renditeRente: [0, 7],
-  rentenfaktor: [10, 50],
+  rentenalter: [30, 90], rendite: [1, 12], ter: [0, 2],
+  abschluss: [0, 4], verwaltung: [0, 15], inflation: [0, 5],
+  entnahmeJahre: [5, 40], renditeRente: [0, 7], rentenfaktor: [10, 50],
+  steuersatz: [0, 45],
 };
 function clamp(k, v) { const [lo, hi] = LIMITS[k] || [-Infinity, Infinity]; return Math.min(hi, Math.max(lo, v)); }
 
@@ -717,6 +790,9 @@ function bind() {
     } else if (kind === "select") {
       state[k] = parseFloat(el.value);
       render(true);
+    } else if (kind === "date") {
+      state[k] = el.value;
+      render(false);
     } else {
       let v = parseNum(el.value);
       if (kind === "int") v = Math.round(v);
@@ -727,11 +803,9 @@ function bind() {
 
   app.addEventListener("blur", (e) => {
     const el = e.target;
-    if (el.dataset && el.dataset.key && el.dataset.kind !== "range") {
+    const kind = el.dataset && el.dataset.kind;
+    if (el.dataset && el.dataset.key && kind !== "range" && kind !== "select" && kind !== "date") {
       state[el.dataset.key] = clamp(el.dataset.key, state[el.dataset.key]);
-      if (el.dataset.key === "alter" || el.dataset.key === "rentenalter") {
-        if (state.rentenalter <= state.alter) state.rentenalter = state.alter + 1;
-      }
       render(true);
     }
   }, true);

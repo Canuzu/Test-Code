@@ -230,6 +230,10 @@ body {
 .input-shell input::-webkit-outer-spin-button,
 .input-shell input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 .input-shell input[type="number"] { -moz-appearance: textfield; }
+.input-shell input[type="date"] { font-variant-numeric: tabular-nums; }
+.input-shell input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: 0.6; }
+.input-shell input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+:root[data-theme="dark"] .input-shell input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.55; }
 
 /* ---------- Slider (mit gefülltem Track) ---------- */
 .slider-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -319,6 +323,7 @@ input[type="range"]::-moz-range-thumb {
 
 /* Optionen bei Rentenbeginn */
 .opt-grid { display: grid; gap: 12px; margin-top: 4px; }
+.opt-grid-wide { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); align-items: stretch; }
 .opt { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; background: var(--card-2); }
 .opt.hide { display: none; }
 .opt-k { font-size: 0.78rem; color: var(--text-2); font-weight: 650; }
