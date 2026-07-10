@@ -106,6 +106,7 @@ const state = {
   inflation: 2,
   beitragsdauer: 33,          // Jahre, in denen Beiträge gezahlt werden
   garantiezeit: 15,           // Rentengarantiezeit in Jahren (informativ)
+  steuersatz: 30,             // persönlicher Steuersatz (Halbeinkünfte b. Kapitalabfindung)
   entnahmeJahre: 25,
   renditeRente: 3,
   rentensteigerung: 0,        // jährliche Rentensteigerung (steigende Rente)
@@ -175,6 +176,11 @@ function compute(s) {
   const gewinn = Math.max(0, brutto - contributed);
   const effAnnual = irr(premiums, s.startkapital, totalMonths, brutto) * 100; // Rendite nach allen Kosten
 
+  // Steuer bei Kapitalauszahlung: ab Alter 62 und ≥ 12 Jahren Laufzeit ist nur
+  // die Hälfte des Gewinns mit dem persönlichen Steuersatz zu versteuern (§ 20 EStG).
+  const steuer = gewinn * 0.5 * (s.steuersatz / 100);
+  const netto = brutto - steuer;
+
   // Lebenslange Rente aus dem Fondsguthaben über den Rentenfaktor (§ 34/§ 47).
   const lebensrente = (brutto / 10000) * s.rentenfaktor;
 
@@ -196,7 +202,7 @@ function compute(s) {
 
   return {
     years, ageAtStart, totalMonths, beitragsMonths, rentenDate,
-    effAnnual, series, brutto, contributed, gewinn, kosten,
+    effAnnual, series, brutto, contributed, gewinn, kosten, steuer, netto,
     monatsrente, steigStart, lebensrente, nMonths,
   };
 }
@@ -294,10 +300,12 @@ function shell() {
 
         <div class="divider"></div>
         <div class="section-title">Steuern bei Auszahlung</div>
+        ${slider("Persönlicher Steuersatz", "steuersatz", 0, 45, 1, "%",
+          "Dein persönlicher Einkommensteuersatz. Bei Kapitalauszahlung ab Alter 62 und mindestens 12 Jahren Laufzeit wird nur die Hälfte des Gewinns damit besteuert (§ 20 EStG).")}
         <div class="taxbox">
-          <div class="taxbox-row"><span>Lebenslange Rente</span><b>Ertragsanteil</b></div>
-          <div class="taxbox-row"><span>Kapitalabfindung (ab 62 &amp; ≥ 12 J.)</span><b>½ Ertrag</b></div>
-          <div class="field-hint">Rentenversicherung: Die lebenslange Rente wird nur mit dem niedrigen Ertragsanteil besteuert. Bei Kapitalauszahlung ab Alter 62 und mindestens 12 Jahren Laufzeit ist nur die Hälfte des Gewinns mit deinem persönlichen Steuersatz zu versteuern (§ 20 EStG). Angezeigt werden – wie bei Debeka – Brutto-Werte vor persönlicher Steuer.</div>
+          <div class="taxbox-row"><span>Kapitalabfindung (ab 62 &amp; ≥ 12 J.)</span><b>½ Gewinn × Satz</b></div>
+          <div class="taxbox-row"><span>Lebenslange Rente</span><b>nur Ertragsanteil</b></div>
+          <div class="field-hint">Rentenversicherung: Bei Kapitalauszahlung ab 62 und mindestens 12 Jahren Laufzeit ist nur die Hälfte des Gewinns mit deinem persönlichen Steuersatz zu versteuern (§ 20 EStG) – so wird das „Netto-Endvermögen“ oben berechnet. Die lebenslange Rente wird stattdessen nur mit dem niedrigen Ertragsanteil besteuert.</div>
         </div>
 
         <div class="divider"></div>
@@ -343,18 +351,18 @@ function shell() {
                   <div class="amount" id="rContrib">–</div>
                 </div>
                 <div>
-                  <div class="hero-label">Kosten gesamt</div>
-                  <div class="amount" id="rKosten">–</div>
+                  <div class="hero-label">Brutto-Endvermögen</div>
+                  <div class="amount" id="rBrutto">–</div>
                 </div>
                 <div>
-                  <div class="hero-label">Effektive Rendite p.a.</div>
-                  <div class="amount" id="rEff">–</div>
+                  <div class="hero-label">− Steuern bei Auszahlung</div>
+                  <div class="amount neg" id="rTax">–</div>
                 </div>
               </div>
               <div class="hero-sep"></div>
               <div class="hero-big">
-                <div class="hero-label">Kapitalabfindung inkl. Fondsguthaben mit <span id="rAge">67</span></div>
-                <div class="amount" id="rBrutto">–</div>
+                <div class="hero-label">Netto-Endvermögen mit <span id="rAge">67</span></div>
+                <div class="amount" id="rNetto">–</div>
                 <div class="sub" id="rGain">–</div>
               </div>
             </div>
@@ -537,9 +545,9 @@ function render(animate) {
   refreshInputs();
 
   setMoney("rContrib", R.contributed, animate);
-  setMoney("rKosten", R.kosten, animate);
-  setText("rEff", pct1(R.effAnnual));
   setMoney("rBrutto", R.brutto, animate);
+  setText("rTax", "−" + money(R.steuer));
+  setMoney("rNetto", R.netto, animate);
   setText("rAge", state.rentenalter);
   const gainEl = document.getElementById("rGain");
   if (gainEl) gainEl.innerHTML = `Davon <b style="color:#86efac">${money(R.gewinn)}</b> Gewinn – dein Geld arbeitet für dich.`;
@@ -562,7 +570,7 @@ function render(animate) {
   setText("pLebens", money(R.lebensrente) + " / Monat");
   setText("pLebensSub", `garantiert lebenslang · Rentenfaktor ${num2.format(state.rentenfaktor)} € je 10.000 €`);
   setText("pKapital", money(R.brutto));
-  setText("pKapitalSub", "brutto – vor persönlicher Steuer (wie Debeka)");
+  setText("pKapitalSub", `netto nach Steuer: ${money(R.netto)}`);
   setText("pJahre", state.entnahmeJahre);
   setText("pRente", money(R.monatsrente) + " / Monat");
   setText("pRenteSub", `Kapital in ${state.entnahmeJahre} Jahren aufgebraucht · ${pct1(state.renditeRente)} Restrendite`);
@@ -765,6 +773,7 @@ const LIMITS = {
   rentenalter: [30, 90], rendite: [1, 12], ter: [0, 2],
   abschluss: [0, 4], verwaltung: [0, 15], inflation: [0, 5],
   entnahmeJahre: [5, 40], renditeRente: [0, 7], rentenfaktor: [10, 50],
+  steuersatz: [0, 45],
 };
 function clamp(k, v) { const [lo, hi] = LIMITS[k] || [-Infinity, Infinity]; return Math.min(hi, Math.max(lo, v)); }
 
