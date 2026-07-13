@@ -2,14 +2,26 @@
   "name": "Debeka Global Shares",
   "since": 2016,
   "sinceDate": "22.04.2016",
-  "paSince": 9.99,
+  "paSince": 46.04,
   "totalSince": 164.42,
-  "runningCost": 0.30,
+  "runningCost": 0.3,
   "perf": [
-    { "label": "1 Jahr", "v": 24.77 },
-    { "label": "3 Jahre", "v": 58.71 },
-    { "label": "5 Jahre", "v": 61.99 },
-    { "label": "seit Auflage", "v": 164.42 }
+    {
+      "label": "1 Jahr",
+      "v": 24.77
+    },
+    {
+      "label": "3 Jahre",
+      "v": 58.71
+    },
+    {
+      "label": "5 Jahre",
+      "v": 61.99
+    },
+    {
+      "label": "seit Auflage",
+      "v": 164.42
+    }
   ],
-  "updatedAt": "10.07.2026"
+  "updatedAt": "13.07.2026"
 }
