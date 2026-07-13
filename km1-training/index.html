@@ -181,9 +181,26 @@ section{padding-block:clamp(4rem,9vw,7rem);position:relative}
 .hero-inner{
   position:relative;overflow:hidden;
   padding:clamp(4.5rem,10vw,7.5rem) 0 clamp(3.5rem,7vw,5.5rem);
-  background:var(--glow), linear-gradient(180deg, var(--ground-2), var(--ground));
+  background:
+    var(--glow),
+    repeating-linear-gradient(90deg, transparent 0 140px, rgba(127,127,127,.045) 140px 280px),
+    linear-gradient(180deg, var(--ground-2), var(--ground));
 }
-.hero-pitch{position:absolute;inset:0;pointer-events:none;color:var(--chalk)}
+.grain{
+  position:absolute;inset:0;pointer-events:none;opacity:.055;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
+}
+.hero-pitch{position:absolute;inset:0;pointer-events:none;color:var(--chalk);animation:breathe 7s ease-in-out infinite alternate}
+@keyframes breathe{from{opacity:.72}to{opacity:1}}
+@keyframes rise-in{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+.hero .eyebrow{animation:rise-in .7s .05s both}
+.hero h1{animation:rise-in .8s .18s both}
+.hero .sub{animation:rise-in .8s .34s both}
+.hero .cta-row{animation:rise-in .8s .5s both}
+.hero .scoreline{animation:rise-in .9s .66s both}
+.hero-pitch .traj{stroke:var(--gold);stroke-width:2;stroke-dasharray:7 11;opacity:.8;animation:flight 2.6s .8s ease-out both}
+@keyframes flight{from{stroke-dashoffset:700}to{stroke-dashoffset:0}}
+.hero-pitch .ball{fill:var(--gold);stroke:none;animation:rise-in .5s 2.4s both}
 .hero-pitch svg{width:100%;height:100%;position:absolute;inset:0}
 .hero .wrap{position:relative}
 .hero h1{font-size:clamp(3.2rem,9vw,6.75rem);max-width:12ch}
@@ -215,6 +232,23 @@ section{padding-block:clamp(4rem,9vw,7rem);position:relative}
 .ticker span::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--rasen);flex:none}
 @keyframes tick{to{transform:translateX(-50%)}}
 
+/* Partner-Leiste */
+.partners{border-bottom:1px solid var(--line);background:var(--ground);padding:1.5rem 0}
+.partners .wrap{display:flex;align-items:center;gap:1.5rem 3rem;flex-wrap:wrap}
+.plabel{
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;text-transform:uppercase;
+  letter-spacing:.24em;font-size:.78rem;color:var(--muted);
+}
+.plogos{display:flex;align-items:center;gap:2.75rem;flex-wrap:wrap}
+.plogo{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-style:italic;text-transform:uppercase;
+  font-size:1.55rem;letter-spacing:.08em;color:var(--muted);line-height:1;
+  opacity:.8;transition:color .2s,opacity .2s,transform .15s;text-decoration:none;
+  display:inline-flex;align-items:baseline;gap:.4rem;
+}
+.plogo:hover{color:var(--ink);opacity:1;transform:translateY(-1px)}
+.plogo small{font-weight:600;font-style:normal;font-size:.7rem;letter-spacing:.2em;color:var(--muted)}
+
 /* ============ Programme ============ */
 .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem}
 .card{
@@ -225,6 +259,13 @@ section{padding-block:clamp(4rem,9vw,7rem);position:relative}
   transition:transform .2s,border-color .2s,box-shadow .2s;
 }
 .card:hover{transform:translateY(-4px);border-color:var(--rasen);box-shadow:var(--shadow)}
+.card::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .35s;
+  background:linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--rasen) 9%, transparent) 62%, transparent 82%);
+}
+.card:hover::after{opacity:1}
+.card.pro{border-color:color-mix(in srgb, var(--gold) 40%, var(--line))}
+.card.pro::after{background:linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--gold) 10%, transparent) 62%, transparent 82%)}
 .card::before{
   content:"";position:absolute;top:0;right:0;width:120px;height:120px;
   border:1px solid var(--line);border-radius:50%;transform:translate(45%,-45%);pointer-events:none;
@@ -261,7 +302,10 @@ section{padding-block:clamp(4rem,9vw,7rem);position:relative}
 .card .cardlink{transition:gap .2s}
 
 /* ============ Methode ============ */
-.methode{background:var(--ground-2)}
+.methode{
+  background-color:var(--ground-2);
+  background-image:repeating-linear-gradient(90deg, transparent 0 140px, rgba(127,127,127,.04) 140px 280px);
+}
 .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;position:relative}
 .steps::before{
   content:"";position:absolute;top:1.35rem;left:2rem;right:2rem;height:1px;
@@ -313,7 +357,10 @@ section{padding-block:clamp(4rem,9vw,7rem);position:relative}
 .pillar span{color:var(--muted);font-size:.9rem;line-height:1.55}
 
 /* ============ Camps ============ */
-.camps{background:var(--ground-2)}
+.camps{
+  background-color:var(--ground-2);
+  background-image:repeating-linear-gradient(90deg, transparent 0 140px, rgba(127,127,127,.04) 140px 280px);
+}
 .campgrid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
 .camp{
   border:1px solid var(--line);border-radius:12px;overflow:hidden;
@@ -346,25 +393,87 @@ section{padding-block:clamp(4rem,9vw,7rem);position:relative}
 .campnote{margin-top:1.5rem;color:var(--muted);font-size:.92rem;display:flex;align-items:center;gap:.6rem}
 .campnote::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--gold);flex:none}
 
+/* ============ Einblicke (Videos) ============ */
+.clips{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.25rem}
+.clip{
+  /* Bewusst dunkel in beiden Themes: wirkt wie ein Video-Still unter Flutlicht */
+  position:relative;display:flex;align-items:flex-end;text-decoration:none;
+  aspect-ratio:16/10;border-radius:12px;overflow:hidden;
+  background:
+    radial-gradient(90% 120% at 15% 0%, rgba(34,169,92,.30), transparent 60%),
+    linear-gradient(180deg,#13201766,#0c1310), #0e1712;
+  border:1px solid rgba(238,243,236,.16);
+  transition:transform .2s,border-color .2s,box-shadow .2s;
+}
+.clip:hover{transform:translateY(-4px);border-color:#22a95c;box-shadow:var(--shadow)}
+.clip .lines{position:absolute;inset:0;color:rgba(238,243,236,.4)}
+.clip .play{
+  position:absolute;top:44%;left:50%;transform:translate(-50%,-50%);
+  width:3.4rem;height:3.4rem;border-radius:50%;
+  background:rgba(12,19,16,.55);border:1.5px solid rgba(238,243,236,.6);color:#eef3ec;
+  display:grid;place-items:center;transition:background .2s,border-color .2s,transform .2s,color .2s;
+}
+.clip:hover .play{background:#22a95c;border-color:#22a95c;color:#08130c;transform:translate(-50%,-50%) scale(1.1)}
+.clip .play svg{width:1.1rem;height:1.1rem;margin-left:2px}
+.clip .meta{
+  position:relative;width:100%;padding:2.2rem 1.2rem 1.05rem;
+  background:linear-gradient(180deg, transparent, rgba(5,9,7,.78));
+}
+.clip .meta b{
+  display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-style:italic;
+  text-transform:uppercase;letter-spacing:.03em;font-size:1.25rem;line-height:1.1;color:#eef3ec;
+}
+.clip .meta small{color:#9db2a4;font-size:.82rem;letter-spacing:.04em}
+.cliprow{
+  margin-top:1.75rem;display:flex;flex-wrap:wrap;gap:.75rem 2rem;align-items:center;color:var(--muted);font-size:.95rem;
+}
+.cliprow a{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-style:italic;text-transform:uppercase;
+  letter-spacing:.06em;font-size:1.02rem;color:var(--rasen);text-decoration:none;
+}
+.cliprow a:hover{color:var(--ink)}
+
 /* ============ Über ============ */
-.ueber .split{align-items:start}
+.ueber .split{grid-template-columns:4fr 7fr;align-items:center}
+.portrait-wrap{position:relative;max-width:430px}
+.portrait-wrap::before{
+  content:"";position:absolute;inset:1.1rem -1.1rem -1.1rem 1.1rem;
+  border:1.5px solid var(--rasen);border-radius:18px;opacity:.55;pointer-events:none;
+}
+.portrait{
+  position:relative;z-index:1;margin:0;aspect-ratio:4/5;overflow:hidden;border-radius:14px;
+  border:1px solid var(--line);background:linear-gradient(165deg, var(--panel-2), var(--ground-2));
+}
+.portrait .silhouette{position:absolute;inset:0;width:100%;height:100%;color:var(--chalk)}
+.portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.portrait::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg, transparent 58%, rgba(5,9,7,.5));
+}
+.portrait figcaption{
+  position:absolute;left:1.1rem;bottom:1.1rem;z-index:2;
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-style:italic;text-transform:uppercase;
+  letter-spacing:.06em;font-size:1.02rem;color:#eef3ec;
+  background:rgba(12,19,16,.6);border:1px solid rgba(238,243,236,.25);
+  padding:.35rem .85rem .45rem;border-radius:4px;backdrop-filter:blur(4px);
+}
 .quote{
-  border-left:3px solid var(--gold);padding:.4rem 0 .4rem 1.4rem;margin:2rem 0;
+  border-left:3px solid var(--gold);padding:.4rem 0 .4rem 1.4rem;margin:2rem 0 0;
 }
 .quote p{
   font-family:'Barlow Condensed',sans-serif;font-weight:800;font-style:italic;text-transform:uppercase;
   font-size:clamp(1.4rem,2.6vw,1.8rem);line-height:1.15;margin:0;letter-spacing:.01em;
 }
-.facts{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:0}
-.facts li{
-  display:flex;gap:1.1rem;align-items:baseline;padding:1.05rem 0;border-bottom:1px solid var(--line);
+.factband{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem 1.25rem;
+  margin-top:clamp(2.75rem,6vw,4.25rem);
 }
-.facts li:first-child{border-top:1px solid var(--line)}
-.facts b{
-  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-style:italic;text-transform:uppercase;
-  font-size:1.05rem;letter-spacing:.04em;color:var(--rasen);flex:none;width:9.5rem;
+.factband>div{border-top:2px solid var(--rasen);padding-top:.9rem}
+.factband b{
+  display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-style:italic;
+  text-transform:uppercase;font-size:1.1rem;letter-spacing:.04em;color:var(--rasen);margin-bottom:.3rem;
 }
-.facts span{color:var(--muted);font-size:.95rem}
+.factband span{color:var(--muted);font-size:.92rem;line-height:1.55}
 
 /* ============ FAQ ============ */
 .faq-list{max-width:46rem;display:flex;flex-direction:column;gap:.75rem}
@@ -460,7 +569,8 @@ footer{border-top:1px solid var(--line);padding:3rem 0 2.5rem;background:var(--g
   .steps{grid-template-columns:1fr 1fr;gap:2rem 1.25rem}
   .steps::before{display:none}
   .featurerow{grid-template-columns:1fr}
-  .split{grid-template-columns:1fr}
+  .split,.ueber .split{grid-template-columns:1fr}
+  .portrait-wrap{margin-inline:auto}
   .campgrid{grid-template-columns:1fr}
   form{grid-template-columns:1fr}
 }
@@ -498,6 +608,7 @@ footer{border-top:1px solid var(--line);padding:3rem 0 2.5rem;background:var(--g
       <a href="#methode">Methode</a>
       <a href="#athletik">Athletik</a>
       <a href="#camps">Camps</a>
+      <a href="#einblicke">Einblicke</a>
       <a href="#ueber">Über KM1</a>
       <a href="#faq">FAQ</a>
       <a class="btn btn-primary btn-sm" href="#kontakt"><span>Probetraining</span></a>
@@ -522,8 +633,12 @@ footer{border-top:1px solid var(--line);padding:3rem 0 2.5rem;background:var(--g
         <path d="M1200 112 L1085 122 L1082 208 L1200 218" opacity=".3"/>
         <!-- Eckfahnen-Viertelkreis links -->
         <path d="M0 480 Q 90 500 96 640" opacity=".35"/>
+        <!-- Ballflugbahn: der Key Moment -->
+        <path class="traj" d="M110 585 C 400 430, 680 385, 990 470"/>
+        <circle class="ball" cx="990" cy="470" r="7"/>
       </svg>
     </div>
+    <div class="grain" aria-hidden="true"></div>
     <div class="wrap">
       <p class="eyebrow">Fußballschule · Individual- &amp; Fördertraining</p>
       <h1 class="display">Spiele werden in <span class="mark">Key Moments</span> entschieden.</h1>
@@ -543,6 +658,16 @@ footer{border-top:1px solid var(--line);padding:3rem 0 2.5rem;background:var(--g
     <div class="ticker-track">
       <span>Techniktraining</span><span>Fördertraining</span><span>Individualtraining</span><span>Athletik</span><span>Footbonaut</span><span>Videoanalyse</span><span>Feriencamps</span>
       <span>Techniktraining</span><span>Fördertraining</span><span>Individualtraining</span><span>Athletik</span><span>Footbonaut</span><span>Videoanalyse</span><span>Feriencamps</span>
+    </div>
+  </div>
+  <div class="partners">
+    <div class="wrap">
+      <span class="plabel">Offizielle Partner</span>
+      <div class="plogos">
+        <!-- TODO: Text-Wortmarken durch die offiziellen Logo-Dateien ersetzen und weitere Partner ergänzen -->
+        <span class="plogo">Puma</span>
+        <span class="plogo">3H</span>
+      </div>
     </div>
   </div>
 </section>
@@ -742,9 +867,63 @@ footer{border-top:1px solid var(--line);padding:3rem 0 2.5rem;background:var(--g
   </div>
 </section>
 
+<!-- ================= EINBLICKE ================= -->
+<section id="einblicke">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <p class="eyebrow">Einblicke</p>
+      <h2 class="display">Training, das man <span class="mark">sehen</span> kann.</h2>
+      <p class="lede">Keine Versprechen, sondern Szenen vom Platz: Footbonaut-Einheiten mit Profis, Techniktraining und Challenges – regelmäßig neu auf unseren Kanälen.</p>
+    </div>
+    <div class="clips">
+      <a class="clip reveal" href="https://www.youtube.com/watch?v=5QJRjD2QpD0" target="_blank" rel="noopener">
+        <svg class="lines" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+          <circle cx="320" cy="250" r="110" opacity=".5"/><path d="M0 245 L400 230" opacity=".4"/>
+        </svg>
+        <span class="play" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.8v12.4L14 8z"/></svg></span>
+        <span class="meta"><b>Das ist KM1 Training</b><small>Vorstellung · YouTube</small></span>
+      </a>
+      <a class="clip reveal" href="https://www.youtube.com/watch?v=k-hDRjCGF18" target="_blank" rel="noopener">
+        <svg class="lines" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+          <path d="M30 250 L30 70 L200 70 L200 250" opacity=".5"/><path d="M70 250 L70 130 L160 130 L160 250" opacity=".4"/>
+        </svg>
+        <span class="play" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.8v12.4L14 8z"/></svg></span>
+        <span class="meta"><b>Footbonaut mit Profi Cauly</b><small>Ludogorets Razgrad · YouTube</small></span>
+      </a>
+      <a class="clip reveal" href="https://www.youtube.com/watch?v=UA77Y7BAQ1A" target="_blank" rel="noopener">
+        <svg class="lines" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+          <circle cx="60" cy="30" r="90" opacity=".5"/><path d="M0 240 L400 250" opacity=".4"/>
+        </svg>
+        <span class="play" aria-hidden="true"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1.8v12.4L14 8z"/></svg></span>
+        <span class="meta"><b>Footbonaut mit Francesco Bueno</b><small>Bayer 04 Leverkusen · YouTube</small></span>
+      </a>
+    </div>
+    <p class="cliprow reveal">
+      <span>Täglich neue Trainingsszenen:</span>
+      <a href="https://www.instagram.com/km1_training/" target="_blank" rel="noopener">Instagram →</a>
+      <a href="https://www.tiktok.com/@km1training" target="_blank" rel="noopener">TikTok →</a>
+      <a href="https://www.youtube.com/@km1-training" target="_blank" rel="noopener">YouTube →</a>
+    </p>
+  </div>
+</section>
+
 <!-- ================= ÜBER ================= -->
-<section id="ueber" class="ueber">
+<section id="ueber" class="ueber chalksep">
   <div class="wrap split">
+    <div class="portrait-wrap reveal">
+      <!-- TODO: Foto des Trainers als Datei "trainer.jpg" neben diese index.html legen –
+           es erscheint dann automatisch im Rahmen. Alternativ den src-Pfad anpassen. -->
+      <figure class="portrait">
+        <svg class="silhouette" viewBox="0 0 400 500" fill="none" stroke="currentColor" aria-hidden="true">
+          <circle cx="200" cy="250" r="150" stroke-width="1.5" opacity=".55"/>
+          <path d="M0 250 H400" stroke-width="1.5" opacity=".45"/>
+          <circle cx="200" cy="250" r="5" fill="currentColor" stroke="none" opacity=".6"/>
+          <text x="200" y="272" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-weight="800" font-style="italic" font-size="64" fill="currentColor" stroke="none" opacity=".85">KM1</text>
+        </svg>
+        <img src="trainer.jpg" alt="Der Inhaber und Headcoach von KM1 Training" onerror="this.remove()">
+        <figcaption>Inhaber &amp; Headcoach</figcaption>
+      </figure>
+    </div>
     <div class="reveal">
       <p class="eyebrow">Über KM1</p>
       <h2 class="display">Der Coach hinter den <span class="mark">Key Moments.</span></h2>
@@ -754,19 +933,19 @@ footer{border-top:1px solid var(--line);padding:3rem 0 2.5rem;background:var(--g
       <p style="color:var(--muted);max-width:36rem">
         Hinter KM1 steht ein Coach, der den kompletten Weg kennt – vom ersten Techniktraining im Kinderfußball über die Förderung von NLZ-Talenten bis zur individuellen Arbeit mit nationalen und internationalen Profis. Jede Einheit wird geplant, jede Entwicklung dokumentiert, jeder Spieler ernst genommen.
       </p>
-      <!-- TODO: Hier Name + Foto des Inhabers ergänzen -->
+      <!-- TODO: Hier den Namen des Inhabers ergänzen -->
       <div class="quote">
         <p>„Talent ist der Anfang. Entwicklung ist Arbeit an den Details – jede Woche, jede Einheit, jeder Kontakt.“</p>
       </div>
     </div>
-    <div class="reveal">
-      <ul class="facts">
-        <li><b>Schwerpunkt</b><span>Technik, Wahrnehmung und Entscheidungsverhalten – trainiert in spielnahen Situationen.</span></li>
-        <li><b>Erfahrung</b><span>Zusammenarbeit mit Spielern aus Nachwuchsleistungszentren und dem Profibereich.</span></li>
-        <li><b>Formate</b><span>Einzeltraining, Kleingruppen, Teamtraining, Athletik, Camps und Events.</span></li>
-        <li><b>Anspruch</b><span>Professionelle Standards für jede Altersstufe – vom Bambini bis zum Profi.</span></li>
-        <li><b>Einblicke</b><span>Trainingsszenen und Ergebnisse regelmäßig auf Instagram, TikTok und YouTube.</span></li>
-      </ul>
+  </div>
+  <div class="wrap">
+    <div class="factband reveal">
+      <div><b>Schwerpunkt</b><span>Technik, Wahrnehmung und Entscheidungsverhalten – trainiert in spielnahen Situationen.</span></div>
+      <div><b>Erfahrung</b><span>Zusammenarbeit mit Spielern aus Nachwuchsleistungszentren und dem Profibereich.</span></div>
+      <div><b>Formate</b><span>Einzeltraining, Kleingruppen, Teamtraining, Athletik, Camps und Events.</span></div>
+      <div><b>Anspruch</b><span>Professionelle Standards für jede Altersstufe – vom Bambini bis zum Profi.</span></div>
+      <div><b>Partner</b><span>An der Seite starker Marken wie Puma und 3H – Qualität bis in die Ausrüstung.</span></div>
     </div>
   </div>
 </section>
@@ -893,6 +1072,7 @@ footer{border-top:1px solid var(--line);padding:3rem 0 2.5rem;background:var(--g
         </div>
         <div>
           <b>KM1</b>
+          <a href="#einblicke">Einblicke</a>
           <a href="#ueber">Über KM1</a>
           <a href="#faq">FAQ</a>
           <a href="#kontakt">Kontakt</a>
