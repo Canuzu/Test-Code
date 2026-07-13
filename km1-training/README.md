@@ -9,18 +9,23 @@ WordPress als Theme-Basis) verwendet werden.
 
 Alle Stellen sind im Code mit `TODO:` markiert:
 
-1. **Trainer-Foto** – einfach als Datei `trainer.jpg` neben die `index.html`
+1. **Marken-Logo** – das offizielle KM1-Logo als Datei `logo.png` neben die
+   `index.html` legen. Es erscheint dann automatisch im Seitenkopf, im Footer
+   und als Browser-Icon (getestet). Bis dahin zeigt die Seite eine neutrale
+   KM1-Wortmarke – das eingetragene Markenzeichen wurde bewusst nicht
+   nachgebaut.
+2. **Trainer-Foto** – einfach als Datei `trainer.jpg` neben die `index.html`
    legen, es erscheint automatisch im Porträt-Rahmen des Über-Abschnitts
    (bis dahin zeigt der Rahmen ein KM1-Monogramm).
-2. **Partner-Logos** – die Partner-Leiste unter dem Hero zeigt aktuell
+3. **Partner-Logos** – die Partner-Leiste unter dem Hero zeigt aktuell
    Text-Wortmarken (Puma, 3H). Offizielle Logo-Dateien einsetzen und
    weitere Partner ergänzen.
-3. **E-Mail-Adresse** – im Kontaktbereich und im Skript unten
+4. **E-Mail-Adresse** – im Kontaktbereich und im Skript unten
    (`EMPFAENGER = "info@km1-training.de"`) die tatsächliche Adresse eintragen.
-4. **Impressum & Datenschutz** – die beiden Footer-Links auf die echten
+5. **Impressum & Datenschutz** – die beiden Footer-Links auf die echten
    Pflichtseiten zeigen lassen (aktuell Platzhalter `#`).
-5. **Name des Inhabers** – im Über-KM1-Abschnitt ergänzen.
-6. **Standort/Trainingsort** – bewusst noch nicht genannt; bei Bedarf im
+6. **Name des Inhabers** – im Über-KM1-Abschnitt ergänzen.
+7. **Standort/Trainingsort** – bewusst noch nicht genannt; bei Bedarf im
    Über- oder FAQ-Abschnitt ergänzen.
 
 ## Was drinsteckt
