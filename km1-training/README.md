@@ -29,11 +29,15 @@ Alle Stellen sind im Code mit `TODO:` markiert:
 
 ## Was drinsteckt
 
-- **Design:** Flutlicht-Look (dunkel) mit Rasengrün und Gold für die
-  „Key Moments“, Kreidelinien-Grafiken als rote Faden. Automatischer heller
-  Modus („Auswärtstrikot“) je nach Systemeinstellung.
-- **Typografie:** Barlow / Barlow Condensed (eingebettet, DSGVO-freundlich –
-  kein Google-Fonts-Request).
+- **Design:** Monochrom-Editorial nach der Marke – das KM1-Logo ist
+  schwarz-weiß, die Seite auch: helles Papier, große schwarze Condensed-
+  Typografie, schwarze Kontrastflächen (Hero-Panel, Athletik, Video-Stills,
+  Footer) und Grün ausschließlich als Akzent (Marker-Unterstreichung,
+  Buttons, Details). Automatischer Dunkelmodus mit sauber invertierten
+  Kontrastflächen. Eingesetzte Fotos werden per CSS automatisch
+  schwarz-weiß dargestellt – so bleibt jedes Bild markenkonform.
+- **Typografie:** Barlow / Barlow Condensed + Signaturschrift
+  (eingebettet, DSGVO-freundlich – kein Google-Fonts-Request).
 - **Inhalte:** Programme (U6–U13, U8–U15, U17–U19, Profi), Partner-Leiste
   (Puma, 3H), 4-Schritte-Methode, Athletik, Camps & „Schlag den Coach“,
   Einblicke-Sektion mit echten YouTube-Videos, „Meine Vision“ mit den
