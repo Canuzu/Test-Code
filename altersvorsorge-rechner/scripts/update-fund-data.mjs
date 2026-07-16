@@ -102,7 +102,7 @@ async function main() {
     if (row) row.v = v;
   };
 
-  if (sane(src.paSince, -50, 60)) next.paSince = src.paSince;
+  if (sane(src.paSince, -20, 20)) next.paSince = src.paSince;
   if (sane(src.totalSince, -100, 2000)) { next.totalSince = src.totalSince; setPerf("seit Auflage", src.totalSince); }
   if (sane(src.runningCost, 0, 3)) next.runningCost = src.runningCost;
   if (sane(src.y1, -80, 200)) setPerf("1 Jahr", src.y1);
