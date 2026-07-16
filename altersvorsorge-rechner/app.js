@@ -59,12 +59,13 @@ const RENDITE_PRESETS = [
 const POLICY = {
   tarif: "CA6I",
   bedingungen: "BLV 86 (01.07.2026)",
-  // Auf die Debeka-Musterrechnung kalibrierte Kostensätze (50 €/Monat, 34 Jahre,
-  // 5 % Fondsentwicklung → Kapitalabfindung 43.758,23 €, Rente 127,31 €).
-  // Exakte Werte stehen im persönlichen Angebot; alle Felder sind anpassbar.
-  abschlussPct: 2.5,    // Abschluss-/Vertriebskosten in % der Beitragssumme (§ 17), 5-J.-Zillmer
-  verwaltungPct: 6.48,  // Verwaltungskosten in % je Beitrag (§ 17)
-  rentenfaktor: 29.09,  // € mtl. je 10.000 € Fondsguthaben (§ 34/§ 47)
+  // Kostensätze kalibriert auf zwei Debeka-Musterrechnungen (50 €/Monat, 5 %):
+  //   34 Jahre → Kapitalabfindung 43.758,23 €  |  35 Jahre → 46.316,12 €.
+  // Beide werden damit auf < 1 € genau getroffen. Exakte Werte stehen im
+  // persönlichen Angebot; alle Felder sind frei anpassbar.
+  abschlussPct: 2.84,   // Abschluss-/Vertriebskosten in % der Beitragssumme (§ 17), 5-J.-Zillmer
+  verwaltungPct: 5.88,  // Verwaltungskosten in % je Beitrag (§ 17)
+  rentenfaktor: 29.09,  // € mtl. je 10.000 € Fondsguthaben (§ 34/§ 47) – variiert je Vertrag
 };
 
 const SOLI = 1.055;
