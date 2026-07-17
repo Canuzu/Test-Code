@@ -20,19 +20,19 @@ const FUND = {
   name: "Debeka Global Shares",
   sub: "Globaler Aktien-Dachfonds · ESG · Debeka Fondspolice",
   paSince: 10.00,       // % p.a. seit Auflegung 22.04.2016
-  totalSince: 165.12,   // % Gesamtentwicklung seit Auflegung
+  totalSince: 165.16,   // % Gesamtentwicklung seit Auflegung
   runningCost: 0.30,    // % p.a. laufende Fondskosten (0,025 %/Monat)
   since: 2016,
   sinceDate: "22.04.2016",
-  updatedAt: "16.07.2026",
+  updatedAt: "17.07.2026",
   // Öffentliche Wertentwicklung laut Debeka (Anteilswert, netto).
   // Diese Werte sind der Fallback; zur Laufzeit werden sie – wenn erreichbar –
   // aus fund-data.json überschrieben (siehe loadFundData()).
   perf: [
-    { label: "1 Jahr", v: 24.68 },
-    { label: "3 Jahre", v: 57.28 },
-    { label: "5 Jahre", v: 59.30 },
-    { label: "seit Auflage", v: 165.12 },
+    { label: "1 Jahr", v: 24.34 },
+    { label: "3 Jahre", v: 57.30 },
+    { label: "5 Jahre", v: 60.74 },
+    { label: "seit Auflage", v: 165.16 },
   ],
 };
 
