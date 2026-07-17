@@ -131,8 +131,13 @@ function compute(s) {
   const start = parseDate(s.vertragsbeginn);
   const MS_YEAR = 365.25 * 86400000;
   const ageAtStart = geb && start ? (start - geb) / MS_YEAR : 0;
+  // Debeka rechnet die Aufschubzeit in ganzen Jahren: Rentenalter minus dem
+  // bei Vertragsbeginn zurueckgelegten (abgerundeten) Alter. Beispiel:
+  // Rentenalter 67, Eintrittsalter 32 -> 35 Jahre Aufschubzeit.
+  const eintrittsalter = geb && start ? Math.floor(ageAtStart) : 0;
+  const aufschubYears = Math.max(0, s.rentenalter - eintrittsalter);
+  const totalMonths = start ? aufschubYears * 12 : 0;
   const rentenDate = geb ? addYears(geb, s.rentenalter) : null;
-  const totalMonths = start && rentenDate ? Math.max(0, monthsBetween(start, rentenDate)) : 0;
   const years = totalMonths / 12; // Aufschubzeit in Jahren
 
   const fundNet = (s.rendite - s.ter) / 100;      // Fondsentwicklung minus Fondskosten
