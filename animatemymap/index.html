@@ -41,6 +41,7 @@
         <button class="tab active" data-tab="camera">🎬 Kamera</button>
         <button class="tab" data-tab="countries">🌍 Länder</button>
         <button class="tab" data-tab="markers">📍 Marker</button>
+        <button class="tab" data-tab="time">🕰️ Zeit</button>
         <button class="tab" data-tab="audio">🎵 Ton</button>
       </nav>
 
@@ -69,6 +70,21 @@
           <button id="marker-mode" class="btn btn-block">📍 Marker-Modus: <b>aus</b></button>
           <label class="check"><input id="route-toggle" type="checkbox" /> Route zwischen Markern zeichnen</label>
           <div id="marker-list" class="list"></div>
+        </section>
+
+        <!-- TIME MACHINE -->
+        <section class="panel hidden" data-panel="time">
+          <p class="hint">Dreh die Zeit zurück: die Ländergrenzen verändern sich Epoche für Epoche. Ziehe den Regler oder spiele die Geschichte automatisch ab.</p>
+          <label class="check"><input id="history-on" type="checkbox" /> Historische Grenzen anzeigen</label>
+          <div class="year-display"><span id="year-label">2010 n. Chr.</span></div>
+          <input id="year-slider" type="range" min="0" max="50" step="1" value="50" class="year-range" />
+          <div class="year-controls">
+            <button id="year-prev" class="btn">◀ Früher</button>
+            <button id="time-play" class="btn btn-primary">▶ Durch die Zeit</button>
+            <button id="year-next" class="btn">Später ▶</button>
+          </div>
+          <div id="history-status" class="history-status">Grenzen aus, aktivieren zum Anzeigen.</div>
+          <p class="hint src-note">Datenquelle: <b>historical-basemaps</b> (offen, wissenschaftlich gepflegt). Grenzen sind näherungsweise Rekonstruktionen und springen zum nächstgelegenen verfügbaren Jahr.</p>
         </section>
 
         <!-- AUDIO -->
@@ -104,7 +120,8 @@
       <!-- top toolbar -->
       <div class="toolbar">
         <div class="seg" id="style-seg">
-          <button data-style="day" class="active">Tag</button>
+          <button data-style="satellite" class="active">🛰 Satellit</button>
+          <button data-style="day">Tag</button>
           <button data-style="pastel">Pastell</button>
           <button data-style="vibrant">Vibrant</button>
           <button data-style="night">Nacht</button>

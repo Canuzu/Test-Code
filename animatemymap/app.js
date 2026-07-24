@@ -9,41 +9,74 @@
 
 /* ---------- Karten-Styles ---------- */
 const COUNTRY_TILES = 'https://demotiles.maplibre.org/tiles/tiles.json';
+const GLYPHS = 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf';
 const NAME_EXPR = ['coalesce',
   ['get', 'ADMIN'], ['get', 'NAME'], ['get', 'name'],
   ['get', 'name_en'], ['get', 'NAME_EN'], ['get', 'sovereignt'], ''];
 
+// Kostenlose Satelliten-Kacheln (Esri World Imagery) für den Google-Earth-Look.
+const SAT_TILES = ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'];
+const SAT_ATTR = 'Esri, Maxar, Earthstar Geographics';
+
 const PALETTES = {
-  day:     { ocean: '#cfe0f4', land: '#f6f4ee', border: '#c4cdda', dark: false },
-  pastel:  { ocean: '#e9f1ff', land: '#ffffff', border: '#dbe5f5', dark: false },
-  vibrant: { ocean: '#7cc0ff', land: '#fef3e2', border: '#f0c79c', dark: false },
-  night:   { ocean: '#0d1526', land: '#1c2740', border: '#33456b', dark: true },
+  satellite: { space: '#04070f', border: '#ffffff', dark: true, sat: true },
+  day:       { ocean: '#cfe0f4', land: '#f6f4ee', border: '#c4cdda', dark: false },
+  pastel:    { ocean: '#e9f1ff', land: '#ffffff', border: '#dbe5f5', dark: false },
+  vibrant:   { ocean: '#7cc0ff', land: '#fef3e2', border: '#f0c79c', dark: false },
+  night:     { ocean: '#0d1526', land: '#1c2740', border: '#33456b', dark: true },
 };
 
 function buildStyle(variant) {
-  const p = PALETTES[variant] || PALETTES.day;
-  return {
-    version: 8,
-    projection: { type: 'globe' },
-    sources: { countries: { type: 'vector', url: COUNTRY_TILES } },
-    layers: [
-      { id: 'bg', type: 'background', paint: { 'background-color': p.ocean } },
-      { id: 'country-fill', type: 'fill', source: 'countries', 'source-layer': 'countries',
-        paint: { 'fill-color': p.land, 'fill-opacity': 1 } },
-      { id: 'country-highlight', type: 'fill', source: 'countries', 'source-layer': 'countries',
-        filter: ['==', ['literal', '__none__'], 'x'],
-        paint: { 'fill-color': '#ff5d73', 'fill-opacity': 0.82 } },
-      { id: 'country-line', type: 'line', source: 'countries', 'source-layer': 'countries',
-        paint: { 'line-color': p.border, 'line-width': 0.9, 'line-opacity': 0.85 } },
-    ],
+  const p = PALETTES[variant] || PALETTES.satellite;
+  const sources = {
+    countries: { type: 'vector', url: COUNTRY_TILES },
+    history: { type: 'geojson', data: { type: 'FeatureCollection', features: [] } },
   };
+  if (p.sat) sources.sat = { type: 'raster', tiles: SAT_TILES, tileSize: 256, attribution: SAT_ATTR, maxzoom: 19 };
+
+  const layers = [];
+  if (p.sat) {
+    layers.push({ id: 'bg', type: 'background', paint: { 'background-color': p.space } });
+    layers.push({ id: 'sat', type: 'raster', source: 'sat', paint: { 'raster-fade-duration': 300 } });
+    // unsichtbar, aber klickbar für die Länder-Auswahl
+    layers.push({ id: 'country-fill', type: 'fill', source: 'countries', 'source-layer': 'countries', paint: { 'fill-color': '#000', 'fill-opacity': 0.001 } });
+  } else {
+    layers.push({ id: 'bg', type: 'background', paint: { 'background-color': p.ocean } });
+    layers.push({ id: 'country-fill', type: 'fill', source: 'countries', 'source-layer': 'countries', paint: { 'fill-color': p.land, 'fill-opacity': 1 } });
+  }
+  layers.push({ id: 'country-highlight', type: 'fill', source: 'countries', 'source-layer': 'countries',
+    filter: ['==', ['literal', '__none__'], 'x'], paint: { 'fill-color': '#ff5d73', 'fill-opacity': p.sat ? 0.55 : 0.82 } });
+  layers.push({ id: 'country-line', type: 'line', source: 'countries', 'source-layer': 'countries',
+    paint: { 'line-color': p.border, 'line-width': p.sat ? 0.6 : 0.9, 'line-opacity': p.sat ? 0.5 : 0.85 } });
+
+  // Historische Grenzen (anfangs leer & versteckt)
+  layers.push({ id: 'history-fill', type: 'fill', source: 'history',
+    layout: { visibility: 'none' },
+    paint: { 'fill-color': ['coalesce', ['get', '__color'], '#ffcf5c'], 'fill-opacity': 0.34 } });
+  layers.push({ id: 'history-line', type: 'line', source: 'history',
+    layout: { visibility: 'none', 'line-join': 'round' },
+    paint: { 'line-color': p.dark ? '#ffffff' : '#3a2a12', 'line-width': 1.1, 'line-opacity': 0.85 } });
+  layers.push({ id: 'history-label', type: 'symbol', source: 'history',
+    layout: { visibility: 'none', 'text-field': ['coalesce', ['get', 'NAME'], ['get', 'name'], ''], 'text-size': 12, 'text-font': ['Open Sans Regular'], 'text-max-width': 7, 'symbol-placement': 'point' },
+    paint: { 'text-color': p.dark ? '#ffffff' : '#241a0c', 'text-halo-color': p.dark ? 'rgba(0,0,0,.7)' : 'rgba(255,255,255,.85)', 'text-halo-width': 1.4 } });
+
+  return { version: 8, projection: { type: 'globe' }, glyphs: GLYPHS, sources, layers };
 }
+
+/* ---------- Historische Jahres-Stände (historical-basemaps) ---------- */
+const HISTORY_BASE = 'https://raw.githubusercontent.com/aourednik/historical-basemaps/master/geojson/';
+const HISTORY_YEARS = [-123000, -10000, -8000, -5000, -4000, -3000, -2000, -1500, -1000, -700, -500, -400, -323, -300, -200, -100, -1,
+  100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1279, 1300, 1400, 1492, 1500, 1530, 1600, 1650, 1700, 1715, 1783, 1800, 1815, 1880, 1900, 1914, 1920, 1945, 1960, 1994, 2000, 2010];
+const yearToFile = (y) => (y < 0 ? `world_bc${-y}.geojson` : `world_${y}.geojson`);
+const yearLabel = (y) => (y < 0 ? `${-y} v. Chr.` : `${y} n. Chr.`);
+const historyCache = {};
 
 /* ---------- Zustand ---------- */
 const DEFAULT_STATE = {
   keyframes: [], countries: [], markers: [],
-  route: false, style: 'day', globe: true,
+  route: false, style: 'satellite', globe: true,
   revealSequential: false, audioOn: true,
+  history: { on: false, index: HISTORY_YEARS.indexOf(2010) },
 };
 let state = structuredClone(DEFAULT_STATE);
 let markerObjects = [];
@@ -70,6 +103,8 @@ const el = {
   menuBtn: $('#menu-btn'), sbClose: $('#sb-close'), sbBackdrop: $('#sb-backdrop'),
   audioPick: $('#audio-pick'), audioFile: $('#audio-file'), audioInfo: $('#audio-info'),
   audioName: $('#audio-name'), audioRemove: $('#audio-remove'), audioOn: $('#audio-on'), audioVol: $('#audio-vol'),
+  historyOn: $('#history-on'), yearSlider: $('#year-slider'), yearLabel: $('#year-label'),
+  yearPrev: $('#year-prev'), yearNext: $('#year-next'), timePlay: $('#time-play'), historyStatus: $('#history-status'),
 };
 
 /* ---------- Map init ---------- */
@@ -92,7 +127,7 @@ map.on('load', () => {
 map.on('move', updateReadout);
 
 function whenStyleReady(fn) { if (map.isStyleLoaded()) fn(); else map.once('idle', fn); }
-function reapplyDynamic() { whenStyleReady(() => { applyHighlights(); applyRoute(); }); }
+function reapplyDynamic() { whenStyleReady(() => { applyHighlights(); applyRoute(); reapplyHistory(); }); }
 
 /* ---------- Länder-Highlighting ---------- */
 function applyHighlights(limit) {
@@ -480,6 +515,96 @@ function getAudioTracks() {
 }
 
 /* ============================================================
+   ZEITREISE — historische Grenzen pro Jahr
+   ============================================================ */
+let historyLoading = false;
+
+function currentHistoryYear() {
+  const i = Math.max(0, Math.min(HISTORY_YEARS.length - 1, state.history.index));
+  return HISTORY_YEARS[i];
+}
+function setHistoryLayerVisibility(vis) {
+  ['history-fill', 'history-line', 'history-label'].forEach((id) => {
+    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis ? 'visible' : 'none');
+  });
+  // moderne Grenzen ausblenden, solange die Zeitreise aktiv ist
+  if (map.getLayer('country-line')) map.setLayoutProperty('country-line', 'visibility', vis ? 'none' : 'visible');
+}
+function stableColor(name) {
+  let h = 0; const s = String(name || '');
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
+  return `hsl(${h},70%,60%)`;
+}
+async function loadHistoryYear(year) {
+  if (historyCache[year]) return historyCache[year];
+  const res = await fetch(HISTORY_BASE + yearToFile(year));
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const gj = await res.json();
+  (gj.features || []).forEach((f) => {
+    f.properties = f.properties || {};
+    f.properties.__color = stableColor(f.properties.NAME || f.properties.name || '');
+  });
+  historyCache[year] = gj;
+  return gj;
+}
+function updateYearUI() {
+  const y = currentHistoryYear();
+  el.yearSlider.value = String(state.history.index);
+  el.yearLabel.textContent = yearLabel(y);
+}
+async function applyHistoryYear() {
+  const y = currentHistoryYear();
+  updateYearUI();
+  if (!state.history.on) return;
+  if (!map.getSource('history')) return;
+  historyLoading = true;
+  el.historyStatus.textContent = `Lade ${yearLabel(y)} …`;
+  try {
+    const gj = await loadHistoryYear(y);
+    if (map.getSource('history')) map.getSource('history').setData(gj);
+    el.historyStatus.textContent = `${yearLabel(y)} · ${(gj.features || []).length} Gebiete · Quelle: historical-basemaps`;
+  } catch (e) {
+    el.historyStatus.textContent = `Konnte ${yearLabel(y)} nicht laden (offline?)`;
+  }
+  historyLoading = false;
+}
+function reapplyHistory() {
+  if (!map.getSource('history')) return;
+  setHistoryLayerVisibility(state.history.on);
+  if (state.history.on) applyHistoryYear();
+}
+function setHistoryOn(on) {
+  state.history.on = on;
+  el.historyOn.checked = on;
+  whenStyleReady(() => { setHistoryLayerVisibility(on); if (on) applyHistoryYear(); });
+  persist();
+}
+function stepYear(delta) {
+  const ni = Math.max(0, Math.min(HISTORY_YEARS.length - 1, state.history.index + delta));
+  if (ni === state.history.index) return;
+  state.history.index = ni;
+  applyHistoryYear(); persist();
+}
+el.historyOn.addEventListener('change', () => setHistoryOn(el.historyOn.checked));
+el.yearSlider.addEventListener('input', () => { state.history.index = parseInt(el.yearSlider.value, 10) || 0; updateYearUI(); });
+el.yearSlider.addEventListener('change', () => { applyHistoryYear(); persist(); });
+el.yearPrev.addEventListener('click', () => stepYear(-1));
+el.yearNext.addEventListener('click', () => stepYear(1));
+
+let timePlaying = false;
+el.timePlay.addEventListener('click', async () => {
+  if (timePlaying) { timePlaying = false; el.timePlay.textContent = '▶ Durch die Zeit'; return; }
+  if (!state.history.on) setHistoryOn(true);
+  timePlaying = true; el.timePlay.textContent = '⏸ Stopp';
+  for (let i = state.history.index; i < HISTORY_YEARS.length && timePlaying; i++) {
+    state.history.index = i;
+    await applyHistoryYear();
+    await wait(1100);
+  }
+  timePlaying = false; el.timePlay.textContent = '▶ Durch die Zeit';
+});
+
+/* ============================================================
    VIDEO-EXPORT (WebM)
    ============================================================ */
 function pickMime() {
@@ -670,7 +795,7 @@ document.addEventListener('click', (e) => {
 /* ============================================================
    SPEICHERN / EXPORT / IMPORT / DEMO
    ============================================================ */
-const STORAGE_KEY = 'mapcinema.project.v2';
+const STORAGE_KEY = 'mapcinema.project.v3';
 function persist() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {} }
 function loadFromStorage() { try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) applyState(JSON.parse(raw)); } catch (e) {} }
 
@@ -679,10 +804,13 @@ function applyState(s) {
   state = Object.assign(structuredClone(DEFAULT_STATE), s);
   if (!PALETTES[state.style]) state.style = 'day';
   // UI sync
+  if (!state.history || typeof state.history.index !== 'number') state.history = { on: false, index: HISTORY_YEARS.indexOf(2010) };
   el.routeToggle.checked = state.route;
   el.globeToggle.checked = state.globe;
   el.revealToggle.checked = state.revealSequential;
   el.audioOn.checked = state.audioOn;
+  el.historyOn.checked = state.history.on;
+  updateYearUI();
   $('#style-seg .active')?.classList.remove('active');
   $(`#style-seg [data-style="${state.style}"]`)?.classList.add('active');
   if (PALETTES[state.style] && state.style !== prevStyle) { map.setStyle(buildStyle(state.style)); }
@@ -750,4 +878,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 /* Erststart */
+el.yearSlider.max = String(HISTORY_YEARS.length - 1);
+el.yearSlider.min = '0';
+updateYearUI();
 renderKeyframes(); renderCountries(); renderMarkers();
