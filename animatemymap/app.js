@@ -1,46 +1,40 @@
 /* ============================================================
-   MapCinema — Cinematic Map Studio
-   Reine Client-App: MapLibre GL + freie Vektordaten (keine API-Keys).
+   MapCinema — Karten-Animationsstudio
+   Client-App: MapLibre GL + freie Vektordaten (keine API-Keys).
+   Features: Keyframe-Touren, Titel, Länder-Reveal, Timeline,
+   Musik & Video-Export (WebM).
    ============================================================ */
 
 'use strict';
 
-/* ---------- Karten-Styles (dunkle Varianten) ---------- */
+/* ---------- Karten-Styles ---------- */
 const COUNTRY_TILES = 'https://demotiles.maplibre.org/tiles/tiles.json';
 const NAME_EXPR = ['coalesce',
   ['get', 'ADMIN'], ['get', 'NAME'], ['get', 'name'],
   ['get', 'name_en'], ['get', 'NAME_EN'], ['get', 'sovereignt'], ''];
 
 const PALETTES = {
-  night: { bg: '#070b16', land: '#14213c', border: '#2c4470' },
-  mono:  { bg: '#0b0e13', land: '#1b222d', border: '#333d4d' },
-  neon:  { bg: '#06021a', land: '#170a30', border: '#7c3aed' },
+  day:     { ocean: '#cfe0f4', land: '#f6f4ee', border: '#c4cdda', dark: false },
+  pastel:  { ocean: '#e9f1ff', land: '#ffffff', border: '#dbe5f5', dark: false },
+  vibrant: { ocean: '#7cc0ff', land: '#fef3e2', border: '#f0c79c', dark: false },
+  night:   { ocean: '#0d1526', land: '#1c2740', border: '#33456b', dark: true },
 };
 
 function buildStyle(variant) {
-  const p = PALETTES[variant] || PALETTES.night;
+  const p = PALETTES[variant] || PALETTES.day;
   return {
     version: 8,
     projection: { type: 'globe' },
-    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
-    sources: {
-      countries: { type: 'vector', url: COUNTRY_TILES },
-    },
+    sources: { countries: { type: 'vector', url: COUNTRY_TILES } },
     layers: [
-      { id: 'bg', type: 'background', paint: { 'background-color': p.bg } },
-      {
-        id: 'country-fill', type: 'fill', source: 'countries', 'source-layer': 'countries',
-        paint: { 'fill-color': p.land, 'fill-opacity': 0.92 },
-      },
-      {
-        id: 'country-highlight', type: 'fill', source: 'countries', 'source-layer': 'countries',
+      { id: 'bg', type: 'background', paint: { 'background-color': p.ocean } },
+      { id: 'country-fill', type: 'fill', source: 'countries', 'source-layer': 'countries',
+        paint: { 'fill-color': p.land, 'fill-opacity': 1 } },
+      { id: 'country-highlight', type: 'fill', source: 'countries', 'source-layer': 'countries',
         filter: ['==', ['literal', '__none__'], 'x'],
-        paint: { 'fill-color': '#f5c451', 'fill-opacity': 0.85 },
-      },
-      {
-        id: 'country-line', type: 'line', source: 'countries', 'source-layer': 'countries',
-        paint: { 'line-color': p.border, 'line-width': 0.8, 'line-opacity': 0.7 },
-      },
+        paint: { 'fill-color': '#ff5d73', 'fill-opacity': 0.82 } },
+      { id: 'country-line', type: 'line', source: 'countries', 'source-layer': 'countries',
+        paint: { 'line-color': p.border, 'line-width': 0.9, 'line-opacity': 0.85 } },
     ],
   };
 }
@@ -48,11 +42,13 @@ function buildStyle(variant) {
 /* ---------- Zustand ---------- */
 const DEFAULT_STATE = {
   keyframes: [], countries: [], markers: [],
-  route: false, style: 'night', globe: true,
+  route: false, style: 'day', globe: true,
+  revealSequential: false, audioOn: true,
 };
 let state = structuredClone(DEFAULT_STATE);
 let markerObjects = [];
 let playing = false;
+let recording = false;
 let markerMode = false;
 let activeTab = 'camera';
 let uid = 1;
@@ -61,14 +57,19 @@ const nextId = () => 'id' + (uid++) + Date.now().toString(36);
 /* ---------- DOM ---------- */
 const $ = (s) => document.querySelector(s);
 const el = {
-  map: $('#map'),
+  app: $('#app'), map: $('#map'), stage: $('#stage'),
   search: $('#search'), searchResults: $('#search-results'),
   keyframeList: $('#keyframe-list'), countryList: $('#country-list'), markerList: $('#marker-list'),
-  addKeyframe: $('#add-keyframe'), countryColor: $('#country-color'),
+  addKeyframe: $('#add-keyframe'), countryColor: $('#country-color'), revealToggle: $('#reveal-toggle'),
   markerMode: $('#marker-mode'), routeToggle: $('#route-toggle'),
-  play: $('#btn-play'), stop: $('#btn-stop'), readout: $('#view-readout'),
+  play: $('#btn-play'), stop: $('#btn-stop'), record: $('#btn-record'), readout: $('#view-readout'),
   frameGuide: $('#frame-guide'), toast: $('#toast'), globeToggle: $('#globe-toggle'),
   fileImport: $('#file-import'),
+  timeline: $('#timeline'), track: $('#timeline-track'), playhead: $('#playhead'),
+  titleOverlay: $('#title-overlay'), recOverlay: $('#rec-overlay'), recSub: $('#rec-sub'),
+  menuBtn: $('#menu-btn'), sbClose: $('#sb-close'), sbBackdrop: $('#sb-backdrop'),
+  audioPick: $('#audio-pick'), audioFile: $('#audio-file'), audioInfo: $('#audio-info'),
+  audioName: $('#audio-name'), audioRemove: $('#audio-remove'), audioOn: $('#audio-on'), audioVol: $('#audio-vol'),
 };
 
 /* ---------- Map init ---------- */
@@ -78,6 +79,7 @@ const map = new maplibregl.Map({
   center: [10, 30], zoom: 1.6, pitch: 0, bearing: 0,
   attributionControl: { compact: true },
   maxPitch: 75,
+  preserveDrawingBuffer: true, // wichtig für Video-Aufnahme
 });
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
 
@@ -89,40 +91,28 @@ map.on('load', () => {
 });
 map.on('move', updateReadout);
 
-/* Führt fn aus, sobald der Style vollständig geladen ist (sonst sofort). */
-function whenStyleReady(fn) {
-  if (map.isStyleLoaded()) fn();
-  else map.once('idle', fn);
-}
-
-/* Nach jedem Style-Wechsel dynamische Ebenen wieder anwenden */
-function reapplyDynamic() {
-  whenStyleReady(() => { applyHighlights(); applyRoute(); });
-}
+function whenStyleReady(fn) { if (map.isStyleLoaded()) fn(); else map.once('idle', fn); }
+function reapplyDynamic() { whenStyleReady(() => { applyHighlights(); applyRoute(); }); }
 
 /* ---------- Länder-Highlighting ---------- */
-function applyHighlights() {
+function applyHighlights(limit) {
   if (!map.getLayer('country-highlight')) return;
-  const names = state.countries.map((c) => c.name);
+  const list = (typeof limit === 'number') ? state.countries.slice(0, limit) : state.countries;
+  const names = list.map((c) => c.name);
   if (names.length === 0) {
     map.setFilter('country-highlight', ['==', ['literal', '__none__'], 'x']);
     return;
   }
   map.setFilter('country-highlight', ['in', NAME_EXPR, ['literal', names]]);
   const match = ['match', NAME_EXPR];
-  state.countries.forEach((c) => match.push(c.name, c.color));
-  match.push('#f5c451');
+  list.forEach((c) => match.push(c.name, c.color));
+  match.push('#ff5d73');
   map.setPaintProperty('country-highlight', 'fill-color', match);
 }
 
-/* ---------- Route zwischen Markern ---------- */
+/* ---------- Route ---------- */
 function routeGeoJSON() {
-  return {
-    type: 'Feature', geometry: {
-      type: 'LineString',
-      coordinates: state.markers.map((m) => [m.lng, m.lat]),
-    },
-  };
+  return { type: 'Feature', geometry: { type: 'LineString', coordinates: state.markers.map((m) => [m.lng, m.lat]) } };
 }
 function applyRoute() {
   if (!map.isStyleLoaded()) { map.once('idle', applyRoute); return; }
@@ -133,10 +123,7 @@ function applyRoute() {
     map.addLayer({
       id: 'route-line', type: 'line', source: 'route',
       layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-        'line-color': '#22d3ee', 'line-width': 2.4, 'line-opacity': 0.9,
-        'line-dasharray': [2, 1.5],
-      },
+      paint: { 'line-color': '#4f7cff', 'line-width': 2.6, 'line-opacity': 0.95, 'line-dasharray': [2, 1.4] },
     });
   } else {
     map.getSource('route').setData(data);
@@ -144,10 +131,7 @@ function applyRoute() {
   map.setLayoutProperty('route-line', 'visibility', show ? 'visible' : 'none');
 }
 
-/* ---------- Projektion ---------- */
-function applyProjection() {
-  try { map.setProjection({ type: state.globe ? 'globe' : 'mercator' }); } catch (e) {}
-}
+function applyProjection() { try { map.setProjection({ type: state.globe ? 'globe' : 'mercator' }); } catch (e) {} }
 
 /* ============================================================
    KAMERA / KEYFRAMES
@@ -157,48 +141,62 @@ el.addKeyframe.addEventListener('click', () => {
   state.keyframes.push({
     id: nextId(),
     center: [+c.lng.toFixed(4), +c.lat.toFixed(4)],
-    zoom: +map.getZoom().toFixed(2),
-    pitch: +map.getPitch().toFixed(1),
-    bearing: +map.getBearing().toFixed(1),
-    duration: 3000,
+    zoom: +map.getZoom().toFixed(2), pitch: +map.getPitch().toFixed(1),
+    bearing: +map.getBearing().toFixed(1), duration: 3000, title: '',
   });
-  renderKeyframes(); persist();
-  toast('Keyframe gespeichert');
+  renderKeyframes(); persist(); toast('Keyframe gespeichert');
 });
 
 function renderKeyframes() {
   const list = el.keyframeList;
   if (state.keyframes.length === 0) {
     list.innerHTML = '<div class="empty">Noch keine Keyframes. Richte die Ansicht ein und speichere sie.</div>';
-    return;
+    renderTimeline(); return;
   }
   list.innerHTML = '';
   state.keyframes.forEach((k, i) => {
     const card = document.createElement('div');
-    card.className = 'card';
+    card.className = 'card col';
     card.innerHTML = `
-      <div class="idx">${i + 1}</div>
-      <div class="grow">
-        <div class="title">${k.center[1].toFixed(2)}, ${k.center[0].toFixed(2)}</div>
-        <div class="meta">Zoom ${k.zoom} · Neig ${k.pitch}° · Dreh ${k.bearing}° · ${(k.duration / 1000).toFixed(1)}s</div>
+      <div class="card-row">
+        <div class="idx">${i + 1}</div>
+        <div class="grow">
+          <div class="title">${k.center[1].toFixed(2)}, ${k.center[0].toFixed(2)}</div>
+          <div class="meta">Zoom ${k.zoom} · Neig ${k.pitch}° · Dreh ${k.bearing}°</div>
+        </div>
+        <button class="iconbtn up" title="Anfliegen">▶</button>
+        <button class="iconbtn up" title="Nach oben">↑</button>
+        <button class="iconbtn down" title="Nach unten">↓</button>
+        <button class="iconbtn" title="Löschen">✕</button>
       </div>
-      <button class="iconbtn up" title="Anfliegen">▶</button>
-      <button class="iconbtn up" title="Nach oben">↑</button>
-      <button class="iconbtn down" title="Nach unten">↓</button>
-      <button class="iconbtn" title="Löschen">✕</button>`;
-    const [fly, up, down, del] = card.querySelectorAll('button');
+      <div class="card-row">
+        <input class="ti tf-title" value="${escapeAttr(k.title || '')}" placeholder="Titel (optional, wird im Video eingeblendet)" />
+      </div>
+      <div class="card-row">
+        <label class="mini">Dauer</label>
+        <input class="ti tf-dur" type="number" min="0.5" max="20" step="0.5" value="${(k.duration / 1000).toFixed(1)}" style="width:80px" />
+        <span class="mini">Sek.</span>
+      </div>`;
+    const [fly, up, down, del] = card.querySelectorAll('.card-row button');
+    const titleInput = card.querySelector('.tf-title');
+    const durInput = card.querySelector('.tf-dur');
     fly.onclick = () => map.flyTo({ center: k.center, zoom: k.zoom, pitch: k.pitch, bearing: k.bearing, duration: 1500, essential: true });
     up.onclick = () => { if (i > 0) { swap(state.keyframes, i, i - 1); renderKeyframes(); persist(); } };
     down.onclick = () => { if (i < state.keyframes.length - 1) { swap(state.keyframes, i, i + 1); renderKeyframes(); persist(); } };
     del.onclick = () => { state.keyframes.splice(i, 1); renderKeyframes(); persist(); };
+    titleInput.onchange = () => { k.title = titleInput.value; persist(); renderTimeline(); };
+    durInput.onchange = () => { k.duration = Math.max(500, (parseFloat(durInput.value) || 3) * 1000); persist(); renderTimeline(); };
     list.appendChild(card);
   });
+  renderTimeline();
 }
 const swap = (a, i, j) => { [a[i], a[j]] = [a[j], a[i]]; };
 
 /* ============================================================
    LÄNDER
    ============================================================ */
+el.revealToggle.addEventListener('change', () => { state.revealSequential = el.revealToggle.checked; persist(); });
+
 function toggleCountry(name) {
   if (!name) return;
   const idx = state.countries.findIndex((c) => c.name === name);
@@ -206,20 +204,16 @@ function toggleCountry(name) {
   else state.countries.push({ name, color: el.countryColor.value });
   applyHighlights(); renderCountries(); persist();
 }
-
 function renderCountries() {
   const list = el.countryList;
-  if (state.countries.length === 0) {
-    list.innerHTML = '<div class="empty">Klicke Länder auf der Karte an.</div>';
-    return;
-  }
+  if (state.countries.length === 0) { list.innerHTML = '<div class="empty">Klicke Länder auf der Karte an.</div>'; return; }
   list.innerHTML = '';
   state.countries.forEach((c, i) => {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
       <span class="swatch" style="background:${c.color}"></span>
-      <div class="grow"><div class="title">${c.name}</div></div>
+      <div class="grow"><div class="title">${i + 1}. ${escapeHtml(c.name)}</div></div>
       <input type="color" value="${c.color}" title="Farbe" />
       <button class="iconbtn" title="Entfernen">✕</button>`;
     const color = card.querySelector('input');
@@ -239,42 +233,30 @@ el.markerMode.addEventListener('click', () => {
   el.markerMode.classList.toggle('btn-primary', markerMode);
   el.map.style.cursor = markerMode ? 'crosshair' : '';
 });
-
-el.routeToggle.addEventListener('change', () => {
-  state.route = el.routeToggle.checked;
-  applyRoute(); persist();
-});
+el.routeToggle.addEventListener('change', () => { state.route = el.routeToggle.checked; applyRoute(); persist(); });
 
 function addMarker(lng, lat, label) {
   state.markers.push({ id: nextId(), lng: +lng.toFixed(4), lat: +lat.toFixed(4), label: label || 'Marker', emoji: '' });
   renderMarkers(); applyRoute(); persist();
 }
-
 function renderMarkers() {
-  // DOM-Marker neu aufbauen
   markerObjects.forEach((m) => m.remove());
   markerObjects = [];
   state.markers.forEach((mk) => {
     const wrap = document.createElement('div');
     wrap.className = 'mc-marker';
-    wrap.innerHTML = `<div class="dot"></div><div class="lab">${mk.emoji ? mk.emoji + ' ' : ''}${escapeHtml(mk.label)}</div>`;
-    const obj = new maplibregl.Marker({ element: wrap, anchor: 'bottom' }).setLngLat([mk.lng, mk.lat]).addTo(map);
-    markerObjects.push(obj);
+    wrap.innerHTML = `<div class="dot"></div><div class="lab">${mk.emoji ? escapeHtml(mk.emoji) + ' ' : ''}${escapeHtml(mk.label)}</div>`;
+    markerObjects.push(new maplibregl.Marker({ element: wrap, anchor: 'bottom' }).setLngLat([mk.lng, mk.lat]).addTo(map));
   });
-
-  // Liste
   const list = el.markerList;
-  if (state.markers.length === 0) {
-    list.innerHTML = '<div class="empty">Marker-Modus aktivieren und auf die Karte klicken.</div>';
-    return;
-  }
+  if (state.markers.length === 0) { list.innerHTML = '<div class="empty">Marker-Modus aktivieren und auf die Karte tippen.</div>'; return; }
   list.innerHTML = '';
   state.markers.forEach((mk, i) => {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-      <input class="emoji" value="${mk.emoji}" placeholder="🏳️" style="width:38px;text-align:center;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:6px 2px" />
-      <input class="lab" value="${escapeAttr(mk.label)}" style="flex:1;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:7px 9px;font-size:13px" />
+      <input class="emoji" value="${escapeAttr(mk.emoji)}" placeholder="🏳️" style="width:40px;text-align:center;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;color:var(--txt);padding:7px 2px" />
+      <input class="ti lab" value="${escapeAttr(mk.label)}" style="flex:1;min-width:0" />
       <button class="iconbtn up" title="Anfliegen">▶</button>
       <button class="iconbtn" title="Löschen">✕</button>`;
     const [emoji, lab] = card.querySelectorAll('input');
@@ -287,18 +269,14 @@ function renderMarkers() {
   });
 }
 
-/* ---------- Globaler Karten-Klick ---------- */
+/* ---------- Karten-Klick ---------- */
 map.on('click', (e) => {
-  if (markerMode) {
-    addMarker(e.lngLat.lng, e.lngLat.lat);
-    return;
-  }
+  if (markerMode) { addMarker(e.lngLat.lng, e.lngLat.lat); return; }
   if (activeTab === 'countries') {
     const feats = map.queryRenderedFeatures(e.point, { layers: ['country-fill'] });
     if (feats.length) {
       const pr = feats[0].properties;
-      const name = pr.ADMIN || pr.NAME || pr.name || pr.name_en || pr.NAME_EN || pr.sovereignt;
-      toggleCountry(name);
+      toggleCountry(pr.ADMIN || pr.NAME || pr.name || pr.name_en || pr.NAME_EN || pr.sovereignt);
     }
   }
 });
@@ -306,7 +284,7 @@ map.on('mouseenter', 'country-fill', () => { if (activeTab === 'countries' && !m
 map.on('mouseleave', 'country-fill', () => { if (!markerMode) el.map.style.cursor = ''; });
 
 /* ============================================================
-   TABS
+   TABS + MOBILE DRAWER
    ============================================================ */
 document.querySelectorAll('.tab').forEach((t) => {
   t.addEventListener('click', () => {
@@ -317,9 +295,14 @@ document.querySelectorAll('.tab').forEach((t) => {
     $(`.panel[data-panel="${activeTab}"]`).classList.remove('hidden');
   });
 });
+const openDrawer = () => el.app.classList.add('drawer-open');
+const closeDrawer = () => el.app.classList.remove('drawer-open');
+el.menuBtn.addEventListener('click', openDrawer);
+el.sbClose.addEventListener('click', closeDrawer);
+el.sbBackdrop.addEventListener('click', closeDrawer);
 
 /* ============================================================
-   STYLE / RATIO / GLOBE Toolbar
+   STYLE / RATIO / GLOBE
    ============================================================ */
 $('#style-seg').addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
@@ -334,9 +317,7 @@ $('#ratio-seg').addEventListener('click', (e) => {
   $('#ratio-seg .active')?.classList.remove('active'); b.classList.add('active');
   updateFrameGuide(b.dataset.ratio);
 });
-el.globeToggle.addEventListener('change', () => {
-  state.globe = el.globeToggle.checked; applyProjection(); persist();
-});
+el.globeToggle.addEventListener('change', () => { state.globe = el.globeToggle.checked; applyProjection(); persist(); });
 
 let currentRatio = 'free';
 function updateFrameGuide(ratio) {
@@ -344,22 +325,70 @@ function updateFrameGuide(ratio) {
   const g = el.frameGuide;
   if (currentRatio === 'free') { g.classList.add('hidden'); return; }
   const [rw, rh] = currentRatio.split(':').map(Number);
-  const stage = $('#stage').getBoundingClientRect();
-  const margin = 0.86;
+  const stage = el.stage.getBoundingClientRect();
+  const margin = 0.84;
   let w = stage.width * margin, h = w * rh / rw;
   if (h > stage.height * margin) { h = stage.height * margin; w = h * rw / rh; }
   g.style.width = w + 'px'; g.style.height = h + 'px';
   g.classList.remove('hidden');
 }
-window.addEventListener('resize', () => updateFrameGuide());
+window.addEventListener('resize', () => { updateFrameGuide(); renderTimeline(); });
+
+/* ============================================================
+   TIMELINE
+   ============================================================ */
+function renderTimeline() {
+  const has = state.keyframes.length > 0;
+  el.timeline.classList.toggle('hidden', !has);
+  if (!has) return;
+  el.track.innerHTML = '';
+  state.keyframes.forEach((k, i) => {
+    const seg = document.createElement('div');
+    seg.className = 'tl-seg';
+    seg.style.flexGrow = String(k.duration || 3000);
+    seg.innerHTML = `<span class="tl-idx">${i + 1}</span><span class="tl-name">${k.title ? escapeHtml(k.title) : ''}</span>`;
+    seg.onclick = () => map.flyTo({ center: k.center, zoom: k.zoom, pitch: k.pitch, bearing: k.bearing, duration: 1200, essential: true });
+    el.track.appendChild(seg);
+  });
+}
+function segFractions() {
+  const ds = state.keyframes.map((k) => k.duration || 3000);
+  const tot = ds.reduce((a, b) => a + b, 0) || 1;
+  let acc = 0;
+  return ds.map((d) => { const s = acc / tot; acc += d; return { start: s, end: acc / tot }; });
+}
+function positionPlayhead(i) {
+  const w = el.track.clientWidth;
+  const f = segFractions()[i] || { start: 0 };
+  el.playhead.style.transition = 'none';
+  el.playhead.style.left = (f.start * w) + 'px';
+  el.playhead.classList.remove('hidden');
+}
+function animatePlayhead(i, dur) {
+  const w = el.track.clientWidth;
+  const f = segFractions()[i]; if (!f) return;
+  el.playhead.style.transition = 'none';
+  el.playhead.style.left = (f.start * w) + 'px';
+  void el.playhead.offsetWidth; // reflow
+  el.playhead.style.transition = `left ${dur}ms linear`;
+  el.playhead.style.left = (f.end * w) + 'px';
+}
+
+/* ============================================================
+   TITEL-OVERLAY
+   ============================================================ */
+function showTitle(text) {
+  if (text) { el.titleOverlay.textContent = text; el.titleOverlay.classList.add('show'); }
+  else { el.titleOverlay.classList.remove('show'); }
+}
 
 /* ============================================================
    PLAYBACK
    ============================================================ */
 function setPlaying(v) {
   playing = v;
-  el.play.disabled = v; el.stop.disabled = !v;
-  el.frameGuide.style.borderColor = v ? 'rgba(34,211,238,.9)' : 'rgba(255,255,255,.55)';
+  el.play.disabled = v; el.stop.disabled = !v; el.record.disabled = v && !recording;
+  el.frameGuide.style.borderColor = v ? 'rgba(242,68,93,.95)' : 'rgba(79,124,255,.9)';
 }
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 function flyToAsync(k) {
@@ -369,23 +398,243 @@ function flyToAsync(k) {
     map.flyTo({ center: k.center, zoom: k.zoom, pitch: k.pitch, bearing: k.bearing, duration: k.duration || 3000, curve: 1.5, essential: true });
   });
 }
-async function playTour() {
+async function playTour(opts = {}) {
   if (state.keyframes.length < 1) { toast('Füge zuerst Keyframes hinzu'); return; }
   setPlaying(true);
-  const f = state.keyframes[0];
-  map.jumpTo({ center: f.center, zoom: f.zoom, pitch: f.pitch, bearing: f.bearing });
+  renderTimeline();
+  const seq = state.revealSequential && state.countries.length > 0;
+
+  if (state.audioOn && audioReady) { try { audioEl.currentTime = 0; await audioEl.play(); } catch (e) {} }
+
+  const first = state.keyframes[0];
+  map.jumpTo({ center: first.center, zoom: first.zoom, pitch: first.pitch, bearing: first.bearing });
+  positionPlayhead(0);
+  applyHighlights(seq ? 1 : undefined);
+  showTitle(first.title);
   await wait(700);
+
   for (let i = 1; i < state.keyframes.length && playing; i++) {
-    await flyToAsync(state.keyframes[i]);
-    if (playing) await wait(500);
+    const k = state.keyframes[i];
+    animatePlayhead(i, k.duration || 3000);
+    showTitle(k.title);
+    await flyToAsync(k);
+    if (!playing) break;
+    if (seq) applyHighlights(i + 1);
+    await wait(500);
   }
+  showTitle('');
+  el.playhead.classList.add('hidden');
+  if (!opts.keepAudio && audioReady) audioEl.pause();
+  applyHighlights(); // vollständige Hervorhebung fürs Editieren wiederherstellen
   setPlaying(false);
 }
-el.play.addEventListener('click', playTour);
-el.stop.addEventListener('click', () => { setPlaying(false); map.stop(); });
+el.play.addEventListener('click', () => playTour());
+el.stop.addEventListener('click', stopAll);
+function stopAll() { setPlaying(false); map.stop(); showTitle(''); el.playhead.classList.add('hidden'); if (audioReady) audioEl.pause(); }
 
 /* ============================================================
-   SUCHE (Nominatim Geocoding — frei)
+   AUDIO / MUSIK
+   ============================================================ */
+let audioEl = null, audioReady = false, audioUrl = null;
+let audioCtx = null, audioSrcNode = null, audioDest = null;
+
+el.audioPick.addEventListener('click', () => el.audioFile.click());
+el.audioFile.addEventListener('change', (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  if (audioUrl) URL.revokeObjectURL(audioUrl);
+  audioUrl = URL.createObjectURL(file);
+  if (!audioEl) { audioEl = new Audio(); audioEl.loop = false; }
+  audioEl.src = audioUrl;
+  audioEl.volume = parseFloat(el.audioVol.value);
+  audioReady = false;
+  audioEl.oncanplay = () => { audioReady = true; };
+  audioEl.load();
+  el.audioName.textContent = file.name;
+  el.audioInfo.classList.remove('hidden');
+  el.audioFile.value = '';
+  toast('Musik geladen');
+});
+el.audioRemove.addEventListener('click', () => {
+  if (audioEl) { audioEl.pause(); audioEl.src = ''; }
+  if (audioUrl) { URL.revokeObjectURL(audioUrl); audioUrl = null; }
+  audioReady = false;
+  el.audioInfo.classList.add('hidden');
+  el.audioName.textContent = '—';
+});
+el.audioOn.addEventListener('change', () => { state.audioOn = el.audioOn.checked; persist(); });
+el.audioVol.addEventListener('input', () => { if (audioEl) audioEl.volume = parseFloat(el.audioVol.value); });
+
+function getAudioTracks() {
+  if (!audioReady || !state.audioOn) return [];
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioSrcNode = audioCtx.createMediaElementSource(audioEl);
+      audioDest = audioCtx.createMediaStreamDestination();
+      audioSrcNode.connect(audioDest);
+      audioSrcNode.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioDest.stream.getAudioTracks();
+  } catch (e) { return []; }
+}
+
+/* ============================================================
+   VIDEO-EXPORT (WebM)
+   ============================================================ */
+function pickMime() {
+  const cand = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9', 'video/webm'];
+  if (window.MediaRecorder && MediaRecorder.isTypeSupported) {
+    for (const m of cand) if (MediaRecorder.isTypeSupported(m)) return m;
+  }
+  return '';
+}
+/* Zielauflösung je nach Format */
+function exportDims() {
+  const sizes = { '16:9': [1280, 720], '9:16': [720, 1280], '1:1': [900, 900] };
+  if (currentRatio !== 'free' && sizes[currentRatio]) return sizes[currentRatio];
+  const cv = map.getCanvas();
+  const w = cv.clientWidth || 1280, h = cv.clientHeight || 720;
+  const scale = Math.min(1, 1280 / w);
+  return [Math.round(w * scale / 2) * 2, Math.round(h * scale / 2) * 2];
+}
+/* Map an Ziel-Seitenverhältnis anpassen, damit der Bildausschnitt passt */
+function applyExportSize(W, H) {
+  const prev = el.map.getAttribute('style') || '';
+  const stage = el.stage.getBoundingClientRect();
+  const scale = Math.min(1, (stage.width * 0.98) / W, (stage.height * 0.98) / H);
+  const w = Math.round(W * scale), h = Math.round(H * scale);
+  el.map.style.position = 'absolute';
+  el.map.style.inset = 'auto';
+  el.map.style.left = Math.max(0, (stage.width - w) / 2) + 'px';
+  el.map.style.top = Math.max(0, (stage.height - h) / 2) + 'px';
+  el.map.style.width = w + 'px';
+  el.map.style.height = h + 'px';
+  map.resize();
+  return () => { el.map.setAttribute('style', prev); map.resize(); };
+}
+
+/* Einen Frame (Karte + Marker + Titel) auf das Export-Canvas zeichnen */
+function drawFrame(octx, W, H) {
+  const src = map.getCanvas();
+  // Karte einpassen (cover)
+  const sw = src.width, sh = src.height;
+  const s = Math.max(W / sw, H / sh);
+  const dw = sw * s, dh = sh * s;
+  octx.drawImage(src, (W - dw) / 2, (H - dh) / 2, dw, dh);
+
+  const cssW = src.clientWidth || sw, cssH = src.clientHeight || sh;
+  const kx = W / cssW, ky = H / cssH;
+
+  // Marker
+  state.markers.forEach((mk) => {
+    const p = map.project([mk.lng, mk.lat]);
+    if (p.x < 0 || p.y < 0 || p.x > cssW || p.y > cssH) return;
+    const x = p.x * kx, y = p.y * ky;
+    const r = Math.max(5, H * 0.008);
+    octx.beginPath(); octx.arc(x, y, r, 0, Math.PI * 2);
+    octx.fillStyle = '#ff5d9e'; octx.fill();
+    octx.lineWidth = r * 0.5; octx.strokeStyle = '#fff'; octx.stroke();
+    const label = (mk.emoji ? mk.emoji + ' ' : '') + (mk.label || '');
+    if (label.trim()) {
+      const fs = Math.max(12, H * 0.022);
+      octx.font = `600 ${fs}px Inter, sans-serif`;
+      const tw = octx.measureText(label).width;
+      const pad = fs * 0.45, bx = x + r + 6, by = y - fs * 0.75;
+      octx.fillStyle = 'rgba(255,255,255,.94)';
+      roundRect(octx, bx, by, tw + pad * 2, fs * 1.5, 7); octx.fill();
+      octx.fillStyle = '#1f2740'; octx.textBaseline = 'middle';
+      octx.fillText(label, bx + pad, by + fs * 0.78);
+    }
+  });
+
+  // Titel (nur wenn gerade eingeblendet)
+  if (el.titleOverlay.classList.contains('show') && el.titleOverlay.textContent) {
+    const txt = el.titleOverlay.textContent;
+    const fs = Math.max(20, H * 0.052);
+    octx.font = `700 ${fs}px 'Space Grotesk', Inter, sans-serif`;
+    octx.textAlign = 'center'; octx.textBaseline = 'alphabetic';
+    octx.shadowColor = 'rgba(0,0,0,.6)'; octx.shadowBlur = fs * 0.5; octx.shadowOffsetY = 3;
+    octx.fillStyle = '#fff';
+    octx.fillText(txt, W / 2, H * 0.84, W * 0.9);
+    octx.shadowColor = 'transparent'; octx.shadowBlur = 0; octx.shadowOffsetY = 0;
+    octx.textAlign = 'left';
+  }
+}
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+
+el.record.addEventListener('click', exportVideo);
+async function exportVideo() {
+  if (recording || playing) return;
+  if (state.keyframes.length < 1) { toast('Füge zuerst Keyframes hinzu'); return; }
+  if (!window.MediaRecorder) { toast('Video-Export wird von diesem Browser nicht unterstützt'); return; }
+
+  recording = true;
+  el.record.classList.add('armed');
+  const [W, H] = exportDims();
+  const restore = applyExportSize(W, H);
+  await wait(400);
+
+  // Kompositions-Canvas (2D) — enthält Karte + Marker + Titel und ist überall aufnehmbar
+  const out = document.createElement('canvas');
+  out.width = W; out.height = H;
+  const octx = out.getContext('2d');
+
+  let stream;
+  try { stream = out.captureStream(30); }
+  catch (e) { toast('Aufnahme nicht möglich'); cleanup(); return; }
+
+  const aTracks = getAudioTracks();
+  const combined = new MediaStream([...stream.getVideoTracks(), ...aTracks]);
+  const mime = pickMime();
+  let rec;
+  try { rec = new MediaRecorder(combined, mime ? { mimeType: mime } : undefined); }
+  catch (e) { try { rec = new MediaRecorder(combined); } catch (e2) { toast('Aufnahme nicht möglich'); cleanup(); return; } }
+
+  const chunks = [];
+  rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+  const stopped = new Promise((res) => { rec.onstop = res; });
+
+  // Render-Schleife
+  let drawing = true;
+  const loop = () => { if (!drawing) return; try { drawFrame(octx, W, H); } catch (e) {} requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+
+  el.recOverlay.classList.remove('hidden');
+  el.recSub.textContent = 'Tour läuft…';
+  rec.start();
+
+  try { await playTour({ keepAudio: true }); } catch (e) {}
+  await wait(500);
+  drawing = false;
+  try { rec.stop(); } catch (e) {}
+  await stopped;
+
+  if (audioReady) audioEl.pause();
+  const blob = new Blob(chunks, { type: (mime || 'video/webm').split(';')[0] });
+  cleanup();
+  if (blob.size > 0) { downloadBlob(blob, 'mapcinema-video.webm'); toast('🎉 Video exportiert (WebM)'); }
+  else { toast('Aufnahme leer — bitte erneut versuchen'); }
+
+  function cleanup() {
+    recording = false; el.record.classList.remove('armed');
+    el.recOverlay.classList.add('hidden'); setPlaying(false); restore();
+  }
+}
+function downloadBlob(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+/* ============================================================
+   SUCHE (Nominatim)
    ============================================================ */
 let searchTimer = null;
 el.search.addEventListener('input', () => {
@@ -396,13 +645,9 @@ el.search.addEventListener('input', () => {
 });
 async function doGeocode(q) {
   try {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=6&q=${encodeURIComponent(q)}`;
-    const res = await fetch(url, { headers: { 'Accept-Language': 'de' } });
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=6&q=${encodeURIComponent(q)}`, { headers: { 'Accept-Language': 'de' } });
     const data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) {
-      el.searchResults.innerHTML = '<div>Keine Treffer</div>';
-      el.searchResults.classList.remove('hidden'); return;
-    }
+    if (!Array.isArray(data) || data.length === 0) { el.searchResults.innerHTML = '<div>Keine Treffer</div>'; el.searchResults.classList.remove('hidden'); return; }
     el.searchResults.innerHTML = '';
     data.forEach((r) => {
       const d = document.createElement('div');
@@ -411,6 +656,7 @@ async function doGeocode(q) {
         el.searchResults.classList.add('hidden');
         el.search.value = r.display_name.split(',')[0];
         map.flyTo({ center: [+r.lon, +r.lat], zoom: 5, duration: 2000, essential: true });
+        closeDrawer();
       };
       el.searchResults.appendChild(d);
     });
@@ -424,67 +670,53 @@ document.addEventListener('click', (e) => {
 /* ============================================================
    SPEICHERN / EXPORT / IMPORT / DEMO
    ============================================================ */
-const STORAGE_KEY = 'mapcinema.project.v1';
+const STORAGE_KEY = 'mapcinema.project.v2';
 function persist() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {} }
-function loadFromStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) applyState(JSON.parse(raw));
-  } catch (e) {}
-}
+function loadFromStorage() { try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) applyState(JSON.parse(raw)); } catch (e) {} }
+
 function applyState(s) {
   const prevStyle = state.style;
   state = Object.assign(structuredClone(DEFAULT_STATE), s);
+  if (!PALETTES[state.style]) state.style = 'day';
   // UI sync
   el.routeToggle.checked = state.route;
   el.globeToggle.checked = state.globe;
+  el.revealToggle.checked = state.revealSequential;
+  el.audioOn.checked = state.audioOn;
   $('#style-seg .active')?.classList.remove('active');
   $(`#style-seg [data-style="${state.style}"]`)?.classList.add('active');
-  // Style nur neu laden, wenn sich die Variante wirklich geändert hat.
-  if (PALETTES[state.style] && state.style !== prevStyle) {
-    map.setStyle(buildStyle(state.style));
-  }
+  if (PALETTES[state.style] && state.style !== prevStyle) { map.setStyle(buildStyle(state.style)); }
   applyProjection();
   renderKeyframes(); renderCountries(); renderMarkers();
   reapplyDynamic();
 }
 
 $('#btn-save').addEventListener('click', () => { persist(); toast('Projekt gespeichert'); });
-
 $('#btn-export').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'mapcinema-projekt.json';
-  a.click();
-  URL.revokeObjectURL(a.href);
+  downloadBlob(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }), 'mapcinema-projekt.json');
 });
 $('#btn-import').addEventListener('click', () => el.fileImport.click());
 el.fileImport.addEventListener('change', (e) => {
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
-  reader.onload = () => {
-    try { applyState(JSON.parse(reader.result)); persist(); toast('Projekt importiert'); }
-    catch (err) { toast('Datei ungültig'); }
-  };
-  reader.readAsText(file);
-  el.fileImport.value = '';
+  reader.onload = () => { try { applyState(JSON.parse(reader.result)); persist(); toast('Projekt importiert'); } catch (err) { toast('Datei ungültig'); } };
+  reader.readAsText(file); el.fileImport.value = '';
 });
 
 $('#btn-demo').addEventListener('click', loadDemo);
 function loadDemo() {
   applyState({
-    style: 'night', globe: true, route: true,
+    style: 'day', globe: true, route: true, revealSequential: true, audioOn: true,
     keyframes: [
-      { id: nextId(), center: [10, 45], zoom: 2.4, pitch: 0, bearing: 0, duration: 2500 },
-      { id: nextId(), center: [2.35, 48.86], zoom: 4.8, pitch: 45, bearing: -20, duration: 3500 },
-      { id: nextId(), center: [12.5, 41.9], zoom: 5.2, pitch: 55, bearing: 15, duration: 3500 },
-      { id: nextId(), center: [23.7, 38.0], zoom: 5, pitch: 50, bearing: 0, duration: 3500 },
+      { id: nextId(), center: [10, 46], zoom: 2.6, pitch: 0, bearing: 0, duration: 2500, title: 'Eine Reise durch Europa' },
+      { id: nextId(), center: [2.35, 48.86], zoom: 4.9, pitch: 45, bearing: -20, duration: 3500, title: 'Paris' },
+      { id: nextId(), center: [12.5, 41.9], zoom: 5.2, pitch: 55, bearing: 15, duration: 3500, title: 'Rom' },
+      { id: nextId(), center: [23.7, 38.0], zoom: 5.0, pitch: 50, bearing: 0, duration: 3500, title: 'Athen' },
     ],
     countries: [
-      { name: 'France', color: '#22d3ee' },
-      { name: 'Italy', color: '#a855f7' },
-      { name: 'Greece', color: '#f5c451' },
+      { name: 'France', color: '#4f7cff' },
+      { name: 'Italy', color: '#8b5cff' },
+      { name: 'Greece', color: '#ff5d9e' },
     ],
     markers: [
       { id: nextId(), lng: 2.35, lat: 48.86, label: 'Paris', emoji: '🗼' },
@@ -492,8 +724,7 @@ function loadDemo() {
       { id: nextId(), lng: 23.7, lat: 38.0, label: 'Athen', emoji: '🏺' },
     ],
   });
-  persist();
-  toast('Demo geladen — ▶ Tour abspielen');
+  persist(); toast('Demo geladen — ▶ Abspielen');
 }
 
 /* ============================================================
@@ -501,26 +732,22 @@ function loadDemo() {
    ============================================================ */
 function updateReadout() {
   const c = map.getCenter();
-  el.readout.textContent =
-    `Lng ${c.lng.toFixed(2)} · Lat ${c.lat.toFixed(2)} · Zoom ${map.getZoom().toFixed(1)} · Neig ${map.getPitch().toFixed(0)}° · Dreh ${map.getBearing().toFixed(0)}°`;
+  el.readout.textContent = `Lng ${c.lng.toFixed(2)} · Lat ${c.lat.toFixed(2)} · Zoom ${map.getZoom().toFixed(1)} · ${map.getPitch().toFixed(0)}°`;
 }
 let toastTimer = null;
 function toast(msg) {
-  el.toast.textContent = msg;
-  el.toast.classList.remove('hidden');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.toast.classList.add('hidden'), 2400);
+  el.toast.textContent = msg; el.toast.classList.remove('hidden');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.toast.classList.add('hidden'), 2600);
 }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function escapeAttr(s) { return escapeHtml(s); }
 
-/* Tastatur: Leertaste = Play/Stop */
 document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+  if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
     e.preventDefault();
-    if (playing) { setPlaying(false); map.stop(); } else playTour();
+    if (playing) stopAll(); else playTour();
   }
 });
 
-/* Erststart-Render */
+/* Erststart */
 renderKeyframes(); renderCountries(); renderMarkers();

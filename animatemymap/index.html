@@ -2,9 +2,10 @@
 <html lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>MapCinema — Cinematic Map Studio</title>
-  <meta name="description" content="Erstelle kinoreife Karten-Animationen im Browser. Kamerafahrten, Länder hervorheben, Marker & Routen. Kostenlos, ohne Installation." />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <title>MapCinema — Karten-Animationen erstellen</title>
+  <meta name="description" content="Erstelle schöne Karten-Animationen im Browser: Kamerafahrten, Länder, Marker, Timeline, Musik und Video-Export. Kostenlos, ohne Installation." />
+  <meta name="theme-color" content="#4f7cff" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -13,15 +14,22 @@
   <link rel="stylesheet" href="./app.css" />
 </head>
 <body>
+  <!-- Mobile menu button -->
+  <button id="menu-btn" aria-label="Menü">☰</button>
+
   <div id="app">
+    <!-- backdrop for mobile drawer -->
+    <div id="sb-backdrop"></div>
+
     <!-- ============ SIDEBAR ============ -->
     <aside id="sidebar">
       <div class="brand">
         <div class="brand-mark">◐</div>
         <div class="brand-text">
           <div class="brand-name">MapCinema</div>
-          <div class="brand-sub">Cinematic Map Studio</div>
+          <div class="brand-sub">Karten-Animationsstudio</div>
         </div>
+        <button id="sb-close" aria-label="Schließen">✕</button>
       </div>
 
       <div class="search-wrap">
@@ -33,12 +41,13 @@
         <button class="tab active" data-tab="camera">🎬 Kamera</button>
         <button class="tab" data-tab="countries">🌍 Länder</button>
         <button class="tab" data-tab="markers">📍 Marker</button>
+        <button class="tab" data-tab="audio">🎵 Ton</button>
       </nav>
 
       <div class="tab-body">
         <!-- CAMERA -->
         <section class="panel" data-panel="camera">
-          <p class="hint">Fliege an einen Ort, richte die Ansicht ein (Zoom, Neigung, Drehung) und speichere sie als <b>Keyframe</b>. Die Tour fliegt später sanft durch alle Keyframes.</p>
+          <p class="hint">Fliege an einen Ort, richte die Ansicht ein (Zoom, Neigung, Drehung) und speichere sie als <b>Keyframe</b>. Optional pro Keyframe ein <b>Titel</b>, der im Video eingeblendet wird.</p>
           <button id="add-keyframe" class="btn btn-primary btn-block">＋ Aktuelle Ansicht als Keyframe</button>
           <div id="keyframe-list" class="list"></div>
         </section>
@@ -48,22 +57,35 @@
           <p class="hint">Klicke Länder auf der Karte an, um sie hervorzuheben. Farbe pro Land frei wählbar.</p>
           <div class="row">
             <label class="mini">Farbe für nächste Auswahl</label>
-            <input id="country-color" type="color" value="#f5c451" />
+            <input id="country-color" type="color" value="#ff5d73" />
           </div>
+          <label class="check"><input id="reveal-toggle" type="checkbox" /> Länder während der Tour <b>nacheinander</b> aufleuchten lassen</label>
           <div id="country-list" class="list"></div>
         </section>
 
         <!-- MARKERS -->
         <section class="panel hidden" data-panel="markers">
-          <p class="hint">Aktiviere den Marker-Modus und klicke auf die Karte, um Pins zu setzen. Emoji/Flagge &amp; Text frei wählbar.</p>
+          <p class="hint">Aktiviere den Marker-Modus und tippe auf die Karte, um Pins zu setzen. Emoji/Flagge &amp; Text frei wählbar.</p>
           <button id="marker-mode" class="btn btn-block">📍 Marker-Modus: <b>aus</b></button>
           <label class="check"><input id="route-toggle" type="checkbox" /> Route zwischen Markern zeichnen</label>
           <div id="marker-list" class="list"></div>
         </section>
+
+        <!-- AUDIO -->
+        <section class="panel hidden" data-panel="audio">
+          <p class="hint">Lade einen Musik-Titel hoch. Er spielt während der Tour und wird beim Video-Export mit aufgenommen.</p>
+          <button id="audio-pick" class="btn btn-block">🎵 Musik auswählen…</button>
+          <input id="audio-file" type="file" accept="audio/*" hidden />
+          <div id="audio-info" class="audio-info hidden">
+            <div class="row"><span id="audio-name" class="title">—</span><button id="audio-remove" class="iconbtn" title="Entfernen">✕</button></div>
+            <label class="check"><input id="audio-on" type="checkbox" checked /> Während der Tour abspielen</label>
+            <div class="row"><label class="mini">Lautstärke</label><input id="audio-vol" type="range" min="0" max="1" step="0.05" value="0.8" /></div>
+          </div>
+        </section>
       </div>
 
       <div class="sidebar-footer">
-        <button id="btn-demo" class="btn btn-ghost">✨ Demo laden</button>
+        <button id="btn-demo" class="btn btn-ghost">✨ Demo</button>
         <button id="btn-save" class="btn btn-ghost">💾 Speichern</button>
         <button id="btn-export" class="btn btn-ghost">⬇︎ JSON</button>
         <button id="btn-import" class="btn btn-ghost">⬆︎ Import</button>
@@ -76,12 +98,16 @@
       <div id="map"></div>
       <div id="frame-guide" class="frame-guide hidden"></div>
 
+      <!-- title overlay shown during playback -->
+      <div id="title-overlay" class="title-overlay"></div>
+
       <!-- top toolbar -->
       <div class="toolbar">
         <div class="seg" id="style-seg">
-          <button data-style="night" class="active">Nacht</button>
-          <button data-style="mono">Mono</button>
-          <button data-style="neon">Neon</button>
+          <button data-style="day" class="active">Tag</button>
+          <button data-style="pastel">Pastell</button>
+          <button data-style="vibrant">Vibrant</button>
+          <button data-style="night">Nacht</button>
         </div>
         <div class="seg" id="ratio-seg">
           <button data-ratio="free" class="active">Frei</button>
@@ -92,12 +118,30 @@
         <label class="seg-check"><input id="globe-toggle" type="checkbox" checked /> Globus</label>
       </div>
 
+      <!-- timeline -->
+      <div id="timeline" class="timeline hidden">
+        <div id="timeline-track" class="timeline-track"></div>
+        <div id="playhead" class="playhead hidden"></div>
+      </div>
+
       <!-- transport controls -->
       <div class="transport">
-        <button id="btn-play" class="btn btn-primary">▶ Tour abspielen</button>
+        <button id="btn-play" class="btn btn-primary">▶ Abspielen</button>
         <button id="btn-stop" class="btn" disabled>■ Stop</button>
+        <button id="btn-record" class="btn btn-rec">● Video</button>
         <div class="spacer"></div>
         <div class="readout" id="view-readout">—</div>
+      </div>
+
+      <!-- recording overlay -->
+      <div id="rec-overlay" class="rec-overlay hidden">
+        <div class="rec-card">
+          <div class="rec-dot"></div>
+          <div>
+            <div class="rec-title">Video wird aufgenommen…</div>
+            <div class="rec-sub" id="rec-sub">Tour läuft</div>
+          </div>
+        </div>
       </div>
 
       <div id="toast" class="toast hidden"></div>
