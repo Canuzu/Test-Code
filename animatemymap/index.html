@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>MapCinema — Cinematic Map Studio</title>
+  <meta name="description" content="Erstelle kinoreife Karten-Animationen im Browser. Kamerafahrten, Länder hervorheben, Marker & Routen. Kostenlos, ohne Installation." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <link rel="stylesheet" href="./app.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- ============ SIDEBAR ============ -->
+    <aside id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">◐</div>
+        <div class="brand-text">
+          <div class="brand-name">MapCinema</div>
+          <div class="brand-sub">Cinematic Map Studio</div>
+        </div>
+      </div>
+
+      <div class="search-wrap">
+        <input id="search" type="text" placeholder="Ort suchen &amp; hinfliegen…" autocomplete="off" />
+        <div id="search-results" class="search-results hidden"></div>
+      </div>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="camera">🎬 Kamera</button>
+        <button class="tab" data-tab="countries">🌍 Länder</button>
+        <button class="tab" data-tab="markers">📍 Marker</button>
+      </nav>
+
+      <div class="tab-body">
+        <!-- CAMERA -->
+        <section class="panel" data-panel="camera">
+          <p class="hint">Fliege an einen Ort, richte die Ansicht ein (Zoom, Neigung, Drehung) und speichere sie als <b>Keyframe</b>. Die Tour fliegt später sanft durch alle Keyframes.</p>
+          <button id="add-keyframe" class="btn btn-primary btn-block">＋ Aktuelle Ansicht als Keyframe</button>
+          <div id="keyframe-list" class="list"></div>
+        </section>
+
+        <!-- COUNTRIES -->
+        <section class="panel hidden" data-panel="countries">
+          <p class="hint">Klicke Länder auf der Karte an, um sie hervorzuheben. Farbe pro Land frei wählbar.</p>
+          <div class="row">
+            <label class="mini">Farbe für nächste Auswahl</label>
+            <input id="country-color" type="color" value="#f5c451" />
+          </div>
+          <div id="country-list" class="list"></div>
+        </section>
+
+        <!-- MARKERS -->
+        <section class="panel hidden" data-panel="markers">
+          <p class="hint">Aktiviere den Marker-Modus und klicke auf die Karte, um Pins zu setzen. Emoji/Flagge &amp; Text frei wählbar.</p>
+          <button id="marker-mode" class="btn btn-block">📍 Marker-Modus: <b>aus</b></button>
+          <label class="check"><input id="route-toggle" type="checkbox" /> Route zwischen Markern zeichnen</label>
+          <div id="marker-list" class="list"></div>
+        </section>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="btn-demo" class="btn btn-ghost">✨ Demo laden</button>
+        <button id="btn-save" class="btn btn-ghost">💾 Speichern</button>
+        <button id="btn-export" class="btn btn-ghost">⬇︎ JSON</button>
+        <button id="btn-import" class="btn btn-ghost">⬆︎ Import</button>
+        <input id="file-import" type="file" accept="application/json" hidden />
+      </div>
+    </aside>
+
+    <!-- ============ MAP + STAGE ============ -->
+    <main id="stage">
+      <div id="map"></div>
+      <div id="frame-guide" class="frame-guide hidden"></div>
+
+      <!-- top toolbar -->
+      <div class="toolbar">
+        <div class="seg" id="style-seg">
+          <button data-style="night" class="active">Nacht</button>
+          <button data-style="mono">Mono</button>
+          <button data-style="neon">Neon</button>
+        </div>
+        <div class="seg" id="ratio-seg">
+          <button data-ratio="free" class="active">Frei</button>
+          <button data-ratio="16:9">16:9</button>
+          <button data-ratio="9:16">9:16</button>
+          <button data-ratio="1:1">1:1</button>
+        </div>
+        <label class="seg-check"><input id="globe-toggle" type="checkbox" checked /> Globus</label>
+      </div>
+
+      <!-- transport controls -->
+      <div class="transport">
+        <button id="btn-play" class="btn btn-primary">▶ Tour abspielen</button>
+        <button id="btn-stop" class="btn" disabled>■ Stop</button>
+        <div class="spacer"></div>
+        <div class="readout" id="view-readout">—</div>
+      </div>
+
+      <div id="toast" class="toast hidden"></div>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
