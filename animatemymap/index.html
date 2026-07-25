@@ -83,6 +83,7 @@
             <button id="time-play" class="btn btn-primary">▶ Durch die Zeit</button>
             <button id="year-next" class="btn">Später ▶</button>
           </div>
+          <button id="time-video" class="btn btn-block" style="margin-top:8px">🎥 Zeitreise als Video aufnehmen</button>
           <div id="history-status" class="history-status">Grenzen aus, aktivieren zum Anzeigen.</div>
           <p class="hint src-note">Datenquelle: <b>historical-basemaps</b> (offen, wissenschaftlich gepflegt). Grenzen sind näherungsweise Rekonstruktionen und springen zum nächstgelegenen verfügbaren Jahr.</p>
         </section>
@@ -116,6 +117,8 @@
 
       <!-- title overlay shown during playback -->
       <div id="title-overlay" class="title-overlay"></div>
+      <!-- year overlay shown while time-travel is active -->
+      <div id="year-overlay" class="year-overlay"></div>
 
       <!-- top toolbar -->
       <div class="toolbar">

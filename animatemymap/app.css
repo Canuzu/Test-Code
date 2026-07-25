@@ -161,6 +161,16 @@ input[type=range]{accent-color:var(--accent);width:150px}
 }
 .title-overlay.show{opacity:1}
 
+.year-overlay{
+  position:absolute;left:14px;top:14px;z-index:8;pointer-events:none;
+  font-family:'Space Grotesk';font-weight:700;font-size:clamp(15px,2.4vw,22px);color:#fff;
+  background:rgba(15,20,35,.62);backdrop-filter:blur(6px);
+  padding:6px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.18);
+  opacity:0;transition:opacity .4s;white-space:nowrap;
+}
+.year-overlay.show{opacity:1}
+@media (max-width:860px){ .year-overlay{top:auto;bottom:186px;left:14px} }
+
 .toolbar{
   position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:10;
   display:flex;gap:9px;align-items:center;max-width:calc(100% - 24px);flex-wrap:wrap;justify-content:center;
