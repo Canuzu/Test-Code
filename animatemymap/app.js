@@ -534,19 +534,29 @@ function currentHistoryYear() {
   const i = Math.max(0, Math.min(HISTORY_YEARS.length - 1, state.history.index));
   return HISTORY_YEARS[i];
 }
-function setHistoryLayerVisibility(vis) {
-  ['history-fill', 'history-line-casing', 'history-line', 'history-label'].forEach((id) => {
-    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis ? 'visible' : 'none');
-  });
-  if (map.getLayer('country-line')) map.setLayoutProperty('country-line', 'visibility', vis ? 'none' : 'visible');
-}
 function isSatStyle() { return !!(PALETTES[state.style] && PALETTES[state.style].sat); }
+/* History-Modus = echte politische Weltkarte der Epoche:
+   Satellit/moderne Ebenen aus, sauberer Ozean-Hintergrund, farbig gefüllte Länder. */
+function setHistoryMode(on) {
+  const p = PALETTES[state.style] || PALETTES.satellite;
+  // historische Ebenen ein/aus
+  ['history-fill', 'history-line-casing', 'history-line', 'history-label'].forEach((id) => {
+    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none');
+  });
+  // Basis-Ebenen ausblenden, solange die Zeitreise aktiv ist
+  ['sat', 'country-fill', 'country-line'].forEach((id) => {
+    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on ? 'none' : 'visible');
+  });
+  // Hintergrund: im History-Modus ein klarer Ozean, sonst der Stil-Standard
+  if (map.getLayer('bg')) {
+    const ocean = on ? (p.dark ? '#0b1c3a' : '#c3d8f0') : (p.sat ? p.space : p.ocean);
+    map.setPaintProperty('bg', 'background-color', ocean);
+  }
+}
 function fadeHistory(on) {
-  // Auf dem Satellitenbild KEINE Flächenfüllung (sonst wird das Bild „verwaschen“) —
-  // nur klare Grenzlinien + Labels. In stilisierten Stilen dezente Füllung.
-  const fillOp = on ? (isSatStyle() ? 0 : 0.22) : 0;
-  if (map.getLayer('history-fill')) map.setPaintProperty('history-fill', 'fill-opacity', fillOp);
-  if (map.getLayer('history-line-casing')) map.setPaintProperty('history-line-casing', 'line-opacity', on ? 0.9 : 0);
+  // Volle politische Färbung — die Länder sollen klar erkennbar sein.
+  if (map.getLayer('history-fill')) map.setPaintProperty('history-fill', 'fill-opacity', on ? 0.9 : 0);
+  if (map.getLayer('history-line-casing')) map.setPaintProperty('history-line-casing', 'line-opacity', on ? 0.85 : 0);
   if (map.getLayer('history-line')) map.setPaintProperty('history-line', 'line-opacity', on ? HIST_LINE_OP : 0);
   if (map.getLayer('history-label')) map.setPaintProperty('history-label', 'text-opacity', on ? HIST_LABEL_OP : 0);
 }
@@ -598,13 +608,13 @@ async function applyHistoryYear() {
 }
 function reapplyHistory() {
   if (!map.getSource('history')) return;
-  setHistoryLayerVisibility(state.history.on);
+  setHistoryMode(state.history.on);
   if (state.history.on) { fadeHistory(true); applyHistoryYear(); } else setYearOverlay('');
 }
 function setHistoryOn(on) {
   state.history.on = on;
   el.historyOn.checked = on;
-  whenStyleReady(() => { setHistoryLayerVisibility(on); if (on) { fadeHistory(true); applyHistoryYear(); } else setYearOverlay(''); });
+  whenStyleReady(() => { setHistoryMode(on); if (on) { fadeHistory(true); applyHistoryYear(); } else setYearOverlay(''); });
   persist();
 }
 function stepYear(delta) {
