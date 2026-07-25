@@ -293,7 +293,22 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .year-range{width:100%;margin:6px 0 14px}
 .year-controls{display:flex;gap:7px}
 .year-controls .btn{flex:1;padding:10px 6px;font-size:12px}
+.epoch-wrap{margin:14px 0 6px}
+.epoch-title{font-weight:600;margin-bottom:8px}
+.epoch-presets{display:flex;flex-wrap:wrap;gap:7px}
+.epoch-chip{border:1px solid var(--line);background:var(--surface-2);color:var(--txt);padding:8px 11px;border-radius:11px;font-size:12px;font-weight:600;transition:.14s;box-shadow:var(--shadow-sm)}
+.epoch-chip:hover{border-color:transparent;background:var(--grad);color:#fff;transform:translateY(-1px);box-shadow:0 8px 18px rgba(124,92,255,.32)}
+
 .history-status{margin-top:13px;font-size:12px;color:var(--muted);text-align:center;min-height:18px;line-height:1.45;padding:9px 11px;background:var(--surface-2);border:1px solid var(--line);border-radius:11px}
+
+/* info popup */
+.mc-popup .maplibregl-popup-content{background:var(--surface);color:var(--txt);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);padding:14px 16px}
+.mc-popup .maplibregl-popup-close-button{color:var(--muted);font-size:18px;padding:2px 8px}
+.mc-popup .maplibregl-popup-tip{border-top-color:var(--surface) !important;border-bottom-color:var(--surface) !important}
+.pop-name{font-family:'Space Grotesk';font-weight:700;font-size:16px;line-height:1.2;margin-bottom:3px;padding-right:14px}
+.pop-sub{font-size:12px;color:var(--muted);margin-bottom:9px}
+.pop-link{display:inline-block;font-size:12.5px;font-weight:600;color:var(--accent);text-decoration:none}
+.pop-link:hover{text-decoration:underline}
 .src-note{margin-top:14px;font-size:11px;color:var(--muted-2);border-top:1px solid var(--line);padding-top:11px}
 
 /* help / onboarding modal */
