@@ -307,6 +307,9 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .mc-popup .maplibregl-popup-tip{border-top-color:var(--surface) !important;border-bottom-color:var(--surface) !important}
 .pop-name{font-family:'Space Grotesk';font-weight:700;font-size:16px;line-height:1.2;margin-bottom:3px;padding-right:14px}
 .pop-sub{font-size:12px;color:var(--muted);margin-bottom:9px}
+.pop-info{font-size:12.5px;line-height:1.5;color:var(--txt-2);margin-bottom:10px;max-height:150px;overflow-y:auto}
+.pop-loading{color:var(--muted);font-style:italic}
+.pop-muted{color:var(--muted-2)}
 .pop-link{display:inline-block;font-size:12.5px;font-weight:600;color:var(--accent);text-decoration:none}
 .pop-link:hover{text-decoration:underline}
 .src-note{margin-top:14px;font-size:11px;color:var(--muted-2);border-top:1px solid var(--line);padding-top:11px}
