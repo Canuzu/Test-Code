@@ -29,6 +29,7 @@
           <div class="brand-name">MapCinema</div>
           <div class="brand-sub">Karten-Animationsstudio</div>
         </div>
+        <button id="theme-btn" class="ghost-ico" title="Design: Hell / Dunkel" aria-label="Design wechseln">🌙</button>
         <button id="sb-close" aria-label="Schließen">✕</button>
       </div>
 
@@ -48,6 +49,7 @@
       <div class="tab-body">
         <!-- CAMERA -->
         <section class="panel" data-panel="camera">
+          <div class="panel-head"><span class="panel-ic">🎬</span><div><h3>Kamerafahrt</h3><span class="panel-desc">Keyframes für die Animation</span></div></div>
           <p class="hint">Fliege an einen Ort, richte die Ansicht ein (Zoom, Neigung, Drehung) und speichere sie als <b>Keyframe</b>. Optional pro Keyframe ein <b>Titel</b>, der im Video eingeblendet wird.</p>
           <button id="add-keyframe" class="btn btn-primary btn-block">＋ Aktuelle Ansicht als Keyframe</button>
           <div id="keyframe-list" class="list"></div>
@@ -55,6 +57,7 @@
 
         <!-- COUNTRIES -->
         <section class="panel hidden" data-panel="countries">
+          <div class="panel-head"><span class="panel-ic">🌍</span><div><h3>Länder</h3><span class="panel-desc">Gebiete hervorheben</span></div></div>
           <p class="hint">Klicke Länder auf der Karte an, um sie hervorzuheben. Farbe pro Land frei wählbar.</p>
           <div class="row">
             <label class="mini">Farbe für nächste Auswahl</label>
@@ -66,6 +69,7 @@
 
         <!-- MARKERS -->
         <section class="panel hidden" data-panel="markers">
+          <div class="panel-head"><span class="panel-ic">📍</span><div><h3>Marker</h3><span class="panel-desc">Pins &amp; Route</span></div></div>
           <p class="hint">Aktiviere den Marker-Modus und tippe auf die Karte, um Pins zu setzen. Emoji/Flagge &amp; Text frei wählbar.</p>
           <button id="marker-mode" class="btn btn-block">📍 Marker-Modus: <b>aus</b></button>
           <label class="check"><input id="route-toggle" type="checkbox" /> Route zwischen Markern zeichnen</label>
@@ -74,6 +78,7 @@
 
         <!-- TIME MACHINE -->
         <section class="panel hidden" data-panel="time">
+          <div class="panel-head"><span class="panel-ic">🕰️</span><div><h3>Zeitreise</h3><span class="panel-desc">Historische Grenzen</span></div></div>
           <p class="hint">Dreh die Zeit zurück: die Ländergrenzen verändern sich Epoche für Epoche. Ziehe den Regler oder spiele die Geschichte automatisch ab.</p>
           <label class="check"><input id="history-on" type="checkbox" /> Historische Grenzen anzeigen</label>
           <div class="year-display"><span id="year-label">2010 n. Chr.</span></div>
@@ -90,6 +95,7 @@
 
         <!-- AUDIO -->
         <section class="panel hidden" data-panel="audio">
+          <div class="panel-head"><span class="panel-ic">🎵</span><div><h3>Ton</h3><span class="panel-desc">Musik zur Animation</span></div></div>
           <p class="hint">Lade einen Musik-Titel hoch. Er spielt während der Tour und wird beim Video-Export mit aufgenommen.</p>
           <button id="audio-pick" class="btn btn-block">🎵 Musik auswählen…</button>
           <input id="audio-file" type="file" accept="audio/*" hidden />

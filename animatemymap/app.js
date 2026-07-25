@@ -936,6 +936,25 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+/* ---------- Theme (Hell/Dunkel) ---------- */
+const themeBtn = $('#theme-btn');
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  if (themeBtn) themeBtn.textContent = t === 'dark' ? '☀️' : '🌙';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', t === 'dark' ? '#080b14' : '#eef1f8');
+}
+(function initTheme() {
+  let t = 'light';
+  try { t = localStorage.getItem('mapcinema.theme') || 'light'; } catch (e) {}
+  applyTheme(t);
+})();
+if (themeBtn) themeBtn.addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try { localStorage.setItem('mapcinema.theme', next); } catch (e) {}
+});
+
 /* ---------- Hilfe / Onboarding ---------- */
 const helpModal = $('#help-modal');
 const openHelp = () => helpModal.classList.remove('hidden');
