@@ -8,7 +8,7 @@
 //   - other same-origin assets → cache-first, then network (hashed, immutable);
 //   - cross-origin card images (pokemontcg.io / onepiece-cardgame.com) → left untouched.
 
-const CACHE = 'kwde-v6';
+const CACHE = 'kwde-v7';
 const SHELL = ['./', './index.html'];
 
 self.addEventListener('install', (event) => {
@@ -33,6 +33,10 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // don't intercept cross-origin
+  // The MapCinema app under /animatemymap/ is a separate, independently deployed
+  // static app with fixed (non-hashed) filenames. Never cache it here — always
+  // let it go to the network so updates show up immediately (no stale versions).
+  if (url.pathname.includes('/animatemymap/')) return;
 
   if (req.mode === 'navigate') {
     event.respondWith(

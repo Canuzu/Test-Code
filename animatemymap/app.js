@@ -52,19 +52,19 @@ function buildStyle(variant) {
   // Historische Grenzen (anfangs leer & versteckt) — mit sanften Übergängen
   layers.push({ id: 'history-fill', type: 'fill', source: 'history',
     layout: { visibility: 'none' },
-    paint: { 'fill-color': ['coalesce', ['get', '__color'], '#8fb3ff'], 'fill-opacity': 0, 'fill-opacity-transition': { duration: 380 } } });
+    paint: { 'fill-color': ['coalesce', ['get', '__color'], '#8fb3ff'], 'fill-opacity': 0, 'fill-opacity-transition': { duration: 260 } } });
   // dunkle Kontur unter der Grenzlinie → auf hellem wie dunklem Untergrund gut lesbar
   layers.push({ id: 'history-line-casing', type: 'line', source: 'history',
     layout: { visibility: 'none', 'line-join': 'round', 'line-cap': 'round' },
-    paint: { 'line-color': 'rgba(10,14,25,.55)', 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 2.2, 4, 3.4, 7, 5], 'line-opacity': 0, 'line-opacity-transition': { duration: 380 } } });
+    paint: { 'line-color': 'rgba(10,14,25,.55)', 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 2.2, 4, 3.4, 7, 5], 'line-opacity': 0, 'line-opacity-transition': { duration: 260 } } });
   layers.push({ id: 'history-line', type: 'line', source: 'history',
     layout: { visibility: 'none', 'line-join': 'round', 'line-cap': 'round' },
-    paint: { 'line-color': '#ffe08a', 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 1, 4, 1.8, 7, 2.8], 'line-opacity': 0, 'line-opacity-transition': { duration: 380 } } });
+    paint: { 'line-color': '#ffe08a', 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 1, 4, 1.8, 7, 2.8], 'line-opacity': 0, 'line-opacity-transition': { duration: 260 } } });
   layers.push({ id: 'history-label', type: 'symbol', source: 'history',
     layout: { visibility: 'none', 'text-field': ['coalesce', ['get', 'NAME'], ['get', 'name'], ''],
       'text-size': ['interpolate', ['linear'], ['zoom'], 1, 11, 4, 14, 6, 17], 'text-font': ['Open Sans Regular'],
       'text-max-width': 7, 'text-padding': 8, 'text-optional': true, 'symbol-placement': 'point', 'text-transform': 'none' },
-    paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0,0,0,.85)', 'text-halo-width': 1.8, 'text-opacity': 0, 'text-opacity-transition': { duration: 380 } } });
+    paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0,0,0,.85)', 'text-halo-width': 1.8, 'text-opacity': 0, 'text-opacity-transition': { duration: 260 } } });
 
   return { version: 8, projection: { type: 'globe' }, glyphs: GLYPHS, sources, layers };
 }
@@ -119,11 +119,30 @@ const el = {
   timeVideo: $('#time-video'), yearOverlay: $('#year-overlay'), epochPresets: $('#epoch-presets'),
 };
 
+/* ---------- Teilbare Links: Zustand aus dem URL-Hash lesen (hat Vorrang) ---------- */
+function applyShareFromHash() {
+  if (!location.hash || location.hash.length < 2) return null;
+  const p = new URLSearchParams(location.hash.slice(1));
+  const view = {};
+  if (p.has('st') && PALETTES[p.get('st')]) state.style = p.get('st');
+  if (p.has('h')) state.history.on = p.get('h') === '1';
+  if (p.has('yi')) { const yi = parseInt(p.get('yi'), 10); if (!isNaN(yi)) state.history.index = Math.max(0, Math.min(HISTORY_YEARS.length - 1, yi)); }
+  if (p.has('c')) { const [lng, lat] = p.get('c').split(',').map(Number); if (!isNaN(lng) && !isNaN(lat)) view.center = [lng, lat]; }
+  if (p.has('z')) { const z = parseFloat(p.get('z')); if (!isNaN(z)) view.zoom = z; }
+  if (p.has('p')) { const v = parseFloat(p.get('p')); if (!isNaN(v)) view.pitch = v; }
+  if (p.has('b')) { const v = parseFloat(p.get('b')); if (!isNaN(v)) view.bearing = v; }
+  return (Object.keys(view).length || p.has('st') || p.has('h') || p.has('yi')) ? view : null;
+}
+const shareView = applyShareFromHash();
+
 /* ---------- Map init ---------- */
 const map = new maplibregl.Map({
   container: 'map',
   style: buildStyle(state.style),
-  center: [10, 30], zoom: 1.6, pitch: 0, bearing: 0,
+  center: (shareView && shareView.center) || [10, 30],
+  zoom: (shareView && shareView.zoom != null) ? shareView.zoom : 1.6,
+  pitch: (shareView && shareView.pitch != null) ? shareView.pitch : 0,
+  bearing: (shareView && shareView.bearing != null) ? shareView.bearing : 0,
   attributionControl: { compact: true },
   maxPitch: 75,
 });
@@ -132,7 +151,7 @@ map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bott
 map.on('load', () => {
   applyProjection();
   reapplyDynamic();
-  loadFromStorage();
+  if (!shareView) loadFromStorage(); // geteilter Link hat Vorrang vor gespeichertem Projekt
   updateReadout();
 });
 map.on('move', updateReadout);
@@ -559,13 +578,14 @@ function setHistoryMode(on) {
     map.setPaintProperty('bg', 'background-color', ocean);
   }
 }
-function fadeHistory(on) {
-  // Volle politische Färbung — die Länder sollen klar erkennbar sein.
-  if (map.getLayer('history-fill')) map.setPaintProperty('history-fill', 'fill-opacity', on ? 0.9 : 0);
-  if (map.getLayer('history-line-casing')) map.setPaintProperty('history-line-casing', 'line-opacity', on ? 0.85 : 0);
-  if (map.getLayer('history-line')) map.setPaintProperty('history-line', 'line-opacity', on ? HIST_LINE_OP : 0);
-  if (map.getLayer('history-label')) map.setPaintProperty('history-label', 'text-opacity', on ? HIST_LABEL_OP : 0);
+function fadeHistoryScaled(m) {
+  // m = Deckkraft-Faktor (0..1); für weiche Übergänge zwischen Epochen.
+  if (map.getLayer('history-fill')) map.setPaintProperty('history-fill', 'fill-opacity', 0.9 * m);
+  if (map.getLayer('history-line-casing')) map.setPaintProperty('history-line-casing', 'line-opacity', 0.85 * m);
+  if (map.getLayer('history-line')) map.setPaintProperty('history-line', 'line-opacity', HIST_LINE_OP * m);
+  if (map.getLayer('history-label')) map.setPaintProperty('history-label', 'text-opacity', HIST_LABEL_OP * m);
 }
+function fadeHistory(on) { fadeHistoryScaled(on ? 1 : 0); }
 function stableColor(name) {
   let h = 0; const s = String(name || '');
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
@@ -593,8 +613,9 @@ function setYearOverlay(text) {
   if (text) { el.yearOverlay.textContent = text; el.yearOverlay.classList.add('show'); }
   else { el.yearOverlay.classList.remove('show'); }
 }
-/* Wichtig: ERST laden, DANN tauschen — die alten Grenzen bleiben sichtbar,
-   bis die neuen da sind (kein Verschwinden). Bei Fehler bleiben die alten stehen. */
+let historyShown = false; // sind aktuell Grenzen sichtbar (für weichen Übergang)?
+/* ERST laden, DANN sanft überblenden — die alten Grenzen bleiben sichtbar,
+   werden kurz abgedimmt, ausgetauscht und wieder eingeblendet (kein Blitzen/Blank). */
 async function applyHistoryYear() {
   const y = currentHistoryYear();
   updateYearUI();
@@ -605,8 +626,17 @@ async function applyHistoryYear() {
   try {
     const gj = await loadHistoryYear(y);        // alte Grenzen bleiben während des Ladens sichtbar
     if (token !== historyToken) return;         // vom nächsten Aufruf überholt → verwerfen
-    map.getSource('history').setData(gj);
-    fadeHistory(true);
+    if (historyShown) {
+      fadeHistoryScaled(0.22);                   // kurz abdimmen (nicht auf 0 → kein Verschwinden)
+      await wait(230);
+      if (token !== historyToken) return;
+      map.getSource('history').setData(gj);      // Geometrie im gedimmten Moment tauschen
+      fadeHistoryScaled(1);                       // wieder einblenden
+    } else {
+      map.getSource('history').setData(gj);
+      fadeHistory(true);
+      historyShown = true;
+    }
     el.historyStatus.textContent = `${yearLabel(y)} · ${(gj.features || []).length} Gebiete · Quelle: historical-basemaps`;
   } catch (e) {
     if (token === historyToken) el.historyStatus.textContent = `„${yearLabel(y)}“ konnte nicht geladen werden (Netz?). Vorherige Grenzen bleiben.`;
@@ -620,7 +650,8 @@ function reapplyHistory() {
 function setHistoryOn(on) {
   state.history.on = on;
   el.historyOn.checked = on;
-  whenStyleReady(() => { setHistoryMode(on); if (on) { fadeHistory(true); applyHistoryYear(); } else setYearOverlay(''); });
+  if (!on) historyShown = false; // beim nächsten Einschalten wieder sanft einblenden
+  whenStyleReady(() => { setHistoryMode(on); if (on) applyHistoryYear(); else setYearOverlay(''); });
   persist();
 }
 function stepYear(delta) {
@@ -687,21 +718,46 @@ function jumpToEpoch(p) {
   closeDrawer();
 }
 
-/* ---------- Gebiet anklicken → Info-Popup ---------- */
+/* ---------- Gebiet anklicken → Info-Popup (mit Wikipedia-Kurzinfo) ---------- */
 let historyPopup = null;
+const wikiCache = {};
+async function fetchWiki(name) {
+  if (wikiCache[name] !== undefined) return wikiCache[name];
+  const tryLang = async (lang) => {
+    try {
+      const r = await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`);
+      if (!r.ok) return null;
+      const j = await r.json();
+      if (!j.extract || j.type === 'disambiguation') return null;
+      return { extract: j.extract, lang, url: (j.content_urls && j.content_urls.desktop && j.content_urls.desktop.page) || null };
+    } catch (e) { return null; }
+  };
+  const res = (await tryLang('de')) || (await tryLang('en'));
+  wikiCache[name] = res;
+  return res;
+}
 function showHistoryInfo(lngLat, props) {
   const name = props.NAME || props.name || props.NAME_EN || 'Unbekanntes Gebiet';
   const extra = props.SUBJECTO || props.PartOf || props.PARTOF || '';
   const y = yearLabel(currentHistoryYear());
   const enc = encodeURIComponent(name);
-  const html = `<div class="pop">
+  const render = (infoHtml, link) => `<div class="pop">
       <div class="pop-name">${escapeHtml(name)}</div>
       <div class="pop-sub">${escapeHtml(y)}${extra ? ' · ' + escapeHtml(extra) : ''}</div>
-      <a class="pop-link" href="https://de.wikipedia.org/wiki/Spezial:Suche?search=${enc}" target="_blank" rel="noopener">Auf Wikipedia ansehen ↗</a>
+      ${infoHtml}
+      <a class="pop-link" href="${link || ('https://de.wikipedia.org/wiki/Spezial:Suche?search=' + enc)}" target="_blank" rel="noopener">Auf Wikipedia ansehen ↗</a>
     </div>`;
   if (historyPopup) historyPopup.remove();
-  historyPopup = new maplibregl.Popup({ closeButton: true, maxWidth: '260px', className: 'mc-popup' })
-    .setLngLat(lngLat).setHTML(html).addTo(map);
+  const popup = new maplibregl.Popup({ closeButton: true, maxWidth: '290px', className: 'mc-popup' })
+    .setLngLat(lngLat).setHTML(render('<div class="pop-info pop-loading">Lade Infos …</div>')).addTo(map);
+  historyPopup = popup;
+  fetchWiki(name).then((res) => {
+    if (historyPopup !== popup || !popup.isOpen()) return; // durch neuen Klick ersetzt
+    const info = res
+      ? `<div class="pop-info">${escapeHtml(res.extract.length > 260 ? res.extract.slice(0, 260) + '…' : res.extract)}</div>`
+      : '<div class="pop-info pop-muted">Keine Kurzinfo gefunden.</div>';
+    popup.setHTML(render(info, res && res.url));
+  });
 }
 map.on('mouseenter', 'history-fill', () => { if (state.history.on) el.map.style.cursor = 'pointer'; });
 map.on('mouseleave', 'history-fill', () => { if (!markerMode && activeTab !== 'countries') el.map.style.cursor = ''; });
@@ -946,6 +1002,26 @@ function applyState(s) {
 }
 
 $('#btn-save').addEventListener('click', () => { persist(); toast('Projekt gespeichert'); });
+
+/* ---------- Teilbaren Link erzeugen ---------- */
+function buildShareURL() {
+  const c = map.getCenter();
+  const p = new URLSearchParams();
+  p.set('h', state.history.on ? '1' : '0');
+  p.set('yi', String(state.history.index));
+  p.set('st', state.style);
+  p.set('c', `${c.lng.toFixed(3)},${c.lat.toFixed(3)}`);
+  p.set('z', map.getZoom().toFixed(2));
+  p.set('p', map.getPitch().toFixed(0));
+  p.set('b', map.getBearing().toFixed(0));
+  return location.origin + location.pathname + '#' + p.toString();
+}
+$('#btn-share').addEventListener('click', async () => {
+  const url = buildShareURL();
+  try { location.hash = url.split('#')[1]; } catch (e) {}
+  try { await navigator.clipboard.writeText(url); toast('🔗 Link kopiert — Ansicht teilbar'); }
+  catch (e) { window.prompt('Link kopieren:', url); }
+});
 $('#btn-export').addEventListener('click', () => {
   downloadBlob(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }), 'mapcinema-projekt.json');
 });
@@ -1041,6 +1117,8 @@ el.routeToggle.checked = state.route;
 el.revealToggle.checked = state.revealSequential;
 el.globeToggle.checked = state.globe;
 el.audioOn.checked = state.audioOn;
+$('#style-seg .active')?.classList.remove('active');
+$(`#style-seg [data-style="${state.style}"]`)?.classList.add('active');
 updateYearUI();
 renderEpochs();
 renderKeyframes(); renderCountries(); renderMarkers();
