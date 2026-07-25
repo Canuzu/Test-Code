@@ -49,19 +49,25 @@ function buildStyle(variant) {
   layers.push({ id: 'country-line', type: 'line', source: 'countries', 'source-layer': 'countries',
     paint: { 'line-color': p.border, 'line-width': p.sat ? 0.6 : 0.9, 'line-opacity': p.sat ? 0.5 : 0.85 } });
 
-  // Historische Grenzen (anfangs leer & versteckt)
+  // Historische Grenzen (anfangs leer & versteckt) — mit sanften Übergängen
   layers.push({ id: 'history-fill', type: 'fill', source: 'history',
     layout: { visibility: 'none' },
-    paint: { 'fill-color': ['coalesce', ['get', '__color'], '#ffcf5c'], 'fill-opacity': 0.34 } });
+    paint: { 'fill-color': ['coalesce', ['get', '__color'], '#8fb3ff'], 'fill-opacity': 0, 'fill-opacity-transition': { duration: 380 } } });
   layers.push({ id: 'history-line', type: 'line', source: 'history',
-    layout: { visibility: 'none', 'line-join': 'round' },
-    paint: { 'line-color': p.dark ? '#ffffff' : '#3a2a12', 'line-width': 1.1, 'line-opacity': 0.85 } });
+    layout: { visibility: 'none', 'line-join': 'round', 'line-cap': 'round' },
+    paint: { 'line-color': p.dark ? 'rgba(255,255,255,.9)' : '#2c2114', 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 0.7, 4, 1.4, 7, 2.2], 'line-opacity': 0, 'line-opacity-transition': { duration: 380 } } });
   layers.push({ id: 'history-label', type: 'symbol', source: 'history',
-    layout: { visibility: 'none', 'text-field': ['coalesce', ['get', 'NAME'], ['get', 'name'], ''], 'text-size': 12, 'text-font': ['Open Sans Regular'], 'text-max-width': 7, 'symbol-placement': 'point' },
-    paint: { 'text-color': p.dark ? '#ffffff' : '#241a0c', 'text-halo-color': p.dark ? 'rgba(0,0,0,.7)' : 'rgba(255,255,255,.85)', 'text-halo-width': 1.4 } });
+    layout: { visibility: 'none', 'text-field': ['coalesce', ['get', 'NAME'], ['get', 'name'], ''],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 1, 10, 4, 13, 6, 16], 'text-font': ['Open Sans Regular'],
+      'text-max-width': 7, 'text-padding': 6, 'symbol-placement': 'point', 'text-transform': 'none' },
+    paint: { 'text-color': p.dark ? '#ffffff' : '#1c1509', 'text-halo-color': p.dark ? 'rgba(0,0,0,.75)' : 'rgba(255,255,255,.9)', 'text-halo-width': 1.6, 'text-opacity': 0, 'text-opacity-transition': { duration: 380 } } });
 
   return { version: 8, projection: { type: 'globe' }, glyphs: GLYPHS, sources, layers };
 }
+
+/* Angenehme, gut unterscheidbare Farbpalette für historische Gebiete */
+const HIST_PALETTE = ['#6aa9e9', '#7cc47f', '#f2a65a', '#e07a5f', '#b58fd6', '#5ec6b0', '#f2c14e', '#e58fb0', '#8fb36a', '#c4a06a', '#8aa1ff', '#d98c8c', '#66c2c2', '#c98fd0'];
+const HIST_FILL_OP = 0.32, HIST_LINE_OP = 0.9, HIST_LABEL_OP = 1;
 
 /* ---------- Historische Jahres-Stände (historical-basemaps) ---------- */
 const HISTORY_BASE = 'https://raw.githubusercontent.com/aourednik/historical-basemaps/master/geojson/';
@@ -105,6 +111,7 @@ const el = {
   audioName: $('#audio-name'), audioRemove: $('#audio-remove'), audioOn: $('#audio-on'), audioVol: $('#audio-vol'),
   historyOn: $('#history-on'), yearSlider: $('#year-slider'), yearLabel: $('#year-label'),
   yearPrev: $('#year-prev'), yearNext: $('#year-next'), timePlay: $('#time-play'), historyStatus: $('#history-status'),
+  timeVideo: $('#time-video'), yearOverlay: $('#year-overlay'),
 };
 
 /* ---------- Map init ---------- */
@@ -517,7 +524,8 @@ function getAudioTracks() {
 /* ============================================================
    ZEITREISE — historische Grenzen pro Jahr
    ============================================================ */
-let historyLoading = false;
+let historyToken = 0;
+let yearOverlayText = ''; // wird in den Video-Export gezeichnet
 
 function currentHistoryYear() {
   const i = Math.max(0, Math.min(HISTORY_YEARS.length - 1, state.history.index));
@@ -527,13 +535,17 @@ function setHistoryLayerVisibility(vis) {
   ['history-fill', 'history-line', 'history-label'].forEach((id) => {
     if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis ? 'visible' : 'none');
   });
-  // moderne Grenzen ausblenden, solange die Zeitreise aktiv ist
   if (map.getLayer('country-line')) map.setLayoutProperty('country-line', 'visibility', vis ? 'none' : 'visible');
+}
+function fadeHistory(on) {
+  if (map.getLayer('history-fill')) map.setPaintProperty('history-fill', 'fill-opacity', on ? HIST_FILL_OP : 0);
+  if (map.getLayer('history-line')) map.setPaintProperty('history-line', 'line-opacity', on ? HIST_LINE_OP : 0);
+  if (map.getLayer('history-label')) map.setPaintProperty('history-label', 'text-opacity', on ? HIST_LABEL_OP : 0);
 }
 function stableColor(name) {
   let h = 0; const s = String(name || '');
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
-  return `hsl(${h},70%,60%)`;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return HIST_PALETTE[h % HIST_PALETTE.length];
 }
 async function loadHistoryYear(year) {
   if (historyCache[year]) return historyCache[year];
@@ -552,56 +564,70 @@ function updateYearUI() {
   el.yearSlider.value = String(state.history.index);
   el.yearLabel.textContent = yearLabel(y);
 }
-async function applyHistoryYear() {
+function setYearOverlay(text) {
+  yearOverlayText = text || '';
+  if (text) { el.yearOverlay.textContent = text; el.yearOverlay.classList.add('show'); }
+  else { el.yearOverlay.classList.remove('show'); }
+}
+/* smooth = sanfter Crossfade (aus → laden → ein); ohne = direkt setzen */
+async function applyHistoryYear(smooth) {
   const y = currentHistoryYear();
   updateYearUI();
-  if (!state.history.on) return;
-  if (!map.getSource('history')) return;
-  historyLoading = true;
+  if (!state.history.on || !map.getSource('history')) return;
+  const token = ++historyToken;
+  setYearOverlay(yearLabel(y));
   el.historyStatus.textContent = `Lade ${yearLabel(y)} …`;
   try {
+    if (smooth) { fadeHistory(false); await wait(300); if (token !== historyToken) return; }
     const gj = await loadHistoryYear(y);
-    if (map.getSource('history')) map.getSource('history').setData(gj);
+    if (token !== historyToken) return;            // vom nächsten Aufruf überholt
+    map.getSource('history').setData(gj);
+    fadeHistory(true);
     el.historyStatus.textContent = `${yearLabel(y)} · ${(gj.features || []).length} Gebiete · Quelle: historical-basemaps`;
   } catch (e) {
     el.historyStatus.textContent = `Konnte ${yearLabel(y)} nicht laden (offline?)`;
   }
-  historyLoading = false;
 }
 function reapplyHistory() {
   if (!map.getSource('history')) return;
   setHistoryLayerVisibility(state.history.on);
-  if (state.history.on) applyHistoryYear();
+  if (state.history.on) applyHistoryYear(false); else setYearOverlay('');
 }
 function setHistoryOn(on) {
   state.history.on = on;
   el.historyOn.checked = on;
-  whenStyleReady(() => { setHistoryLayerVisibility(on); if (on) applyHistoryYear(); });
+  whenStyleReady(() => { setHistoryLayerVisibility(on); if (on) applyHistoryYear(false); else setYearOverlay(''); });
   persist();
 }
 function stepYear(delta) {
   const ni = Math.max(0, Math.min(HISTORY_YEARS.length - 1, state.history.index + delta));
   if (ni === state.history.index) return;
   state.history.index = ni;
-  applyHistoryYear(); persist();
+  applyHistoryYear(true); persist();
 }
 el.historyOn.addEventListener('change', () => setHistoryOn(el.historyOn.checked));
-el.yearSlider.addEventListener('input', () => { state.history.index = parseInt(el.yearSlider.value, 10) || 0; updateYearUI(); });
-el.yearSlider.addEventListener('change', () => { applyHistoryYear(); persist(); });
+el.yearSlider.addEventListener('input', () => { state.history.index = parseInt(el.yearSlider.value, 10) || 0; updateYearUI(); if (state.history.on) setYearOverlay(yearLabel(currentHistoryYear())); });
+el.yearSlider.addEventListener('change', () => { applyHistoryYear(true); persist(); });
 el.yearPrev.addEventListener('click', () => stepYear(-1));
 el.yearNext.addEventListener('click', () => stepYear(1));
 
 let timePlaying = false;
-el.timePlay.addEventListener('click', async () => {
-  if (timePlaying) { timePlaying = false; el.timePlay.textContent = '▶ Durch die Zeit'; return; }
+/* Läuft durch die Epochen; gibt Promise zurück, damit der Video-Export darauf warten kann. */
+async function playThroughTime(opts = {}) {
   if (!state.history.on) setHistoryOn(true);
   timePlaying = true; el.timePlay.textContent = '⏸ Stopp';
-  for (let i = state.history.index; i < HISTORY_YEARS.length && timePlaying; i++) {
+  const from = opts.fromStart ? 0 : state.history.index;
+  for (let i = from; i < HISTORY_YEARS.length && timePlaying; i++) {
     state.history.index = i;
-    await applyHistoryYear();
-    await wait(1100);
+    await applyHistoryYear(true);
+    await wait(opts.hold || 1100);
   }
   timePlaying = false; el.timePlay.textContent = '▶ Durch die Zeit';
+  persist();
+}
+el.timePlay.addEventListener('click', () => {
+  if (timePlaying) { timePlaying = false; el.timePlay.textContent = '▶ Durch die Zeit'; return; }
+  playThroughTime();
 });
 
 /* ============================================================
@@ -673,6 +699,20 @@ function drawFrame(octx, W, H) {
     }
   });
 
+  // Jahr-Einblendung (oben mittig), wenn die Zeitreise aktiv ist
+  if (yearOverlayText) {
+    const fs = Math.max(16, H * 0.036);
+    octx.font = `700 ${fs}px 'Space Grotesk', Inter, sans-serif`;
+    octx.textAlign = 'center'; octx.textBaseline = 'middle';
+    const tw = octx.measureText(yearOverlayText).width;
+    const padX = fs * 0.7, padY = fs * 0.4, bw = tw + padX * 2, bh = fs + padY * 2;
+    const bx = (W - bw) / 2, by = H * 0.045;
+    octx.fillStyle = 'rgba(15,20,35,.62)';
+    roundRect(octx, bx, by, bw, bh, bh / 2); octx.fill();
+    octx.fillStyle = '#fff';
+    octx.fillText(yearOverlayText, W / 2, by + bh / 2);
+  }
+
   // Titel (nur wenn gerade eingeblendet)
   if (el.titleOverlay.classList.contains('show') && el.titleOverlay.textContent) {
     const txt = el.titleOverlay.textContent;
@@ -693,10 +733,9 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
 }
 
-el.record.addEventListener('click', exportVideo);
-async function exportVideo() {
-  if (recording || playing) return;
-  if (state.keyframes.length < 1) { toast('Füge zuerst Keyframes hinzu'); return; }
+/* Nimmt beliebige Animation (runFn) als WebM auf: komponiert Karte + Overlays. */
+async function recordWhile(runFn, opts = {}) {
+  if (recording || playing || timePlaying) return;
   if (!window.MediaRecorder) { toast('Video-Export wird von diesem Browser nicht unterstützt'); return; }
 
   recording = true;
@@ -705,7 +744,6 @@ async function exportVideo() {
   const restore = applyExportSize(W, H);
   await wait(400);
 
-  // Kompositions-Canvas (2D) — enthält Karte + Marker + Titel und ist überall aufnehmbar
   const out = document.createElement('canvas');
   out.width = W; out.height = H;
   const octx = out.getContext('2d');
@@ -714,7 +752,7 @@ async function exportVideo() {
   try { stream = out.captureStream(30); }
   catch (e) { toast('Aufnahme nicht möglich'); cleanup(); return; }
 
-  const aTracks = getAudioTracks();
+  const aTracks = opts.audio ? getAudioTracks() : [];
   const combined = new MediaStream([...stream.getVideoTracks(), ...aTracks]);
   const mime = pickMime();
   let rec;
@@ -725,16 +763,15 @@ async function exportVideo() {
   rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
   const stopped = new Promise((res) => { rec.onstop = res; });
 
-  // Render-Schleife
   let drawing = true;
   const loop = () => { if (!drawing) return; try { drawFrame(octx, W, H); } catch (e) {} requestAnimationFrame(loop); };
   requestAnimationFrame(loop);
 
   el.recOverlay.classList.remove('hidden');
-  el.recSub.textContent = 'Tour läuft…';
+  el.recSub.textContent = opts.sub || 'Aufnahme läuft…';
   rec.start();
 
-  try { await playTour({ keepAudio: true }); } catch (e) {}
+  try { await runFn(); } catch (e) {}
   await wait(500);
   drawing = false;
   try { rec.stop(); } catch (e) {}
@@ -743,7 +780,7 @@ async function exportVideo() {
   if (audioReady) audioEl.pause();
   const blob = new Blob(chunks, { type: (mime || 'video/webm').split(';')[0] });
   cleanup();
-  if (blob.size > 0) { downloadBlob(blob, 'mapcinema-video.webm'); toast('🎉 Video exportiert (WebM)'); }
+  if (blob.size > 0) { downloadBlob(blob, opts.name || 'mapcinema-video.webm'); toast('🎉 Video exportiert (WebM)'); }
   else { toast('Aufnahme leer — bitte erneut versuchen'); }
 
   function cleanup() {
@@ -751,6 +788,14 @@ async function exportVideo() {
     el.recOverlay.classList.add('hidden'); setPlaying(false); restore();
   }
 }
+
+el.record.addEventListener('click', () => {
+  if (state.keyframes.length < 1) { toast('Füge zuerst Keyframes hinzu'); return; }
+  recordWhile(() => playTour({ keepAudio: true }), { audio: true, sub: 'Tour läuft…', name: 'mapcinema-video.webm' });
+});
+if (el.timeVideo) el.timeVideo.addEventListener('click', () => {
+  recordWhile(() => playThroughTime({ fromStart: false }), { audio: true, sub: 'Zeitreise läuft…', name: 'mapcinema-zeitreise.webm' });
+});
 function downloadBlob(blob, name) {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
