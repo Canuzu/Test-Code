@@ -86,7 +86,8 @@ const DEFAULT_STATE = {
   keyframes: [], countries: [], markers: [],
   route: false, style: 'satellite', globe: true,
   revealSequential: false, audioOn: true,
-  history: { on: false, index: HISTORY_YEARS.indexOf(2010) },
+  // Kern der Seite: die App startet direkt im historischen Politik-Kartenmodus.
+  history: { on: true, index: HISTORY_YEARS.indexOf(2010) },
 };
 let state = structuredClone(DEFAULT_STATE);
 let markerObjects = [];
@@ -115,7 +116,7 @@ const el = {
   audioName: $('#audio-name'), audioRemove: $('#audio-remove'), audioOn: $('#audio-on'), audioVol: $('#audio-vol'),
   historyOn: $('#history-on'), yearSlider: $('#year-slider'), yearLabel: $('#year-label'),
   yearPrev: $('#year-prev'), yearNext: $('#year-next'), timePlay: $('#time-play'), historyStatus: $('#history-status'),
-  timeVideo: $('#time-video'), yearOverlay: $('#year-overlay'),
+  timeVideo: $('#time-video'), yearOverlay: $('#year-overlay'), epochPresets: $('#epoch-presets'),
 };
 
 /* ---------- Map init ---------- */
@@ -317,6 +318,11 @@ function renderMarkers() {
 /* ---------- Karten-Klick ---------- */
 map.on('click', (e) => {
   if (markerMode) { addMarker(e.lngLat.lng, e.lngLat.lat); return; }
+  // Im Zeitmodus: Gebiet anklicken → Info-Popup (hat Vorrang)
+  if (state.history.on && map.getLayer('history-fill')) {
+    const hf = map.queryRenderedFeatures(e.point, { layers: ['history-fill'] });
+    if (hf.length) { showHistoryInfo(e.lngLat, hf[0].properties || {}); return; }
+  }
   if (activeTab === 'countries') {
     const feats = map.queryRenderedFeatures(e.point, { layers: ['country-fill'] });
     if (feats.length) {
@@ -649,6 +655,57 @@ el.timePlay.addEventListener('click', () => {
   playThroughTime();
 });
 
+/* ---------- Ein-Klick-Epochen ---------- */
+const EPOCHS = [
+  { label: '🏛️ Antike', year: -500, center: [35, 36], zoom: 2.6 },
+  { label: '🏛️ Röm. Reich', year: 200, center: [16, 40], zoom: 2.7 },
+  { label: '🐎 Mittelalter', year: 1000, center: [30, 42], zoom: 2.4 },
+  { label: '⛵ Entdeckungen', year: 1500, center: [8, 28], zoom: 1.9 },
+  { label: '🕌 1800', year: 1800, center: [32, 39], zoom: 2.6 },
+  { label: '⚔️ Vor 1. WK', year: 1914, center: [20, 46], zoom: 2.6 },
+  { label: '🌍 Heute', year: 2010, center: [10, 30], zoom: 1.8 },
+];
+function renderEpochs() {
+  if (!el.epochPresets) return;
+  el.epochPresets.innerHTML = '';
+  EPOCHS.forEach((p) => {
+    const b = document.createElement('button');
+    b.className = 'epoch-chip';
+    b.textContent = `${p.label} · ${yearLabel(p.year).replace(' n. Chr.', '').replace(' v. Chr.', ' v.Chr.')}`;
+    b.onclick = () => jumpToEpoch(p);
+    el.epochPresets.appendChild(b);
+  });
+}
+function jumpToEpoch(p) {
+  const idx = HISTORY_YEARS.indexOf(p.year);
+  if (idx >= 0) state.history.index = idx;
+  updateYearUI();
+  if (!state.history.on) setHistoryOn(true); else applyHistoryYear();
+  el.historyOn.checked = true;
+  if (p.center) map.flyTo({ center: p.center, zoom: p.zoom || 2.5, pitch: 0, bearing: 0, duration: 1700, essential: true });
+  persist();
+  closeDrawer();
+}
+
+/* ---------- Gebiet anklicken → Info-Popup ---------- */
+let historyPopup = null;
+function showHistoryInfo(lngLat, props) {
+  const name = props.NAME || props.name || props.NAME_EN || 'Unbekanntes Gebiet';
+  const extra = props.SUBJECTO || props.PartOf || props.PARTOF || '';
+  const y = yearLabel(currentHistoryYear());
+  const enc = encodeURIComponent(name);
+  const html = `<div class="pop">
+      <div class="pop-name">${escapeHtml(name)}</div>
+      <div class="pop-sub">${escapeHtml(y)}${extra ? ' · ' + escapeHtml(extra) : ''}</div>
+      <a class="pop-link" href="https://de.wikipedia.org/wiki/Spezial:Suche?search=${enc}" target="_blank" rel="noopener">Auf Wikipedia ansehen ↗</a>
+    </div>`;
+  if (historyPopup) historyPopup.remove();
+  historyPopup = new maplibregl.Popup({ closeButton: true, maxWidth: '260px', className: 'mc-popup' })
+    .setLngLat(lngLat).setHTML(html).addTo(map);
+}
+map.on('mouseenter', 'history-fill', () => { if (state.history.on) el.map.style.cursor = 'pointer'; });
+map.on('mouseleave', 'history-fill', () => { if (!markerMode && activeTab !== 'countries') el.map.style.cursor = ''; });
+
 /* ============================================================
    VIDEO-EXPORT (WebM)
    ============================================================ */
@@ -864,7 +921,7 @@ document.addEventListener('click', (e) => {
 /* ============================================================
    SPEICHERN / EXPORT / IMPORT / DEMO
    ============================================================ */
-const STORAGE_KEY = 'mapcinema.project.v3';
+const STORAGE_KEY = 'mapcinema.project.v4';
 function persist() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {} }
 function loadFromStorage() { try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) applyState(JSON.parse(raw)); } catch (e) {} }
 
@@ -873,7 +930,7 @@ function applyState(s) {
   state = Object.assign(structuredClone(DEFAULT_STATE), s);
   if (!PALETTES[state.style]) state.style = 'day';
   // UI sync
-  if (!state.history || typeof state.history.index !== 'number') state.history = { on: false, index: HISTORY_YEARS.indexOf(2010) };
+  if (!state.history || typeof state.history.index !== 'number') state.history = { on: true, index: HISTORY_YEARS.indexOf(2010) };
   el.routeToggle.checked = state.route;
   el.globeToggle.checked = state.globe;
   el.revealToggle.checked = state.revealSequential;
@@ -978,5 +1035,12 @@ try { if (!localStorage.getItem('mapcinema.helpseen')) openHelp(); } catch (e) {
 /* Erststart */
 el.yearSlider.max = String(HISTORY_YEARS.length - 1);
 el.yearSlider.min = '0';
+// Schalter-Zustände mit den Defaults synchronisieren (bei frischem Start ohne gespeichertes Projekt)
+el.historyOn.checked = state.history.on;
+el.routeToggle.checked = state.route;
+el.revealToggle.checked = state.revealSequential;
+el.globeToggle.checked = state.globe;
+el.audioOn.checked = state.audioOn;
 updateYearUI();
+renderEpochs();
 renderKeyframes(); renderCountries(); renderMarkers();
