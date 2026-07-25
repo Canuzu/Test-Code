@@ -33,6 +33,12 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Fetch live Cardmarket prices (server-side, no CORS)
+        # Nur bei geplanten/manuellen Läufen die Daten neu crawlen. Bei Code-Pushes
+        # (z. B. App-Änderungen) werden die bereits committeten Snapshots genutzt,
+        # damit der Deploy nicht am langsamen Crawl hängt.
+        if: github.event_name != 'push'
+        continue-on-error: true
+        timeout-minutes: 12
         run: node scripts/fetch-prices.mjs
         env:
           POKEMONTCG_API_KEY: ${{ secrets.POKEMONTCG_API_KEY }}
@@ -45,6 +51,9 @@ jobs:
           CM_GAME_ID: ${{ vars.CM_GAME_ID }}
           CM_SEARCH: ${{ vars.CM_SEARCH }}
       - name: Build One Piece catalogue (all sets/cards + official art, server-side)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        timeout-minutes: 15
         run: node scripts/fetch-onepiece.mjs
         env:
           # Same official Cardmarket (MKM) credentials as Pokémon. When set, real
@@ -64,14 +73,21 @@ jobs:
           CM_MAX_PRODUCTS: ${{ vars.CM_MAX_PRODUCTS }}
           CM_CONCURRENCY: ${{ vars.CM_CONCURRENCY }}
       - name: Build Yu-Gi-Oh! catalogue (all sets/cards + official art, server-side)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        timeout-minutes: 15
         run: node scripts/fetch-yugioh.mjs
       - name: Build Magic catalogue (Scryfall, real Cardmarket EUR prices)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        timeout-minutes: 15
         run: node scripts/fetch-magic.mjs
       - name: Smoke-test catalogues (non-blocking — surfaces empty/broken data)
+        if: github.event_name != 'push'
         continue-on-error: true
         run: node scripts/smoke-data.mjs
       - name: Persist grown card snapshots (incremental)
-        if: github.ref == 'refs/heads/main'
+        if: github.event_name != 'push' && github.ref == 'refs/heads/main'
         continue-on-error: true # branch protection etc. must not break the deploy
         run: |
           if [ -n "$(git status --porcelain public/data/*.json)" ]; then
