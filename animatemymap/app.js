@@ -53,14 +53,18 @@ function buildStyle(variant) {
   layers.push({ id: 'history-fill', type: 'fill', source: 'history',
     layout: { visibility: 'none' },
     paint: { 'fill-color': ['coalesce', ['get', '__color'], '#8fb3ff'], 'fill-opacity': 0, 'fill-opacity-transition': { duration: 380 } } });
+  // dunkle Kontur unter der Grenzlinie → auf hellem wie dunklem Untergrund gut lesbar
+  layers.push({ id: 'history-line-casing', type: 'line', source: 'history',
+    layout: { visibility: 'none', 'line-join': 'round', 'line-cap': 'round' },
+    paint: { 'line-color': 'rgba(10,14,25,.55)', 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 2.2, 4, 3.4, 7, 5], 'line-opacity': 0, 'line-opacity-transition': { duration: 380 } } });
   layers.push({ id: 'history-line', type: 'line', source: 'history',
     layout: { visibility: 'none', 'line-join': 'round', 'line-cap': 'round' },
-    paint: { 'line-color': p.dark ? 'rgba(255,255,255,.9)' : '#2c2114', 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 0.7, 4, 1.4, 7, 2.2], 'line-opacity': 0, 'line-opacity-transition': { duration: 380 } } });
+    paint: { 'line-color': '#ffe08a', 'line-width': ['interpolate', ['linear'], ['zoom'], 1, 1, 4, 1.8, 7, 2.8], 'line-opacity': 0, 'line-opacity-transition': { duration: 380 } } });
   layers.push({ id: 'history-label', type: 'symbol', source: 'history',
     layout: { visibility: 'none', 'text-field': ['coalesce', ['get', 'NAME'], ['get', 'name'], ''],
-      'text-size': ['interpolate', ['linear'], ['zoom'], 1, 10, 4, 13, 6, 16], 'text-font': ['Open Sans Regular'],
-      'text-max-width': 7, 'text-padding': 6, 'symbol-placement': 'point', 'text-transform': 'none' },
-    paint: { 'text-color': p.dark ? '#ffffff' : '#1c1509', 'text-halo-color': p.dark ? 'rgba(0,0,0,.75)' : 'rgba(255,255,255,.9)', 'text-halo-width': 1.6, 'text-opacity': 0, 'text-opacity-transition': { duration: 380 } } });
+      'text-size': ['interpolate', ['linear'], ['zoom'], 1, 11, 4, 14, 6, 17], 'text-font': ['Open Sans Regular'],
+      'text-max-width': 7, 'text-padding': 8, 'text-optional': true, 'symbol-placement': 'point', 'text-transform': 'none' },
+    paint: { 'text-color': '#ffffff', 'text-halo-color': 'rgba(0,0,0,.85)', 'text-halo-width': 1.8, 'text-opacity': 0, 'text-opacity-transition': { duration: 380 } } });
 
   return { version: 8, projection: { type: 'globe' }, glyphs: GLYPHS, sources, layers };
 }
@@ -121,7 +125,6 @@ const map = new maplibregl.Map({
   center: [10, 30], zoom: 1.6, pitch: 0, bearing: 0,
   attributionControl: { compact: true },
   maxPitch: 75,
-  preserveDrawingBuffer: true, // wichtig für Video-Aufnahme
 });
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
 
@@ -532,13 +535,18 @@ function currentHistoryYear() {
   return HISTORY_YEARS[i];
 }
 function setHistoryLayerVisibility(vis) {
-  ['history-fill', 'history-line', 'history-label'].forEach((id) => {
+  ['history-fill', 'history-line-casing', 'history-line', 'history-label'].forEach((id) => {
     if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', vis ? 'visible' : 'none');
   });
   if (map.getLayer('country-line')) map.setLayoutProperty('country-line', 'visibility', vis ? 'none' : 'visible');
 }
+function isSatStyle() { return !!(PALETTES[state.style] && PALETTES[state.style].sat); }
 function fadeHistory(on) {
-  if (map.getLayer('history-fill')) map.setPaintProperty('history-fill', 'fill-opacity', on ? HIST_FILL_OP : 0);
+  // Auf dem Satellitenbild KEINE Flächenfüllung (sonst wird das Bild „verwaschen“) —
+  // nur klare Grenzlinien + Labels. In stilisierten Stilen dezente Füllung.
+  const fillOp = on ? (isSatStyle() ? 0 : 0.22) : 0;
+  if (map.getLayer('history-fill')) map.setPaintProperty('history-fill', 'fill-opacity', fillOp);
+  if (map.getLayer('history-line-casing')) map.setPaintProperty('history-line-casing', 'line-opacity', on ? 0.9 : 0);
   if (map.getLayer('history-line')) map.setPaintProperty('history-line', 'line-opacity', on ? HIST_LINE_OP : 0);
   if (map.getLayer('history-label')) map.setPaintProperty('history-label', 'text-opacity', on ? HIST_LABEL_OP : 0);
 }
@@ -569,45 +577,46 @@ function setYearOverlay(text) {
   if (text) { el.yearOverlay.textContent = text; el.yearOverlay.classList.add('show'); }
   else { el.yearOverlay.classList.remove('show'); }
 }
-/* smooth = sanfter Crossfade (aus → laden → ein); ohne = direkt setzen */
-async function applyHistoryYear(smooth) {
+/* Wichtig: ERST laden, DANN tauschen — die alten Grenzen bleiben sichtbar,
+   bis die neuen da sind (kein Verschwinden). Bei Fehler bleiben die alten stehen. */
+async function applyHistoryYear() {
   const y = currentHistoryYear();
   updateYearUI();
   if (!state.history.on || !map.getSource('history')) return;
   const token = ++historyToken;
   setYearOverlay(yearLabel(y));
-  el.historyStatus.textContent = `Lade ${yearLabel(y)} …`;
+  el.historyStatus.textContent = `Lade Grenzen für ${yearLabel(y)} …`;
   try {
-    if (smooth) { fadeHistory(false); await wait(300); if (token !== historyToken) return; }
-    const gj = await loadHistoryYear(y);
-    if (token !== historyToken) return;            // vom nächsten Aufruf überholt
+    const gj = await loadHistoryYear(y);        // alte Grenzen bleiben während des Ladens sichtbar
+    if (token !== historyToken) return;         // vom nächsten Aufruf überholt → verwerfen
     map.getSource('history').setData(gj);
     fadeHistory(true);
     el.historyStatus.textContent = `${yearLabel(y)} · ${(gj.features || []).length} Gebiete · Quelle: historical-basemaps`;
   } catch (e) {
-    el.historyStatus.textContent = `Konnte ${yearLabel(y)} nicht laden (offline?)`;
+    if (token === historyToken) el.historyStatus.textContent = `„${yearLabel(y)}“ konnte nicht geladen werden (Netz?). Vorherige Grenzen bleiben.`;
   }
 }
 function reapplyHistory() {
   if (!map.getSource('history')) return;
   setHistoryLayerVisibility(state.history.on);
-  if (state.history.on) applyHistoryYear(false); else setYearOverlay('');
+  if (state.history.on) { fadeHistory(true); applyHistoryYear(); } else setYearOverlay('');
 }
 function setHistoryOn(on) {
   state.history.on = on;
   el.historyOn.checked = on;
-  whenStyleReady(() => { setHistoryLayerVisibility(on); if (on) applyHistoryYear(false); else setYearOverlay(''); });
+  whenStyleReady(() => { setHistoryLayerVisibility(on); if (on) { fadeHistory(true); applyHistoryYear(); } else setYearOverlay(''); });
   persist();
 }
 function stepYear(delta) {
   const ni = Math.max(0, Math.min(HISTORY_YEARS.length - 1, state.history.index + delta));
   if (ni === state.history.index) return;
   state.history.index = ni;
-  applyHistoryYear(true); persist();
+  applyHistoryYear(); persist();
 }
 el.historyOn.addEventListener('change', () => setHistoryOn(el.historyOn.checked));
+// Beim Ziehen live das Jahr aktualisieren; Daten erst am Ende (change) laden.
 el.yearSlider.addEventListener('input', () => { state.history.index = parseInt(el.yearSlider.value, 10) || 0; updateYearUI(); if (state.history.on) setYearOverlay(yearLabel(currentHistoryYear())); });
-el.yearSlider.addEventListener('change', () => { applyHistoryYear(true); persist(); });
+el.yearSlider.addEventListener('change', () => { applyHistoryYear(); persist(); });
 el.yearPrev.addEventListener('click', () => stepYear(-1));
 el.yearNext.addEventListener('click', () => stepYear(1));
 
@@ -619,7 +628,7 @@ async function playThroughTime(opts = {}) {
   const from = opts.fromStart ? 0 : state.history.index;
   for (let i = from; i < HISTORY_YEARS.length && timePlaying; i++) {
     state.history.index = i;
-    await applyHistoryYear(true);
+    await applyHistoryYear();
     await wait(opts.hold || 1100);
   }
   timePlaying = false; el.timePlay.textContent = '▶ Durch die Zeit';
@@ -763,9 +772,13 @@ async function recordWhile(runFn, opts = {}) {
   rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
   const stopped = new Promise((res) => { rec.onstop = res; });
 
-  let drawing = true;
-  const loop = () => { if (!drawing) return; try { drawFrame(octx, W, H); } catch (e) {} requestAnimationFrame(loop); };
-  requestAnimationFrame(loop);
+  // Frames im 'render'-Event der Karte abgreifen (gültiger GL-Puffer, ohne
+  // preserveDrawingBuffer → flüssigere normale Nutzung). Ein Timer erzwingt
+  // kontinuierliches Rendern, damit auch Standbild-Phasen erfasst werden.
+  const onRender = () => { try { drawFrame(octx, W, H); } catch (e) {} };
+  map.on('render', onRender);
+  const repaint = setInterval(() => map.triggerRepaint(), 1000 / 30);
+  map.triggerRepaint();
 
   el.recOverlay.classList.remove('hidden');
   el.recSub.textContent = opts.sub || 'Aufnahme läuft…';
@@ -773,7 +786,8 @@ async function recordWhile(runFn, opts = {}) {
 
   try { await runFn(); } catch (e) {}
   await wait(500);
-  drawing = false;
+  clearInterval(repaint);
+  map.off('render', onRender);
   try { rec.stop(); } catch (e) {}
   await stopped;
 
@@ -921,6 +935,16 @@ document.addEventListener('keydown', (e) => {
     if (playing) stopAll(); else playTour();
   }
 });
+
+/* ---------- Hilfe / Onboarding ---------- */
+const helpModal = $('#help-modal');
+const openHelp = () => helpModal.classList.remove('hidden');
+const closeHelp = () => helpModal.classList.add('hidden');
+$('#help-btn').addEventListener('click', openHelp);
+$('#help-close').addEventListener('click', closeHelp);
+$('#help-ok').addEventListener('click', () => { closeHelp(); try { localStorage.setItem('mapcinema.helpseen', '1'); } catch (e) {} });
+helpModal.addEventListener('click', (e) => { if (e.target === helpModal) closeHelp(); });
+try { if (!localStorage.getItem('mapcinema.helpseen')) openHelp(); } catch (e) {}
 
 /* Erststart */
 el.yearSlider.max = String(HISTORY_YEARS.length - 1);
