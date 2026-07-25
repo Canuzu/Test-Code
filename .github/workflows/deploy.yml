@@ -140,14 +140,22 @@ jobs:
         # Cache-Busting: die Asset-URLs bekommen pro Deploy einen ?v=<sha>-Stempel,
         # damit Browser/Service-Worker NIE eine veraltete app.css/app.js ausliefern.
         run: |
-          mkdir -p dist/animatemymap
-          cp animatemymap/index.html \
-             animatemymap/app.css \
-             animatemymap/app.js \
-             dist/animatemymap/
           V="${GITHUB_SHA::8}"
+          # Primärer Pfad /animatemymap/
+          mkdir -p dist/animatemymap
+          cp animatemymap/index.html animatemymap/app.css animatemymap/app.js dist/animatemymap/
           sed -i "s#\./app\.css#./app.css?v=$V#g; s#\./app\.js#./app.js?v=$V#g" dist/animatemymap/index.html
+          # Zusätzlicher, brandneuer Pfad /mapcinema/ (umgeht jeden alten Cache/Service-Worker)
+          mkdir -p dist/mapcinema
+          cp animatemymap/index.html animatemymap/app.css animatemymap/app.js dist/mapcinema/
+          sed -i "s#\./app\.css#./app.css?v=$V#g; s#\./app\.js#./app.js?v=$V#g" dist/mapcinema/index.html
           echo "MapCinema cache-bust version: $V"
+          echo "===== DEPLOYED animatemymap/index.html (first 700 chars) ====="
+          head -c 700 dist/animatemymap/index.html
+          echo ""
+          echo "===== app.js size / first line ====="
+          wc -c dist/animatemymap/app.js
+          head -c 160 dist/animatemymap/app.js
       - uses: actions/configure-pages@v5
         with:
           enablement: true
