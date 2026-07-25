@@ -122,20 +122,27 @@
 
       <!-- top toolbar -->
       <div class="toolbar">
-        <div class="seg" id="style-seg">
-          <button data-style="satellite" class="active">🛰 Satellit</button>
-          <button data-style="day">Tag</button>
-          <button data-style="pastel">Pastell</button>
-          <button data-style="vibrant">Vibrant</button>
-          <button data-style="night">Nacht</button>
+        <div class="seg-group">
+          <span class="seg-label">Stil</span>
+          <div class="seg" id="style-seg">
+            <button data-style="satellite" class="active">🛰 Satellit</button>
+            <button data-style="day">Tag</button>
+            <button data-style="pastel">Pastell</button>
+            <button data-style="vibrant">Vibrant</button>
+            <button data-style="night">Nacht</button>
+          </div>
         </div>
-        <div class="seg" id="ratio-seg">
-          <button data-ratio="free" class="active">Frei</button>
-          <button data-ratio="16:9">16:9</button>
-          <button data-ratio="9:16">9:16</button>
-          <button data-ratio="1:1">1:1</button>
+        <div class="seg-group">
+          <span class="seg-label">Format</span>
+          <div class="seg" id="ratio-seg">
+            <button data-ratio="free" class="active">Frei</button>
+            <button data-ratio="16:9">16:9</button>
+            <button data-ratio="9:16">9:16</button>
+            <button data-ratio="1:1">1:1</button>
+          </div>
         </div>
         <label class="seg-check"><input id="globe-toggle" type="checkbox" checked /> Globus</label>
+        <button id="help-btn" title="Hilfe / Anleitung">?</button>
       </div>
 
       <!-- timeline -->
@@ -165,6 +172,32 @@
       </div>
 
       <div id="toast" class="toast hidden"></div>
+
+      <!-- help / onboarding -->
+      <div id="help-modal" class="modal hidden">
+        <div class="modal-card">
+          <button id="help-close" class="modal-x" aria-label="Schließen">✕</button>
+          <div class="modal-head">
+            <div class="brand-mark">◐</div>
+            <div>
+              <h2>Willkommen bei MapCinema</h2>
+              <p class="modal-sub">Erstelle in wenigen Schritten eine Karten-Animation.</p>
+            </div>
+          </div>
+          <ol class="guide">
+            <li><b>🎬 Kamera</b> — Fliege an einen Ort, richte die Ansicht ein und speichere sie als <b>Keyframe</b>. Mehrere Keyframes = deine Kamerafahrt. Unten <b>▶ Abspielen</b>.</li>
+            <li><b>🌍 Länder</b> — Länder anklicken, um sie farbig hervorzuheben.</li>
+            <li><b>📍 Marker</b> — Pins mit Emoji &amp; Text auf die Karte setzen.</li>
+            <li><b>🕰️ Zeit</b> — „Historische Grenzen anzeigen" einschalten und mit dem Regler durch die Jahrhunderte reisen — die Grenzen verändern sich mit.</li>
+            <li><b>🎵 Ton</b> — Musik hinterlegen, die zur Animation läuft.</li>
+            <li><b>● Video</b> (unten) oder <b>🎥 Zeitreise-Video</b> — die Animation als Videodatei speichern.</li>
+          </ol>
+          <div class="guide-tips">
+            <span><b>Oben:</b> Karten-<b>Stil</b> &amp; Video-<b>Format</b> · <b>Unten:</b> Abspielen &amp; Aufnahme · Über <b>?</b> kommst du jederzeit hierher zurück.</span>
+          </div>
+          <button id="help-ok" class="btn btn-primary btn-block">Los geht's</button>
+        </div>
+      </div>
     </main>
   </div>
 
