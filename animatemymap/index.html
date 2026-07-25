@@ -4,6 +4,24 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
   <title>MapCinema — Karten-Animationen erstellen</title>
+  <!-- Befreit die Seite von einem alten, hartnäckigen Service-Worker der Haupt-App,
+       der sonst veraltete app.css/app.js ausliefert. Läuft nur einmal pro Sitzung. -->
+  <script>
+    (function () {
+      try {
+        if (!('serviceWorker' in navigator)) return;
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          if (!regs.length) return;
+          Promise.all(regs.map(function (r) { return r.unregister(); })).then(function () {
+            if (!sessionStorage.getItem('mc-fresh')) {
+              sessionStorage.setItem('mc-fresh', '1');
+              location.reload();
+            }
+          });
+        }).catch(function () {});
+      } catch (e) {}
+    })();
+  </script>
   <meta name="description" content="Erstelle schöne Karten-Animationen im Browser: Kamerafahrten, Länder, Marker, Timeline, Musik und Video-Export. Kostenlos, ohne Installation." />
   <meta name="theme-color" content="#4f7cff" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
