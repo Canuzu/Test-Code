@@ -238,6 +238,15 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 }
 .year-overlay.show{opacity:1}
 
+.map-status{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;
+  max-width:min(84%,440px);text-align:center;pointer-events:none;
+  background:rgba(15,20,35,.82);backdrop-filter:blur(10px);color:#fff;
+  padding:14px 20px;border-radius:16px;border:1px solid rgba(255,255,255,.18);
+  font-size:14px;font-weight:600;line-height:1.5;box-shadow:0 16px 40px rgba(0,0,0,.4);
+}
+.map-status.hidden{display:none}
+
 /* glass bars */
 .toolbar,.timeline,.transport{
   background:var(--glass);backdrop-filter:blur(18px) saturate(1.4);

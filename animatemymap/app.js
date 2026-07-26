@@ -74,7 +74,12 @@ const HIST_PALETTE = ['#6aa9e9', '#7cc47f', '#f2a65a', '#e07a5f', '#b58fd6', '#5
 const HIST_FILL_OP = 0.32, HIST_LINE_OP = 0.9, HIST_LABEL_OP = 1;
 
 /* ---------- Historische Jahres-Stände (historical-basemaps) ---------- */
-const HISTORY_BASE = 'https://raw.githubusercontent.com/aourednik/historical-basemaps/master/geojson/';
+// Mehrere Quellen für Robustheit: schnelles CDN zuerst, GitHub als Fallback.
+const HISTORY_SOURCES = [
+  'https://cdn.jsdelivr.net/gh/aourednik/historical-basemaps@master/geojson/',
+  'https://raw.githubusercontent.com/aourednik/historical-basemaps/master/geojson/',
+  'https://fastly.jsdelivr.net/gh/aourednik/historical-basemaps@master/geojson/',
+];
 const HISTORY_YEARS = [-123000, -10000, -8000, -5000, -4000, -3000, -2000, -1500, -1000, -700, -500, -400, -323, -300, -200, -100, -1,
   100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1279, 1300, 1400, 1492, 1500, 1530, 1600, 1650, 1700, 1715, 1783, 1800, 1815, 1880, 1900, 1914, 1920, 1945, 1960, 1994, 2000, 2010];
 const yearToFile = (y) => (y < 0 ? `world_bc${-y}.geojson` : `world_${y}.geojson`);
@@ -117,6 +122,7 @@ const el = {
   historyOn: $('#history-on'), yearSlider: $('#year-slider'), yearLabel: $('#year-label'),
   yearPrev: $('#year-prev'), yearNext: $('#year-next'), timePlay: $('#time-play'), historyStatus: $('#history-status'),
   timeVideo: $('#time-video'), yearOverlay: $('#year-overlay'), epochPresets: $('#epoch-presets'),
+  mapStatus: $('#map-status'),
 };
 
 /* ---------- Teilbare Links: Zustand aus dem URL-Hash lesen (hat Vorrang) ---------- */
@@ -560,23 +566,36 @@ function currentHistoryYear() {
   return HISTORY_YEARS[i];
 }
 function isSatStyle() { return !!(PALETTES[state.style] && PALETTES[state.style].sat); }
-/* History-Modus = echte politische Weltkarte der Epoche:
-   Satellit/moderne Ebenen aus, sauberer Ozean-Hintergrund, farbig gefüllte Länder. */
-function setHistoryMode(on) {
+/* Basis-Karte (Satellit/moderne Länder + Stil-Hintergrund) zeigen. */
+function showBaseMap() {
   const p = PALETTES[state.style] || PALETTES.satellite;
-  // historische Ebenen ein/aus
+  ['sat', 'country-fill', 'country-line'].forEach((id) => {
+    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'visible');
+  });
+  if (map.getLayer('bg')) map.setPaintProperty('bg', 'background-color', p.sat ? p.space : p.ocean);
+}
+/* Basis-Karte ausblenden und Ozean-Hintergrund setzen — erst wenn die
+   historischen Daten wirklich da sind (sonst NIE einen leeren Bildschirm). */
+function hideBaseForHistory() {
+  const p = PALETTES[state.style] || PALETTES.satellite;
+  ['sat', 'country-fill', 'country-line'].forEach((id) => {
+    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', 'none');
+  });
+  if (map.getLayer('bg')) map.setPaintProperty('bg', 'background-color', p.dark ? '#0b1c3a' : '#c3d8f0');
+}
+/* History-Modus umschalten. Wichtig: Beim Einschalten bleibt die Basiskarte
+   sichtbar, bis die Epochen-Daten geladen sind (hideBaseForHistory in applyHistoryYear). */
+function setHistoryMode(on) {
   ['history-fill', 'history-line-casing', 'history-line', 'history-label'].forEach((id) => {
     if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on ? 'visible' : 'none');
   });
-  // Basis-Ebenen ausblenden, solange die Zeitreise aktiv ist
-  ['sat', 'country-fill', 'country-line'].forEach((id) => {
-    if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', on ? 'none' : 'visible');
-  });
-  // Hintergrund: im History-Modus ein klarer Ozean, sonst der Stil-Standard
-  if (map.getLayer('bg')) {
-    const ocean = on ? (p.dark ? '#0b1c3a' : '#c3d8f0') : (p.sat ? p.space : p.ocean);
-    map.setPaintProperty('bg', 'background-color', ocean);
-  }
+  if (!on) { showBaseMap(); setMapStatus(''); }
+  else if (!historyShown) { showBaseMap(); } // Basis sichtbar lassen bis Daten da sind
+}
+function setMapStatus(text) {
+  if (!el.mapStatus) return;
+  if (text) { el.mapStatus.textContent = text; el.mapStatus.classList.remove('hidden'); }
+  else { el.mapStatus.classList.add('hidden'); }
 }
 function fadeHistoryScaled(m) {
   // m = Deckkraft-Faktor (0..1); für weiche Übergänge zwischen Epochen.
@@ -593,15 +612,25 @@ function stableColor(name) {
 }
 async function loadHistoryYear(year) {
   if (historyCache[year]) return historyCache[year];
-  const res = await fetch(HISTORY_BASE + yearToFile(year));
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const gj = await res.json();
-  (gj.features || []).forEach((f) => {
-    f.properties = f.properties || {};
-    f.properties.__color = stableColor(f.properties.NAME || f.properties.name || '');
-  });
-  historyCache[year] = gj;
-  return gj;
+  const file = yearToFile(year);
+  let lastErr;
+  for (const base of HISTORY_SOURCES) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 12000);
+      const res = await fetch(base + file, { signal: ctrl.signal });
+      clearTimeout(t);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const gj = await res.json();
+      (gj.features || []).forEach((f) => {
+        f.properties = f.properties || {};
+        f.properties.__color = stableColor(f.properties.NAME || f.properties.name || '');
+      });
+      historyCache[year] = gj;
+      return gj;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('Alle Quellen fehlgeschlagen');
 }
 function updateYearUI() {
   const y = currentHistoryYear();
@@ -623,8 +652,9 @@ async function applyHistoryYear() {
   const token = ++historyToken;
   setYearOverlay(yearLabel(y));
   el.historyStatus.textContent = `Lade Grenzen für ${yearLabel(y)} …`;
+  if (!historyShown) setMapStatus(`🕰️ Lade historische Weltkarte (${yearLabel(y)}) …`);
   try {
-    const gj = await loadHistoryYear(y);        // alte Grenzen bleiben während des Ladens sichtbar
+    const gj = await loadHistoryYear(y);        // Basiskarte bleibt sichtbar, bis die Daten da sind
     if (token !== historyToken) return;         // vom nächsten Aufruf überholt → verwerfen
     if (historyShown) {
       fadeHistoryScaled(0.22);                   // kurz abdimmen (nicht auf 0 → kein Verschwinden)
@@ -634,23 +664,30 @@ async function applyHistoryYear() {
       fadeHistoryScaled(1);                       // wieder einblenden
     } else {
       map.getSource('history').setData(gj);
+      hideBaseForHistory();                        // JETZT erst die Basiskarte ausblenden
       fadeHistory(true);
       historyShown = true;
     }
+    setMapStatus('');
     el.historyStatus.textContent = `${yearLabel(y)} · ${(gj.features || []).length} Gebiete · Quelle: historical-basemaps`;
   } catch (e) {
-    if (token === historyToken) el.historyStatus.textContent = `„${yearLabel(y)}“ konnte nicht geladen werden (Netz?). Vorherige Grenzen bleiben.`;
+    if (token !== historyToken) return;
+    // Nie leer: Basiskarte sichtbar lassen + klare Meldung.
+    showBaseMap();
+    setMapStatus('⚠️ Historische Karten-Daten sind gerade nicht erreichbar. Es wird die aktuelle Karte gezeigt — im Zeit-Tab erneut versuchen.');
+    el.historyStatus.textContent = `„${yearLabel(y)}“ konnte nicht geladen werden. Netzwerk prüfen und erneut versuchen.`;
   }
 }
 function reapplyHistory() {
   if (!map.getSource('history')) return;
+  historyShown = false; // nach Style-Neuaufbau ist die History-Quelle leer → als „noch nicht gezeigt" behandeln
   setHistoryMode(state.history.on);
-  if (state.history.on) { fadeHistory(true); applyHistoryYear(); } else setYearOverlay('');
+  if (state.history.on) applyHistoryYear(); else setYearOverlay('');
 }
 function setHistoryOn(on) {
   state.history.on = on;
   el.historyOn.checked = on;
-  if (!on) historyShown = false; // beim nächsten Einschalten wieder sanft einblenden
+  historyShown = false; // beim (Wieder-)Einschalten sanft einblenden; Basiskarte bleibt bis Daten da sind
   whenStyleReady(() => { setHistoryMode(on); if (on) applyHistoryYear(); else setYearOverlay(''); });
   persist();
 }
