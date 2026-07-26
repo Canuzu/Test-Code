@@ -74,8 +74,12 @@ const HIST_PALETTE = ['#6aa9e9', '#7cc47f', '#f2a65a', '#e07a5f', '#b58fd6', '#5
 const HIST_FILL_OP = 0.32, HIST_LINE_OP = 0.9, HIST_LABEL_OP = 1;
 
 /* ---------- Historische Jahres-Stände (historical-basemaps) ---------- */
-// Mehrere Quellen für Robustheit: schnelles CDN zuerst, GitHub als Fallback.
+// WICHTIG: Die Grenzdaten liegen fest in der App unter ./data/ (gleiche Domain).
+// Dadurch laden sie IMMER — unabhängig von externen Servern/CDNs, die auf manchen
+// Geräten/Netzen blockiert oder unerreichbar sind. Die CDNs sind nur noch ein
+// zusätzlicher Fallback (z. B. falls eine Datei mal nicht mitgeliefert wurde).
 const HISTORY_SOURCES = [
+  './data/',
   'https://cdn.jsdelivr.net/gh/aourednik/historical-basemaps@master/geojson/',
   'https://raw.githubusercontent.com/aourednik/historical-basemaps/master/geojson/',
   'https://fastly.jsdelivr.net/gh/aourednik/historical-basemaps@master/geojson/',
