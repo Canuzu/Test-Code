@@ -141,13 +141,15 @@ jobs:
         # damit Browser/Service-Worker NIE eine veraltete app.css/app.js ausliefern.
         run: |
           V="${GITHUB_SHA::8}"
-          # Primärer Pfad /animatemymap/
+          # Primärer Pfad /animatemymap/ — inkl. fest gebündelter Grenzdaten (./data/)
           mkdir -p dist/animatemymap
           cp animatemymap/index.html animatemymap/app.css animatemymap/app.js dist/animatemymap/
+          cp -r animatemymap/data dist/animatemymap/data
           sed -i "s#\./app\.css#./app.css?v=$V#g; s#\./app\.js#./app.js?v=$V#g" dist/animatemymap/index.html
           # Zusätzlicher, brandneuer Pfad /mapcinema/ (umgeht jeden alten Cache/Service-Worker)
           mkdir -p dist/mapcinema
           cp animatemymap/index.html animatemymap/app.css animatemymap/app.js dist/mapcinema/
+          cp -r animatemymap/data dist/mapcinema/data
           sed -i "s#\./app\.css#./app.css?v=$V#g; s#\./app\.js#./app.js?v=$V#g" dist/mapcinema/index.html
           echo "MapCinema cache-bust version: $V"
           echo "===== DEPLOYED animatemymap/index.html (first 700 chars) ====="

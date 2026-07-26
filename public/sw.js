@@ -36,7 +36,7 @@ self.addEventListener('fetch', (event) => {
   // The MapCinema app under /animatemymap/ is a separate, independently deployed
   // static app with fixed (non-hashed) filenames. Never cache it here — always
   // let it go to the network so updates show up immediately (no stale versions).
-  if (url.pathname.includes('/animatemymap/')) return;
+  if (url.pathname.includes('/animatemymap/') || url.pathname.includes('/mapcinema/')) return;
 
   if (req.mode === 'navigate') {
     event.respondWith(
