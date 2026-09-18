@@ -4,32 +4,107 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Chivo:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   KM1 Training, die App. Dieselbe Welt wie die Website:
-   Flutlicht in Koeln bei Nacht, Kreide als Handschrift,
-   Koeln-Rot als seltener Akzent. Bewusst nur eine Fassung:
-   die Marke lebt im Dunkeln, also ist die App dunkel.
+   KM1 Training, die App.
+   Zwei echte Fassungen, genau wie die Website: hell ist der
+   Normalfall (Tageslicht, Papier, Kreide auf hellem Grund),
+   dunkel die Option (Flutlicht). Dunkel ist kein abgedunkeltes
+   Hell, es hat eigene Flaechen, Linien und Kontraste.
+   Gewechselt wird ueber data-theme am Wurzelelement.
    ============================================================ */
 :root{
-  --canvas:#070E0C;
-  --deep:#040908;
-  --panel:#0D1714;
-  --panel-hi:#13201C;
-  --line:rgba(242,245,241,.10);
-  --line-str:rgba(242,245,241,.20);
-  --chalk:rgba(242,245,241,.36);
-  --ink:#F2F5F1;
-  --ink-2:#9CB0A6;
-  --ink-3:#74867E;
+  color-scheme:light;
+
+  --canvas:#F2F5F1;
+  --deep:#E6EBE4;
+  --panel:#FFFFFF;
+  --panel-hi:#F7FAF6;
+  --field:#FFFFFF;
+  --veil:rgba(242,245,241,.94);
+
+  --line:rgba(11,21,18,.12);
+  --line-str:rgba(11,21,18,.26);
+  --chalk:rgba(11,21,18,.46);
+
+  --ink:#0B1512;
+  --ink-body:#33443C;
+  --ink-2:#4E6058;
+  --ink-3:#6B7C74;
+
   --accent:#C81E14;
-  --accent-br:#E8433A;
-  --lv1:#2FA8A0;
-  --lv2:#5FB04A;
-  --lv3:#E8952F;
-  --lv4:#E0342A;
+  --accent-br:#B81A10;
+  --accent-soft:rgba(200,30,20,.09);
+  --accent-line:rgba(200,30,20,.34);
+
+  --lv1:#0D7C75;
+  --lv2:#397E29;
+  --lv3:#A9630A;
+  --lv4:#C81E14;
+
+  /* Text auf einer eingefaerbten Flaeche und auf Bildern */
+  --on-accent:#FFFFFF;
+  --on-media:#F2F5F1;
+  --on-ink:var(--canvas);
+
+  /* Die Kreidezeichnungen der Vorschaubilder */
+  --dia-bg:#E4EBE3;
+  --dia-line:rgba(11,21,18,.40);
+  --dia-acc:#C81E14;
+  --dia-dot:rgba(11,21,18,.82);
+  --dia-scrim:rgba(11,21,18,.26);
+
+  --glow-a:rgba(13,124,117,.10);
+  --glow-b:rgba(200,30,20,.05);
+  --grain:.026;
+  --shadow:0 18px 44px rgba(11,21,18,.13),0 2px 8px rgba(11,21,18,.06);
+
   --display:'Anton','Arial Narrow',system-ui,sans-serif;
   --body:'Chivo',system-ui,-apple-system,'Segoe UI',sans-serif;
   --mono:'JetBrains Mono',ui-monospace,'Courier New',monospace;
   --ease:cubic-bezier(.22,.61,.36,1);
+}
+
+:root[data-theme="dark"]{
+  color-scheme:dark;
+
+  --canvas:#070E0C;
+  --deep:#040908;
+  --panel:#0D1714;
+  --panel-hi:#13201C;
+  --field:#040908;
+  --veil:rgba(7,14,12,.94);
+
+  --line:rgba(242,245,241,.10);
+  --line-str:rgba(242,245,241,.20);
+  --chalk:rgba(242,245,241,.36);
+
+  --ink:#F2F5F1;
+  --ink-body:#CBD8D1;
+  --ink-2:#9CB0A6;
+  --ink-3:#74867E;
+
+  --accent:#C81E14;
+  --accent-br:#E8433A;
+  --accent-soft:rgba(200,30,20,.14);
+  --accent-line:rgba(200,30,20,.46);
+
+  --lv1:#2FA8A0;
+  --lv2:#5FB04A;
+  --lv3:#E8952F;
+  --lv4:#E0342A;
+
+  --on-accent:#07110E;
+  --on-media:#F2F5F1;
+
+  --dia-bg:#0C1815;
+  --dia-line:rgba(242,245,241,.42);
+  --dia-acc:#E8433A;
+  --dia-dot:rgba(242,245,241,.9);
+  --dia-scrim:rgba(4,9,8,.8);
+
+  --glow-a:rgba(120,190,168,.085);
+  --glow-b:rgba(88,150,132,.06);
+  --grain:.055;
+  --shadow:0 30px 80px rgba(0,0,0,.62),0 0 0 6px rgba(4,9,8,.7);
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -45,24 +120,24 @@ body{
   font-size:16px;
   line-height:1.6;
   -webkit-font-smoothing:antialiased;
+  transition:background .4s var(--ease),color .4s var(--ease);
 }
 img{max-width:100%;display:block}
 [hidden]{display:none !important}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
-:focus-visible{outline:2px solid var(--accent-br);outline-offset:2px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 ::selection{background:var(--accent);color:#fff}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-/* Der Flutlichtkegel hinter allem */
 .env{position:fixed;inset:0;z-index:0;pointer-events:none;background:var(--deep)}
 .env::before{
   content:"";position:absolute;inset:-20%;
   background:
-    radial-gradient(ellipse 44% 38% at 24% 16%,rgba(120,190,168,.085),transparent 62%),
-    radial-gradient(ellipse 40% 44% at 80% 76%,rgba(88,150,132,.06),transparent 62%);
+    radial-gradient(ellipse 44% 38% at 24% 16%,var(--glow-a),transparent 62%),
+    radial-gradient(ellipse 40% 44% at 80% 76%,var(--glow-b),transparent 62%);
 }
 .env::after{
-  content:"";position:absolute;inset:0;opacity:.055;
+  content:"";position:absolute;inset:0;opacity:var(--grain);
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -72,7 +147,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   max-width:820px;margin:0 auto;
 }
 @media (min-width:940px){
-  .stage{grid-template-columns:minmax(0,300px) minmax(0,420px);gap:44px;max-width:820px}
+  .stage{grid-template-columns:minmax(0,300px) minmax(0,420px);gap:44px}
   .device{grid-column:2;grid-row:1}
   .rail{grid-column:1;grid-row:1;position:sticky;top:18px}
 }
@@ -85,16 +160,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   border:1px solid var(--line-str);
   border-radius:34px;
   overflow:hidden;
-  box-shadow:0 30px 80px rgba(0,0,0,.62),0 0 0 6px rgba(4,9,8,.7);
+  box-shadow:var(--shadow);
 }
 .app{position:absolute;inset:0;display:flex;flex-direction:column}
 
 .appbar{
   flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:16px 16px 12px;border-bottom:1px solid var(--line);
-  background:linear-gradient(180deg,rgba(13,23,20,.9),rgba(7,14,12,.4));
+  padding:16px 16px 12px;border-bottom:1px solid var(--line);background:var(--panel);
 }
-.mark{height:19px;width:auto;filter:url(#logoLight)}
+.mark{height:19px;width:auto;filter:url(#logoDark)}
+:root[data-theme="dark"] .mark{filter:url(#logoLight)}
 .lvchip{
   display:inline-flex;align-items:center;gap:7px;
   font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
@@ -105,12 +180,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .screens{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .screen{display:flex;flex-direction:column;gap:24px;padding:20px 16px 30px}
 
-/* ---------- Typografie in der App ---------- */
 .eyebrow{
   font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;
   color:var(--ink-2);display:flex;align-items:center;gap:9px;margin:0;
 }
-.eyebrow::before{content:"";width:5px;height:5px;background:var(--accent-br);flex:0 0 auto}
+.eyebrow::before{content:"";width:5px;height:5px;background:var(--accent);flex:0 0 auto}
 h1.big{
   font-family:var(--display);font-weight:400;text-transform:uppercase;
   font-size:30px;line-height:.98;letter-spacing:.005em;margin:6px 0 0;text-wrap:balance;
@@ -124,42 +198,47 @@ h2.sec{
 .block-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .block-head .more{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2)}
 
-/* ---------- Karten ---------- */
+/* ---------- Vorschaubilder ---------- */
 .poster{display:block;position:relative;width:100%;aspect-ratio:16/10;max-width:100%;overflow:hidden;background:var(--deep)}
 .poster > img,.poster > svg{width:100%;height:100%;object-fit:cover;display:block}
 .poster::after{
   content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(190deg,rgba(4,9,8,0) 38%,rgba(4,9,8,.82) 100%);
+  background:linear-gradient(190deg,rgba(4,9,8,0) 38%,rgba(4,9,8,.78) 100%);
 }
+.poster:has(> svg.dia)::after{background:linear-gradient(190deg,rgba(11,21,18,0) 44%,var(--dia-scrim) 100%)}
+.dia .bg{fill:var(--dia-bg)}
+.dia .c{fill:none;stroke:var(--dia-line);stroke-width:1.4}
+.dia .a{fill:none;stroke:var(--dia-acc);stroke-width:1.8}
+.dia .f{fill:var(--dia-dot);stroke:none}
 .badge{
   position:absolute;z-index:2;font-family:var(--mono);font-size:9.5px;font-weight:500;
   letter-spacing:.13em;text-transform:uppercase;padding:4px 7px;
-  background:rgba(4,9,8,.82);color:var(--ink);
+  background:rgba(4,9,8,.82);color:var(--on-media);
 }
 .badge.dur{right:8px;bottom:8px}
 .badge.pro{left:8px;top:8px;background:var(--accent);color:#fff}
-.badge.neu{left:8px;top:8px;background:rgba(242,245,241,.92);color:#0B1512}
+.badge.neu{left:8px;top:8px;background:rgba(242,245,241,.94);color:#0B1512}
 .lock{
   position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;
-  background:rgba(4,9,8,.58);backdrop-filter:blur(2px);
+  background:rgba(4,9,8,.5);
 }
-.lock svg{width:26px;height:26px;fill:none;stroke:var(--ink);stroke-width:1.6}
+.lock svg{width:26px;height:26px;fill:none;stroke:var(--on-media);stroke-width:1.6}
 
 .card{
   display:block;width:100%;text-align:left;
   background:var(--panel);border:1px solid var(--line);
-  transition:border-color .3s var(--ease),background .3s var(--ease);
+  transition:border-color .3s var(--ease),background .3s var(--ease),transform .3s var(--ease);
 }
-.card:hover{border-color:var(--line-str);background:var(--panel-hi)}
+.card:hover{border-color:var(--line-str);background:var(--panel-hi);transform:translateY(-2px)}
 .card .body{padding:11px 12px 13px;display:flex;flex-direction:column;gap:6px}
-.card .t{font-size:14.5px;font-weight:700;line-height:1.28;margin:0;color:var(--ink)}
+.card .t{display:block;font-size:14.5px;font-weight:700;line-height:1.28;margin:0;color:var(--ink)}
 .card .m{
-  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  display:block;
   font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-2);
 }
-.dot{width:7px;height:7px;flex:0 0 auto;display:inline-block}
+.dot{width:7px;height:7px;flex:0 0 auto;display:inline-block;vertical-align:middle}
+.card .m .dot{margin-right:7px}
 
-/* Weitertrainieren, die eine grosse Karte */
 .resume{position:relative;display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--panel)}
 .resume .poster{aspect-ratio:16/9}
 .resume .play{
@@ -171,27 +250,24 @@ h2.sec{
 .resume .play svg{width:16px;height:16px;fill:#fff}
 .resume .body{padding:13px 14px 15px;display:flex;flex-direction:column;gap:8px}
 .resume .t{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:18px;line-height:1.06;margin:0}
-.bar{display:block;height:3px;background:rgba(242,245,241,.14);position:relative;overflow:hidden}
-.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent-br);display:block}
+.bar{display:block;height:3px;background:var(--line);position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);display:block}
 
-/* Querlaufende Reihe */
 .row{display:flex;gap:11px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
 .row > *{flex:0 0 168px;scroll-snap-align:start}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
 
-/* Chips */
 .chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:3px}
 .chip{
   flex:0 0 auto;font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;
   padding:8px 12px;border:1px solid var(--line-str);color:var(--ink-2);white-space:nowrap;
   transition:color .25s var(--ease),border-color .25s var(--ease),background .25s var(--ease);
 }
-.chip[aria-pressed="true"]{background:var(--ink);color:#0B1512;border-color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--canvas);border-color:var(--ink)}
 .chip.lv{--c:var(--ink)}
-.chip.lv[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:#0B1512}
+.chip.lv[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:var(--on-accent)}
 
-/* Suchfeld */
-.search{display:flex;align-items:center;gap:9px;border:1px solid var(--line-str);background:var(--deep);padding:11px 12px}
+.search{display:flex;align-items:center;gap:9px;border:1px solid var(--line-str);background:var(--field);padding:11px 12px}
 .search svg{width:15px;height:15px;fill:none;stroke:var(--ink-3);stroke-width:1.7;flex:0 0 auto}
 .search input{
   flex:1;min-width:0;background:none;border:0;color:var(--ink);font-family:var(--body);font-size:14.5px;
@@ -200,13 +276,12 @@ h2.sec{
 .search input::placeholder{color:var(--ink-3)}
 .search input:focus{outline:none}
 
-/* Wochenziel, Challenge, Camps */
 .panel{background:var(--panel);border:1px solid var(--line);padding:15px 15px 17px;display:flex;flex-direction:column;gap:12px}
 .goal{display:flex;align-items:flex-end;justify-content:space-between;gap:14px}
 .goal .n{font-family:var(--display);font-size:34px;line-height:.86;font-weight:400}
 .goal .n em{font-style:normal;color:var(--ink-3);font-size:17px}
 .pips{display:flex;gap:5px}
-.pips i{width:100%;height:5px;flex:1 1 auto;background:rgba(242,245,241,.13)}
+.pips i{width:100%;height:5px;flex:1 1 auto;background:var(--line)}
 .pips i.on{background:var(--lv1)}
 .note{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-2);margin:0}
 
@@ -216,13 +291,12 @@ h2.sec{
 .wide .t{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:17px;line-height:1.08;margin:0}
 .wide p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.5}
 
-/* PRO Streifen */
 .proband{
-  position:relative;border:1px solid rgba(200,30,20,.42);background:linear-gradient(135deg,rgba(200,30,20,.16),rgba(13,23,20,.4));
+  position:relative;border:1px solid var(--accent-line);background:var(--accent-soft);
   padding:16px;display:flex;flex-direction:column;gap:11px;text-align:left;width:100%;
 }
 .proband .t{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:19px;line-height:1.04;margin:0}
-.proband p{margin:0;font-size:13.5px;color:#DCE6E0;line-height:1.5}
+.proband p{margin:0;font-size:13.5px;color:var(--ink-body);line-height:1.5}
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;
   font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;
@@ -230,14 +304,15 @@ h2.sec{
   transition:background .3s var(--ease);
 }
 .btn:hover{background:var(--accent-br)}
+.btn svg{fill:none;stroke:currentColor;stroke-width:1.7;width:16px;height:16px}
 .btn.ghost{background:transparent;border:1px solid var(--line-str);color:var(--ink)}
-.btn.ghost:hover{background:rgba(242,245,241,.07)}
+.btn.ghost:hover{background:var(--panel-hi)}
 .btn.done{background:transparent;border:1px solid var(--lv2);color:var(--lv2)}
+.btn.done svg{stroke:var(--lv2)}
 
-/* ---------- Tableiste ---------- */
 .tabs{
   flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);
-  border-top:1px solid var(--line);background:var(--deep);
+  border-top:1px solid var(--line);background:var(--panel);
 }
 .tab{
   display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px 12px;
@@ -247,7 +322,6 @@ h2.sec{
 .tab svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .tab[aria-current="page"]{color:var(--ink);border-top-color:var(--accent)}
 
-/* ---------- Schiebeblatt (Detailseiten) ---------- */
 .sheet{
   position:absolute;inset:0;z-index:6;background:var(--canvas);
   overflow-y:auto;overscroll-behavior:contain;
@@ -257,19 +331,16 @@ h2.sec{
 .sheet.on{transform:none;opacity:1}
 .sheet-head{
   position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:10px;
-  padding:13px 14px;background:rgba(7,14,12,.94);backdrop-filter:blur(10px);
+  padding:13px 14px;background:var(--veil);backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
 }
 .back{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);min-height:36px}
 .back svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8}
 .sheet-body{padding:18px 16px 34px;display:flex;flex-direction:column;gap:22px}
 
-/* Spieler */
 .player{position:relative;margin:0 -16px;background:var(--deep)}
 .player .poster{aspect-ratio:16/9}
-.pbtn{
-  position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;
-}
+.pbtn{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center}
 .pbtn span{
   width:62px;height:62px;border-radius:50%;background:rgba(200,30,20,.94);
   display:flex;align-items:center;justify-content:center;box-shadow:0 10px 34px rgba(200,30,20,.42);
@@ -277,49 +348,56 @@ h2.sec{
 }
 .pbtn:hover span{transform:scale(1.06)}
 .pbtn svg{width:20px;height:20px;fill:#fff}
+.pbtn span svg[stroke]{fill:none;stroke:#fff}
 .pctl{
   position:absolute;left:0;right:0;bottom:0;z-index:4;padding:10px 12px 12px;
   display:flex;align-items:center;gap:10px;
   background:linear-gradient(180deg,transparent,rgba(4,9,8,.9));
 }
-.pctl .bar{flex:1}
-.pctl .tm{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink);font-variant-numeric:tabular-nums}
+.pctl .bar{flex:1;background:rgba(242,245,241,.28)}
+.pctl .bar i{background:var(--on-media)}
+.pctl .tm{font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--on-media);font-variant-numeric:tabular-nums}
 .demo-chip{
   position:absolute;right:10px;top:10px;z-index:4;
   font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;
-  color:var(--ink-2);border:1px solid var(--line-str);background:rgba(4,9,8,.7);padding:4px 7px;
+  color:var(--on-media);border:1px solid rgba(242,245,241,.4);background:rgba(4,9,8,.72);padding:4px 7px;
 }
 
 .meta{display:flex;flex-wrap:wrap;gap:8px 14px;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-2)}
 .meta span{display:inline-flex;align-items:center;gap:7px}
-.prose{margin:0;color:#CBD8D1;font-size:15px;line-height:1.6}
+.prose{margin:0;color:var(--ink-body);font-size:15px;line-height:1.6}
 
-/* Schritte: eine echte Reihenfolge, darum nummeriert */
-.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0;counter-reset:s}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;counter-reset:s}
 .steps li{
   counter-increment:s;display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;
-  padding:13px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:#CBD8D1;line-height:1.5;
+  padding:13px 0;border-bottom:1px solid var(--line);font-size:14.5px;color:var(--ink-body);line-height:1.5;
 }
 .steps li::before{
   content:counter(s,decimal-leading-zero);
-  font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--accent-br);padding-top:3px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--accent);padding-top:3px;
 }
-.callout{border-left:3px solid var(--accent);background:rgba(200,30,20,.08);padding:13px 15px;display:flex;flex-direction:column;gap:5px}
-.callout .h{font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--accent-br)}
-.callout p{margin:0;font-size:14px;color:#CBD8D1;line-height:1.5}
+.callout{border-left:3px solid var(--accent);background:var(--accent-soft);padding:13px 15px;display:flex;flex-direction:column;gap:5px}
+.callout.stille{border-left-color:var(--line-str);background:var(--panel-hi)}
+.callout .h{font-family:var(--mono);font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--accent)}
+.callout.stille .h{color:var(--ink-2)}
+.callout p{margin:0;font-size:14px;color:var(--ink-body);line-height:1.5}
 
 .coach{display:flex;align-items:center;gap:12px}
 .coach img{width:42px;height:42px;object-fit:cover;filter:grayscale(1) contrast(1.05);flex:0 0 auto}
 .coach .n{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;line-height:1.7}
 .coach .n span{display:block;color:var(--ink-2);font-size:9.5px;letter-spacing:.18em}
 
-/* ---------- Pyramide ---------- */
+.marke{display:flex;align-items:center;gap:16px;border:1px solid var(--line);background:var(--panel);padding:15px}
+.marke .z{font-family:var(--display);font-size:46px;line-height:.82;color:var(--accent);font-variant-numeric:tabular-nums}
+.marke .w{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);line-height:1.8}
+.marke .w b{display:block;color:var(--ink);font-weight:500;letter-spacing:.1em}
+
 .pyr{width:100%;max-width:100%;aspect-ratio:100/78;display:block}
 .pyr .edge{fill:none;stroke:var(--chalk);stroke-width:.5;stroke-linecap:round}
 .pyr .plate{cursor:pointer}
 .pyr .plate polygon{transition:fill-opacity .35s var(--ease),stroke-opacity .35s var(--ease)}
 .pyr .nm{font-family:var(--display);font-size:4.4px;letter-spacing:.06px;text-transform:uppercase;fill:var(--ink);text-anchor:middle}
-.pyr .ag{font-family:var(--mono);font-size:2.7px;letter-spacing:.32px;text-transform:uppercase;fill:#C4D2CB;text-anchor:middle}
+.pyr .ag{font-family:var(--mono);font-size:2.7px;letter-spacing:.32px;text-transform:uppercase;fill:var(--ink-2);text-anchor:middle}
 .lvpanel{border-left:3px solid var(--c);padding-left:16px;display:flex;flex-direction:column;gap:6px}
 .lvpanel .t{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:19px;line-height:1.04;margin:0;color:var(--c)}
 
@@ -333,12 +411,10 @@ h2.sec{
 .unit .s{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-2);margin:3px 0 0}
 .tick{width:20px;height:20px;border:1px solid var(--line-str);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .tick.on{background:var(--lv2);border-color:var(--lv2)}
-.tick svg{width:11px;height:11px;fill:none;stroke:#07110E;stroke-width:2.4}
+.tick svg{width:11px;height:11px;fill:none;stroke:var(--on-accent);stroke-width:2.4;display:none}
 .tick.on svg{display:block}
-.tick svg{display:none}
 
-/* ---------- Profil ---------- */
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--line);background:var(--panel)}
 .stat{padding:14px 10px;display:flex;flex-direction:column;gap:3px;border-right:1px solid var(--line)}
 .stat:last-child{border-right:0}
 .stat .v{font-family:var(--display);font-size:26px;line-height:.9;font-variant-numeric:tabular-nums}
@@ -349,76 +425,71 @@ h2.sec{
   padding:15px 2px;border-bottom:1px solid var(--line);font-size:14.5px;
 }
 .lrow .r{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
-.lrow.owner{color:var(--accent-br)}
 .vid-admin{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:11px 2px;border-bottom:1px solid var(--line);align-items:center}
-.vid-admin .t{font-size:13.5px;font-weight:700;line-height:1.3;margin:0}
+.vid-admin .t{display:block;font-size:13.5px;font-weight:700;line-height:1.3;margin:0}
 .vid-admin .n{font-family:var(--mono);font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums}
 
-/* ---------- Formular (Upload) ---------- */
 .field{display:flex;flex-direction:column;gap:7px}
 .field label{font-family:var(--mono);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--ink-2)}
 .field input,.field select,.field textarea{
-  width:100%;background:var(--deep);color:var(--ink);border:1px solid var(--line-str);
+  width:100%;background:var(--field);color:var(--ink);border:1px solid var(--line-str);
   padding:12px 12px;font-family:var(--body);font-size:14.5px;border-radius:0;-webkit-appearance:none;appearance:none;
 }
 .field textarea{min-height:82px;resize:vertical}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent-br)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;border:1px solid var(--line-str)}
 .seg button{
   padding:11px 6px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--ink-2);border-right:1px solid var(--line-str);min-height:42px;
 }
 .seg button:last-child{border-right:0}
-.seg button[aria-pressed="true"]{background:var(--ink);color:#0B1512}
-.seg button.lv[aria-pressed="true"]{background:var(--c);color:#07110E}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--canvas)}
+.seg button.lv[aria-pressed="true"]{background:var(--c);color:var(--on-accent)}
 .drop{
   border:1px dashed var(--line-str);padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;
-  text-align:center;width:100%;
+  text-align:center;width:100%;background:var(--panel);
 }
 .drop svg{width:26px;height:26px;fill:none;stroke:var(--ink-2);stroke-width:1.5}
 .drop .h{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink)}
 .drop .s{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--ink-3)}
 .drop.has{border-style:solid;border-color:var(--lv2)}
 
-/* Preis */
 .prices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.price{border:1px solid var(--line-str);padding:14px 13px;display:flex;flex-direction:column;gap:4px;text-align:left}
-.price[aria-pressed="true"]{border-color:var(--accent);background:rgba(200,30,20,.1)}
+.price{border:1px solid var(--line-str);padding:14px 13px;display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--panel)}
+.price[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .price .p{font-family:var(--display);font-size:22px;line-height:1}
 .price .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-2)}
 .price .x{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--lv2)}
 .ticks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px}
-.ticks li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:11px;font-size:14.5px;color:#CBD8D1;line-height:1.45}
-.ticks svg{width:15px;height:15px;fill:none;stroke:var(--accent-br);stroke-width:2;margin-top:3px}
+.ticks li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:11px;font-size:14.5px;color:var(--ink-body);line-height:1.45}
+.ticks svg{width:15px;height:15px;fill:none;stroke:var(--accent);stroke-width:2;margin-top:3px}
 .fine{font-size:11.5px;color:var(--ink-3);line-height:1.55;margin:0}
 
-/* Toast */
 .toast{
   position:absolute;left:50%;bottom:78px;z-index:20;transform:translate(-50%,12px);
-  background:var(--ink);color:#0B1512;padding:10px 15px;
+  background:var(--ink);color:var(--canvas);padding:10px 15px;
   font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
   opacity:0;transition:opacity .28s var(--ease),transform .28s var(--ease);pointer-events:none;max-width:86%;text-align:center;
 }
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
-/* ---------- Die Erklaerspalte ---------- */
 .rail{display:flex;flex-direction:column;gap:18px;padding-block:4px}
-.rail .mark{height:26px;filter:url(#logoLight)}
+.rail .mark{height:26px}
 .rail h1{
   font-family:var(--display);font-weight:400;text-transform:uppercase;
   font-size:clamp(28px,6vw,40px);line-height:.98;margin:0;text-wrap:balance;
 }
 .rail p{margin:0;color:var(--ink-2);font-size:14.5px;line-height:1.6;max-width:46ch}
 .rail .kb{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
-.rail .kb li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;font-size:13.5px;color:#CBD8D1;line-height:1.5}
+.rail .kb li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;font-size:13.5px;color:var(--ink-body);line-height:1.5}
 .rail .kb li::before{content:"";width:6px;height:6px;background:var(--chalk);margin-top:8px}
 .switches{display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding-block:14px}
 .sw{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;text-align:left;min-height:40px}
 .sw .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
 .sw .t{width:40px;height:22px;flex:0 0 auto;border:1px solid var(--line-str);position:relative;transition:background .3s var(--ease),border-color .3s var(--ease)}
 .sw .t::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;background:var(--ink-3);transition:transform .3s var(--ease),background .3s var(--ease)}
-.sw[aria-pressed="true"] .t{border-color:var(--accent);background:rgba(200,30,20,.22)}
-.sw[aria-pressed="true"] .t::after{transform:translateX(18px);background:var(--accent-br)}
+.sw[aria-pressed="true"] .t{border-color:var(--accent);background:var(--accent-soft)}
+.sw[aria-pressed="true"] .t::after{transform:translateX(18px);background:var(--accent)}
 .sw[aria-pressed="true"] .l{color:var(--ink)}
 .rail .fine{max-width:44ch}
 
@@ -432,6 +503,10 @@ h2.sec{
     <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -0.33 -0.34 -0.33 0 1" result="k"/>
     <feComposite in="k" in2="SourceGraphic" operator="in"/>
   </filter>
+  <filter id="logoDark" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.33 -0.34 -0.33 0 1" result="k"/>
+    <feComposite in="k" in2="SourceGraphic" operator="in"/>
+  </filter>
 </svg>
 
 <div class="env" aria-hidden="true"></div>
@@ -442,7 +517,7 @@ h2.sec{
     <div class="app">
       <header class="appbar">
         <img class="mark" src="img/logo.png" alt="KM1 Training">
-        <span class="lvchip" id="lvchip"><i style="background:var(--lv1)"></i>Foundational</span>
+        <span class="lvchip" id="lvchip"></span>
       </header>
 
       <div class="screens" id="screens"></div>
@@ -457,16 +532,22 @@ h2.sec{
   <aside class="rail">
     <img class="mark" src="img/logo.png" alt="KM1 Training">
     <div>
-      <p class="eyebrow">Prototyp, Stand heute</p>
+      <p class="eyebrow">Prototyp, zweiter Stand</p>
       <h1>Die App zum Camp.</h1>
     </div>
-    <p>Bedienbar wie die echte App: Videos öffnen, ein PRO-Video antippen, die Pyramide anfassen, eine Übung abhaken. Alles in der Handschrift der Website.</p>
+    <p>Bedienbar wie die echte App. Du startest als Gast, ohne Konto: freie Videos laufen sofort, nur Fortschritt und PRO brauchen eine Anmeldung.</p>
     <ul class="kb">
       <li>Vier Bereiche unten: Start, Technik, Pyramide, Profil.</li>
       <li>Rote Schlösser sind PRO-Videos. Antippen öffnet die Abo-Seite.</li>
-      <li>In der Pyramide gehört jedem Alter ein eigener Pfad.</li>
+      <li>Hell ist die Grundeinstellung, Dunkel liegt im Profil.</li>
     </ul>
     <div class="switches">
+      <button class="sw" type="button" data-act="toggle-theme" aria-pressed="false">
+        <span class="l">Dunkle Ansicht</span><span class="t"></span>
+      </button>
+      <button class="sw" type="button" data-act="toggle-konto" aria-pressed="false">
+        <span class="l">Angemeldet</span><span class="t"></span>
+      </button>
       <button class="sw" type="button" data-act="toggle-owner" aria-pressed="false">
         <span class="l">Trainer-Ansicht (nur KM1)</span><span class="t"></span>
       </button>
@@ -474,17 +555,17 @@ h2.sec{
         <span class="l">KM1 PRO aktiv</span><span class="t"></span>
       </button>
     </div>
-    <p class="fine">Der Player ist eine Attrappe, es läuft noch kein echtes Video. Die Videos liegen später in Supabase, hochladen kann nur der KM1-Account. Preise sind Platzhalter.</p>
+    <p class="fine">Der Player ist eine Attrappe, es läuft noch kein echtes Video. Videos lassen sich nicht herunterladen, sie laufen nur in der App. Preise sind Platzhalter.</p>
   </aside>
 
 </div>
 
 <script>
 /* ============================================================
-   Daten. Das ist bewusst schon die Form, die spaeter in der
-   Datenbank steht: ein Video kennt Kategorie, Ebene, Dauer und
-   ob es frei oder PRO ist. Die Schritte sind der Kern, denn
-   danach sucht ein Kind, wenn es etwas ueben will.
+   Daten. Bewusst schon die Form, die spaeter in der Datenbank
+   steht: ein Video kennt Kategorie, Ebene, Dauer und ob es frei
+   oder PRO ist. Die Schritte sind der Kern, denn danach sucht
+   ein Kind, wenn es etwas ueben will.
    ============================================================ */
 var LEVELS = [
   {n:1, nm:'Foundational', md:'Gruppentraining',    ag:'U6 bis U13',  c:'var(--lv1)',
@@ -611,11 +692,23 @@ var PFAD = {
   4:[{w:1,id:'anlaufen'},{w:2,id:'schnittstelle'},{w:3,id:'standard-ecke'},{w:4,id:'finishing-mued'},{w:5,id:'regeneration'}]
 };
 
+/* Schlag den Coach. Ansehen, nachmachen, im Training zeigen.
+   Bewusst ohne Einsendungen: in der App gibt es keine fremden Videos. */
+var CHALLENGES = [
+  {m:'September', t:'50 Übersteiger in 60 Sekunden', marke:43, eh:'Übersteiger',
+   be:'Eine Minute, ein Ball, so viele saubere Übersteiger wie möglich. Kader hat es an einem Dienstagabend auf 43 gebracht.',
+   rg:['Der Ball bleibt im Kreis, sonst zählt der Durchgang nicht.','Nur Übersteiger mit Richtungswechsel zählen.','Wer stehen bleibt, fängt die Zählung von vorn an.']},
+  {m:'August',    t:'Jonglieren ohne Bodenkontakt', marke:78, eh:'Kontakte', be:'', rg:[]},
+  {m:'Juli',      t:'Torwand: fünf Schüsse',        marke:4,  eh:'Treffer',  be:'', rg:[]}
+];
+
 var state = {
-  tab:'start', pro:false, owner:false, meinLv:1,
-  lvSel:1, kat:'alle', fltLv:0, suche:'',
-  done:{'erste-beruehrung':1,'flacher-pass':1,'abstoppen':1},
-  preis:'jahr',
+  tab:'start', theme:'hell',
+  konto:null,                 /* null = Gast. Freie Videos laufen trotzdem. */
+  pro:false, owner:false,
+  meinLv:1, lvSel:1,
+  kat:'alle', fltLv:0, suche:'',
+  done:{}, preis:'jahr', nachLogin:null, loginModus:'neu',
   up:{datei:null, lv:1, vis:'frei', busy:false}
 };
 
@@ -625,23 +718,27 @@ var state = {
 function h(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function byId(id){return VIDEOS.filter(function(v){return v.id===id;})[0];}
 function lvOf(n){return LEVELS[n-1];}
-function el(html){var t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstElementChild;}
+function drin(){return !!state.konto;}
+function gesperrt(v){return v.pro && !state.pro;}
 
 var ICON = {
   play:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l12 7-12 7z"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="5" width="3.5" height="14"/><rect x="13.5" y="5" width="3.5" height="14"/></svg>',
   lock:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>',
   check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
   back:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>',
   such:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',
   upl:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 16v3h16v-3"/></svg>',
+  apple:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.3 12.6c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.6-1.9-1.5-.2-3 .9-3.7.9-.8 0-2-.9-3.2-.8-1.7 0-3.2 1-4 2.5-1.7 2.9-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.6z"/><path d="M14.2 5.4c.7-.8 1.1-1.9 1-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.8-1.3z"/></svg>',
   tabStart:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5l3.2 5.3-3.2 2.6-3.2-2.6z"/><path d="M8.8 11.4L7 17.2M15.2 11.4L17 17.2"/></svg>',
   tabTech:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14"/><path d="M10 9.5l5 2.5-5 2.5z"/></svg>',
   tabPyr:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5L21 20H3z"/><path d="M8.2 13h7.6M6.2 16.5h11.6"/></svg>',
   tabProf:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg>'
 };
 
-/* Kreidezeichnungen als Vorschaubild. Struktur in Kreide,
-   die Aktion immer in Koeln-Rot: eine Farbe, ein Gedanke. */
+/* Kreidezeichnungen als Vorschaubild. Struktur in Kreide, die
+   Aktion in Koeln-Rot. Die Farben kommen aus den Tokens, damit
+   die Zeichnungen in beiden Fassungen stimmen. */
 function dia(k){
   var d = {
     flanken:'<path class="c" d="M112 12V88"/><path class="c" d="M112 26h40v48h-40"/><path class="c" d="M152 40v20"/><path class="a" d="M22 82C54 40 96 30 128 44" stroke-dasharray="5 4"/><path class="a" d="M120 40l9 4-7 6"/><circle class="f" cx="22" cy="82" r="3.4"/><circle class="f" cx="130" cy="45" r="3.4"/>',
@@ -653,19 +750,14 @@ function dia(k){
     torwart:'<path class="c" d="M40 26V12h80v14"/><path class="c" d="M40 12v14M120 12v14"/><path class="c" d="M28 26h104v34H28z" opacity=".55"/><circle class="f" cx="80" cy="36" r="3.6"/><path class="a" d="M80 82L44 28" stroke-dasharray="5 4"/><path class="a" d="M80 82l36-54" stroke-dasharray="5 4"/><circle class="f" cx="80" cy="84" r="3"/>',
     taktik:'<path class="c" d="M56 8v84M104 8v84" opacity=".55"/><circle class="f" cx="30" cy="50" r="3.6"/><circle class="f" cx="80" cy="26" r="3.6"/><circle class="f" cx="80" cy="74" r="3.6"/><path class="a" d="M36 48c18-10 30-14 40-18"/><path class="a" d="M70 28l9-2-4 8"/><path class="a" d="M36 54c18 10 30 14 40 18"/><path class="a" d="M70 72l9 2-4-8"/><path class="a" d="M110 50h26"/><path class="a" d="M130 45l8 5-8 5"/>'
   }[k] || '';
-  return '<svg viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
-    '<defs><linearGradient id="dg-'+k+'" x1="0" y1="0" x2="0" y2="1">' +
-    '<stop offset="0" stop-color="#0F1C18"/><stop offset="1" stop-color="#060D0B"/></linearGradient></defs>' +
-    '<rect width="160" height="100" fill="url(#dg-'+k+')"/>' +
-    '<g fill="none" stroke-linecap="round" stroke-linejoin="round">' +
-    '<style>.c{stroke:rgba(242,245,241,.42);stroke-width:1.4}.a{stroke:#E8433A;stroke-width:1.8}.f{fill:rgba(242,245,241,.9);stroke:none}</style>' +
-    d + '</g></svg>';
+  return '<svg class="dia" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+    '<rect class="bg" width="160" height="100"/>' +
+    '<g stroke-linecap="round" stroke-linejoin="round">' + d + '</g></svg>';
 }
 
 function posterOf(v){
   return v.img ? '<img src="img/'+v.img+'.jpg" alt="" loading="lazy">' : dia(v.k);
 }
-function gesperrt(v){return v.pro && !state.pro;}
 
 function karte(v){
   return '<button class="card" type="button" data-act="video:'+v.id+'">' +
@@ -684,48 +776,69 @@ function karte(v){
    Die vier Bereiche
    ============================================================ */
 function screenStart(){
-  var r = byId('flanke-innen'), pct = 62;
   var neu = VIDEOS.filter(function(v){return v.neu;});
   var erledigt = Object.keys(state.done).length;
-  var ziel = Math.min(erledigt,5);
-  var pips = '';
-  for(var i=0;i<5;i++) pips += '<i class="'+(i<ziel?'on':'')+'"></i>';
+  var ch = CHALLENGES[0];
+
+  var kopfteil, mitte;
+  if(drin()){
+    var r = byId('flanke-innen');
+    kopfteil = '<div><p class="eyebrow">Mittwoch, Trainingstag</p><h1 class="big">Moin '+h(state.konto.vn)+'.<br>Weiter geht’s.</h1></div>' +
+      '<button class="resume" type="button" data-act="video:'+r.id+'">' +
+        '<span class="poster">'+posterOf(r)+'<span class="play">'+ICON.play+'</span><span class="badge dur">2:49 übrig</span></span>' +
+        '<span class="body">' +
+          '<span class="note">Weitertrainieren</span>' +
+          '<span class="t">'+h(r.t)+'</span>' +
+          '<span class="bar"><i style="width:62%"></i></span>' +
+        '</span></button>';
+    var ziel = Math.min(erledigt,5), pips = '';
+    for(var i=0;i<5;i++) pips += '<i class="'+(i<ziel?'on':'')+'"></i>';
+    mitte = '<div class="panel">' +
+      '<p class="note">Dein Wochenziel</p>' +
+      '<div class="goal"><span class="n">'+ziel+'<em> / 5 Einheiten</em></span></div>' +
+      '<span class="pips">'+pips+'</span>' +
+      '<p class="sub" style="margin:0">Hake eine Übung ab, wenn du sie auf dem Platz geschafft hast. Nicht, wenn du das Video gesehen hast.</p>' +
+    '</div>';
+  } else {
+    var s = byId('erste-beruehrung');
+    kopfteil = '<div><p class="eyebrow">Ohne Anmeldung</p><h1 class="big">Moin.<br>Fang einfach an.</h1>' +
+      '<p class="sub">'+VIDEOS.filter(function(v){return !v.pro;}).length+' Videos laufen sofort, ohne Konto, ohne E-Mail.</p></div>' +
+      '<button class="resume" type="button" data-act="video:'+s.id+'">' +
+        '<span class="poster">'+posterOf(s)+'<span class="play">'+ICON.play+'</span><span class="badge dur">'+s.d+'</span></span>' +
+        '<span class="body">' +
+          '<span class="note">Fang hier an</span>' +
+          '<span class="t">'+h(s.t)+'</span>' +
+        '</span></button>';
+    mitte = '<div class="panel">' +
+      '<p class="note">Fortschritt merken?</p>' +
+      '<p class="sub" style="margin:0">Mit einem Konto merkt sich die App, wo du stehen geblieben bist und was du auf dem Platz geschafft hast. Zum Zuschauen brauchst du es nicht.</p>' +
+      '<button class="btn" type="button" data-act="login:neu">Konto anlegen</button>' +
+      '<button class="btn ghost" type="button" data-act="login:alt">Ich habe schon eins</button>' +
+    '</div>';
+  }
 
   return '<section class="screen">' +
-    '<div><p class="eyebrow">Mittwoch, Trainingstag</p><h1 class="big">Moin Luis.<br>Weiter geht’s.</h1></div>' +
-
-    '<button class="resume" type="button" data-act="video:'+r.id+'">' +
-      '<span class="poster">'+posterOf(r)+'<span class="play">'+ICON.play+'</span><span class="badge dur">2:49 übrig</span></span>' +
-      '<span class="body">' +
-        '<span class="note">Weitertrainieren</span>' +
-        '<span class="t">'+h(r.t)+'</span>' +
-        '<span class="bar"><i style="width:'+pct+'%"></i></span>' +
-      '</span></button>' +
+    kopfteil +
 
     '<div class="block">' +
       '<div class="block-head"><h2 class="sec">Neu diese Woche</h2><span class="more">'+neu.length+' Videos</span></div>' +
       '<div class="row">'+neu.map(karte).join('')+'</div>' +
     '</div>' +
 
-    '<div class="panel">' +
-      '<p class="note">Dein Wochenziel</p>' +
-      '<div class="goal"><span class="n">'+ziel+'<em> / 5 Einheiten</em></span></div>' +
-      '<span class="pips">'+pips+'</span>' +
-      '<p class="sub" style="margin:0">Hake eine Übung ab, wenn du sie auf dem Platz geschafft hast. Nicht, wenn du das Video gesehen hast.</p>' +
-    '</div>' +
+    mitte +
 
     '<button class="wide" type="button" data-act="challenge">' +
-      '<span class="poster">'+dia('dribbling')+'<span class="badge neu">Challenge</span></span>' +
+      '<span class="poster">'+dia('dribbling')+'<span class="badge neu">Challenge '+ch.m+'</span></span>' +
       '<span class="body">' +
         '<span class="t">Schlag den Coach</span>' +
-        '<p>50 Übersteiger in 60 Sekunden. Kader steht bei 43. Zeig es ihm im nächsten Training.</p>' +
+        '<p>'+h(ch.t)+'. Kader steht bei '+ch.marke+'. Zeig es ihm im nächsten Training.</p>' +
       '</span></button>' +
 
     (state.pro ? '' :
     '<button class="proband" type="button" data-act="paywall">' +
-      '<span class="note" style="color:var(--accent-br)">KM1 Pro</span>' +
+      '<span class="note" style="color:var(--accent)">KM1 Pro</span>' +
       '<span class="t">Die ganze Pyramide.</span>' +
-      '<p>13 weitere Videos, die Trainingspfade aller vier Ebenen und jede Woche eine neue Einheit.</p>' +
+      '<p>'+VIDEOS.filter(function(v){return v.pro;}).length+' weitere Videos, die Trainingspfade aller vier Ebenen und jede Woche eine neue Einheit.</p>' +
       '<span class="btn" style="pointer-events:none">Pro ansehen</span>' +
     '</button>') +
 
@@ -784,7 +897,7 @@ function pyramide(){
     var pts = g.x0a+','+g.y0+' '+g.x1a+','+g.y0+' '+g.x1b+','+g.y1+' '+g.x0b+','+g.y1;
     var my = g.y0 + (g.y1-g.y0)/2;
     return '<g class="plate" data-act="lv:'+g.n+'" role="button" tabindex="0" aria-label="'+l.nm+', '+l.ag+'">' +
-      '<polygon points="'+pts+'" fill="'+l.c+'" fill-opacity="'+(an?.5:.14)+'" stroke="'+l.c+'" stroke-opacity="'+(an?.95:.3)+'" stroke-width="'+(an?.7:.4)+'"/>' +
+      '<polygon points="'+pts+'" fill="'+l.c+'" fill-opacity="'+(an?.28:.1)+'" stroke="'+l.c+'" stroke-opacity="'+(an?1:.36)+'" stroke-width="'+(an?.7:.4)+'"/>' +
       '<text class="nm" x="50" y="'+(my+0.4)+'">'+l.nm+'</text>' +
       '<text class="ag" x="50" y="'+(my+4.6)+'">'+l.ag+'</text>' +
     '</g>';
@@ -822,9 +935,40 @@ function screenPyramide(){
   '</section>';
 }
 
+function darstellung(){
+  return '<div class="block">' +
+    '<h2 class="sec">Darstellung</h2>' +
+    '<div class="seg">' +
+      ['hell','dunkel','auto'].map(function(t){
+        return '<button type="button" data-act="theme:'+t+'" aria-pressed="'+(state.theme===t)+'">' +
+          (t==='hell'?'Hell':t==='dunkel'?'Dunkel':'Automatisch')+'</button>';
+      }).join('') +
+    '</div>' +
+    '<p class="fine">Automatisch folgt der Einstellung deines Handys.</p>' +
+  '</div>';
+}
+
 function screenProfil(){
   var erledigt = Object.keys(state.done).length;
   var frei = VIDEOS.filter(function(v){return !v.pro;}).length;
+
+  if(!drin()){
+    return '<section class="screen">' +
+      '<div><p class="eyebrow">Gast</p><h1 class="big">Du schaust<br>ohne Konto zu.</h1>' +
+      '<p class="sub">'+frei+' Videos laufen ohne Anmeldung. Für Fortschritt, Merkliste und KM1 PRO brauchst du ein Konto.</p></div>' +
+      '<div class="panel">' +
+        '<p class="note">Kostenlos, zwei Felder</p>' +
+        '<button class="btn" type="button" data-act="login:neu">Konto anlegen</button>' +
+        '<button class="btn ghost" type="button" data-act="login:alt">Anmelden</button>' +
+      '</div>' +
+      darstellung() +
+      '<div class="rows">' +
+        '<button class="lrow" type="button" data-act="bald"><span>Für Eltern</span><span class="r">Info</span></button>' +
+        '<button class="lrow" type="button" data-act="bald"><span>Datenschutz</span><span class="r">Öffnen</span></button>' +
+        '<button class="lrow" type="button" data-act="bald"><span>Impressum</span><span class="r">Öffnen</span></button>' +
+      '</div>' +
+    '</section>';
+  }
 
   var trainer = state.owner ?
     '<div class="block">' +
@@ -841,31 +985,33 @@ function screenProfil(){
   return '<section class="screen">' +
     '<div class="coach">' +
       '<img src="img/coach.jpg" alt="">' +
-      '<span class="n">Luis M.<span>Foundational · seit März 2026</span></span>' +
+      '<span class="n">'+h(state.konto.name)+'<span>'+lvOf(state.meinLv).nm+' · seit März 2026</span></span>' +
     '</div>' +
 
     '<div class="stats">' +
       '<div class="stat"><span class="v">'+erledigt+'</span><span class="k">Übungen</span></div>' +
-      '<div class="stat"><span class="v">'+(state.pro?VIDEOS.length:frei)+'</span><span class="k">Videos frei</span></div>' +
+      '<div class="stat"><span class="v">'+(state.pro?VIDEOS.length:frei)+'</span><span class="k">Videos offen</span></div>' +
       '<div class="stat"><span class="v">6</span><span class="k">Tage Serie</span></div>' +
     '</div>' +
 
     (state.pro ?
       '<div class="panel"><p class="note" style="color:var(--lv2)">KM1 Pro aktiv</p><p class="sub" style="margin:0">Verlängert sich am 18. Oktober. Kündbar jederzeit im App Store.</p></div>' :
       '<button class="proband" type="button" data-act="paywall">' +
-        '<span class="note" style="color:var(--accent-br)">KM1 Pro</span>' +
+        '<span class="note" style="color:var(--accent)">KM1 Pro</span>' +
         '<span class="t">Alle Ebenen freischalten</span>' +
         '<p>Ab 6,99 € im Monat. Die ersten sieben Tage kosten nichts.</p>' +
         '<span class="btn" style="pointer-events:none">Pro ansehen</span>' +
       '</button>') +
 
     trainer +
+    darstellung() +
 
     '<div class="rows">' +
-      '<button class="lrow" type="button" data-act="bald"><span>Heruntergeladene Videos</span><span class="r">3</span></button>' +
+      '<button class="lrow" type="button" data-act="bald"><span>Merkliste</span><span class="r">3</span></button>' +
       '<button class="lrow" type="button" data-act="bald"><span>Erinnerung ans Training</span><span class="r">Mi + Sa</span></button>' +
       '<button class="lrow" type="button" data-act="bald"><span>Für Eltern</span><span class="r">Info</span></button>' +
       '<button class="lrow" type="button" data-act="bald"><span>Datenschutz</span><span class="r">Öffnen</span></button>' +
+      '<button class="lrow" type="button" data-act="logout"><span>Abmelden</span><span class="r">'+h(state.konto.vn)+'</span></button>' +
     '</div>' +
   '</section>';
 }
@@ -878,9 +1024,7 @@ var stack = [], timer = null;
 function openSheet(html){
   stack.push(html);
   var s = document.getElementById('sheet');
-  s.innerHTML = html;
-  s.hidden = false;
-  s.scrollTop = 0;
+  s.innerHTML = html; s.hidden = false; s.scrollTop = 0;
   s.classList.remove('on');
   requestAnimationFrame(function(){ s.classList.add('on'); });
 }
@@ -899,7 +1043,6 @@ function refreshSheet(html){
   s.innerHTML = html;
   s.scrollTop = y;
 }
-
 function kopf(titel){
   return '<div class="sheet-head"><button class="back" type="button" data-act="back">'+ICON.back+'Zurück</button>' +
     '<span class="note" style="margin-left:auto">'+h(titel)+'</span></div>';
@@ -915,8 +1058,7 @@ function sheetVideo(id){
       '<div class="player">' +
         '<div class="poster">'+posterOf(v)+'</div>' +
         (zu ?
-          '<button class="pbtn" type="button" data-act="paywall"><span>'+ICON.lock+'</span></button>' +
-          '<span class="demo-chip">Pro</span>'
+          '<button class="pbtn" type="button" data-act="paywall"><span>'+ICON.lock+'</span></button><span class="demo-chip">Pro</span>'
           :
           '<button class="pbtn" type="button" data-act="play" id="pbtn"><span>'+ICON.play+'</span></button>' +
           '<span class="demo-chip">Demo-Player</span>' +
@@ -924,10 +1066,7 @@ function sheetVideo(id){
         ) +
       '</div>' +
 
-      '<div>' +
-        '<p class="eyebrow">'+l.nm+' · '+l.ag+'</p>' +
-        '<h1 class="big" style="font-size:25px">'+h(v.t)+'</h1>' +
-      '</div>' +
+      '<div><p class="eyebrow">'+l.nm+' · '+l.ag+'</p><h1 class="big" style="font-size:25px">'+h(v.t)+'</h1></div>' +
 
       '<div class="meta">' +
         '<span><i class="dot" style="background:'+l.c+'"></i>Ebene '+v.lv+'</span>' +
@@ -957,6 +1096,72 @@ function sheetVideo(id){
     '</div>';
 }
 
+function sheetChallenge(){
+  var c = CHALLENGES[0], fertig = !!state.done['challenge-'+c.m];
+  return kopf('Challenge') +
+    '<div class="sheet-body">' +
+      '<div class="player">' +
+        '<div class="poster">'+dia('dribbling')+'</div>' +
+        '<button class="pbtn" type="button" data-act="play" id="pbtn"><span>'+ICON.play+'</span></button>' +
+        '<span class="demo-chip">Demo-Player</span>' +
+        '<div class="pctl"><span class="tm" id="ptm">0:00</span><span class="bar"><i id="pbar" style="width:0%"></i></span><span class="tm">1:12</span></div>' +
+      '</div>' +
+
+      '<div><p class="eyebrow">Challenge im '+c.m+'</p><h1 class="big">Schlag den Coach</h1></div>' +
+      '<p class="prose">'+h(c.be)+'</p>' +
+
+      '<div class="marke">' +
+        '<span class="z">'+c.marke+'</span>' +
+        '<span class="w"><b>'+h(c.t)+'</b>Kaders Marke · '+c.eh+'</span>' +
+      '</div>' +
+
+      '<div class="block"><h2 class="sec">So zählt es</h2>' +
+        '<ol class="steps">'+c.rg.map(function(r){return '<li>'+h(r)+'</li>';}).join('')+'</ol>' +
+      '</div>' +
+
+      '<button class="btn '+(fertig?'done':'')+'" type="button" data-act="check:challenge-'+c.m+'">' +
+        (fertig ? ICON.check+' Geschafft, zeig es im Training' : 'Ich hab’s geschafft') +
+      '</button>' +
+
+      '<div class="callout stille"><span class="h">Ohne Einsenden</span>' +
+        '<p>Du kannst hier kein Video hochladen, und das ist Absicht: in der App gibt es nur Videos von KM1. Dein Ergebnis zeigst du Kader im nächsten Training, dann zählt es.</p></div>' +
+
+      '<div class="block">' +
+        '<div class="block-head"><h2 class="sec">Frühere Challenges</h2></div>' +
+        '<div class="path">' + CHALLENGES.slice(1).map(function(x){
+          return '<div class="unit"><span class="w">'+x.m.slice(0,3)+'</span>' +
+            '<span><span class="t">'+h(x.t)+'</span><span class="s">Kader: '+x.marke+' '+x.eh+'</span></span><span></span></div>';
+        }).join('') + '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function sheetLogin(grund){
+  var neu = state.loginModus === 'neu';
+  return kopf(neu ? 'Konto anlegen' : 'Anmelden') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">'+(neu?'Kostenlos':'Willkommen zurück')+'</p>' +
+      '<h1 class="big">'+(neu?'Konto anlegen':'Anmelden')+'</h1>' +
+      (grund ? '<p class="sub">'+h(grund)+'</p>' : '<p class="sub">Zum Zuschauen brauchst du kein Konto. Es merkt sich nur, wo du stehst.</p>') +
+      '</div>' +
+
+      '<div class="seg">' +
+        '<button type="button" data-act="lmodus:neu" aria-pressed="'+neu+'">Neu hier</button>' +
+        '<button type="button" data-act="lmodus:alt" aria-pressed="'+(!neu)+'">Ich habe ein Konto</button>' +
+      '</div>' +
+
+      (neu ? '<div class="field"><label for="lg-name">Vorname</label><input id="lg-name" type="text" placeholder="Luis"></div>' : '') +
+      '<div class="field"><label for="lg-mail">E-Mail</label><input id="lg-mail" type="email" placeholder="name@beispiel.de"></div>' +
+      '<div class="field"><label for="lg-pw">Passwort</label><input id="lg-pw" type="password" placeholder="mindestens 8 Zeichen"></div>' +
+
+      '<button class="btn" type="button" data-act="signin">'+(neu?'Konto anlegen':'Anmelden')+'</button>' +
+      '<button class="btn ghost" type="button" data-act="signin">'+ICON.apple+' Mit Apple anmelden</button>' +
+      '<button class="btn ghost" type="button" data-act="back">Weiter ohne Konto</button>' +
+
+      '<p class="fine">Für Kinder unter 16 Jahren legen die Eltern das Konto an. Gespeichert werden E-Mail, Vorname und der Trainingsfortschritt, sonst nichts. Keine Werbung, kein Weiterverkauf.</p>' +
+    '</div>';
+}
+
 function sheetPaywall(){
   var jahr = state.preis==='jahr';
   return kopf('KM1 Pro') +
@@ -966,7 +1171,7 @@ function sheetPaywall(){
         ['Alle '+VIDEOS.length+' Videos, von Foundational bis Professional',
          'Die Trainingspfade aller vier Ebenen',
          'Jede Woche eine neue Einheit von Kader',
-         'Videos herunterladen und ohne Netz ansehen',
+         'Der Wochenplan: was du wann übst',
          'Früher Zugang zu Camps und Challenges'
         ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
       '</ul>' +
@@ -976,8 +1181,8 @@ function sheetPaywall(){
         '<button class="price" type="button" data-act="preis:jahr" aria-pressed="'+jahr+'">' +
           '<span class="k">Jährlich</span><span class="p">59,00 €</span><span class="x">2 Monate geschenkt</span></button>' +
       '</div>' +
-      '<button class="btn" type="button" data-act="buy">7 Tage gratis testen</button>' +
-      '<p class="fine">Beispielpreise für den Prototyp. Die Abrechnung läuft über deine Apple-ID, Apple behält 15 bis 30 Prozent. Kündbar jederzeit in den App-Store-Einstellungen, spätestens 24 Stunden vor Ablauf. Für Kinder unter 18 entscheiden die Eltern.</p>' +
+      '<button class="btn" type="button" data-act="buy">'+(drin()?'7 Tage gratis testen':'Konto anlegen und testen')+'</button>' +
+      '<p class="fine">Beispielpreise für den Prototyp. Die Abrechnung läuft über deine Apple-ID, kündbar jederzeit in den App-Store-Einstellungen. Videos laufen nur in der App und lassen sich nicht herunterladen. Für Kinder unter 18 entscheiden die Eltern.</p>' +
       '<button class="btn ghost" type="button" data-act="bald">Kauf wiederherstellen</button>' +
     '</div>';
 }
@@ -1030,7 +1235,7 @@ function playToggle(){
   if(!bar) return;
   if(timer){ stopPlayer(); btn.innerHTML = '<span>'+ICON.play+'</span>'; return; }
   var p = parseFloat(bar.style.width) || 0;
-  btn.innerHTML = '<span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="5" width="3.5" height="14"/><rect x="13.5" y="5" width="3.5" height="14"/></svg></span>';
+  btn.innerHTML = '<span>'+ICON.pause+'</span>';
   timer = setInterval(function(){
     p += 0.9;
     if(p >= 100){ p = 100; stopPlayer(); if(btn) btn.innerHTML = '<span>'+ICON.play+'</span>'; }
@@ -1043,6 +1248,24 @@ function playToggle(){
 /* ============================================================
    Zeichnen
    ============================================================ */
+function applyTheme(){
+  var t = state.theme, dunkel;
+  if(t === 'auto'){
+    dunkel = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  } else {
+    dunkel = (t === 'dunkel');
+  }
+  document.documentElement.setAttribute('data-theme', dunkel ? 'dark' : 'light');
+  var sw = document.querySelector('[data-act="toggle-theme"]');
+  if(sw) sw.setAttribute('aria-pressed', String(dunkel));
+}
+function syncSwitches(){
+  var m = {'toggle-konto':drin(), 'toggle-owner':state.owner, 'toggle-pro':state.pro};
+  Object.keys(m).forEach(function(k){
+    var b = document.querySelector('[data-act="'+k+'"]');
+    if(b) b.setAttribute('aria-pressed', String(m[k]));
+  });
+}
 function renderTabs(){
   var t = [
     ['start','Start',ICON.tabStart],['technik','Technik',ICON.tabTech],
@@ -1056,8 +1279,14 @@ function render(){
   var s = {start:screenStart, technik:screenTechnik, pyramide:screenPyramide, profil:screenProfil}[state.tab];
   document.getElementById('screens').innerHTML = s();
   renderTabs();
-  var l = lvOf(state.meinLv);
-  document.getElementById('lvchip').innerHTML = '<i style="background:'+l.c+'"></i>'+l.nm;
+  syncSwitches();
+  var chip = document.getElementById('lvchip');
+  if(drin()){
+    var l = lvOf(state.meinLv);
+    chip.innerHTML = '<i style="background:'+l.c+'"></i>'+l.nm;
+  } else {
+    chip.innerHTML = '<i style="background:var(--ink-3)"></i>Gast';
+  }
 }
 var toastT = null;
 function toast(msg){
@@ -1066,6 +1295,9 @@ function toast(msg){
   clearTimeout(toastT);
   toastT = setTimeout(function(){ t.classList.remove('on'); }, 2300);
 }
+function anmelden(name){
+  state.konto = {name: name || 'Luis M.', vn: (name || 'Luis M.').split(' ')[0]};
+}
 
 /* ============================================================
    Ein Klickfaenger fuer alles
@@ -1073,45 +1305,74 @@ function toast(msg){
 document.addEventListener('click', function(e){
   var b = e.target.closest('[data-act]');
   if(!b) return;
-  var a = b.getAttribute('data-act'), p = a.split(':'), k = p[0], v = p[1];
+  var a = b.getAttribute('data-act'), i = a.indexOf(':');
+  var k = i<0 ? a : a.slice(0,i), v = i<0 ? '' : a.slice(i+1);
 
   if(k==='tab'){ state.tab = v; while(stack.length) closeSheet(); render(); }
   else if(k==='video'){ openSheet(sheetVideo(v)); }
   else if(k==='back'){ closeSheet(); }
+  else if(k==='challenge'){ openSheet(sheetChallenge()); }
   else if(k==='paywall'){ openSheet(sheetPaywall()); }
   else if(k==='preis'){ state.preis = v; refreshSheet(sheetPaywall()); }
+  else if(k==='login'){ state.loginModus = (v==='alt') ? 'alt' : 'neu'; openSheet(sheetLogin()); }
+  else if(k==='lmodus'){ state.loginModus = v; refreshSheet(sheetLogin()); }
+  else if(k==='signin'){
+    var nm = (document.getElementById('lg-name')||{}).value;
+    anmelden(nm && nm.trim() ? nm.trim() : 'Luis M.');
+    closeSheet();
+    var n = state.nachLogin; state.nachLogin = null;
+    render();
+    if(n && n.indexOf('check:')===0){ state.done[n.slice(6)] = 1; render(); toast('Angemeldet. Abgehakt.'); }
+    else if(n === 'pro'){ openSheet(sheetPaywall()); toast('Angemeldet'); }
+    else toast('Angemeldet');
+  }
+  else if(k==='logout'){ state.konto = null; state.pro = false; state.owner = false; state.done = {}; render(); toast('Abgemeldet'); }
   else if(k==='buy'){
+    if(!drin()){ state.nachLogin = 'pro'; state.loginModus='neu'; openSheet(sheetLogin('Für ein Abo braucht es ein Konto, sonst weiß niemand, wem PRO gehört.')); return; }
     state.pro = true;
-    document.querySelector('[data-act="toggle-pro"]').setAttribute('aria-pressed','true');
     while(stack.length) closeSheet();
     render(); toast('KM1 Pro aktiv (Demo)');
   }
   else if(k==='check'){
+    if(!drin()){
+      state.nachLogin = 'check:'+v; state.loginModus='neu';
+      openSheet(sheetLogin('Damit dein Fortschritt gespeichert wird, brauchst du ein Konto.'));
+      return;
+    }
     if(state.done[v]) delete state.done[v]; else state.done[v] = 1;
-    refreshSheet(sheetVideo(v));
+    var istCh = v.indexOf('challenge-')===0;
+    refreshSheet(istCh ? sheetChallenge() : sheetVideo(v));
     toast(state.done[v] ? 'Abgehakt. Stark.' : 'Haken entfernt');
   }
   else if(k==='play'){ playToggle(); }
   else if(k==='lv'){ state.lvSel = +v; render(); }
   else if(k==='kat'){ state.kat = v; render(); }
   else if(k==='fltlv'){ state.fltLv = +v; render(); }
+  else if(k==='theme'){ state.theme = v; applyTheme(); render(); }
   else if(k==='upload'){ openSheet(sheetUpload()); }
   else if(k==='pickfile'){ state.up.datei = 'flanke-innenseite-2026.mp4'; refreshSheet(sheetUpload()); }
   else if(k==='uplv'){ state.up.lv = +v; refreshSheet(sheetUpload()); }
   else if(k==='upvis'){ state.up.vis = v; refreshSheet(sheetUpload()); }
   else if(k==='publish'){ publish(); }
+  else if(k==='toggle-theme'){ state.theme = (document.documentElement.getAttribute('data-theme')==='dark') ? 'hell' : 'dunkel'; applyTheme(); render(); }
+  else if(k==='toggle-konto'){
+    if(drin()){ state.konto = null; state.pro = false; state.owner = false; state.done = {}; }
+    else anmelden('Luis M.');
+    while(stack.length) closeSheet();
+    render();
+  }
   else if(k==='toggle-owner'){
     state.owner = !state.owner;
-    b.setAttribute('aria-pressed', String(state.owner));
+    if(state.owner) anmelden('Kader');
+    while(stack.length) closeSheet();
     render(); toast(state.owner ? 'Trainer-Ansicht an' : 'Spieler-Ansicht');
   }
   else if(k==='toggle-pro'){
+    if(!state.pro && !drin()) anmelden('Luis M.');
     state.pro = !state.pro;
-    b.setAttribute('aria-pressed', String(state.pro));
     if(stack.length) refreshSheet(stack[stack.length-1]);
     render(); toast(state.pro ? 'Pro aktiv' : 'Pro aus');
   }
-  else if(k==='challenge'){ toast('Challenges kommen im nächsten Schritt'); }
   else if(k==='camps'){ toast('Öffnet später km1-training.de'); }
   else if(k==='bald'){ toast('Im Prototyp noch ohne Funktion'); }
 });
@@ -1131,6 +1392,14 @@ document.addEventListener('input', function(e){
   }
 });
 
+if(window.matchMedia){
+  try{
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){
+      if(state.theme==='auto') applyTheme();
+    });
+  }catch(err){}
+}
+
 function publish(){
   var u = state.up;
   var titel = (document.getElementById('up-titel')||{}).value || '';
@@ -1146,7 +1415,7 @@ function publish(){
   var t = setInterval(function(){
     p += 7;
     if(p >= 100){
-      p = 100; clearInterval(t); u.busy = false;
+      clearInterval(t); u.busy = false;
       VIDEOS.unshift({
         id:'neu-'+Date.now(), t:titel.trim(),
         k:(document.getElementById('up-kat')||{}).value || 'dribbling',
@@ -1155,16 +1424,18 @@ function publish(){
         st:['Schritte ergänzt Kader nach dem Upload.'],
         fe:'Wird nachgetragen.'
       });
+      var war = u.vis;
       state.up = {datei:null, lv:1, vis:'frei', busy:false};
       state.tab = 'technik'; state.kat = 'alle'; state.fltLv = 0; state.suche = '';
       while(stack.length) closeSheet();
       render();
-      toast(u.vis==='pro' ? 'Veröffentlicht, sichtbar für Pro' : 'Veröffentlicht, sichtbar für alle');
+      toast(war==='pro' ? 'Veröffentlicht, sichtbar für Pro' : 'Veröffentlicht, sichtbar für alle');
       return;
     }
     bar.firstElementChild.style.width = p+'%';
   }, 120);
 }
 
+applyTheme();
 render();
 </script>
