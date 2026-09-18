@@ -493,6 +493,42 @@ h2.sec{
 .sw[aria-pressed="true"] .l{color:var(--ink)}
 .rail .fine{max-width:44ch}
 
+/* ---------- Werkzeuge am Player ---------- */
+.ptools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:-10px}
+.ptool{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;
+  border:1px solid var(--line-str);color:var(--ink-2);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  transition:border-color .25s var(--ease),color .25s var(--ease),background .25s var(--ease);
+}
+.ptool:hover{border-color:var(--ink);color:var(--ink)}
+.ptool[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.ptool svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Die Mitteilung, wie sie auf dem Sperrbildschirm liegt ---------- */
+.push{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);background:var(--panel);padding:12px 13px;box-shadow:var(--shadow)}
+.push .ic{width:34px;height:34px;flex:0 0 auto;background:var(--ink);display:flex;align-items:center;justify-content:center}
+.push .ic img{width:24px;filter:url(#logoLight)}
+:root[data-theme="dark"] .push .ic{background:var(--panel-hi)}
+.push .tx{min-width:0}
+.push .h{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px}
+.push .b{font-size:13.5px;line-height:1.4;margin:3px 0 0;color:var(--ink)}
+
+/* ---------- Wochentage ---------- */
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.day{
+  min-height:42px;border:1px solid var(--line-str);color:var(--ink-2);
+  font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;
+}
+.day[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ---------- Fortschritt in der Pyramide ---------- */
+.pips.lvp i.on{background:var(--c)}
+.pyr .fz{font-family:var(--mono);font-size:2.4px;letter-spacing:.3px;fill:var(--ink-2);text-anchor:middle}
+.duchip{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--on-accent);background:var(--c);padding:4px 9px}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
 }
@@ -709,6 +745,8 @@ var state = {
   meinLv:1, lvSel:1,
   kat:'alle', fltLv:0, suche:'',
   done:{}, preis:'jahr', nachLogin:null, loginModus:'neu',
+  tempo:1, dauer:444,
+  erinnerung:{an:true, tage:['mi','sa'], zeit:'17:00'},
   up:{datei:null, lv:1, vis:'frei', busy:false}
 };
 
@@ -719,6 +757,13 @@ function h(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;
 function byId(id){return VIDEOS.filter(function(v){return v.id===id;})[0];}
 function lvOf(n){return LEVELS[n-1];}
 function drin(){return !!state.konto;}
+function sek(d){var t=String(d).split(':');return (+t[0])*60 + (+t[1]||0);}
+function fmtZeit(s){var m=Math.floor(s/60), r=Math.round(s%60);return m+':'+(r<10?'0':'')+r;}
+function tempoLabel(){return state.tempo===1 ? '1\u00d7' : (state.tempo===0.75 ? '0,75\u00d7' : '0,5\u00d7');}
+function lvFortschritt(nr){
+  var u = PFAD[nr];
+  return {fertig: u.filter(function(x){return state.done[x.id];}).length, gesamt: u.length};
+}
 function gesperrt(v){return v.pro && !state.pro;}
 
 var ICON = {
@@ -728,6 +773,7 @@ var ICON = {
   check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
   back:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>',
   such:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',
+  rew:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 6v5.2h5.2"/><path d="M4.4 11.2a8 8 0 1 0 2.4-5.4L3.6 8.9"/></svg>',
   upl:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 16v3h16v-3"/></svg>',
   apple:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.3 12.6c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.6-1.9-1.5-.2-3 .9-3.7.9-.8 0-2-.9-3.2-.8-1.7 0-3.2 1-4 2.5-1.7 2.9-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.6z"/><path d="M14.2 5.4c.7-.8 1.1-1.9 1-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.8-1.3z"/></svg>',
   tabStart:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5l3.2 5.3-3.2 2.6-3.2-2.6z"/><path d="M8.8 11.4L7 17.2M15.2 11.4L17 17.2"/></svg>',
@@ -892,23 +938,41 @@ function pyramide(){
     {n:2, y0:39.00, y1:56.16, x0a:17.50, x1a:82.50, x0b:10.24, x1b:89.76},
     {n:1, y0:58.11, y1:75.27, x0a:9.41,  x1a:90.59, x0b:2.16,  x1b:97.84}
   ];
-  var plates = geo.map(function(g){
-    var l = lvOf(g.n), an = state.lvSel===g.n;
+  /* Jede Ebene fuellt sich von unten, so weit ihr Pfad abgehakt ist.
+     Die eigene Ebene steht in voller Linie, die naechste gestrichelt:
+     angedeutet, aber noch nicht deins. */
+  var defs = '', plates = '';
+  geo.forEach(function(g){
+    var l = lvOf(g.n);
+    var an = state.lvSel===g.n, mein = drin() && state.meinLv===g.n, naechste = drin() && (state.meinLv+1)===g.n;
     var pts = g.x0a+','+g.y0+' '+g.x1a+','+g.y0+' '+g.x1b+','+g.y1+' '+g.x0b+','+g.y1;
     var my = g.y0 + (g.y1-g.y0)/2;
-    return '<g class="plate" data-act="lv:'+g.n+'" role="button" tabindex="0" aria-label="'+l.nm+', '+l.ag+'">' +
-      '<polygon points="'+pts+'" fill="'+l.c+'" fill-opacity="'+(an?.28:.1)+'" stroke="'+l.c+'" stroke-opacity="'+(an?1:.36)+'" stroke-width="'+(an?.7:.4)+'"/>' +
-      '<text class="nm" x="50" y="'+(my+0.4)+'">'+l.nm+'</text>' +
-      '<text class="ag" x="50" y="'+(my+4.6)+'">'+l.ag+'</text>' +
+    var f = lvFortschritt(g.n), q = drin() ? f.fertig/f.gesamt : 0;
+    var hoehe = (g.y1-g.y0)*q;
+    var yNm = drin() ? my-1.1 : my+0.4;
+    var yAg = drin() ? my+2.9 : my+4.6;
+    defs += '<clipPath id="cp'+g.n+'"><polygon points="'+pts+'"/></clipPath>';
+    plates += '<g class="plate" data-act="lv:'+g.n+'" role="button" tabindex="0" aria-label="'+l.nm+', '+l.ag+
+        (drin() ? ', '+f.fertig+' von '+f.gesamt+' Einheiten' : '')+'">' +
+      '<polygon points="'+pts+'" fill="'+l.c+'" fill-opacity="'+(an?.16:.07)+'"/>' +
+      (q>0 ? '<g clip-path="url(#cp'+g.n+')"><rect x="0" y="'+(g.y1-hoehe).toFixed(2)+
+             '" width="100" height="'+hoehe.toFixed(2)+'" fill="'+l.c+'" fill-opacity=".42"/></g>' : '') +
+      '<polygon points="'+pts+'" fill="none" stroke="'+l.c+
+        '" stroke-opacity="'+(mein?1:(an?.85:(naechste?.5:.3)))+
+        '" stroke-width="'+((mein||an)?.75:.4)+'"'+((naechste&&!an)?' stroke-dasharray="2.2 1.8"':'')+'/>' +
+      '<text class="nm" x="50" y="'+yNm+'">'+l.nm+'</text>' +
+      '<text class="ag" x="50" y="'+yAg+'">'+l.ag+'</text>' +
+      (drin() ? '<text class="fz" x="50" y="'+(my+6.7)+'">'+f.fertig+' / '+f.gesamt+'</text>' : '') +
     '</g>';
-  }).join('');
+  });
 
   return '<svg class="pyr" viewBox="0 0 100 78" role="img" aria-label="Die KM1-Pyramide mit vier Ebenen">' +
+    '<defs>'+defs+'</defs>' +
     '<path class="edge" d="M33.3 0.4L1.8 76.2M66.7 0.4L98.2 76.2M1.8 76.2h96.4"/>' + plates + '</svg>';
 }
 
 function screenPyramide(){
-  var l = lvOf(state.lvSel);
+  var l = lvOf(state.lvSel), f = lvFortschritt(state.lvSel);
   var anzahl = VIDEOS.filter(function(v){return v.lv===state.lvSel;}).length;
   var pfad = PFAD[state.lvSel].map(function(u){
     var v = byId(u.id), fertig = !!state.done[v.id];
@@ -919,18 +983,32 @@ function screenPyramide(){
     '</button>';
   }).join('');
 
+  var chip = '';
+  if(drin() && state.lvSel===state.meinLv) chip = '<span class="duchip">Du bist hier</span>';
+  else if(drin() && state.lvSel===state.meinLv+1)
+    chip = '<span class="duchip" style="background:transparent;color:var(--c);box-shadow:inset 0 0 0 1px var(--c)">Deine nächste Ebene</span>';
+
+  var pips = '';
+  for(var i=0;i<f.gesamt;i++) pips += '<i class="'+(i<f.fertig?'on':'')+'"></i>';
+
   return '<section class="screen">' +
     '<div><p class="eyebrow">Vier Ebenen, eine Richtung</p><h1 class="big">Die KM1-<br>Pyramide</h1>' +
-    '<p class="sub">Tippe eine Ebene an. Jedes Alter hat seinen eigenen Pfad, genau wie im Training auf dem Platz.</p></div>' +
+    '<p class="sub">'+(drin()
+      ? 'Deine Ebene steht in voller Linie, die nächste ist angedeutet. Jede Ebene füllt sich, so weit du ihren Pfad abgehakt hast.'
+      : 'Tippe eine Ebene an. Mit einem Konto zeigt die Pyramide, wie weit du bist.')+'</p></div>' +
     pyramide() +
     '<div class="lvpanel" style="--c:'+l.c+'">' +
+      chip +
       '<p class="note">'+l.md+' · '+l.ag+'</p>' +
       '<p class="t">'+l.nm+' Area</p>' +
       '<p class="sub" style="margin:0">'+l.tx+'</p>' +
+      (drin() ? '<span class="pips lvp" style="--c:'+l.c+';margin-top:4px">'+pips+'</span>' +
+                '<p class="note">'+f.fertig+' von '+f.gesamt+' Einheiten</p>' : '') +
     '</div>' +
     '<div class="block">' +
       '<div class="block-head"><h2 class="sec">Dein Pfad</h2><span class="more">'+anzahl+' Videos</span></div>' +
       '<div class="path">'+pfad+'</div>' +
+      (drin() ? '' : '<p class="fine">Mit Konto hakst du Einheiten ab, und die Ebene füllt sich mit.</p>') +
     '</div>' +
   '</section>';
 }
@@ -963,7 +1041,8 @@ function screenProfil(){
       '</div>' +
       darstellung() +
       '<div class="rows">' +
-        '<button class="lrow" type="button" data-act="bald"><span>Für Eltern</span><span class="r">Info</span></button>' +
+        '<button class="lrow" type="button" data-act="erinnerung"><span>Erinnerung ans Training</span><span class="r">'+erinnerungText()+'</span></button>' +
+        '<button class="lrow" type="button" data-act="eltern"><span>Für Eltern</span><span class="r">Lesen</span></button>' +
         '<button class="lrow" type="button" data-act="bald"><span>Datenschutz</span><span class="r">Öffnen</span></button>' +
         '<button class="lrow" type="button" data-act="bald"><span>Impressum</span><span class="r">Öffnen</span></button>' +
       '</div>' +
@@ -1008,8 +1087,8 @@ function screenProfil(){
 
     '<div class="rows">' +
       '<button class="lrow" type="button" data-act="bald"><span>Merkliste</span><span class="r">3</span></button>' +
-      '<button class="lrow" type="button" data-act="bald"><span>Erinnerung ans Training</span><span class="r">Mi + Sa</span></button>' +
-      '<button class="lrow" type="button" data-act="bald"><span>Für Eltern</span><span class="r">Info</span></button>' +
+      '<button class="lrow" type="button" data-act="erinnerung"><span>Erinnerung ans Training</span><span class="r">'+erinnerungText()+'</span></button>' +
+      '<button class="lrow" type="button" data-act="eltern"><span>Für Eltern</span><span class="r">Lesen</span></button>' +
       '<button class="lrow" type="button" data-act="bald"><span>Datenschutz</span><span class="r">Öffnen</span></button>' +
       '<button class="lrow" type="button" data-act="logout"><span>Abmelden</span><span class="r">'+h(state.konto.vn)+'</span></button>' +
     '</div>' +
@@ -1050,6 +1129,7 @@ function kopf(titel){
 
 function sheetVideo(id){
   var v = byId(id), l = lvOf(v.lv), zu = gesperrt(v), fertig = !!state.done[v.id];
+  state.dauer = sek(v.d);
   var verwandt = VIDEOS.filter(function(x){return x.k===v.k && x.id!==v.id;}).slice(0,4);
   if(!verwandt.length) verwandt = VIDEOS.filter(function(x){return x.lv===v.lv && x.id!==v.id;}).slice(0,4);
 
@@ -1062,9 +1142,10 @@ function sheetVideo(id){
           :
           '<button class="pbtn" type="button" data-act="play" id="pbtn"><span>'+ICON.play+'</span></button>' +
           '<span class="demo-chip">Demo-Player</span>' +
-          '<div class="pctl"><span class="tm" id="ptm">0:00</span><span class="bar"><i id="pbar" style="width:0%"></i></span><span class="tm">'+v.d+'</span></div>'
+          '<div class="pctl"><span class="tm" id="ptm">0:00</span><span class="bar"><i id="pbar" data-dauer="'+sek(v.d)+'" style="width:0%"></i></span><span class="tm">'+v.d+'</span></div>'
         ) +
       '</div>' +
+      (zu ? '' : ptools()) +
 
       '<div><p class="eyebrow">'+l.nm+' · '+l.ag+'</p><h1 class="big" style="font-size:25px">'+h(v.t)+'</h1></div>' +
 
@@ -1098,14 +1179,16 @@ function sheetVideo(id){
 
 function sheetChallenge(){
   var c = CHALLENGES[0], fertig = !!state.done['challenge-'+c.m];
+  state.dauer = 72;
   return kopf('Challenge') +
     '<div class="sheet-body">' +
       '<div class="player">' +
         '<div class="poster">'+dia('dribbling')+'</div>' +
         '<button class="pbtn" type="button" data-act="play" id="pbtn"><span>'+ICON.play+'</span></button>' +
         '<span class="demo-chip">Demo-Player</span>' +
-        '<div class="pctl"><span class="tm" id="ptm">0:00</span><span class="bar"><i id="pbar" style="width:0%"></i></span><span class="tm">1:12</span></div>' +
+        '<div class="pctl"><span class="tm" id="ptm">0:00</span><span class="bar"><i id="pbar" data-dauer="72" style="width:0%"></i></span><span class="tm">1:12</span></div>' +
       '</div>' +
+      ptools() +
 
       '<div><p class="eyebrow">Challenge im '+c.m+'</p><h1 class="big">Schlag den Coach</h1></div>' +
       '<p class="prose">'+h(c.be)+'</p>' +
@@ -1162,6 +1245,108 @@ function sheetLogin(grund){
     '</div>';
 }
 
+var TAGE = [['mo','Mo'],['di','Di'],['mi','Mi'],['do','Do'],['fr','Fr'],['sa','Sa'],['so','So']];
+function tagName(k){var t=TAGE.filter(function(x){return x[0]===k;})[0];return t?t[1]:k;}
+function erinnerungText(){
+  var e = state.erinnerung;
+  if(!e.an || !e.tage.length) return 'Aus';
+  return e.tage.map(tagName).join(' + ')+', '+e.zeit;
+}
+
+/* Der Elternbereich. Andere Leserichtung als der Rest der App:
+   hier steht Sie, nicht du, denn hier liest jemand anderes mit. */
+function sheetEltern(){
+  var akt = drin() ? byId('erste-beruehrung') : null;
+  return kopf('Für Eltern') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Für Eltern</p><h1 class="big">Was Ihr Kind<br>hier übt.</h1></div>' +
+      '<p class="prose">KM1 ersetzt kein Vereinstraining. Die App füllt die Lücke dazwischen: die zwanzig Minuten am Mittwoch im Hof, nach denen eine Sache sitzt, für die im Mannschaftstraining keine Zeit war.</p>' +
+
+      (akt ?
+      '<div class="panel">' +
+        '<p class="note">Gerade dran</p>' +
+        '<p class="sub" style="margin:0;color:var(--ink);font-size:15px">'+h(akt.t)+'</p>' +
+        '<p class="sub" style="margin:0">Warum das zählt: Wer den Ball sauber mitnimmt, hat im Spiel eine halbe Sekunde mehr Zeit. Diese halbe Sekunde ist der Unterschied zwischen abspielen und verlieren.</p>' +
+      '</div>' : '') +
+
+      '<div class="block"><h2 class="sec">Wie viel Zeit sinnvoll ist</h2>' +
+        '<ul class="ticks">' +
+          ['15 bis 20 Minuten am Stück, zwei- bis dreimal die Woche.',
+           'Lieber kurz und regelmäßig als einmal eine Stunde am Sonntag.',
+           'Ein Ball und zehn Quadratmeter reichen. Ein Hinterhof tut es.'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+
+      '<div class="block"><h2 class="sec">Wobei Sie helfen können</h2>' +
+        '<ul class="ticks">' +
+          ['Zählen lassen statt korrigieren. Ihr Kind merkt selbst, wann es sitzt.',
+           'Einmal zuschauen, wenn es etwas zeigen will. Mehr Motivation gibt es nicht.',
+           'Hinterher fragen, was geklappt hat, nicht was schiefging.'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+
+      '<div class="callout stille"><span class="h">Kein Ort zum Verweilen</span>' +
+        '<p>Die App hat keine Endlosliste und kein Video, das von allein weiterläuft. Wer eine Übung gesehen hat, soll rausgehen, nicht weiterscrollen.</p></div>' +
+
+      '<div class="block"><h2 class="sec">Was wir speichern</h2>' +
+        '<ul class="ticks">' +
+          ['E-Mail und Vorname, damit das Konto existiert.',
+           'Welche Übungen abgehakt sind, und wo ein Video stehen geblieben ist.',
+           'Sonst nichts: kein Tracking, keine Werbung, keine Weitergabe an Dritte.'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul>' +
+        '<div class="rows"><button class="lrow" type="button" data-act="bald">' +
+          '<span>Konto und alle Daten löschen</span><span class="r">Sofort</span></button></div>' +
+      '</div>' +
+
+      '<div class="block"><h2 class="sec">Was kostet was</h2>' +
+        '<ul class="ticks">' +
+          ['Zuschauen: '+VIDEOS.filter(function(v){return !v.pro;}).length+' Videos, kostenlos, ganz ohne Konto.',
+           'KM1 PRO: alle '+VIDEOS.length+' Videos und die Trainingspfade, 6,99 € im Monat.',
+           'Abrechnung über den App Store, kündbar mit einem Tipp.'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul>' +
+        '<p class="fine">Der Kauf läuft über Ihre Apple-ID. Ihr Kind kann nichts kaufen, ohne dass Sie es freigeben. Für Kinder unter 16 Jahren legen Sie das Konto an.</p>' +
+      '</div>' +
+    '</div>';
+}
+
+/* Erinnerung. Zwei Mitteilungen in der Woche, an den Trainingstagen. */
+function sheetErinnerung(){
+  var e = state.erinnerung;
+  var zeiten = ['15:00','16:00','16:30','17:00','17:30','18:00','19:00'];
+  return kopf('Erinnerung') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Zwei mal die Woche</p><h1 class="big">Erinnerung<br>ans Training</h1>' +
+      '<p class="sub">An deinen Trainingstagen eine kurze Mitteilung. Mehr nicht, und jederzeit wieder aus.</p></div>' +
+
+      '<div class="push">' +
+        '<span class="ic"><img src="img/logo.png" alt=""></span>' +
+        '<span class="tx"><span class="h"><span>KM1 Training</span><span>'+h(e.zeit)+'</span></span>' +
+        '<span class="b">Heute ist Trainingstag. Die erste Berührung wartet, vier Minuten.</span></span>' +
+      '</div>' +
+
+      '<div class="field"><label>Erinnerung</label>' +
+        '<div class="seg">' +
+          '<button type="button" data-act="eran:1" aria-pressed="'+e.an+'">An</button>' +
+          '<button type="button" data-act="eran:0" aria-pressed="'+(!e.an)+'">Aus</button>' +
+        '</div></div>' +
+
+      '<div class="field"><label>An diesen Tagen</label>' +
+        '<div class="days">'+TAGE.map(function(t){
+          return '<button class="day" type="button" data-act="ertag:'+t[0]+'" aria-pressed="'+(e.tage.indexOf(t[0])>=0)+'">'+t[1]+'</button>';
+        }).join('')+'</div></div>' +
+
+      '<div class="field"><label for="er-zeit">Uhrzeit</label>' +
+        '<select id="er-zeit">'+zeiten.map(function(z){
+          return '<option value="'+z+'"'+(z===e.zeit?' selected':'')+'>'+z+'</option>';
+        }).join('')+'</select></div>' +
+
+      '<button class="btn" type="button" data-act="ersave">Erinnerung speichern</button>' +
+      '<p class="fine">Beim ersten Mal fragt dein Handy, ob KM1 dir Mitteilungen schicken darf. Sagst du nein, bleibt der Rest der App unverändert. Die Erinnerung liegt auf dem Gerät, wir schicken nichts über einen Server.</p>' +
+    '</div>';
+}
+
 function sheetPaywall(){
   var jahr = state.preis==='jahr';
   return kopf('KM1 Pro') +
@@ -1183,6 +1368,7 @@ function sheetPaywall(){
       '</div>' +
       '<button class="btn" type="button" data-act="buy">'+(drin()?'7 Tage gratis testen':'Konto anlegen und testen')+'</button>' +
       '<p class="fine">Beispielpreise für den Prototyp. Die Abrechnung läuft über deine Apple-ID, kündbar jederzeit in den App-Store-Einstellungen. Videos laufen nur in der App und lassen sich nicht herunterladen. Für Kinder unter 18 entscheiden die Eltern.</p>' +
+      '<button class="btn ghost" type="button" data-act="eltern">Für Eltern: was steckt dahinter?</button>' +
       '<button class="btn ghost" type="button" data-act="bald">Kauf wiederherstellen</button>' +
     '</div>';
 }
@@ -1230,19 +1416,36 @@ function sheetUpload(){
    Player, Attrappe mit ehrlichem Etikett
    ============================================================ */
 function stopPlayer(){ if(timer){ clearInterval(timer); timer=null; } }
+
+/* Zeitlupe und fuenf Sekunden zurueck. Fuer Technikvideos die beiden
+   Knoepfe, die wirklich zaehlen: eine Bewegung dreimal langsam sehen. */
+function ptools(){
+  return '<div class="ptools">' +
+    '<button class="ptool" type="button" data-act="rew">'+ICON.rew+'5 Sekunden</button>' +
+    '<button class="ptool" type="button" data-act="tempo" aria-pressed="'+(state.tempo!==1)+'">' +
+      'Tempo <span class="tv">'+tempoLabel()+'</span></button>' +
+  '</div>';
+}
+function dauerJetzt(){
+  var bar = document.getElementById('pbar');
+  return (bar && +bar.getAttribute('data-dauer')) || state.dauer;
+}
+function setzeZeit(p){
+  var bar = document.getElementById('pbar'), tm = document.getElementById('ptm');
+  if(!bar) return;
+  bar.style.width = p+'%';
+  if(tm) tm.textContent = fmtZeit(p/100*dauerJetzt());
+}
 function playToggle(){
-  var bar = document.getElementById('pbar'), tm = document.getElementById('ptm'), btn = document.getElementById('pbtn');
+  var bar = document.getElementById('pbar'), btn = document.getElementById('pbtn');
   if(!bar) return;
   if(timer){ stopPlayer(); btn.innerHTML = '<span>'+ICON.play+'</span>'; return; }
-  var p = parseFloat(bar.style.width) || 0;
   btn.innerHTML = '<span>'+ICON.pause+'</span>';
   timer = setInterval(function(){
-    p += 0.9;
+    var p = (parseFloat(bar.style.width) || 0) + 1.2*state.tempo;
     if(p >= 100){ p = 100; stopPlayer(); if(btn) btn.innerHTML = '<span>'+ICON.play+'</span>'; }
-    bar.style.width = p+'%';
-    var sek = Math.round(p/100*444), m = Math.floor(sek/60), s = sek%60;
-    tm.textContent = m+':'+(s<10?'0':'')+s;
-  }, 90);
+    setzeZeit(p);
+  }, 120);
 }
 
 /* ============================================================
@@ -1297,6 +1500,9 @@ function toast(msg){
 }
 function anmelden(name){
   state.konto = {name: name || 'Luis M.', vn: (name || 'Luis M.').split(' ')[0]};
+  if(!Object.keys(state.done).length){
+    state.done = {'erste-beruehrung':1, 'flacher-pass':1, 'abstoppen':1, 'flanke-innen':1};
+  }
 }
 
 /* ============================================================
@@ -1345,6 +1551,35 @@ document.addEventListener('click', function(e){
     toast(state.done[v] ? 'Abgehakt. Stark.' : 'Haken entfernt');
   }
   else if(k==='play'){ playToggle(); }
+  else if(k==='rew'){
+    var bp = document.getElementById('pbar');
+    if(bp){ setzeZeit(Math.max(0, (parseFloat(bp.style.width)||0) - (5/dauerJetzt()*100))); toast('5 Sekunden zurück'); }
+  }
+  else if(k==='tempo'){
+    state.tempo = state.tempo===1 ? 0.75 : (state.tempo===0.75 ? 0.5 : 1);
+    b.setAttribute('aria-pressed', String(state.tempo!==1));
+    var tv = b.querySelector('.tv');
+    if(tv) tv.textContent = tempoLabel();
+    toast(state.tempo===1 ? 'Normales Tempo' : 'Zeitlupe '+tempoLabel());
+  }
+  else if(k==='eltern'){ openSheet(sheetEltern()); }
+  else if(k==='erinnerung'){ openSheet(sheetErinnerung()); }
+  else if(k==='eran'){ state.erinnerung.an = (v==='1'); refreshSheet(sheetErinnerung()); }
+  else if(k==='ertag'){
+    var ix = state.erinnerung.tage.indexOf(v);
+    if(ix>=0) state.erinnerung.tage.splice(ix,1); else state.erinnerung.tage.push(v);
+    state.erinnerung.tage.sort(function(x,y){
+      return TAGE.map(function(t){return t[0];}).indexOf(x) - TAGE.map(function(t){return t[0];}).indexOf(y);
+    });
+    refreshSheet(sheetErinnerung());
+  }
+  else if(k==='ersave'){
+    var z = document.getElementById('er-zeit');
+    if(z) state.erinnerung.zeit = z.value;
+    if(state.erinnerung.an && !state.erinnerung.tage.length){ toast('Wähl mindestens einen Tag'); return; }
+    closeSheet(); render();
+    toast(state.erinnerung.an ? 'Erinnerung: '+erinnerungText() : 'Erinnerung aus');
+  }
   else if(k==='lv'){ state.lvSel = +v; render(); }
   else if(k==='kat'){ state.kat = v; render(); }
   else if(k==='fltlv'){ state.fltLv = +v; render(); }

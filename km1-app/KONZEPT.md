@@ -303,7 +303,57 @@ Einwilligung der Eltern für Nutzer unter 16 Jahren (DSGVO Art. 8).
 Erfahrungswert: die erste Prüfung dauert ein bis drei Tage, Ablehnungen in der
 ersten Runde sind normal und meistens formal.
 
-## 11. Vorschläge, noch nicht entschieden
+## 11. Entschieden und im Prototyp
+
+Vier Vorschläge sind beschlossen und im Prototyp bedienbar. Was sie in der
+echten App bedeuten:
+
+### Zeitlupe und fünf Sekunden zurück
+
+Unter dem Video zwei Knöpfe: *5 Sekunden* springt zurück, *Tempo* schaltet
+zwischen 1×, 0,75× und 0,5×. Für Technikvideos die einzigen zwei Knöpfe, die
+wirklich zählen — eine Bewegung dreimal langsam sehen, ohne auf der Zeitleiste
+herumzutippen.
+
+Technisch geschenkt: `expo-video` setzt Abspielrate und Position direkt, auch
+bei HLS. Die gewählte Geschwindigkeit bleibt über Videos hinweg stehen; wer
+einmal Zeitlupe will, will sie meistens wieder.
+
+### Elternbereich
+
+Eigene Seite im Profil, dazu ein Link unter der Abo-Seite. Sie erklärt, was das
+Kind gerade übt und warum, wie viel Zeit sinnvoll ist, wobei Eltern helfen
+können, was gespeichert wird und was was kostet.
+
+Ein Detail, das Absicht ist: **dieser Bereich siezt**, der Rest der App duzt.
+Hier liest jemand anderes mit, und dieser Jemand entscheidet über das Abo.
+
+Für die App-Prüfung ist die Seite nebenbei nützlich: sie erklärt die
+Datenverwendung in einfachen Worten. Das hilft beim Privacy-Label.
+
+### Die Pyramide zeigt den Fortschritt
+
+Jede Ebene füllt sich von unten, so weit ihr Pfad abgehakt ist, und trägt ihren
+Stand als Zahl ("3 / 5"). Die eigene Ebene steht in voller Linie, die nächste
+gestrichelt: angedeutet, aber noch nicht deins. Aus einem Schaubild wird ein
+Ziel.
+
+Kostet keine neue Tabelle, der Stand rechnet sich aus `fortschritt`. Gäste
+sehen die Pyramide ohne Füllung, mit einem Satz dazu, was ein Konto daraus
+macht.
+
+### Erinnerung ans Training
+
+Im Profil: an oder aus, Wochentage, Uhrzeit. Voreingestellt Mittwoch und
+Samstag um 17 Uhr, dazu eine Vorschau, wie die Mitteilung auf dem
+Sperrbildschirm aussieht.
+
+Das sind **lokale** Mitteilungen über `expo-notifications`: kein Server, keine
+Push-Zertifikate, kein Konto nötig. Wichtig für die Prüfung und für die Nerven
+der Nutzer: die Erlaubnis wird erst gefragt, wenn jemand die Erinnerung
+einschaltet, nicht beim ersten Start.
+
+## 12. Vorschläge, noch offen
 
 Sortiert nach Verhältnis von Nutzen zu Aufwand. Keiner davon ist beschlossen.
 
@@ -311,16 +361,12 @@ Sortiert nach Verhältnis von Nutzen zu Aufwand. Keiner davon ist beschlossen.
 
 - **Kapitelmarken im Video.** Die Schritte unter dem Video springen an die
   richtige Stelle. Aus einem Video werden vier nachschlagbare Antworten. Das
-  Datenmodell kann es schon (`video_schritte.sekunde`).
-- **Zeitlupe und Wiederholung.** Ein Knopf für halbe Geschwindigkeit und einer,
-  der die letzten fünf Sekunden noch einmal zeigt. Für Technikvideos wichtiger
-  als jede andere Spielerei.
-- **"Übung der Woche" als Mitteilung.** Mittwoch und Samstag, an den
-  Trainingstagen. Der beste Grund, warum jemand die App wieder öffnet.
+  Datenmodell kann es schon (`video_schritte.sekunde`), und mit der Zeitlupe
+  zusammen wäre es der komplette Werkzeugkasten zum Üben.
 - **Trainingspläne zum Mitnehmen.** Sechs Wochen, drei Einheiten pro Woche, als
-  Liste zum Abhaken. Das ist das stärkste PRO-Argument, stärker als "mehr Videos".
-- **Ein Elternbereich.** Eine Seite, die erklärt, was das Kind gerade übt und
-  warum. Eltern zahlen das Abo, nicht die Kinder.
+  Liste zum Abhaken. Das stärkste PRO-Argument, stärker als "mehr Videos".
+- **Suche nach Problem, nicht nach Kategorie.** "Meine Flanken kommen nicht an"
+  statt "Flanken". Kinder suchen nach ihrem Problem.
 
 **Gestaltung**
 
@@ -328,16 +374,11 @@ Sortiert nach Verhältnis von Nutzen zu Aufwand. Keiner davon ist beschlossen.
   Platzhalter und funktionieren in beiden Fassungen, aber ein Standbild aus dem
   Video zeigt mehr. Vorschlag: Standbild als Vorschau, Zeichnung als Erklärbild
   im Video.
-- **Die Pyramide als Fortschrittsanzeige.** Aktuell zeigt sie die Struktur.
-  Sie könnte zeigen, wie weit ein Kind ist: die eigene Ebene leuchtet, die
-  nächste ist angedeutet. Aus einer Grafik wird ein Ziel.
-- **Serien und Marken statt Punkte.** Keine Abzeichen, keine Sterne. "Sechs Tage
-  in Folge" und "43, Kaders Marke" passen zur Marke, Spielkram nicht.
 - **Ein Begrüßungsablauf.** Drei Fragen beim ersten Start: Wie alt, welche
   Position, wie oft in der Woche. Danach ist die Startseite passend gefüllt,
   statt für alle gleich zu sein. Ohne Konto, rein auf dem Gerät.
-- **Suche nach Problem, nicht nach Kategorie.** "Meine Flanken kommen nicht an"
-  statt "Flanken". Kinder suchen nach ihrem Problem.
+- **Keine Abzeichen und Sterne.** Serien und Marken passen zu KM1, Spielkram
+  nicht. Der Prototyp hält sich schon daran ("6 Tage Serie", "Kaders Marke").
 
 **Technik**
 
@@ -349,7 +390,7 @@ Sortiert nach Verhältnis von Nutzen zu Aufwand. Keiner davon ist beschlossen.
   Warteliste schon. In der App wäre sie zwei Tippen entfernt statt eines
   Browserwechsels.
 
-## 12. Was noch offen ist
+## 13. Was noch offen ist
 
 - **Der Zuschnitt Frei gegen PRO** aus Abschnitt 5: passt die Aufteilung so?
 - **Gehen die Kinder der Camps mit Namen in die App?** Wenn ja, brauchen wir eine

@@ -21,8 +21,10 @@ cd km1-app/prototyp && python3 -m http.server 8080
 Der Prototyp startet als Gast, ohne Konto: die freien Videos laufen sofort. Er
 zeigt die vier Bereiche der App (Start, Technik, Pyramide, Profil), den
 Videoplayer als Attrappe, die Challenge "Schlag den Coach", die PRO-Schranke und
-den Trainerbereich zum Hochladen. Über die Schalter links lässt sich Dunkelmodus,
-Anmeldung, Trainer-Ansicht und PRO umschalten.
+den Trainerbereich zum Hochladen. Dazu Zeitlupe und Fünf-Sekunden-Sprung im
+Player, die Pyramide als Fortschrittsanzeige, den Elternbereich und die
+Trainingserinnerung. Über die Schalter links lässt sich Dunkelmodus, Anmeldung,
+Trainer-Ansicht und PRO umschalten.
 
 Design, Logo und Schriften sind aus der Website übernommen: Anton für die großen
 Versalzeilen, Chivo für den Text, JetBrains Mono für Marken und Zahlen,
