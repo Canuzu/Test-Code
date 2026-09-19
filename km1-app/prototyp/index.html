@@ -1093,16 +1093,15 @@ function screenStart(){
       '<p class="note">Dein Wochenziel</p>' +
       '<div class="goal"><span class="n">'+ziel+'<em> / 5 Einheiten</em></span></div>' +
       '<span class="pips">'+pips+'</span>' +
-      '<p class="sub" style="margin:0">Hake eine Übung ab, wenn du sie auf dem Platz geschafft hast. Nicht, wenn du das Video gesehen hast.</p>' +
     '</div>';
   } else {
     var s = byId('erste-beruehrung');
     kopfteil = '<div><p class="eyebrow">Ohne Anmeldung</p><h1 class="big">Moin.<br>Fang einfach an.</h1>' +
-      '<p class="sub">'+zaehl('offen')+' Videos laufen sofort, ohne Konto und ohne E-Mail. '+zaehl('konto')+' weitere schaltet ein kostenloses Konto frei.</p></div>' +
+      '</div>' +
       heroKarte(s, 'Fang hier an', s.d+' · '+lvOf(s.lv).nm, 0);
     mitte = '<div class="panel">' +
-      '<p class="note">Kostenloses Konto</p>' +
-      '<p class="sub" style="margin:0">Mit Konto kommen '+zaehl('konto')+' weitere Videos dazu, und die App merkt sich, wo du stehen geblieben bist. Kostet nichts, zwei Felder.</p>' +
+      '<p class="note">Kostenlos</p>' +
+      '<h2 class="sec">Fortschritt sichern</h2>' +
       '<button class="btn" type="button" data-act="login:neu">Konto anlegen</button>' +
       '<button class="btn ghost" type="button" data-act="login:alt">Ich habe schon eins</button>' +
     '</div>';
@@ -1135,7 +1134,7 @@ function screenStart(){
     '<button class="proband" type="button" data-act="paywall">' +
       '<span class="note" style="color:var(--accent)">KM1 Pro</span>' +
       '<span class="t">Die Profis.<br>Aus der Nähe.</span>' +
-      '<p>'+zaehl('pro')+' Einheiten mit aktiven Profispielern, jeden Monat kommt eine dazu. Alles andere in der App bleibt kostenlos.</p>' +
+      '<p>'+zaehl('pro')+' Einheiten mit aktiven Profispielern.</p>' +
       '<span class="btn" style="pointer-events:none">Pro ansehen</span>' +
     '</button>') +
 
@@ -1143,7 +1142,7 @@ function screenStart(){
       '<span class="poster"><img src="img/goal.jpg" alt="" loading="lazy"></span>' +
       '<span class="body">' +
         '<span class="t">Herbstcamp Köln</span>' +
-        '<p>20. bis 24. Oktober, vier Tage am Stück. Plätze gehen über die Warteliste auf km1-training.de.</p>' +
+        '<p>20. bis 24. Oktober, fünf Tage in den Herbstferien.</p>' +
       '</span></button>' +
 
   '</section>';
@@ -1171,7 +1170,7 @@ function screenTechnik(){
 
   return '<section class="screen">' +
     '<div><p class="eyebrow">Videothek</p><h1 class="big">Technik</h1>' +
-    '<p class="sub">'+(VIDEOS.length-zaehl('pro'))+' Videos von Kader und dem Trainerteam, dazu '+zaehl('pro')+' Einheiten mit Profispielern.</p></div>' +
+    '</div>' +
 
     '<label class="search"><span class="vh">Videos durchsuchen</span>'+ICON.such+
       '<input id="suche" type="search" placeholder="Flanke, Dribbling, Torwart …" value="'+h(state.suche)+'"></label>' +
@@ -1180,7 +1179,7 @@ function screenTechnik(){
 
     (liste.length ?
       '<div class="grid">'+liste.map(karte).join('')+'</div>' :
-      '<p class="sub">Dazu haben wir noch nichts. Sag Kader Bescheid, was dir fehlt.</p>') +
+      '<div class="leer">'+ICON.such+'<p>Dazu haben wir noch nichts.</p></div>') +
   '</section>';
 }
 
@@ -1246,9 +1245,7 @@ function screenPyramide(){
 
   return '<section class="screen">' +
     '<div><p class="eyebrow">Vier Ebenen, eine Richtung</p><h1 class="big">Die KM1-<br>Pyramide</h1>' +
-    '<p class="sub">'+(drin()
-      ? 'Deine Ebene steht in voller Linie, die nächste ist angedeutet. Jede Ebene füllt sich, so weit du ihren Pfad abgehakt hast.'
-      : 'Tippe eine Ebene an. Mit einem Konto zeigt die Pyramide, wie weit du bist.')+'</p></div>' +
+    '</div>' +
     pyramide() +
     '<div class="lvpanel" style="--c:'+l.c+'">' +
       chip +
@@ -1261,7 +1258,6 @@ function screenPyramide(){
     '<div class="block">' +
       '<div class="block-head"><h2 class="sec">Dein Pfad</h2><span class="more">'+anzahl+' Videos</span></div>' +
       '<div class="path">'+pfad+'</div>' +
-      (drin() ? '' : '<p class="fine">Mit Konto hakst du Einheiten ab, und die Ebene füllt sich mit.</p>') +
     '</div>' +
   '</section>';
 }
@@ -1275,7 +1271,6 @@ function darstellung(){
           (t==='hell'?'Hell':t==='dunkel'?'Dunkel':'Automatisch')+'</button>';
       }).join('') +
     '</div>' +
-    '<p class="fine">Automatisch folgt der Einstellung deines Handys.</p>' +
   '</div>';
 }
 
@@ -1286,9 +1281,9 @@ function screenProfil(){
   if(!drin()){
     return '<section class="screen">' +
       '<div><p class="eyebrow">Gast</p><h1 class="big">Du schaust<br>ohne Konto zu.</h1>' +
-      '<p class="sub">'+frei+' Videos laufen ohne Anmeldung. Ein kostenloses Konto schaltet '+zaehl('konto')+' weitere frei und merkt sich deinen Fortschritt.</p></div>' +
+      '</div>' +
       '<div class="panel">' +
-        '<p class="note">Kostenlos, zwei Felder</p>' +
+        '<p class="note">Kostenlos</p>' +
         '<button class="btn" type="button" data-act="login:neu">Konto anlegen</button>' +
         '<button class="btn ghost" type="button" data-act="login:alt">Anmelden</button>' +
       '</div>' +
@@ -1303,14 +1298,13 @@ function screenProfil(){
 
   var trainer = state.owner ?
     '<div class="block">' +
-      '<div class="block-head"><h2 class="sec">Trainerbereich</h2><span class="more">Nur KM1</span></div>' +
+      '<div class="block-head"><h2 class="sec">Trainerbereich</h2><span class="more">Letzte 30 Tage</span></div>' +
       '<button class="btn" type="button" data-act="upload">'+ICON.upl+' Video hochladen</button>' +
       '<div class="path" style="margin-top:6px">' +
         VIDEOS.slice().sort(function(a,b){return b.views-a.views;}).slice(0,5).map(function(v){
           return '<div class="vid-admin"><span class="t">'+h(v.t)+'</span><span class="n">'+v.views.toLocaleString('de-DE')+'</span></div>';
         }).join('') +
       '</div>' +
-      '<p class="fine">Aufrufe der letzten 30 Tage.</p>' +
     '</div>' : '';
 
   return '<section class="screen">' +
@@ -1326,11 +1320,11 @@ function screenProfil(){
     '</div>' +
 
     (state.pro ?
-      '<div class="panel"><p class="note" style="color:var(--lv2)">KM1 Pro aktiv</p><p class="sub" style="margin:0">Verlängert sich am 18. Oktober. Kündbar jederzeit im App Store.</p></div>' :
+      '<div class="panel"><p class="note" style="color:var(--lv2)">KM1 Pro aktiv</p><p class="sub" style="margin:0">Verlängert sich am 18. Oktober.</p></div>' :
       '<button class="proband" type="button" data-act="paywall">' +
         '<span class="note" style="color:var(--accent)">KM1 Pro</span>' +
         '<span class="t">Die Profi-Einheiten</span>' +
-        '<p>'+zaehl('pro')+' Einheiten mit Profispielern. Ab 6,99 € im Monat, die ersten sieben Tage kosten nichts.</p>' +
+        '<p>Ab 6,99 € im Monat.</p>' +
         '<span class="btn" style="pointer-events:none">Pro ansehen</span>' +
       '</button>') +
 
@@ -1411,13 +1405,9 @@ function sheetVideo(id){
       '</div>' +
 
       (zu ?
-        (v.zg==='pro' ?
-          '<div class="callout"><span class="h">Nur mit KM1 Pro</span><p>Diese Einheit haben wir mit einem Profi gedreht: '+h(v.gast||'Gastspieler')+'. Die Profi-Einheiten sind der einzige Teil der App, der Geld kostet.</p></div>' +
-          '<button class="btn" type="button" data-act="paywall">Pro ansehen</button>'
-          :
-          '<div class="callout stille"><span class="h">Ein kostenloses Konto genügt</span><p>Dieses Video gehört zu den '+zaehl('konto')+', für die eine Anmeldung reicht. Es kostet nichts, und du brauchst nur E-Mail und Passwort.</p></div>' +
-          '<button class="btn" type="button" data-act="kontologin:'+v.id+'">Kostenloses Konto anlegen</button>'
-        )
+        (v.zg==='pro'
+          ? '<button class="btn" type="button" data-act="paywall">Mit KM1 Pro ansehen</button>'
+          : '<button class="btn" type="button" data-act="kontologin:'+v.id+'">Kostenloses Konto anlegen</button>')
         :
         '<p class="prose">'+h(v.be)+'</p>' +
         '<div class="block"><h2 class="sec">So geht’s</h2>' +
@@ -1488,7 +1478,6 @@ function sheetLogin(grund){
     '<div class="sheet-body">' +
       '<div><p class="eyebrow">'+(neu?'Kostenlos':'Willkommen zurück')+'</p>' +
       '<h1 class="big">'+(neu?'Konto anlegen':'Anmelden')+'</h1>' +
-      (grund ? '<p class="sub">'+h(grund)+'</p>' : '<p class="sub">Zum Zuschauen brauchst du kein Konto. Es merkt sich nur, wo du stehst.</p>') +
       '</div>' +
 
       '<div class="seg">' +
@@ -1504,7 +1493,7 @@ function sheetLogin(grund){
       '<button class="btn ghost" type="button" data-act="signin">'+ICON.apple+' Mit Apple anmelden</button>' +
       '<button class="btn ghost" type="button" data-act="back">Weiter ohne Konto</button>' +
 
-      '<p class="fine">Für Kinder unter 16 Jahren legen die Eltern das Konto an. Gespeichert werden E-Mail, Vorname und der Trainingsfortschritt, sonst nichts. Keine Werbung, kein Weiterverkauf.</p>' +
+      '<p class="fine">Für Kinder unter 16 Jahren legen die Eltern das Konto an.</p>' +
     '</div>';
 }
 
@@ -1582,7 +1571,7 @@ function sheetErinnerung(){
   return kopf('Erinnerung') +
     '<div class="sheet-body">' +
       '<div><p class="eyebrow">Zwei mal die Woche</p><h1 class="big">Erinnerung<br>ans Training</h1>' +
-      '<p class="sub">An deinen Trainingstagen eine kurze Mitteilung. Mehr nicht, und jederzeit wieder aus.</p></div>' +
+      '</div>' +
 
       '<div class="push">' +
         '<span class="ic"><img src="'+symbolDatei()+'" alt=""></span>' +
@@ -1607,7 +1596,6 @@ function sheetErinnerung(){
         }).join('')+'</select></div>' +
 
       '<button class="btn" type="button" data-act="ersave">Erinnerung speichern</button>' +
-      '<p class="fine">Beim ersten Mal fragt dein Handy, ob KM1 dir Mitteilungen schicken darf. Die Erinnerung liegt auf deinem Gerät.</p>' +
     '</div>';
 }
 
@@ -1618,7 +1606,7 @@ function sheetMerk(){
       '<div><p class="eyebrow">Für später</p><h1 class="big">Merkliste</h1></div>' +
       (liste.length
         ? '<div class="grid">'+liste.map(karte).join('')+'</div>'
-        : '<div class="leer">'+ICON.herz+'<p>Hier ist noch nichts. Tippe bei einem Video auf das Herz, dann findest du es später hier wieder.</p></div>') +
+        : '<div class="leer">'+ICON.herz+'<p>Noch nichts gemerkt.</p></div>') +
     '</div>';
 }
 
@@ -1638,7 +1626,6 @@ function sheetCamp(){
           ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
         '</ul></div>' +
       '<a class="btn" href="https://km1-training.de" target="_blank" rel="noopener">Auf die Warteliste</a>' +
-      '<p class="fine">Die Plätze gehen der Reihe nach von der Warteliste weg. Anmeldung und Bezahlung laufen über km1-training.de.</p>' +
     '</div>';
 }
 
@@ -1662,7 +1649,7 @@ function sheetDaten(){
         '</ul></div>' +
       '<div class="rows"><button class="lrow" type="button" data-act="loeschen">' +
         '<span>Konto und alle Daten löschen</span><span class="r">Sofort</span></button></div>' +
-      '<p class="fine">Die vollständige Datenschutzerklärung steht auf km1-training.de. Für Kinder unter 16 Jahren legen die Eltern das Konto an.</p>' +
+      '<p class="fine">Die vollständige Datenschutzerklärung steht auf km1-training.de.</p>' +
     '</div>';
 }
 
@@ -1682,19 +1669,15 @@ function sheetSymbol(){
   return kopf('App-Symbol') +
     '<div class="sheet-body">' +
       '<div><p class="eyebrow">Auf dem Startbildschirm</p><h1 class="big">Dein Symbol</h1>' +
-      '<p class="sub">Das Symbol der App lässt sich wechseln. Die Flutlicht-Fassung gehört zu KM1 PRO — und sie ist das Einzige am Abo, das man jedes Mal sieht, wenn man das Handy entsperrt.</p></div>' +
+      '</div>' +
 
       '<div class="symwahl">' +
         wahl('standard','img/app-symbol.png','Standard','Für alle', false) +
         wahl('pro','img/app-symbol-pro.png','Flutlicht', zu ? 'Mit KM1 Pro' : 'Freigeschaltet', zu) +
       '</div>' +
 
-      '<div class="callout stille"><span class="h">Beim Wechsel</span>' +
-        '<p>Dein Handy zeigt einmal kurz einen Hinweis, dass die App ihr Symbol geändert hat. Danach steht das neue Symbol auf dem Startbildschirm.</p></div>' +
-
       (zu ? '<button class="btn" type="button" data-act="paywall">Pro ansehen</button>' : '') +
 
-      '<p class="fine">Endet dein Abo, stellt die App wieder auf das Standard-Symbol zurück.</p>' +
     '</div>';
 }
 
@@ -1703,7 +1686,6 @@ function sheetPaywall(){
   return kopf('KM1 Pro') +
     '<div class="sheet-body">' +
       '<div><p class="eyebrow">Sieben Tage gratis</p><h1 class="big">Die Profis.<br>Aus der Nähe.</h1></div>' +
-      '<p class="prose">KM1 PRO öffnet die Einheiten, die wir mit aktiven Profispielern drehen. Alles andere in der App bleibt kostenlos.</p>' +
       '<ul class="ticks">' +
         ['Alle '+zaehl('pro')+' Einheiten mit Profispielern',
          'Jeden Monat eine neue Einheit mit einem neuen Gast',
@@ -1718,8 +1700,8 @@ function sheetPaywall(){
           '<span class="k">Jährlich</span><span class="p">59,00 €</span><span class="x">2 Monate geschenkt</span></button>' +
       '</div>' +
       '<button class="btn" type="button" data-act="buy">'+(drin()?'7 Tage gratis testen':'Konto anlegen und testen')+'</button>' +
-      '<p class="fine">Kostenlos bleiben '+zaehl('offen')+' Videos ohne Anmeldung und '+zaehl('konto')+' weitere mit kostenlosem Konto. Die Abrechnung läuft über deine Apple-ID, kündbar jederzeit in den App-Store-Einstellungen. Videos laufen nur in der App und lassen sich nicht herunterladen. Für Kinder unter 18 entscheiden die Eltern.</p>' +
-      '<button class="btn ghost" type="button" data-act="eltern">Für Eltern: was steckt dahinter?</button>' +
+      '<p class="fine">Abrechnung über deine Apple-ID, jederzeit kündbar.</p>' +
+      '<button class="btn ghost" type="button" data-act="eltern">Für Eltern</button>' +
       '<button class="btn ghost" type="button" data-act="restore">Kauf wiederherstellen</button>' +
     '</div>';
 }
@@ -1729,7 +1711,7 @@ function sheetUpload(){
   return kopf('Nur KM1') +
     '<div class="sheet-body">' +
       '<div><p class="eyebrow">Trainerbereich</p><h1 class="big">Neues Video</h1>' +
-      '<p class="sub">Was du hier veröffentlichst, sehen alle in der App. PRO-Videos nur die Abonnenten.</p></div>' +
+      '</div>' +
 
       '<button class="drop '+(u.datei?'has':'')+'" type="button" data-act="pickfile">' +
         ICON.upl +
@@ -1764,7 +1746,6 @@ function sheetUpload(){
 
       '<div class="bar" id="up-bar" hidden><i style="width:0%"></i></div>' +
       '<button class="btn" type="button" data-act="publish" id="up-go">Veröffentlichen</button>' +
-      '<p class="fine">Nach dem Veröffentlichen steht das Video sofort in der Videothek.</p>' +
     '</div>';
 }
 
