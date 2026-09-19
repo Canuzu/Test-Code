@@ -158,13 +158,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
 
 .stage{
   position:relative;z-index:1;
-  display:grid;gap:30px;justify-content:center;align-items:start;
-  max-width:860px;margin:0 auto;
-}
-@media (min-width:960px){
-  .stage{grid-template-columns:minmax(0,320px) minmax(0,430px);gap:52px}
-  .device{grid-column:2;grid-row:1}
-  .rail{grid-column:1;grid-row:1;position:sticky;top:20px}
+  display:flex;justify-content:center;align-items:flex-start;
+  max-width:440px;margin:0 auto;
 }
 
 /* ---------- Das Geraet ---------- */
@@ -500,12 +495,6 @@ h2.sec{
 .pctl .bar{flex:1;background:rgba(244,247,243,.26);height:5px;border-radius:99px}
 .pctl .bar i{background:#fff;border-radius:99px}
 .pctl .tm{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--on-media);font-variant-numeric:tabular-nums}
-.demo-chip{
-  position:absolute;right:14px;top:14px;z-index:4;
-  font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-  color:var(--on-media);background:rgba(3,7,6,.6);backdrop-filter:blur(8px);
-  padding:6px 10px;border-radius:var(--r-badge);
-}
 .bar{display:block;height:5px;background:var(--surface-3);border-radius:99px;position:relative;overflow:hidden}
 .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);display:block;border-radius:99px}
 
@@ -689,6 +678,21 @@ h2.sec{
 
 /* Die Symbolwahl. Das zweite Symbol gehoert zum Abo und ist das
    Einzige daran, was man auf dem Startbildschirm sieht. */
+.aktionen{display:grid;grid-template-columns:minmax(0,1fr) 56px;gap:10px}
+.aktionen .btn{width:100%}
+.btn.merk{padding:0;min-height:54px}
+.btn.merk svg{width:23px;height:23px}
+.btn.merk.an{color:var(--accent);box-shadow:var(--e1),inset 0 0 0 2px var(--accent)}
+.btn.merk.an svg{fill:currentColor}
+a.btn{text-decoration:none}
+.leer{
+  display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;
+  padding:46px 24px;border-radius:var(--r-card);background:var(--surface);
+  box-shadow:var(--e1),var(--edge);
+}
+.leer svg{width:34px;height:34px;fill:none;stroke:var(--ink-3);stroke-width:1.6}
+.leer p{margin:0;color:var(--ink-2);font-size:15.5px;line-height:1.5;max-width:30ch}
+
 .symwahl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .sym{
   display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 14px;
@@ -728,39 +732,6 @@ h2.sec{
   opacity:0;transition:opacity .3s var(--ease),transform .35s var(--spring);pointer-events:none;max-width:84%;text-align:center;
 }
 .toast.on{opacity:1;transform:translate(-50%,0)}
-
-/* ---------- Die Erklaerspalte ---------- */
-.rail{display:flex;flex-direction:column;gap:22px;padding-block:8px}
-.rail .mark{height:30px}
-.rail h1{
-  font-family:var(--display);font-weight:400;text-transform:uppercase;
-  font-size:clamp(32px,6vw,46px);line-height:.96;margin:10px 0 0;text-wrap:balance;
-}
-.rail p{margin:0;color:var(--ink-2);font-size:16px;line-height:1.6;max-width:44ch}
-.rail .kb{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
-.rail .kb li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:12px;font-size:15px;color:var(--ink-body);line-height:1.5}
-.rail .kb li::before{content:"";width:8px;height:8px;border-radius:99px;background:var(--accent);margin-top:8px}
-.switches{
-  display:flex;flex-direction:column;gap:4px;padding:8px;
-  background:var(--surface);border-radius:var(--r-card);box-shadow:var(--e1),var(--edge);
-}
-.sw{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;text-align:left;min-height:48px;padding:0 12px;border-radius:12px;transition:background .25s var(--ease)}
-.sw:hover{background:var(--surface-2)}
-.sw .l{font-size:14.5px;font-weight:600;color:var(--ink-2)}
-.sw .t{
-  width:50px;height:30px;flex:0 0 auto;border-radius:99px;position:relative;
-  background:var(--surface-3);box-shadow:inset 0 0 0 1px var(--line);
-  transition:background .3s var(--ease);
-}
-.sw .t::after{
-  content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:99px;
-  background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.25);
-  transition:transform .3s var(--spring);
-}
-.sw[aria-pressed="true"] .t{background:var(--accent);box-shadow:none}
-.sw[aria-pressed="true"] .t::after{transform:translateX(20px)}
-.sw[aria-pressed="true"] .l{color:var(--ink)}
-.rail .fine{max-width:42ch}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
@@ -809,34 +780,6 @@ h2.sec{
     </div>
   </div>
 
-  <aside class="rail">
-    <img class="mark" src="img/logo.png" alt="KM1 Training">
-    <div>
-      <p class="eyebrow">Prototyp, dritter Stand</p>
-      <h1>Die App zum Camp.</h1>
-    </div>
-    <p>Bedienbar wie die echte App. Du startest als Gast: zehn Videos laufen sofort, zehn weitere schaltet ein kostenloses Konto frei. Geld kostet nur eine Sache, die Einheiten mit Profispielern.</p>
-    <ul class="kb">
-      <li>Vier Bereiche unten: Start, Technik, Pyramide, Profil.</li>
-      <li>Das Abzeichen auf dem Bild sagt, was nötig ist: Konto oder Profi.</li>
-      <li>Hell ist die Grundeinstellung, Dunkel liegt im Profil.</li>
-    </ul>
-    <div class="switches">
-      <button class="sw" type="button" data-act="toggle-theme" aria-pressed="false">
-        <span class="l">Dunkle Ansicht</span><span class="t"></span>
-      </button>
-      <button class="sw" type="button" data-act="toggle-konto" aria-pressed="false">
-        <span class="l">Angemeldet</span><span class="t"></span>
-      </button>
-      <button class="sw" type="button" data-act="toggle-owner" aria-pressed="false">
-        <span class="l">Trainer-Ansicht (nur KM1)</span><span class="t"></span>
-      </button>
-      <button class="sw" type="button" data-act="toggle-pro" aria-pressed="false">
-        <span class="l">KM1 PRO aktiv</span><span class="t"></span>
-      </button>
-    </div>
-    <p class="fine">Der Player ist eine Attrappe, es läuft noch kein echtes Video. Videos lassen sich nicht herunterladen, sie laufen nur in der App. Preise sind Platzhalter.</p>
-  </aside>
 
 </div>
 
@@ -1028,7 +971,7 @@ var state = {
   meinLv:1, lvSel:1,
   kat:'alle', fltLv:0, suche:'',
   done:{}, preis:'jahr', nachLogin:null, loginModus:'neu',
-  tempo:1, dauer:444, symbol:'standard',
+  tempo:1, dauer:444, symbol:'standard', merk:{},
   erinnerung:{an:true, tage:['mi','sa'], zeit:'17:00'},
   up:{datei:null, lv:1, vis:'offen', busy:false}
 };
@@ -1068,6 +1011,7 @@ var ICON = {
   back:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>',
   such:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',
   rew:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 6v5.2h5.2"/><path d="M4.4 11.2a8 8 0 1 0 2.4-5.4L3.6 8.9"/></svg>',
+  herz:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.4 4.7 13.1a4.7 4.7 0 0 1 6.6-6.7l.7.7.7-.7a4.7 4.7 0 0 1 6.6 6.7z"/></svg>',
   upl:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 16v3h16v-3"/></svg>',
   apple:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.3 12.6c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.6-1.9-1.5-.2-3 .9-3.7.9-.8 0-2-.9-3.2-.8-1.7 0-3.2 1-4 2.5-1.7 2.9-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.6z"/><path d="M14.2 5.4c.7-.8 1.1-1.9 1-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.8-1.3z"/></svg>',
   tabStart:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5l3.2 5.3-3.2 2.6-3.2-2.6z"/><path d="M8.8 11.4L7 17.2M15.2 11.4L17 17.2"/></svg>',
@@ -1352,8 +1296,7 @@ function screenProfil(){
       '<div class="rows">' +
         '<button class="lrow" type="button" data-act="erinnerung"><span>Erinnerung ans Training</span><span class="r">'+erinnerungText()+'</span></button>' +
         '<button class="lrow" type="button" data-act="eltern"><span>Für Eltern</span><span class="r">Lesen</span></button>' +
-        '<button class="lrow" type="button" data-act="bald"><span>Datenschutz</span><span class="r">Öffnen</span></button>' +
-        '<button class="lrow" type="button" data-act="bald"><span>Impressum</span><span class="r">Öffnen</span></button>' +
+        '<button class="lrow" type="button" data-act="daten"><span>Datenschutz</span><span class="r">Lesen</span></button>' +
       '</div>' +
     '</section>';
   }
@@ -1367,7 +1310,7 @@ function screenProfil(){
           return '<div class="vid-admin"><span class="t">'+h(v.t)+'</span><span class="n">'+v.views.toLocaleString('de-DE')+'</span></div>';
         }).join('') +
       '</div>' +
-      '<p class="fine">Aufrufe der letzten 30 Tage. Hochladen kann nur dieser Account, das prüft die Datenbank selbst.</p>' +
+      '<p class="fine">Aufrufe der letzten 30 Tage.</p>' +
     '</div>' : '';
 
   return '<section class="screen">' +
@@ -1395,11 +1338,11 @@ function screenProfil(){
     darstellung() +
 
     '<div class="rows">' +
-      '<button class="lrow" type="button" data-act="bald"><span>Merkliste</span><span class="r">3</span></button>' +
+      '<button class="lrow" type="button" data-act="merkliste"><span>Merkliste</span><span class="r">'+Object.keys(state.merk).length+'</span></button>' +
       '<button class="lrow" type="button" data-act="symbol"><span>App-Symbol</span><span class="r">'+(state.symbol==='pro'?'Flutlicht':'Standard')+'</span></button>' +
       '<button class="lrow" type="button" data-act="erinnerung"><span>Erinnerung ans Training</span><span class="r">'+erinnerungText()+'</span></button>' +
       '<button class="lrow" type="button" data-act="eltern"><span>Für Eltern</span><span class="r">Lesen</span></button>' +
-      '<button class="lrow" type="button" data-act="bald"><span>Datenschutz</span><span class="r">Öffnen</span></button>' +
+      '<button class="lrow" type="button" data-act="daten"><span>Datenschutz</span><span class="r">Lesen</span></button>' +
       '<button class="lrow" type="button" data-act="logout"><span>Abmelden</span><span class="r">'+h(state.konto.vn)+'</span></button>' +
     '</div>' +
   '</section>';
@@ -1439,6 +1382,7 @@ function kopf(titel){
 
 function sheetVideo(id){
   var v = byId(id), l = lvOf(v.lv), zu = gesperrt(v), fertig = !!state.done[v.id];
+  var gemerkt = !!state.merk[v.id];
   state.dauer = sek(v.d);
   var verwandt = VIDEOS.filter(function(x){return x.k===v.k && x.id!==v.id;}).slice(0,4);
   if(!verwandt.length) verwandt = VIDEOS.filter(function(x){return x.lv===v.lv && x.id!==v.id;}).slice(0,4);
@@ -1449,11 +1393,9 @@ function sheetVideo(id){
         '<div class="poster">'+posterOf(v)+'</div>' +
         (zu ?
           '<button class="pbtn" type="button" data-act="'+(v.zg==='pro'?'paywall':'kontologin:'+v.id)+'">' +
-            '<span>'+ICON.lock+'</span></button>' +
-          '<span class="demo-chip">'+(v.zg==='pro'?'Profi-Einheit':'Konto nötig')+'</span>'
+            '<span>'+ICON.lock+'</span></button>'
           :
           '<button class="pbtn" type="button" data-act="play" id="pbtn"><span>'+ICON.play+'</span></button>' +
-          '<span class="demo-chip">Demo-Player</span>' +
           '<div class="pctl"><span class="tm" id="ptm">0:00</span><span class="bar"><i id="pbar" data-dauer="'+sek(v.d)+'" style="width:0%"></i></span><span class="tm">'+v.d+'</span></div>'
         ) +
       '</div>' +
@@ -1482,9 +1424,14 @@ function sheetVideo(id){
           '<ol class="steps">'+v.st.map(function(s){return '<li>'+h(s)+'</li>';}).join('')+'</ol>' +
         '</div>' +
         '<div class="callout"><span class="h">Häufiger Fehler</span><p>'+h(v.fe)+'</p></div>' +
-        '<button class="btn '+(fertig?'done':'')+'" type="button" data-act="check:'+v.id+'">' +
-          (fertig ? ICON.check+' Auf dem Platz geschafft' : 'Übung abhaken') +
-        '</button>' +
+        '<div class="aktionen">' +
+          '<button class="btn '+(fertig?'done':'')+'" type="button" data-act="check:'+v.id+'">' +
+            (fertig ? ICON.check+' Auf dem Platz geschafft' : 'Übung abhaken') +
+          '</button>' +
+          '<button class="btn ghost merk'+(gemerkt?' an':'')+'" type="button" data-act="merk:'+v.id+'"' +
+            ' aria-pressed="'+gemerkt+'" aria-label="'+(gemerkt?'Aus der Merkliste nehmen':'Auf die Merkliste')+'">' +
+            ICON.herz+'</button>' +
+        '</div>' +
         '<div class="coach"><img src="img/coach.jpg" alt=""><span class="n">' +
           (v.gast ? h(v.gast)+'<span>Zu Gast bei KM1</span>' : 'Kader<span>Gründer und Trainer</span>') +
         '</span></div>'
@@ -1505,7 +1452,6 @@ function sheetChallenge(){
       '<div class="player">' +
         '<div class="poster">'+dia('dribbling')+'</div>' +
         '<button class="pbtn" type="button" data-act="play" id="pbtn"><span>'+ICON.play+'</span></button>' +
-        '<span class="demo-chip">Demo-Player</span>' +
         '<div class="pctl"><span class="tm" id="ptm">0:00</span><span class="bar"><i id="pbar" data-dauer="72" style="width:0%"></i></span><span class="tm">1:12</span></div>' +
       '</div>' +
       ptools() +
@@ -1525,9 +1471,6 @@ function sheetChallenge(){
       '<button class="btn '+(fertig?'done':'')+'" type="button" data-act="check:challenge-'+c.m+'">' +
         (fertig ? ICON.check+' Geschafft, zeig es im Training' : 'Ich hab’s geschafft') +
       '</button>' +
-
-      '<div class="callout stille"><span class="h">Ohne Einsenden</span>' +
-        '<p>Du kannst hier kein Video hochladen, und das ist Absicht: in der App gibt es nur Videos von KM1. Dein Ergebnis zeigst du Kader im nächsten Training, dann zählt es.</p></div>' +
 
       '<div class="block">' +
         '<div class="block-head"><h2 class="sec">Frühere Challenges</h2></div>' +
@@ -1615,7 +1558,7 @@ function sheetEltern(){
            'Sonst nichts: kein Tracking, keine Werbung, keine Weitergabe an Dritte.'
           ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
         '</ul>' +
-        '<div class="rows"><button class="lrow" type="button" data-act="bald">' +
+        '<div class="rows"><button class="lrow" type="button" data-act="loeschen">' +
           '<span>Konto und alle Daten löschen</span><span class="r">Sofort</span></button></div>' +
       '</div>' +
 
@@ -1664,7 +1607,62 @@ function sheetErinnerung(){
         }).join('')+'</select></div>' +
 
       '<button class="btn" type="button" data-act="ersave">Erinnerung speichern</button>' +
-      '<p class="fine">Beim ersten Mal fragt dein Handy, ob KM1 dir Mitteilungen schicken darf. Sagst du nein, bleibt der Rest der App unverändert. Die Erinnerung liegt auf dem Gerät, wir schicken nichts über einen Server.</p>' +
+      '<p class="fine">Beim ersten Mal fragt dein Handy, ob KM1 dir Mitteilungen schicken darf. Die Erinnerung liegt auf deinem Gerät.</p>' +
+    '</div>';
+}
+
+function sheetMerk(){
+  var liste = VIDEOS.filter(function(v){return state.merk[v.id];});
+  return kopf('Merkliste') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Für später</p><h1 class="big">Merkliste</h1></div>' +
+      (liste.length
+        ? '<div class="grid">'+liste.map(karte).join('')+'</div>'
+        : '<div class="leer">'+ICON.herz+'<p>Hier ist noch nichts. Tippe bei einem Video auf das Herz, dann findest du es später hier wieder.</p></div>') +
+    '</div>';
+}
+
+function sheetCamp(){
+  return kopf('Camp') +
+    '<div class="sheet-body">' +
+      '<div class="player"><div class="poster"><img src="img/goal.jpg" alt=""></div></div>' +
+      '<div><p class="eyebrow">Herbstferien</p><h1 class="big">Herbstcamp<br>Köln</h1></div>' +
+      '<div class="meta"><span>20. bis 24. Oktober</span><span>U8 bis U15</span><span>9 bis 16 Uhr</span></div>' +
+      '<p class="prose">Fünf Tage am Stück auf dem Platz. Vormittags Technik in kleinen Gruppen, nachmittags Spielformen, am letzten Tag ein Turnier mit allen Eltern an der Linie.</p>' +
+      '<div class="block"><h2 class="sec">Was dabei ist</h2>' +
+        '<ul class="ticks">' +
+          ['Training in Gruppen von höchstens zehn Kindern',
+           'Mittagessen und Getränke an allen fünf Tagen',
+           'Ein KM1-Trikot, das bleibt',
+           'Abschlussturnier am Freitag mit Urkunde'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+      '<a class="btn" href="https://km1-training.de" target="_blank" rel="noopener">Auf die Warteliste</a>' +
+      '<p class="fine">Die Plätze gehen der Reihe nach von der Warteliste weg. Anmeldung und Bezahlung laufen über km1-training.de.</p>' +
+    '</div>';
+}
+
+function sheetDaten(){
+  return kopf('Datenschutz') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Ohne Juristendeutsch</p><h1 class="big">Deine Daten</h1></div>' +
+      '<div class="block"><h2 class="sec">Was wir speichern</h2>' +
+        '<ul class="ticks">' +
+          ['E-Mail und Vorname, damit dein Konto existiert',
+           'Welche Übungen du abgehakt hast und wo ein Video stehen geblieben ist',
+           'Ob dein Abo läuft'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+      '<div class="block"><h2 class="sec">Was wir nicht tun</h2>' +
+        '<ul class="ticks">' +
+          ['Kein Tracking, keine Werbenetzwerke',
+           'Keine Weitergabe an Dritte',
+           'Keine Auswertung, wer wie oft welches Video schaut'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+      '<div class="rows"><button class="lrow" type="button" data-act="loeschen">' +
+        '<span>Konto und alle Daten löschen</span><span class="r">Sofort</span></button></div>' +
+      '<p class="fine">Die vollständige Datenschutzerklärung steht auf km1-training.de. Für Kinder unter 16 Jahren legen die Eltern das Konto an.</p>' +
     '</div>';
 }
 
@@ -1691,12 +1689,12 @@ function sheetSymbol(){
         wahl('pro','img/app-symbol-pro.png','Flutlicht', zu ? 'Mit KM1 Pro' : 'Freigeschaltet', zu) +
       '</div>' +
 
-      '<div class="callout stille"><span class="h">Was beim Wechsel passiert</span>' +
-        '<p>Dein Handy zeigt einmal kurz einen Hinweis, dass die App ihr Symbol geändert hat. Das gehört zum System und lässt sich nicht abschalten. Danach steht das neue Symbol auf dem Startbildschirm, bis du es wieder wechselst.</p></div>' +
+      '<div class="callout stille"><span class="h">Beim Wechsel</span>' +
+        '<p>Dein Handy zeigt einmal kurz einen Hinweis, dass die App ihr Symbol geändert hat. Danach steht das neue Symbol auf dem Startbildschirm.</p></div>' +
 
       (zu ? '<button class="btn" type="button" data-act="paywall">Pro ansehen</button>' : '') +
 
-      '<p class="fine">Endet das Abo, stellt die App wieder auf das Standard-Symbol zurück. Beide Symbole sind in der App enthalten, es wird nichts nachgeladen.</p>' +
+      '<p class="fine">Endet dein Abo, stellt die App wieder auf das Standard-Symbol zurück.</p>' +
     '</div>';
 }
 
@@ -1720,9 +1718,9 @@ function sheetPaywall(){
           '<span class="k">Jährlich</span><span class="p">59,00 €</span><span class="x">2 Monate geschenkt</span></button>' +
       '</div>' +
       '<button class="btn" type="button" data-act="buy">'+(drin()?'7 Tage gratis testen':'Konto anlegen und testen')+'</button>' +
-      '<p class="fine">Kostenlos bleiben '+zaehl('offen')+' Videos ohne Anmeldung und '+zaehl('konto')+' weitere mit kostenlosem Konto. Beispielpreise für den Prototyp. Die Abrechnung läuft über deine Apple-ID, kündbar jederzeit in den App-Store-Einstellungen. Videos laufen nur in der App und lassen sich nicht herunterladen. Für Kinder unter 18 entscheiden die Eltern.</p>' +
+      '<p class="fine">Kostenlos bleiben '+zaehl('offen')+' Videos ohne Anmeldung und '+zaehl('konto')+' weitere mit kostenlosem Konto. Die Abrechnung läuft über deine Apple-ID, kündbar jederzeit in den App-Store-Einstellungen. Videos laufen nur in der App und lassen sich nicht herunterladen. Für Kinder unter 18 entscheiden die Eltern.</p>' +
       '<button class="btn ghost" type="button" data-act="eltern">Für Eltern: was steckt dahinter?</button>' +
-      '<button class="btn ghost" type="button" data-act="bald">Kauf wiederherstellen</button>' +
+      '<button class="btn ghost" type="button" data-act="restore">Kauf wiederherstellen</button>' +
     '</div>';
 }
 
@@ -1766,7 +1764,7 @@ function sheetUpload(){
 
       '<div class="bar" id="up-bar" hidden><i style="width:0%"></i></div>' +
       '<button class="btn" type="button" data-act="publish" id="up-go">Veröffentlichen</button>' +
-      '<p class="fine">Hochladen kann nur der KM1-Account. Das entscheidet nicht die App, sondern die Datenbank selbst: sie lehnt jeden fremden Upload ab, auch wenn jemand die App umgeht.</p>' +
+      '<p class="fine">Nach dem Veröffentlichen steht das Video sofort in der Videothek.</p>' +
     '</div>';
 }
 
@@ -1817,15 +1815,6 @@ function applyTheme(){
     dunkel = (t === 'dunkel');
   }
   document.documentElement.setAttribute('data-theme', dunkel ? 'dark' : 'light');
-  var sw = document.querySelector('[data-act="toggle-theme"]');
-  if(sw) sw.setAttribute('aria-pressed', String(dunkel));
-}
-function syncSwitches(){
-  var m = {'toggle-konto':drin(), 'toggle-owner':state.owner, 'toggle-pro':state.pro};
-  Object.keys(m).forEach(function(k){
-    var b = document.querySelector('[data-act="'+k+'"]');
-    if(b) b.setAttribute('aria-pressed', String(m[k]));
-  });
 }
 function renderTabs(){
   var t = [
@@ -1841,7 +1830,6 @@ function render(){
   var s = {start:screenStart, technik:screenTechnik, pyramide:screenPyramide, profil:screenProfil}[state.tab];
   document.getElementById('screens').innerHTML = s();
   renderTabs();
-  syncSwitches();
   var chip = document.getElementById('lvchip');
   if(drin()){
     var l = lvOf(state.meinLv);
@@ -1887,7 +1875,11 @@ document.addEventListener('click', function(e){
   else if(k==='lmodus'){ state.loginModus = v; refreshSheet(sheetLogin()); }
   else if(k==='signin'){
     var nm = (document.getElementById('lg-name')||{}).value;
-    anmelden(nm && nm.trim() ? nm.trim() : 'Luis M.');
+    var mail = (document.getElementById('lg-mail')||{}).value || '';
+    /* Die Trainerrolle haengt am Konto, nicht an einem Schalter. */
+    var trainer = /kader|km1-training/i.test(mail);
+    state.owner = trainer;
+    anmelden(trainer ? 'Kader' : (nm && nm.trim() ? nm.trim() : 'Luis M.'));
     closeSheet();
     var n = state.nachLogin; state.nachLogin = null;
     render();
@@ -1907,14 +1899,14 @@ document.addEventListener('click', function(e){
   }
   else if(k==='logout'){
     state.konto = null; state.pro = false; state.owner = false; state.done = {};
-    state.symbol = 'standard';
+    state.symbol = 'standard'; state.merk = {};
     render(); toast('Abgemeldet');
   }
   else if(k==='buy'){
     if(!drin()){ state.nachLogin = 'pro'; state.loginModus='neu'; openSheet(sheetLogin('Für ein Abo braucht es ein Konto, sonst weiß niemand, wem PRO gehört.')); return; }
     state.pro = true;
     while(stack.length) closeSheet();
-    render(); toast('KM1 Pro aktiv (Demo)');
+    render(); toast('KM1 Pro ist aktiv');
   }
   else if(k==='check'){
     if(!drin()){
@@ -1941,6 +1933,20 @@ document.addEventListener('click', function(e){
   }
   else if(k==='eltern'){ openSheet(sheetEltern()); }
   else if(k==='symbol'){ openSheet(sheetSymbol()); }
+  else if(k==='merkliste'){ openSheet(sheetMerk()); }
+  else if(k==='merk'){
+    if(!drin()){
+      state.nachLogin = 'video:'+v; state.loginModus = 'neu';
+      openSheet(sheetLogin('Damit deine Merkliste erhalten bleibt, brauchst du ein Konto.'));
+      return;
+    }
+    if(state.merk[v]) delete state.merk[v]; else state.merk[v] = 1;
+    refreshSheet(sheetVideo(v));
+    toast(state.merk[v] ? 'Gemerkt' : 'Aus der Merkliste genommen');
+  }
+  else if(k==='daten'){ openSheet(sheetDaten()); }
+  else if(k==='loeschen'){ toast('Wir schicken dir eine E-Mail zur Bestätigung'); }
+  else if(k==='restore'){ toast('Keine früheren Käufe gefunden'); }
   else if(k==='sym'){
     if(v==='pro' && !state.pro){ openSheet(sheetPaywall()); return; }
     state.symbol = v;
@@ -1973,28 +1979,7 @@ document.addEventListener('click', function(e){
   else if(k==='uplv'){ state.up.lv = +v; refreshSheet(sheetUpload()); }
   else if(k==='upvis'){ state.up.vis = v; refreshSheet(sheetUpload()); }
   else if(k==='publish'){ publish(); }
-  else if(k==='toggle-theme'){ state.theme = (document.documentElement.getAttribute('data-theme')==='dark') ? 'hell' : 'dunkel'; applyTheme(); render(); }
-  else if(k==='toggle-konto'){
-    if(drin()){ state.konto = null; state.pro = false; state.owner = false; state.done = {}; }
-    else anmelden('Luis M.');
-    while(stack.length) closeSheet();
-    render();
-  }
-  else if(k==='toggle-owner'){
-    state.owner = !state.owner;
-    if(state.owner) anmelden('Kader');
-    while(stack.length) closeSheet();
-    render(); toast(state.owner ? 'Trainer-Ansicht an' : 'Spieler-Ansicht');
-  }
-  else if(k==='toggle-pro'){
-    if(!state.pro && !drin()) anmelden('Luis M.');
-    state.pro = !state.pro;
-    if(!state.pro) state.symbol = 'standard';
-    if(stack.length) refreshSheet(stack[stack.length-1]);
-    render(); toast(state.pro ? 'Pro aktiv' : 'Pro aus');
-  }
-  else if(k==='camps'){ toast('Öffnet später km1-training.de'); }
-  else if(k==='bald'){ toast('Im Prototyp noch ohne Funktion'); }
+  else if(k==='camps'){ openSheet(sheetCamp()); }
 });
 
 document.addEventListener('keydown', function(e){
