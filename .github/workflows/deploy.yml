@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main, claude/pensive-euler-SFLHH]
+    branches: [main, claude/pensive-euler-SFLHH, claude/fussballcamp-learning-app-lch7q7]
   schedule:
     # Twice daily (05:00 & 17:00 UTC): rebuild with fresh prices and pick up any
     # newly released set. Each fetcher queries the live set list / full bulk, and
@@ -158,6 +158,16 @@ jobs:
           echo "===== app.js size / first line ====="
           wc -c dist/animatemymap/app.js
           head -c 160 dist/animatemymap/app.js
+      - name: Add KM1 Training app into /km1-app subpath
+        # Installierbare Web-App (kein Build). Wird unter <pages>/km1-app/
+        # ausgeliefert. Manifest, Service Worker und Symbole liegen damit
+        # same-origin, sodass iPhone und Android die App auf den
+        # Startbildschirm legen koennen.
+        run: |
+          mkdir -p dist/km1-app
+          cp -r km1-app/app/. dist/km1-app/
+          echo "===== km1-app ausgeliefert ====="
+          ls -la dist/km1-app
       - uses: actions/configure-pages@v5
         with:
           enablement: true

@@ -1,7 +1,29 @@
-<title>KM1 Training App</title>
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>KM1 Training</title>
+<meta name="description" content="Lernvideos der KM1 Fußballschule: Technik, Athletik und Einheiten mit Profispielern.">
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#EEF2ED" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#060C0A" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+
+<!-- Damit iOS die Seite als App behandelt, wenn sie auf dem Startbildschirm liegt -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KM1">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Chivo:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
 <style>
 /* ============================================================
    KM1 Training — das Designsystem der App.
@@ -733,11 +755,27 @@ a.btn{text-decoration:none}
 }
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
+/* ---------- Auf dem Handy ist die App das ganze Bild ---------- */
+@media (max-width:560px), (display-mode:standalone){
+  body{padding:0;height:100dvh;overflow:hidden}
+  .env{display:none}
+  .stage{max-width:none}
+  .device{
+    max-width:none;width:100%;height:100dvh;min-height:0;
+    border-radius:0;box-shadow:none;outline:none;
+  }
+  .statusbar,.homebar{display:none}
+  .app{inset:0;padding-top:env(safe-area-inset-top,0px)}
+  .tabs{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+  .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
 }
 </style>
-
+</head>
+<body>
 <svg class="vh" aria-hidden="true" focusable="false" width="0" height="0">
   <filter id="logoLight" color-interpolation-filters="sRGB">
     <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -0.33 -0.34 -0.33 0 1" result="k"/>
@@ -2038,3 +2076,14 @@ function publish(){
 applyTheme();
 render();
 </script>
+
+<script>
+/* Legt die App ins Regal, damit sie beim naechsten Mal auch ohne Netz startet. */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
