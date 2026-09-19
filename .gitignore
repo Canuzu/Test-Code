@@ -15,3 +15,7 @@ public/data/*
 !public/data/onepiece.json
 !public/data/yugioh.json
 !public/data/magic.json
+
+# Rechnet artefakt.py aus km1-app/app/index.html — nur fuer die Vorschau auf
+# claude.ai, keine Quelle.
+km1-app/artefakt.html

@@ -498,11 +498,31 @@ h2.sec{
 .sheet-head .note{margin-left:auto}
 .sheet-body{padding:22px 18px 40px;display:flex;flex-direction:column;gap:26px}
 
-/* ---------- Spieler ---------- */
-.player{position:relative;margin:-22px -18px 0;background:var(--canvas-2)}
+/* ---------- Der Spieler ---------- */
+.player{position:relative;margin:-22px -18px 0;background:var(--canvas-2);overflow:hidden}
 .player .poster{aspect-ratio:16/9;border-radius:0}
-.player .poster::after{background:linear-gradient(185deg,rgba(3,7,6,.1) 0%,rgba(3,7,6,0) 40%,rgba(3,7,6,.8) 100%)}
-.pbtn{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center}
+.player .poster::after{background:linear-gradient(185deg,rgba(3,7,6,.14) 0%,rgba(3,7,6,0) 38%,rgba(3,7,6,.82) 100%)}
+
+/* Die beiden Haelften zum Doppeltippen. Sie lassen die Leiste unten frei. */
+.zone{position:absolute;top:0;bottom:58px;width:40%;z-index:2}
+.zone.links{left:0}
+.zone.rechts{right:0}
+.sprung{
+  position:absolute;top:calc(50% - 29px);transform:translateY(-50%);z-index:5;
+  display:flex;align-items:center;gap:7px;
+  padding:13px 18px;border-radius:99px;
+  background:rgba(3,7,6,.66);backdrop-filter:blur(8px);
+  color:#fff;font-size:14px;font-weight:700;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity .2s var(--ease);
+}
+.sprung.links{left:7%}
+.sprung.rechts{right:7%}
+.sprung.rechts svg{transform:scaleX(-1)}
+.sprung svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sprung.an{opacity:1}
+
+.pbtn{position:absolute;top:0;bottom:58px;left:40%;right:40%;z-index:3;display:flex;align-items:center;justify-content:center}
+.player .pbtn[data-act$="login"],.player .pbtn[data-act="paywall"],.player .pbtn[data-act^="kontologin"]{left:0;right:0}
 .pbtn span{
   width:74px;height:74px;border-radius:99px;background:var(--accent);
   display:flex;align-items:center;justify-content:center;
@@ -510,31 +530,98 @@ h2.sec{
   transition:transform .35s var(--spring);
 }
 .pbtn:hover span{transform:scale(1.06)}
-.pbtn:active span{transform:scale(.96)}
+.pbtn:active span{transform:scale(.94)}
 .pbtn svg{width:24px;height:24px;fill:#fff;margin-left:3px}
-.pbtn span svg[stroke]{fill:none;stroke:#fff;margin-left:0}
+
+/* Leiste und Knoepfe */
 .pctl{
-  position:absolute;left:0;right:0;bottom:0;z-index:4;padding:14px 16px 16px;
-  display:flex;align-items:center;gap:12px;
+  position:absolute;left:0;right:0;bottom:0;z-index:6;padding:10px 12px 12px;
+  display:flex;align-items:center;gap:10px;
+  background:linear-gradient(180deg,transparent,rgba(3,7,6,.72));
 }
-.pctl .bar{flex:1;background:rgba(244,247,243,.26);height:5px;border-radius:99px}
-.pctl .bar i{background:#fff;border-radius:99px}
-.pctl .tm{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--on-media);font-variant-numeric:tabular-nums}
+.pctl .tm{
+  font-family:var(--mono);font-size:12px;font-weight:500;color:var(--on-media);
+  font-variant-numeric:tabular-nums;flex:0 0 auto;
+}
+.mini{
+  width:36px;height:36px;flex:0 0 auto;border-radius:99px;
+  display:flex;align-items:center;justify-content:center;color:var(--on-media);
+  transition:background .2s var(--ease);
+}
+.mini:hover{background:rgba(244,247,243,.16)}
+.mini svg{width:17px;height:17px;fill:currentColor}
+.mini svg[stroke]{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mini.tempo{
+  width:auto;padding:0 12px;font-family:var(--mono);font-size:12.5px;font-weight:700;
+  font-variant-numeric:tabular-nums;
+}
+
+/* Die ziehbare Zeitleiste */
+.scrub{position:relative;flex:1;min-width:0;padding-block:11px;touch-action:none;cursor:pointer}
+.scrub .spur{display:block;position:relative;height:5px;border-radius:99px;background:rgba(244,247,243,.3)}
+.scrub .spur i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:#fff;display:block}
+.scrub .griff{
+  position:absolute;top:50%;width:15px;height:15px;border-radius:99px;background:#fff;
+  transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(3,7,6,.5);
+  transition:transform .2s var(--spring);
+}
+.scrub:active .griff,.scrub:hover .griff{transform:translate(-50%,-50%) scale(1.25)}
+
+/* ---------- Vollbild ---------- */
+.kino{
+  position:absolute;inset:0;z-index:60;background:#030706;
+  opacity:0;transition:opacity .26s var(--ease);
+  display:flex;align-items:center;justify-content:center;
+}
+.kino.an{opacity:1}
+/* Haelt das Handy hochkant, legen wir das Bild quer. Genau das erwartet
+   man vom Vollbild, und der Sperrbefehl fuers Display greift laengst nicht ueberall. */
+.dreh{position:absolute;inset:0}
+.dreh.quer{inset:auto;left:50%;top:50%;transform-origin:center;transform:translate(-50%,-50%) rotate(90deg)}
+.kino-bild{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.kino-bild .poster{width:100%;max-height:100%;aspect-ratio:16/9;border-radius:0;background:#030706}
+.kino-bild .poster::after{background:linear-gradient(185deg,rgba(3,7,6,.3) 0%,rgba(3,7,6,0) 40%,rgba(3,7,6,.7) 100%)}
+.kino .zone{bottom:64px}
+.kino-oben{
+  position:absolute;left:0;right:0;top:0;z-index:6;
+  display:flex;align-items:center;gap:12px;padding:12px 12px;
+  background:linear-gradient(180deg,rgba(3,7,6,.72),transparent);
+  transition:opacity .25s var(--ease);
+}
+.kino-titel{font-size:15px;font-weight:700;color:#fff;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rund{
+  width:38px;height:38px;flex:0 0 auto;border-radius:99px;
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  background:rgba(3,7,6,.4);
+}
+.rund svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+.kino-play{position:absolute;top:0;bottom:64px;left:40%;right:40%;z-index:4;display:flex;align-items:center;justify-content:center}
+.kino-play span{
+  width:82px;height:82px;border-radius:99px;background:rgba(200,30,20,.95);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 20px 44px -14px rgba(0,0,0,.9);
+  transition:transform .3s var(--spring);
+}
+.kino-play:active span{transform:scale(.94)}
+.kino-play svg{width:28px;height:28px;fill:#fff;margin-left:4px}
+.kino .pctl{padding:12px 14px 16px}
+.kino.ruhe .kino-oben,.kino.ruhe .pctl{opacity:0;pointer-events:none}
+
+.tempoliste{
+  position:absolute;right:12px;bottom:66px;z-index:8;
+  display:flex;flex-direction:column;gap:2px;padding:6px;
+  border-radius:14px;background:rgba(10,20,17,.92);backdrop-filter:blur(10px);
+  box-shadow:0 18px 40px -14px rgba(0,0,0,.9);
+}
+.tempoliste button{
+  padding:10px 18px;border-radius:9px;color:rgba(244,247,243,.86);
+  font-family:var(--mono);font-size:13px;font-weight:600;text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.tempoliste button[aria-pressed="true"]{background:var(--accent);color:#fff}
+
 .bar{display:block;height:5px;background:var(--surface-3);border-radius:99px;position:relative;overflow:hidden}
 .bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);display:block;border-radius:99px}
-
-/* ---------- Werkzeuge am Player ---------- */
-.ptools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.ptool{
-  display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;
-  border-radius:var(--r-btn);background:var(--surface);color:var(--ink-2);
-  font-size:14px;font-weight:600;
-  box-shadow:var(--e1),var(--edge);
-  transition:color .25s var(--ease),transform .25s var(--spring),box-shadow .25s var(--ease);
-}
-.ptool:active{transform:scale(.97)}
-.ptool[aria-pressed="true"]{color:var(--accent);box-shadow:var(--e1),inset 0 0 0 2px var(--accent)}
-.ptool svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* ---------- Text im Blatt ---------- */
 .meta{display:flex;flex-wrap:wrap;gap:8px 10px;font-size:13px;font-weight:600;color:var(--ink-2)}
@@ -1012,7 +1099,7 @@ var state = {
   meinLv:1, lvSel:1,
   kat:'alle', fltLv:0, suche:'',
   done:{}, preis:'jahr', nachLogin:null, loginModus:'neu',
-  tempo:1, dauer:444, symbol:'standard', merk:{},
+  tempo:1, symbol:'standard', merk:{},
   erinnerung:{an:true, tage:['mi','sa'], zeit:'17:00'},
   up:{datei:null, lv:1, vis:'offen', busy:false}
 };
@@ -1025,8 +1112,10 @@ function byId(id){return VIDEOS.filter(function(v){return v.id===id;})[0];}
 function lvOf(n){return LEVELS[n-1];}
 function drin(){return !!state.konto;}
 function sek(d){var t=String(d).split(':');return (+t[0])*60 + (+t[1]||0);}
-function fmtZeit(s){var m=Math.floor(s/60), r=Math.round(s%60);return m+':'+(r<10?'0':'')+r;}
-function tempoLabel(){return state.tempo===1 ? '1\u00d7' : (state.tempo===0.75 ? '0,75\u00d7' : '0,5\u00d7');}
+function fmtZeit(s){var g=Math.floor(s), m=Math.floor(g/60), r=g%60;return m+':'+(r<10?'0':'')+r;}
+var TEMPI = [0.25, 0.5, 0.75, 1, 1.5];
+function tempoText(t){ return String(t).replace('.', ',') + '\u00d7'; }
+function tempoLabel(){ return tempoText(state.tempo); }
 function lvFortschritt(nr){
   var u = PFAD[nr];
   return {fertig: u.filter(function(x){return state.done[x.id];}).length, gesamt: u.length};
@@ -1051,6 +1140,9 @@ var ICON = {
   check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
   back:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>',
   such:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',
+  voll:'<svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor"><path d="M9 4H4v5M15 4h5v5M15 20h5v-5M9 20H4v-5"/></svg>',
+  klein:'<svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor"><path d="M4 9h5V4M20 9h-5V4M20 15h-5v5M4 15h5v5"/></svg>',
+  x:'<svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   rew:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 6v5.2h5.2"/><path d="M4.4 11.2a8 8 0 1 0 2.4-5.4L3.6 8.9"/></svg>',
   herz:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.4 4.7 13.1a4.7 4.7 0 0 1 6.6-6.7l.7.7.7-.7a4.7 4.7 0 0 1 6.6 6.7z"/></svg>',
   upl:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 16v3h16v-3"/></svg>',
@@ -1386,7 +1478,7 @@ function screenProfil(){
 /* ============================================================
    Schiebeblaetter
    ============================================================ */
-var stack = [], timer = null;
+var stack = [];
 
 function openSheet(html){
   stack.push(html);
@@ -1396,6 +1488,7 @@ function openSheet(html){
   requestAnimationFrame(function(){ s.classList.add('on'); });
 }
 function closeSheet(){
+  if(P.kino) kinoZu();
   stopPlayer();
   stack.pop();
   var s = document.getElementById('sheet');
@@ -1418,23 +1511,18 @@ function kopf(titel){
 function sheetVideo(id){
   var v = byId(id), l = lvOf(v.lv), zu = gesperrt(v), fertig = !!state.done[v.id];
   var gemerkt = !!state.merk[v.id];
-  state.dauer = sek(v.d);
   var verwandt = VIDEOS.filter(function(x){return x.k===v.k && x.id!==v.id;}).slice(0,4);
   if(!verwandt.length) verwandt = VIDEOS.filter(function(x){return x.lv===v.lv && x.id!==v.id;}).slice(0,4);
 
   return kopf(KAT[v.k]) +
     '<div class="sheet-body">' +
-      '<div class="player">' +
-        '<div class="poster">'+posterOf(v)+'</div>' +
-        (zu ?
+      (zu ?
+        '<div class="player"><div class="poster">'+posterOf(v)+'</div>' +
           '<button class="pbtn" type="button" data-act="'+(v.zg==='pro'?'paywall':'kontologin:'+v.id)+'">' +
-            '<span>'+ICON.lock+'</span></button>'
-          :
-          '<button class="pbtn" type="button" data-act="play" id="pbtn"><span>'+ICON.play+'</span></button>' +
-          '<div class="pctl"><span class="tm" id="ptm">0:00</span><span class="bar"><i id="pbar" data-dauer="'+sek(v.d)+'" style="width:0%"></i></span><span class="tm">'+v.d+'</span></div>'
-        ) +
-      '</div>' +
-      (zu ? '' : ptools()) +
+            '<span>'+ICON.lock+'</span></button></div>'
+        :
+        playerInline({id:v.id, titel:v.t, poster:posterOf(v), dauer:sek(v.d)})
+      ) +
 
       '<div><p class="eyebrow">'+l.nm+' · '+l.ag+'</p><h1 class="big" style="font-size:25px">'+h(v.t)+'</h1></div>' +
 
@@ -1477,15 +1565,9 @@ function sheetVideo(id){
 
 function sheetChallenge(){
   var c = CHALLENGES[0], fertig = !!state.done['challenge-'+c.m];
-  state.dauer = 72;
   return kopf('Challenge') +
     '<div class="sheet-body">' +
-      '<div class="player">' +
-        '<div class="poster">'+dia('dribbling')+'</div>' +
-        '<button class="pbtn" type="button" data-act="play" id="pbtn"><span>'+ICON.play+'</span></button>' +
-        '<div class="pctl"><span class="tm" id="ptm">0:00</span><span class="bar"><i id="pbar" data-dauer="72" style="width:0%"></i></span><span class="tm">1:12</span></div>' +
-      '</div>' +
-      ptools() +
+      playerInline({id:'challenge', titel:'Schlag den Coach', poster:dia('dribbling'), dauer:72}) +
 
       '<div><p class="eyebrow">Challenge im '+c.m+'</p><h1 class="big">Schlag den Coach</h1></div>' +
       '<p class="prose">'+h(c.be)+'</p>' +
@@ -1791,40 +1873,230 @@ function sheetUpload(){
 }
 
 /* ============================================================
-   Player, Attrappe mit ehrlichem Etikett
+   Der Player.
+   Noch ohne echte Datei: die Leiste laeuft, das Standbild bleibt
+   stehen. Bedient wird er wie gewohnt — Doppeltipp links und rechts
+   springt fuenf Sekunden, die Leiste laesst sich ziehen, und das
+   Tempo sitzt im Vollbild, wo es niemandem im Weg steht.
    ============================================================ */
-function stopPlayer(){ if(timer){ clearInterval(timer); timer=null; } }
+var P = {id:null, titel:'', poster:'', dauer:0, sek:0, laeuft:false, takt:null,
+         kino:false, zieht:null, tippZeit:0, tippSeite:'', ruhe:null};
 
-/* Zeitlupe und fuenf Sekunden zurueck. Fuer Technikvideos die beiden
-   Knoepfe, die wirklich zaehlen: eine Bewegung dreimal langsam sehen. */
-function ptools(){
-  return '<div class="ptools">' +
-    '<button class="ptool" type="button" data-act="rew">'+ICON.rew+'5 Sekunden</button>' +
-    '<button class="ptool" type="button" data-act="tempo" aria-pressed="'+(state.tempo!==1)+'">' +
-      'Tempo <span class="tv">'+tempoLabel()+'</span></button>' +
+function stopPlayer(){
+  if(P.takt){ clearInterval(P.takt); P.takt = null; }
+  P.laeuft = false;
+}
+
+/* Die beiden Haelften zum Doppeltippen, dazu die Anzeige, die
+   kurz aufblitzt, damit man den Sprung auch sieht. */
+function zonen(){
+  return '<div class="zone links" data-zone="links"></div>' +
+    '<div class="zone rechts" data-zone="rechts"></div>' +
+    '<span class="sprung links" data-sprung="links">'+ICON.rew+'5 s</span>' +
+    '<span class="sprung rechts" data-sprung="rechts">'+ICON.rew+'5 s</span>';
+}
+
+function steuerung(gross){
+  var pr = P.dauer ? (P.sek / P.dauer * 100) : 0;
+  return '<div class="pctl'+(gross ? ' gross' : '')+'">' +
+    '<button class="mini" type="button" data-act="play" aria-label="Abspielen oder anhalten">' +
+      (P.laeuft ? ICON.pause : ICON.play) + '</button>' +
+    '<span class="tm zeit">'+fmtZeit(P.sek)+'</span>' +
+    '<span class="scrub" data-scrub><span class="spur">' +
+      '<i style="width:'+pr+'%"></i><b class="griff" style="left:'+pr+'%"></b></span></span>' +
+    '<span class="tm">'+fmtZeit(P.dauer)+'</span>' +
+    (gross
+      ? '<button class="mini tempo" type="button" data-act="tempo">'+tempoLabel()+'</button>' +
+        '<button class="mini" type="button" data-act="kinozu" aria-label="Vollbild beenden">'+ICON.klein+'</button>'
+      : '<button class="mini" type="button" data-act="kino" aria-label="Vollbild">'+ICON.voll+'</button>') +
   '</div>';
 }
-function dauerJetzt(){
-  var bar = document.getElementById('pbar');
-  return (bar && +bar.getAttribute('data-dauer')) || state.dauer;
+
+/* o = {id, titel, poster, dauer}. Ein anderes Video faengt vorne an,
+   dasselbe behaelt seine Stelle, auch wenn das Blatt neu gebaut wird. */
+function playerInline(o){
+  if(P.id !== o.id){ stopPlayer(); P.id = o.id; P.sek = 0; }
+  P.titel = o.titel; P.poster = o.poster; P.dauer = o.dauer;
+  return '<div class="player" id="player">' +
+    '<div class="poster">'+o.poster+'</div>' +
+    zonen() +
+    '<button class="pbtn" type="button" data-act="play" aria-label="Abspielen"'+(P.laeuft ? ' hidden' : '')+'>' +
+      '<span>'+ICON.play+'</span></button>' +
+    steuerung(false) +
+  '</div>';
 }
-function setzeZeit(p){
-  var bar = document.getElementById('pbar'), tm = document.getElementById('ptm');
-  if(!bar) return;
-  bar.style.width = p+'%';
-  if(tm) tm.textContent = fmtZeit(p/100*dauerJetzt());
+
+/* Alle sichtbaren Leisten nachfuehren, drinnen wie im Vollbild. */
+function zeichnePlayer(){
+  var pr = P.dauer ? (P.sek / P.dauer * 100) : 0, zt = fmtZeit(P.sek);
+  [].forEach.call(document.querySelectorAll('.pctl'), function(c){
+    var i = c.querySelector('.spur i');   if(i) i.style.width = pr+'%';
+    var g = c.querySelector('.griff');    if(g) g.style.left  = pr+'%';
+    var z = c.querySelector('.zeit');     if(z) z.textContent = zt;
+    var m = c.querySelector('.mini');     if(m) m.innerHTML   = P.laeuft ? ICON.pause : ICON.play;
+    var t = c.querySelector('.tempo');    if(t) t.textContent = tempoLabel();
+  });
+  var pb = document.querySelector('#player .pbtn[data-act="play"]');
+  if(pb) pb.hidden = P.laeuft;
+  var kp = document.querySelector('.kino-play');
+  if(kp){
+    kp.hidden = P.laeuft;
+    var sp = kp.querySelector('span'); if(sp) sp.innerHTML = ICON.play;
+  }
 }
-function playToggle(){
-  var bar = document.getElementById('pbar'), btn = document.getElementById('pbtn');
-  if(!bar) return;
-  if(timer){ stopPlayer(); btn.innerHTML = '<span>'+ICON.play+'</span>'; return; }
-  btn.innerHTML = '<span>'+ICON.pause+'</span>';
-  timer = setInterval(function(){
-    var p = (parseFloat(bar.style.width) || 0) + 1.2*state.tempo;
-    if(p >= 100){ p = 100; stopPlayer(); if(btn) btn.innerHTML = '<span>'+ICON.play+'</span>'; }
-    setzeZeit(p);
-  }, 120);
+
+function spiele(an){
+  if(!P.id) return;
+  var neu = (an === undefined) ? !P.laeuft : an;
+  if(P.takt){ clearInterval(P.takt); P.takt = null; }
+  if(neu && P.sek >= P.dauer) P.sek = 0;
+  P.laeuft = neu;
+  if(neu){
+    P.takt = setInterval(function(){
+      P.sek = Math.min(P.dauer, P.sek + 0.25 * state.tempo);
+      if(P.sek >= P.dauer){ stopPlayer(); }
+      zeichnePlayer();
+    }, 250);
+    if(P.kino) ruhePlanen();
+  } else if(P.kino){ steuerungZeigen(); }
+  zeichnePlayer();
 }
+
+function springe(sek){
+  if(!P.id) return;
+  P.sek = Math.max(0, Math.min(P.dauer, P.sek + sek));
+  zeigeSprung(sek < 0 ? 'links' : 'rechts');
+  zeichnePlayer();
+}
+function zeigeSprung(seite){
+  var feld = document.getElementById('kino') || document.getElementById('player');
+  if(!feld) return;
+  var el = feld.querySelector('[data-sprung="'+seite+'"]');
+  if(!el) return;
+  el.classList.add('an');
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.classList.remove('an'); }, 520);
+}
+
+/* Ein Tipp macht Pause, zwei springen. Deshalb wartet der erste Tipp
+   kurz ab, ob ein zweiter kommt. */
+function zonenTipp(seite){
+  var jetzt = Date.now();
+  if(P.tippSeite === seite && jetzt - P.tippZeit < 340){
+    P.tippZeit = 0;
+    springe(seite === 'links' ? -5 : 5);
+    return;
+  }
+  P.tippZeit = jetzt; P.tippSeite = seite;
+  setTimeout(function(){
+    if(P.tippZeit !== jetzt) return;
+    P.tippZeit = 0;
+    if(P.kino && P.laeuft && !document.getElementById('kino').classList.contains('ruhe')) ruheSofort();
+    else if(P.kino) steuerungZeigen();
+    else spiele();
+  }, 340);
+}
+
+/* Die Leiste ziehen. Waehrend des Ziehens laeuft die Zeit weiter,
+   aber der Griff gehoert dem Finger. */
+function scrubZu(e, sc){
+  var spur = sc.querySelector('.spur'), r = spur.getBoundingClientRect();
+  /* Im gedrehten Vollbild laeuft die Leiste von oben nach unten. */
+  var quer = !!(sc.closest && sc.closest('.dreh.quer'));
+  var roh = quer ? (e.clientY - r.top) / r.height : (e.clientX - r.left) / r.width;
+  var pr = Math.max(0, Math.min(1, roh));
+  P.sek = pr * P.dauer;
+  zeichnePlayer();
+}
+
+/* ---------- Vollbild ---------- */
+function kinoAuf(){
+  if(!P.id || P.kino) return;
+  P.kino = true;
+  var el = document.createElement('div');
+  el.className = 'kino'; el.id = 'kino';
+  el.innerHTML =
+    '<div class="dreh" id="dreh">' +
+    '<div class="kino-bild"><div class="poster">'+P.poster+'</div></div>' +
+    zonen() +
+    '<div class="kino-oben">' +
+      '<button class="rund" type="button" data-act="kinozu" aria-label="Vollbild beenden">'+ICON.x+'</button>' +
+      '<span class="kino-titel">'+h(P.titel)+'</span></div>' +
+    '<button class="kino-play" type="button" data-act="play" aria-label="Abspielen"'+(P.laeuft ? ' hidden' : '')+'>' +
+      '<span>'+ICON.play+'</span></button>' +
+    steuerung(true) +
+    '<div class="tempoliste" id="tempoliste" hidden>' +
+      TEMPI.map(function(t){
+        return '<button type="button" data-act="tempowahl:'+t+'"'+(state.tempo===t ? ' aria-pressed="true"' : '')+'>' +
+          tempoText(t)+'</button>';
+      }).join('') +
+    '</div></div>';
+  document.querySelector('.device').appendChild(el);
+  drehAnpassen();
+  window.addEventListener('resize', drehAnpassen);
+  requestAnimationFrame(function(){ el.classList.add('an'); });
+  try{ if(screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function(){}); }catch(e){}
+  steuerungZeigen();
+}
+function drehAnpassen(){
+  var el = document.getElementById('kino'), d = document.getElementById('dreh');
+  if(!el || !d) return;
+  var r = el.getBoundingClientRect();
+  if(r.height > r.width){
+    d.classList.add('quer');
+    d.style.width = r.height+'px'; d.style.height = r.width+'px';
+  } else {
+    d.classList.remove('quer');
+    d.style.width = ''; d.style.height = '';
+  }
+}
+function kinoZu(){
+  window.removeEventListener('resize', drehAnpassen);
+  var el = document.getElementById('kino');
+  if(el){ el.classList.remove('an'); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 240); }
+  P.kino = false;
+  clearTimeout(P.ruhe);
+  try{ if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); }catch(e){}
+  zeichnePlayer();
+}
+/* Im Vollbild zieht sich die Bedienung zurueck, sobald das Video laeuft. */
+function steuerungZeigen(){
+  var el = document.getElementById('kino');
+  if(!el) return;
+  el.classList.remove('ruhe');
+  ruhePlanen();
+}
+function ruhePlanen(){
+  clearTimeout(P.ruhe);
+  if(!P.laeuft) return;
+  P.ruhe = setTimeout(ruheSofort, 2600);
+}
+function ruheSofort(){
+  var el = document.getElementById('kino');
+  if(!el || !P.laeuft) return;
+  el.classList.add('ruhe');
+  var li = document.getElementById('tempoliste');
+  if(li) li.hidden = true;
+}
+
+document.addEventListener('pointerdown', function(e){
+  var sc = e.target.closest && e.target.closest('[data-scrub]');
+  if(!sc) return;
+  P.zieht = sc;
+  try{ sc.setPointerCapture(e.pointerId); }catch(err){}
+  scrubZu(e, sc);
+  steuerungZeigen();
+  e.preventDefault();
+});
+document.addEventListener('pointermove', function(e){
+  if(P.zieht) scrubZu(e, P.zieht);
+});
+document.addEventListener('pointerup', function(e){
+  if(P.zieht){ P.zieht = null; ruhePlanen(); return; }
+  var z = e.target.closest && e.target.closest('[data-zone]');
+  if(z) zonenTipp(z.getAttribute('data-zone'));
+});
+document.addEventListener('pointercancel', function(){ P.zieht = null; });
 
 /* ============================================================
    Zeichnen
@@ -1941,17 +2213,25 @@ document.addEventListener('click', function(e){
     refreshSheet(istCh ? sheetChallenge() : sheetVideo(v));
     toast(state.done[v] ? 'Abgehakt. Stark.' : 'Haken entfernt');
   }
-  else if(k==='play'){ playToggle(); }
-  else if(k==='rew'){
-    var bp = document.getElementById('pbar');
-    if(bp){ setzeZeit(Math.max(0, (parseFloat(bp.style.width)||0) - (5/dauerJetzt()*100))); toast('5 Sekunden zurück'); }
-  }
+  else if(k==='play'){ spiele(); }
+  else if(k==='kino'){ kinoAuf(); }
+  else if(k==='kinozu'){ kinoZu(); }
   else if(k==='tempo'){
-    state.tempo = state.tempo===1 ? 0.75 : (state.tempo===0.75 ? 0.5 : 1);
-    b.setAttribute('aria-pressed', String(state.tempo!==1));
-    var tv = b.querySelector('.tv');
-    if(tv) tv.textContent = tempoLabel();
-    toast(state.tempo===1 ? 'Normales Tempo' : 'Zeitlupe '+tempoLabel());
+    var li = document.getElementById('tempoliste');
+    if(li){ li.hidden = !li.hidden; steuerungZeigen(); }
+  }
+  else if(k==='tempowahl'){
+    state.tempo = parseFloat(v);
+    var li2 = document.getElementById('tempoliste');
+    if(li2){
+      li2.hidden = true;
+      [].forEach.call(li2.children, function(kn){
+        if(parseFloat(kn.getAttribute('data-act').split(':')[1]) === state.tempo) kn.setAttribute('aria-pressed','true');
+        else kn.removeAttribute('aria-pressed');
+      });
+    }
+    if(P.laeuft) spiele(true); else zeichnePlayer();
+    steuerungZeigen();
   }
   else if(k==='eltern'){ openSheet(sheetEltern()); }
   else if(k==='symbol'){ openSheet(sheetSymbol()); }

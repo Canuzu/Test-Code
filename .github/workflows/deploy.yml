@@ -18,8 +18,10 @@ permissions:
   id-token: write
 
 # Allow one concurrent deployment; newer pushes supersede in-progress ones.
+# Per Branch eine eigene Gruppe: ein Push auf einen Feature-Branch soll den
+# laufenden Deploy von main nicht abbrechen.
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -177,6 +179,10 @@ jobs:
 
   deploy:
     needs: build
+    # Die Umgebung github-pages nimmt nur Deployments von main. Auf einem
+    # Feature-Branch laeuft der Build zur Kontrolle durch, der Deploy wird
+    # uebersprungen statt abgelehnt.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
