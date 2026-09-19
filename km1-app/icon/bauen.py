@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
-"""Baut die App-Symbole aus dem bestehenden KM1-Logo.
+"""Baut das App-Symbol und die Markenbilder aus dem bestehenden KM1-Logo.
 
-    python3 bauen.py ../prototyp/img/logo.png
+    python3 bauen.py                 # das gewaehlte Symbol und alles drumherum
+    python3 bauen.py --entwuerfe     # zusaetzlich die drei Entwuerfe von der Auswahl
+
+Gewaehlt ist: heller Grund, Figur in Schwarz. Das ist das gedruckte Logo
+als Symbol.
 
 Der Weg in drei Schritten:
 1. Die Spielerfigur aus dem Logo herausloesen. Sie ist der groesste
@@ -9,21 +13,26 @@ Der Weg in drei Schritten:
 2. Kanten glaetten. Die Vorlage ist nur 142 Pixel breit; hochskaliert
    waere sie eine Treppe. Weichzeichnen und schwellen macht daraus eine
    saubere Kurve.
-3. Drei Grundflaechen bauen und die Figur daraufsetzen.
-
-Ergebnis: drei PNG mit 1024 x 1024 Pixeln, ohne durchsichtige Flaechen
-und ohne runde Ecken, genau wie App Store und Play Store es verlangen.
+3. Grundflaeche bauen, Figur daraufsetzen, Ableitungen rechnen.
 """
 import sys
 from collections import deque
-from PIL import Image, ImageFilter, ImageDraw
+from PIL import Image, ImageFilter
 
 S = 1024
-HOEHE = .70          # Hoehe der Figur im Verhaeltnis zur Kantenlaenge
+HOEHE = .70                  # Hoehe der Figur im Verhaeltnis zur Kantenlaenge
+HOEHE_ADAPTIV = .48          # Android schneidet aussen weg, also kleiner
+SCHWARZ = (10, 20, 17)
+ROT = (200, 30, 20)
+WEISS = (255, 255, 255)
+GRUND_INNEN = (252, 253, 251)
+GRUND_AUSSEN = (224, 232, 222)
 
 
-def silhouette(pfad):
-    """Groesste zusammenhaengende Form aus dem Logo, mit glatten Kanten."""
+# ---------------------------------------------------------------- Grundlagen
+
+def _teile(pfad):
+    """Alle zusammenhaengenden dunklen Formen des Logos, groesste zuerst."""
     im = Image.open(pfad).convert('RGBA')
     w, h = im.size
     px = im.load()
@@ -33,7 +42,7 @@ def silhouette(pfad):
         return a >= 40 and (r + g + b) / 3 < 128
 
     gesehen = [[False] * h for _ in range(w)]
-    groesste = None
+    gefunden = []
     for x in range(w):
         for y in range(h):
             if ink(x, y) and not gesehen[x][y]:
@@ -48,22 +57,43 @@ def silhouette(pfad):
                             nx, ny = cx + dx, cy + dy
                             if 0 <= nx < w and 0 <= ny < h and not gesehen[nx][ny] and ink(nx, ny):
                                 gesehen[nx][ny] = True; q.append((nx, ny))
-                if groesste is None or len(pts) > len(groesste[0]):
-                    groesste = (pts, x0, y0, x1, y1)
+                gefunden.append((pts, x0, y0, x1, y1))
+    gefunden.sort(key=lambda t: len(t[0]), reverse=True)
+    return gefunden, im
 
-    pts, x0, y0, x1, y1 = groesste
+
+def silhouette(pfad):
+    """Die Spielerfigur als Maske, mit geglaetteten Kanten."""
+    gefunden, _ = _teile(pfad)
+    pts, x0, y0, x1, y1 = gefunden[0]
     roh = Image.new('L', (x1 - x0 + 1, y1 - y0 + 1), 0)
     rp = roh.load()
     for cx, cy in pts:
         rp[cx - x0, cy - y0] = 255
-
     gross = roh.resize((roh.width * 10, roh.height * 10), Image.LANCZOS)
     gross = gross.filter(ImageFilter.GaussianBlur(9))
     gross = gross.point(lambda v: 255 if v > 132 else 0)
     return gross.filter(ImageFilter.GaussianBlur(2))
 
 
-def radial(groesse, innen, aussen, cx=.42, cy=.34, r=.95):
+def wortmarke(pfad, faktor=3):
+    """Das ganze Logo als Maske: Weiss wird durchsichtig gerechnet."""
+    im = Image.open(pfad).convert('RGBA')
+    w, h = im.size
+    px = im.load()
+    m = Image.new('L', (w, h), 0)
+    mp = m.load()
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = px[x, y]
+            lum = (r + g + b) / 3
+            mp[x, y] = int((255 - lum) * (a / 255))
+    return m.resize((w * faktor, h * faktor), Image.LANCZOS)
+
+
+# ---------------------------------------------------------------- Flaechen
+
+def radial(groesse, innen, aussen, cx=.36, cy=.26, r=1.08):
     s = 128; g = Image.new('RGB', (s, s)); gp = g.load()
     for y in range(s):
         for x in range(s):
@@ -95,7 +125,7 @@ def schein(g, cx, cy, r, farbe, staerke):
     return g
 
 
-def vignette(g, staerke=34):
+def vignette(g, staerke=14):
     s = 128; v = Image.new('L', (s, s)); vp = v.load()
     for y in range(s):
         for x in range(s):
@@ -106,10 +136,11 @@ def vignette(g, staerke=34):
     return g
 
 
-def platziere(g, figur, farbe, schatten=0, versatz=18, weich=30):
-    h = int(S * HOEHE); w = int(figur.width * h / figur.height)
+def platziere(g, figur, farbe, hoehe=HOEHE, schatten=0, versatz=14, weich=26):
+    kante = g.size[0]
+    h = int(kante * hoehe); w = int(figur.width * h / figur.height)
     m = figur.resize((w, h), Image.LANCZOS)
-    x = int(S * .5 - w / 2); y = int(S * .5 - h / 2)
+    x = int(kante * .5 - w / 2); y = int(kante * .5 - h / 2)
     if schatten:
         sh = Image.new('L', g.size, 0)
         sh.paste(m, (x, y + versatz), m)
@@ -119,26 +150,85 @@ def platziere(g, figur, farbe, schatten=0, versatz=18, weich=30):
     return g
 
 
-def main(logo='../prototyp/img/logo.png'):
+# ---------------------------------------------------------------- Das Paket
+
+def grundflaeche(groesse=S):
+    return radial(groesse, GRUND_INNEN, GRUND_AUSSEN)
+
+
+def paket(logo):
     figur = silhouette(logo)
     figur.save('spieler-glatt.png')
 
+    # 1. Das Symbol selbst. Ohne Transparenz, ohne runde Ecken.
+    sym = platziere(grundflaeche(), figur, SCHWARZ, schatten=34)
+    sym = vignette(sym, 14)
+    sym.save('km1-symbol-1024.png')
+    sym.resize((512, 512), Image.LANCZOS).save('km1-symbol-512.png')
+    sym.resize((48, 48), Image.LANCZOS).save('km1-symbol-48.png')
+
+    # 2. Android, adaptiv: zwei Schichten. Die Figur bleibt in der Mitte,
+    #    weil das System aussen wegschneidet.
+    grundflaeche().save('android-hintergrund-1024.png')
+    vorder = Image.new('RGBA', (S, S), (0, 0, 0, 0))
+    h = int(S * HOEHE_ADAPTIV); w = int(figur.width * h / figur.height)
+    m = figur.resize((w, h), Image.LANCZOS)
+    vorder.paste(Image.new('RGBA', (w, h), SCHWARZ + (255,)),
+                 (int(S * .5 - w / 2), int(S * .5 - h / 2)), m)
+    vorder.save('android-vordergrund-1024.png')
+
+    # 3. Mitteilungen auf Android: einfarbig weiss auf durchsichtig.
+    mit = Image.new('RGBA', (96, 96), (0, 0, 0, 0))
+    h = int(96 * .82); w = int(figur.width * h / figur.height)
+    m = figur.resize((w, h), Image.LANCZOS)
+    mit.paste(Image.new('RGBA', (w, h), WEISS + (255,)),
+              (int(48 - w / 2), int(48 - h / 2)), m)
+    mit.save('android-mitteilung-96.png')
+
+    # 4. Die Wortmarke freigestellt, schwarz und weiss.
+    wm = wortmarke(logo)
+    fuer_hell = Image.new('RGBA', wm.size, (0, 0, 0, 0))
+    fuer_hell.paste(Image.new('RGBA', wm.size, SCHWARZ + (255,)), (0, 0), wm)
+    fuer_hell.save('wortmarke-schwarz.png')
+    fuer_dunkel = Image.new('RGBA', wm.size, (0, 0, 0, 0))
+    fuer_dunkel.paste(Image.new('RGBA', wm.size, (242, 245, 241, 255)), (0, 0), wm)
+    fuer_dunkel.save('wortmarke-weiss.png')
+
+    # 5. Startbildschirm beim Oeffnen: Wortmarke ruhig auf dem Markengrund.
+    for name, (bw, bh), grund, farbe in [
+        ('startbildschirm-hell-1242x2688.png', (1242, 2688), GRUND_INNEN, SCHWARZ),
+        ('startbildschirm-dunkel-1242x2688.png', (1242, 2688), (6, 12, 10), (242, 245, 241)),
+    ]:
+        sb = Image.new('RGB', (bw, bh), grund)
+        breite = int(bw * .62); hoehe = int(wm.height * breite / wm.width)
+        mm = wm.resize((breite, hoehe), Image.LANCZOS)
+        sb.paste(farbe, (int(bw / 2 - breite / 2), int(bh / 2 - hoehe / 2)), mm)
+        sb.save(name)
+
+    print('Paket gebaut: Symbol, Android-Schichten, Mitteilung, Wortmarken, Startbildschirm.')
+
+
+def entwuerfe(logo):
+    """Die drei Entwuerfe, ueber die entschieden wurde."""
+    figur = silhouette(logo)
     a = radial(S, (26, 45, 37), (4, 10, 8), cx=.34, cy=.24, r=1.05)
     a = schein(a, .22, .14, .85, (226, 240, 232), 30)
-    a = platziere(a, figur, (244, 247, 243), 120)
-    vignette(a, 44).save('a-flutlicht-1024.png')
+    vignette(platziere(a, figur, (244, 247, 243), schatten=120, versatz=18, weich=30), 44).save('entwurf-a-flutlicht-1024.png')
 
     b = diagonal(S, (219, 42, 30), (146, 16, 10))
-    b = schein(b, .26, .18, .8, (255, 255, 255), 26)
-    b = platziere(b, figur, (255, 255, 255), 70, 16, 26)
-    vignette(b, 30).save('b-koeln-1024.png')
+    b = schein(b, .26, .18, .8, WEISS, 26)
+    vignette(platziere(b, figur, WEISS, schatten=70, versatz=16, weich=26), 30).save('entwurf-b-koeln-1024.png')
 
-    c = radial(S, (252, 253, 251), (224, 232, 222), cx=.36, cy=.26, r=1.08)
-    c = platziere(c, figur, (200, 30, 20), 34, 14, 26)
-    vignette(c, 14).save('c-kreide-1024.png')
-
-    print('Drei Symbole gebaut, je 1024 x 1024.')
+    c = platziere(grundflaeche(), figur, ROT, schatten=34)
+    vignette(c, 14).save('entwurf-c-kreide-rot-1024.png')
+    print('Entwuerfe gebaut.')
 
 
 if __name__ == '__main__':
-    main(sys.argv[1] if len(sys.argv) > 1 else '../prototyp/img/logo.png')
+    logo = '../prototyp/img/logo.png'
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    if args:
+        logo = args[0]
+    paket(logo)
+    if '--entwuerfe' in sys.argv:
+        entwuerfe(logo)

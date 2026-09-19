@@ -1,40 +1,73 @@
-# App-Symbol
+# App-Symbol und Markenbilder
 
-Drei Entwürfe, alle aus der Spielerfigur des bestehenden KM1-Logos.
+Gewählt ist: **heller Grund, Figur in Schwarz.** Damit ist das Symbol genau das
+Logo, das KM1 schon hat — nur freigestellt, mit geglätteten Kanten und in 1024
+statt 142 Pixeln.
 
-| Datei | Entwurf | Grund | Figur |
-| --- | --- | --- | --- |
-| `a-flutlicht-1024.png` | Flutlicht | Grün-Schwarz | Weiß |
-| `b-koeln-1024.png` | Köln | Köln-Rot | Weiß |
-| `c-kreide-1024.png` | Kreide | Hell | Köln-Rot |
+| Datei | Wofür | Größe |
+| --- | --- | --- |
+| `km1-symbol-1024.png` | App Store, Expo `icon` | 1024 × 1024 |
+| `km1-symbol-512.png` | Play-Store-Eintrag | 512 × 512 |
+| `km1-symbol-48.png` | Web, Lesezeichen | 48 × 48 |
+| `android-vordergrund-1024.png` | adaptives Symbol, Figur | 1024 × 1024, transparent |
+| `android-hintergrund-1024.png` | adaptives Symbol, Grund | 1024 × 1024 |
+| `android-mitteilung-96.png` | Statusleiste Android | 96 × 96, weiß auf transparent |
+| `wortmarke-schwarz.png` | Logo für die helle Fassung | 1461 × 543, transparent |
+| `wortmarke-weiss.png` | Logo für die dunkle Fassung | 1461 × 543, transparent |
+| `startbildschirm-hell-1242x2688.png` | Start beim Öffnen, hell | 1242 × 2688 |
+| `startbildschirm-dunkel-1242x2688.png` | Start beim Öffnen, dunkel | 1242 × 2688 |
 
-`spieler-glatt.png` ist die freigestellte Figur mit geglätteten Kanten
-(Graustufen-Maske, 1420 × 1680). Damit lässt sich jede weitere Variante bauen.
+`spieler-glatt.png` ist die freigestellte Figur als Graustufenmaske. Daraus
+lässt sich jede weitere Variante bauen.
 
 ## Neu bauen
 
 ```bash
-cd km1-app/icon && python3 bauen.py
+cd km1-app/icon
+python3 bauen.py                 # das gewählte Symbol und alles drumherum
+python3 bauen.py --entwuerfe     # zusätzlich die drei Entwürfe von der Auswahl
 ```
 
 Braucht nur Pillow (`pip install Pillow`). Farben und Größen stehen oben im
-Skript.
+Skript: `SCHWARZ`, `GRUND_INNEN`, `GRUND_AUSSEN`, `HOEHE`.
 
-## Was die Stores verlangen
+## In Expo eintragen
 
-- **App Store:** eine Datei mit 1024 × 1024, ohne Transparenz, ohne runde
-  Ecken. Die Rundung macht iOS selbst. Genau das liegt hier.
-- **Play Store:** 512 × 512 für den Eintrag, dazu ein *adaptives* Symbol aus
-  zwei Schichten (Vorder- und Hintergrund), damit Android es rund, eckig oder
-  als Tropfen ausschneiden kann. Die Figur muss dafür in der mittleren
-  Zone bleiben, etwa 66 Prozent der Kantenlänge.
-- **Mitteilungen auf Android:** eine weiße Silhouette auf durchsichtigem Grund,
-  einfarbig.
+```json
+{
+  "expo": {
+    "icon": "./assets/km1-symbol-1024.png",
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-vordergrund-1024.png",
+        "backgroundImage": "./assets/android-hintergrund-1024.png"
+      }
+    },
+    "splash": {
+      "image": "./assets/startbildschirm-hell-1242x2688.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#FCFDFB"
+    },
+    "plugins": [
+      ["expo-notifications", {
+        "icon": "./assets/android-mitteilung-96.png",
+        "color": "#C81E14"
+      }]
+    ]
+  }
+}
+```
 
-Die beiden letzten Punkte baue ich, sobald ein Entwurf ausgewählt ist.
+## Zwei Entscheidungen
 
-## Warum keine Schrift im Symbol
+**Keine Schrift im Symbol.** „KM1" wäre bei 40 Pixeln ein grauer Fleck. Apple
+rät selbst davon ab — der Name steht ohnehin direkt darunter. Eine Figur
+erkennt man auch dann noch, wenn man sie nicht mehr lesen kann.
 
-„KM1" wäre bei 40 Pixeln ein grauer Fleck. Apple rät selbst davon ab, Wörter
-ins Symbol zu setzen — der Name steht ohnehin darunter. Eine Figur erkennt man
-auch dann noch, wenn man sie nicht mehr lesen kann.
+**Der Grund ist kein reines Weiß**, sondern ein sehr leichter Verlauf ins
+Grünliche (`#FCFDFB` → `#E0E8DE`). Das gibt dem Symbol Körper. Reines Weiß
+sähe zwischen anderen Symbolen aus wie ein Loch.
+
+**Für Android muss die Figur kleiner stehen** als auf dem iOS-Symbol: das
+System schneidet außen weg, je nach Hersteller rund, eckig oder als Tropfen.
+Deshalb `HOEHE_ADAPTIV = .48` gegenüber `HOEHE = .70`.

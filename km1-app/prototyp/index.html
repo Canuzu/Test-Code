@@ -681,8 +681,8 @@ h2.sec{
   display:flex;gap:13px;align-items:flex-start;border-radius:var(--r-media);
   background:var(--surface);padding:15px 16px;box-shadow:var(--e2),var(--edge);
 }
-.push .ic{width:40px;height:40px;flex:0 0 auto;background:var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center}
-.push .ic img{width:28px;filter:url(#logoLight)}
+.push .ic{width:44px;height:44px;flex:0 0 auto;border-radius:11px;overflow:hidden;box-shadow:var(--e1)}
+.push .ic img{width:100%;height:100%;object-fit:cover}
 .push .tx{min-width:0;flex:1}
 .push .h{font-size:12.5px;font-weight:700;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px}
 .push .b{font-size:15px;line-height:1.4;margin:4px 0 0;color:var(--ink);font-weight:500}
@@ -1619,7 +1619,7 @@ function sheetErinnerung(){
       '<p class="sub">An deinen Trainingstagen eine kurze Mitteilung. Mehr nicht, und jederzeit wieder aus.</p></div>' +
 
       '<div class="push">' +
-        '<span class="ic"><img src="img/logo.png" alt=""></span>' +
+        '<span class="ic"><img src="img/app-symbol.png" alt=""></span>' +
         '<span class="tx"><span class="h"><span>KM1 Training</span><span>'+h(e.zeit)+'</span></span>' +
         '<span class="b">Heute ist Trainingstag. Die erste Berührung wartet, vier Minuten.</span></span>' +
       '</div>' +
