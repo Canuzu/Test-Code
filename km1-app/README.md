@@ -18,7 +18,8 @@ cd km1-app/prototyp && python3 -m http.server 8080
 # danach http://localhost:8080 öffnen
 ```
 
-Der Prototyp startet als Gast, ohne Konto: die freien Videos laufen sofort. Er
+Der Prototyp startet als Gast: zehn Videos laufen sofort, zehn weitere schaltet
+ein kostenloses Konto frei, Geld kostet nur die Reihe mit Profispielern. Er
 zeigt die vier Bereiche der App (Start, Technik, Pyramide, Profil), den
 Videoplayer als Attrappe, die Challenge "Schlag den Coach", die PRO-Schranke und
 den Trainerbereich zum Hochladen. Dazu Zeitlupe und Fünf-Sekunden-Sprung im

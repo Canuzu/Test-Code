@@ -14,10 +14,11 @@ Fünf Regeln, die alles andere bestimmen:
 
 1. **Nur KM1 lädt hoch.** Niemand von außen kann Videos einstellen. Das ist
    keine Einstellung in der App, sondern eine Regel in der Datenbank.
-2. **Zuschauen geht ohne Konto.** Die freien Videos laufen sofort, ohne
-   Anmeldung und ohne E-Mail. Ein Konto braucht nur, wer Fortschritt gespeichert
-   haben will oder KM1 PRO bucht.
-3. **Ein Teil ist kostenlos**, der Rest mit Abo.
+2. **Drei Stufen, nicht zwei.** Die Hälfte der Videos läuft ohne Anmeldung, die
+   andere Hälfte nach einer kostenlosen Anmeldung.
+3. **Geld kostet nur eine Sache: die Profi-Einheiten**, gedreht mit aktiven
+   Profispielern. Das Abo verkauft keinen Zugang zu *mehr* Videos, sondern zu
+   Menschen, an die sonst niemand herankommt.
 4. **Videos lassen sich nicht herunterladen.** Sie laufen nur in der App.
 5. **Gleiches Gesicht wie die Website.** Dieselben Farben, Schriften, dasselbe
    Logo, dieselbe Pyramide — in einer hellen und einer dunklen Fassung.
@@ -71,7 +72,9 @@ create table videos (
   kategorie    text not null,                   -- flanken, dribbling, passen, ...
   ebene        int  not null check (ebene between 1 and 4),
   dauer_sek    int,
-  frei         boolean not null default false,  -- false = nur mit KM1 PRO
+  zugang       text not null default 'offen'     -- wer es sehen darf
+                 check (zugang in ('offen','konto','pro')),
+  gast         text,                             -- bei Profi-Einheiten: wer vor der Kamera steht
   pfad         text not null,                   -- Datei im Storage
   poster_pfad  text,
   status       text not null default 'entwurf'  -- 'entwurf' | 'live'
@@ -117,10 +120,10 @@ nicht höflich nach, die Datenbank lässt es schlicht nicht zu:
 ```sql
 alter table videos enable row level security;
 
--- Gäste (Rolle 'anon') sehen nur die freien Videos.
-create policy "freie videos fuer alle" on videos
+-- Gäste (Rolle 'anon') sehen nur die offene Stufe.
+create policy "offene videos fuer alle" on videos
   for select to anon
-  using (status = 'live' and frei = true);
+  using (status = 'live' and zugang = 'offen');
 
 -- Angemeldete sehen alle Einträge, die live sind. Ob ein PRO-Video auch
 -- abspielbar ist, entscheidet die Funktion 'video-url', nicht diese Regel.
@@ -146,12 +149,17 @@ dieselbe Trainer-Prüfung.
 
 Ein Schloss, das nur die App zeichnet, ist kein Schloss. Deshalb:
 
-- **Freie Videos** liegen in einem öffentlichen Bucket, direkt abspielbar, auch
+- **Stufe `offen`** liegt in einem öffentlichen Bucket, direkt abspielbar, auch
   ohne Konto.
-- **PRO-Videos** liegen in einem privaten Bucket. Die App bittet eine kleine
-  Serverfunktion (`video-url`) um einen Abspiellink. Die Funktion schaut in
-  `abos` nach und gibt den Link nur heraus, wenn das Abo aktiv ist. Der Link
-  gilt 60 Minuten und dann nicht mehr.
+- **Stufe `konto`** und **Stufe `pro`** liegen in privaten Buckets. Die App
+  bittet eine kleine Serverfunktion (`video-url`) um einen Abspiellink. Die
+  Funktion prüft: bei `konto`, ob überhaupt jemand angemeldet ist, bei `pro`
+  zusätzlich in `abos`, ob das Abo läuft. Der Link gilt 60 Minuten und dann
+  nicht mehr.
+
+Die mittlere Stufe ist technisch fast geschenkt und bringt das, was einer
+Fußballschule am meisten fehlt: **die E-Mail-Adressen der Eltern.** Das ist die
+Liste, über die im Frühjahr die Camps voll werden.
 
 ## 4. Videos: Speicher, Schutz und Kosten
 
@@ -197,27 +205,47 @@ verhindert auch Netflix nicht. Ziel ist, dass niemand es *versehentlich* oder
 
 ## 5. Das Abo
 
-**Apple schreibt In-App-Kauf vor.** Digitale Inhalte in einer iOS-App müssen über
-Apple abgerechnet werden, nicht über Stripe. Apple behält 30 %, ab dem zweiten
-Jahr eines Abonnenten 15 %. Wer unter 1 Million $ Jahresumsatz bleibt, kommt über
-das *Small Business Program* dauerhaft auf 15 % — das trifft hier zu.
+**Bezahlt wird nur eine Sache: die Profi-Einheiten.** Videos, in denen ein
+aktiver Profispieler zeigt, wie er es macht — den Freistoß, die Flanke unter
+Druck, den ersten Kontakt im Strafraum, dazu ein Tag im Profialltag. Alles, was
+Kader und das Trainerteam selbst zeigen, bleibt kostenlos.
 
-Vorschlag für den Zuschnitt (noch nicht entschieden):
+Das ist ein besseres Geschäft als "mehr vom Gleichen", weil es nichts ist, was
+ein anderes Video im Netz ersetzt. Technik-Tutorials gibt es tausende. Einen
+Zweitligaspieler, der einem Zehnjährigen seine Freistoßroutine erklärt, gibt es
+nicht umsonst.
 
-| | Frei, ohne Konto | KM1 PRO |
+| Stufe | Was man sieht | Preis |
 | --- | --- | --- |
-| Videos | Foundational (Ebene 1) und Grundlagen aus Ebene 2 | alle vier Ebenen |
-| Trainingspfade | Ebene 1 | alle |
-| Neue Einheit pro Woche | — | ja |
-| Wochenplan | — | ja |
-| Camps und Challenges | sichtbar | früher Zugang |
+| Ohne Anmeldung | Die Hälfte der Videos, sofort | 0 € |
+| Kostenloses Konto | Die andere Hälfte, dazu Fortschritt und Merkliste | 0 € |
+| KM1 PRO | Die Einheiten mit Profispielern | 6,99 € / Monat, 59 € / Jahr |
 
-Preis im Prototyp: 6,99 € im Monat, 59 € im Jahr, sieben Tage gratis. Das sind
-Platzhalter. Zum Vergleich: eine Einzelstunde im Fördertraining kostet ein
-Vielfaches davon.
+**Apple schreibt In-App-Kauf vor.** Digitale Inhalte in einer iOS-App müssen über
+Apple abgerechnet werden, nicht über Stripe. Apple behält 30 %, über das *Small
+Business Program* (unter 1 Million $ Jahresumsatz) dauerhaft 15 %. Das trifft
+hier zu.
 
-Wichtig bei Kindern: Der Kauf läuft über die Apple-ID der Eltern. Der Text vor
-dem Kauf muss Preis, Laufzeit und Kündigung klar nennen, sonst lehnt Apple ab.
+### Drei Dinge, die an diesem Modell hängen
+
+**Zum Start ist das Abo leer.** Solange keine Profi-Einheit gedreht ist, gibt es
+nichts zu verkaufen. Der Plan dazu: die App mit den kostenlosen Videos
+veröffentlichen und das Abo erst scharf schalten, wenn drei bis vier Einheiten
+stehen. Ein Abo mit einem einzigen Video verbrennt die Kündigungsquote, und
+Apple lehnt ein Abo ohne erkennbaren Gegenwert auch schon mal ab.
+
+**Ohne Unterschrift kein Video.** Jeder Profi muss schriftlich zustimmen, dass
+sein Bild in einem kostenpflichtigen Produkt verwendet wird — eine
+Einverständniserklärung mit Zweck, Dauer und Widerruf. Bei Spielern unter
+Vertrag kann zusätzlich der Verein mitreden, weil Marketingrechte oft beim Klub
+liegen. Und wer in einem Bezahlprodukt auftritt, fragt eher nach einem Honorar
+oder einer Beteiligung als bei einem Gefallen fürs Camp. Das ist der einzige
+Teil des Plans, der von Dritten abhängt — also der, der zuerst geklärt gehört.
+
+**Das Versprechen "jeden Monat ein neuer Profi" ist ein Vertrag.** Wer es
+einmal schreibt, muss es halten, sonst kündigen die Leute im dritten Monat.
+Sicherer, solange die Reihe jung ist: "regelmäßig neue Einheiten" und dann
+lieber öfter liefern als angekündigt.
 
 ## 6. Darstellung: hell und dunkel
 
@@ -262,9 +290,39 @@ abgedeckt, die Hälfte frei.
 | Performance (U17/U19) | Doppelpass · Innenrist-Flanke · 1 gegen 1 · Diagonalball · Rumpfstabilität | 0 |
 | Professional (Profis) | Anlaufen im 4-3-3 · Schnittstellenpass · Kurze Ecke · Abschluss unter Müdigkeit · Regeneration | 0 |
 
+Von diesen 20 läuft die Hälfte ohne Anmeldung, die andere Hälfte nach einer
+kostenlosen Anmeldung. Welches Video in welcher Stufe liegt, steht in der App
+an einer Stelle und lässt sich jederzeit umhängen.
+
 Aufwand: etwa vier Drehtage. Ein Video braucht drei Einstellungen (Erklärung,
 Demo in Normalgeschwindigkeit, Demo in Zeitlupe) und dauert fertig fünf bis zehn
 Minuten. Die Schrittanleitungen entstehen beim Schnitt, nicht beim Dreh.
+
+### Die Profi-Reihe
+
+Der Teil, der Geld kostet, und damit der Teil, der am besten sein muss. Der
+Vorschlag aus dem Prototyp:
+
+| Einheit | Gast | Länge |
+| --- | --- | --- |
+| Der Freistoß über die Mauer | Profi, 2. Bundesliga | 14:20 |
+| Flanken unter Gegnerdruck | Profi, 3. Liga | 12:40 |
+| Der erste Kontakt im Strafraum | Stürmer, 2. Bundesliga | 11:15 |
+| Körper vor Ball: der saubere Zweikampf | Innenverteidiger, 3. Liga | 10:05 |
+| Torwart: Strafraumbeherrschung | Torwart, 2. Bundesliga | 13:30 |
+| Ein Tag im Profialltag | Profi, 2. Bundesliga | 16:50 |
+
+Drei Dinge, die bei diesen Drehs anders laufen als bei den eigenen:
+
+- **Die Zeit des Profis ist knapp.** Plan für 90 Minuten, nicht für einen Tag,
+  und in diesen 90 Minuten zwei bis drei Einheiten abdrehen. Fragenliste vorher
+  schreiben, nicht vor Ort überlegen.
+- **Länger ist hier richtig.** Bei den eigenen Videos gilt: kurz. Bei den
+  Profi-Einheiten will man zusehen, wie jemand erzählt. Zehn bis fünfzehn
+  Minuten sind kein Fehler, sie sind das Produkt.
+- **"Ein Tag im Profialltag" schlägt jede Technikeinheit.** Kinder wollen
+  wissen, wie es *ist*. Das ist der Clip, den sie ihren Eltern zeigen — und
+  damit der, der das Abo verkauft.
 
 ## 9. Reihenfolge der Arbeit
 
@@ -273,7 +331,7 @@ Minuten. Die Schrittanleitungen entstehen beim Schnitt, nicht beim Dreh.
 | 1 | Expo-Projekt, Design-System (hell und dunkel), Navigation, Screens mit festen Daten | App läuft auf deinem Handy |
 | 2 | Supabase: Tabellen, RLS, Gastzugang, Konten, echte Videos | Videos kommen aus der Datenbank |
 | 3 | Trainerbereich: Upload, bearbeiten, veröffentlichen | Kader füllt die App selbst |
-| 4 | RevenueCat, PRO-Schranke, Kauf | Abo funktioniert |
+| 4 | RevenueCat, PRO-Schranke, Kauf | Abo funktioniert, scharf geschaltet erst mit drei Profi-Einheiten |
 | 5 | Store-Vorbereitung, TestFlight, Einreichung | App ist draußen |
 
 Phase 1 bis 3 ergeben schon eine App, die sich verschicken lässt (TestFlight),
@@ -392,9 +450,19 @@ Sortiert nach Verhältnis von Nutzen zu Aufwand. Keiner davon ist beschlossen.
 
 ## 13. Was noch offen ist
 
-- **Der Zuschnitt Frei gegen PRO** aus Abschnitt 5: passt die Aufteilung so?
+- **Welche Profis sagen zu, und zu welchen Bedingungen?** Das ist ab jetzt der
+  kritische Pfad. Die App kann fertig sein, ohne Gäste gibt es trotzdem nichts
+  zu verkaufen. Drei Zusagen reichen für den Start, und die erste Frage an jeden
+  ist nicht "machst du mit", sondern "darf das in einem Bezahlprodukt laufen".
+- **Bleibt es bei 6,99 € im Monat?** Nach oben ist der Preis später schwer zu
+  korrigieren: bestehende Abos müssen einer Erhöhung aktiv zustimmen, sonst
+  laufen sie zum alten Preis weiter. Lieber einmal richtig ansetzen.
+- **Was passiert mit der Reihe, wenn ein Monat ausfällt?** Eine Antwort darauf
+  gehört in den Abo-Text, bevor der erste Kunde sie stellt.
 - **Gehen die Kinder der Camps mit Namen in die App?** Wenn ja, brauchen wir eine
   Einwilligung der Eltern und ein eigenes Kapitel im Datenschutz.
 - **Android gleichzeitig oder später?** Der Code kann beides, die Store-Arbeit
   fällt trotzdem zweimal an.
-- **Wer schneidet die Videos?** Das ist der eigentliche Engpass, nicht die App.
+
+Der Videoschnitt ist keine offene Frage mehr: das macht Kader selbst. Damit
+hängt der Start nur noch an den Zusagen der Gäste und an der App.
