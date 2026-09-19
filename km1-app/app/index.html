@@ -1,0 +1,2092 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>KM1 Training</title>
+<meta name="description" content="Lernvideos der KM1 Fußballschule: Technik, Athletik und Einheiten mit Profispielern.">
+<!-- Solange es ein Entwurf ist: nicht in Suchmaschinen. Zum Start einfach
+     diese eine Zeile loeschen. -->
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#EEF2ED" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#060C0A" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+
+<!-- Damit iOS die Seite als App behandelt, wenn sie auf dem Startbildschirm liegt -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KM1">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Chivo:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   KM1 Training — das Designsystem der App.
+
+   Drei Dinge tragen das Bild: eine Schrift, die man aus einem
+   Meter Abstand lesen kann, Flaechen mit echter Hoehe statt
+   Haarlinien, und grosse Bilder. Die Marke kommt aus der
+   Website: Anton in Versalien, Koeln-Rot als einziger Akzent,
+   Kreide als Handschrift. Was sie NICHT ist: eine Wand aus
+   winzigen Monospace-Labels. Monospace traegt hier nur noch
+   Zahlen und die eine Zeile ueber jeder Ueberschrift.
+   ============================================================ */
+:root{
+  color-scheme:light;
+
+  --canvas:#EEF2ED;
+  --canvas-2:#E4EAE2;
+  --surface:#FFFFFF;
+  --surface-2:#F7FAF6;
+  --surface-3:#EBF0E9;
+  --field:#FFFFFF;
+  --veil:rgba(247,250,246,.82);
+
+  --line:rgba(10,20,17,.08);
+  --line-2:rgba(10,20,17,.15);
+  --edge:inset 0 1px 0 rgba(255,255,255,.8);
+
+  --ink:#0A1411;
+  --ink-body:#2E3E37;
+  --ink-2:#53645D;
+  --ink-3:#7A8C84;
+
+  --accent:#C81E14;
+  --accent-2:#A5150D;
+  --accent-soft:rgba(200,30,20,.09);
+  --accent-line:rgba(200,30,20,.3);
+  --on-accent:#FFFFFF;
+  --on-media:#F4F7F3;
+
+  --lv1:#0D7C75;
+  --lv2:#3C8329;
+  --lv3:#A9630A;
+  --lv4:#C81E14;
+
+  --e1:0 1px 2px rgba(10,20,17,.05), 0 4px 10px -4px rgba(10,20,17,.10);
+  --e2:0 2px 4px rgba(10,20,17,.05), 0 16px 34px -14px rgba(10,20,17,.24);
+  --e3:0 40px 90px -34px rgba(10,20,17,.45), 0 8px 24px rgba(10,20,17,.10);
+  --glow:0 12px 26px -10px rgba(200,30,20,.55);
+
+  --r-card:18px;
+  --r-media:14px;
+  --r-btn:14px;
+  --r-chip:11px;
+  --r-badge:8px;
+
+  --dia-bg:#101E19;
+  --dia-line:rgba(242,245,241,.4);
+  --dia-acc:#E8433A;
+  --dia-dot:rgba(242,245,241,.9);
+  --dia-scrim:rgba(3,7,6,.72);
+
+  --glow-a:rgba(13,124,117,.12);
+  --glow-b:rgba(200,30,20,.06);
+  --grain:.022;
+
+  --display:'Anton','Arial Narrow',system-ui,sans-serif;
+  --body:'Chivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'Courier New',monospace;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --spring:cubic-bezier(.34,1.28,.64,1);
+}
+
+:root[data-theme="dark"]{
+  color-scheme:dark;
+
+  --canvas:#060C0A;
+  --canvas-2:#030706;
+  --surface:#101C18;
+  --surface-2:#16241F;
+  --surface-3:#1B2C26;
+  --field:#0A1310;
+  --veil:rgba(16,28,24,.84);
+
+  --line:rgba(242,245,241,.09);
+  --line-2:rgba(242,245,241,.16);
+  --edge:inset 0 1px 0 rgba(242,245,241,.06);
+
+  --ink:#F2F5F1;
+  --ink-body:#C2D1CA;
+  --ink-2:#94A79E;
+  --ink-3:#71847C;
+
+  --accent:#DE2F25;
+  --accent-2:#C81E14;
+  --accent-soft:rgba(224,52,42,.14);
+  --accent-line:rgba(224,52,42,.4);
+  --on-accent:#FFFFFF;
+
+  --lv1:#2FA8A0;
+  --lv2:#5FB04A;
+  --lv3:#E8952F;
+  --lv4:#E0342A;
+
+  --e1:0 1px 2px rgba(0,0,0,.5), 0 6px 14px -6px rgba(0,0,0,.6);
+  --e2:0 2px 6px rgba(0,0,0,.5), 0 20px 40px -18px rgba(0,0,0,.9);
+  --e3:0 50px 100px -30px rgba(0,0,0,.9), 0 0 0 1px rgba(242,245,241,.06);
+  --glow:0 12px 30px -10px rgba(224,52,42,.55);
+
+  --dia-bg:#0D1A16;
+  --dia-line:rgba(242,245,241,.4);
+  --dia-acc:#E8433A;
+  --dia-dot:rgba(242,245,241,.9);
+  --dia-scrim:rgba(3,7,6,.72);
+
+  --glow-a:rgba(120,190,168,.09);
+  --glow-b:rgba(200,30,20,.07);
+  --grain:.05;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  padding-inline:16px;
+  padding-block:24px;
+  background:var(--canvas);
+  color:var(--ink);
+  font-family:var(--body);
+  font-weight:450;
+  font-size:16px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  transition:background .4s var(--ease),color .4s var(--ease);
+}
+img{max-width:100%;display:block}
+[hidden]{display:none !important}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+::selection{background:var(--accent);color:#fff}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.env{position:fixed;inset:0;z-index:0;pointer-events:none;background:var(--canvas-2)}
+.env::before{
+  content:"";position:absolute;inset:-20%;
+  background:
+    radial-gradient(ellipse 46% 40% at 22% 14%,var(--glow-a),transparent 62%),
+    radial-gradient(ellipse 42% 46% at 82% 78%,var(--glow-b),transparent 62%);
+}
+.env::after{
+  content:"";position:absolute;inset:0;opacity:var(--grain);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.stage{
+  position:relative;z-index:1;
+  display:flex;justify-content:center;align-items:flex-start;
+  max-width:440px;margin:0 auto;
+}
+
+/* ---------- Das Geraet ---------- */
+.device{
+  position:relative;width:100%;max-width:430px;justify-self:center;
+  height:min(86svh,880px);min-height:600px;
+  background:var(--canvas);
+  border-radius:46px;
+  overflow:hidden;
+  box-shadow:var(--e3);
+}
+:root:not([data-theme="dark"]) .device{outline:1px solid rgba(10,20,17,.08);outline-offset:-1px}
+
+/* Die Statusleiste macht aus einer Webseite eine App. */
+.statusbar{
+  position:absolute;top:0;left:0;right:0;height:46px;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 26px;pointer-events:none;color:var(--ink);
+}
+.statusbar .uhr{font-family:var(--body);font-weight:700;font-size:14.5px;letter-spacing:.01em}
+.statusbar .sys{display:flex;align-items:center;gap:5px}
+.statusbar svg{display:block;fill:currentColor}
+
+.app{position:absolute;inset:46px 0 0 0;display:flex;flex-direction:column}
+
+.homebar{
+  position:absolute;left:50%;bottom:8px;z-index:30;
+  width:134px;height:5px;border-radius:99px;
+  background:var(--ink);opacity:.26;transform:translateX(-50%);pointer-events:none;
+}
+
+.appbar{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:6px 20px 14px;
+  background:var(--canvas);
+  transition:box-shadow .3s var(--ease),background .3s var(--ease);
+}
+.appbar.scrolled{box-shadow:0 1px 0 var(--line),0 10px 24px -20px rgba(0,0,0,.6)}
+.mark{height:22px;width:auto;filter:url(#logoDark)}
+:root[data-theme="dark"] .mark{filter:url(#logoLight)}
+.lvchip{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:12.5px;font-weight:600;letter-spacing:.01em;
+  color:var(--ink-2);background:var(--surface);
+  border-radius:99px;padding:7px 13px 7px 11px;
+  box-shadow:var(--e1),var(--edge);
+}
+.lvchip i{width:8px;height:8px;border-radius:99px;flex:0 0 auto}
+
+.screens{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.screen{display:flex;flex-direction:column;gap:30px;padding:8px 18px 34px}
+
+/* ---------- Schrift ---------- */
+.eyebrow{
+  font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--accent);display:flex;align-items:center;gap:9px;margin:0;
+}
+.eyebrow::before{content:"";width:16px;height:2px;background:var(--accent);flex:0 0 auto;border-radius:2px}
+h1.big{
+  font-family:var(--display);font-weight:400;text-transform:uppercase;
+  font-size:37px;line-height:.94;letter-spacing:.004em;margin:10px 0 0;text-wrap:balance;
+}
+h2.sec{
+  font-family:var(--display);font-weight:400;text-transform:uppercase;
+  font-size:23px;line-height:1.02;letter-spacing:.012em;margin:0;
+}
+.sub{color:var(--ink-2);font-size:15.5px;margin:12px 0 0;line-height:1.55;max-width:38ch}
+.block{display:flex;flex-direction:column;gap:14px}
+.block-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.block-head .more{font-size:13px;font-weight:600;color:var(--accent);white-space:nowrap}
+
+/* ---------- Bilder ---------- */
+.poster{
+  display:block;position:relative;width:100%;aspect-ratio:16/10;max-width:100%;
+  overflow:hidden;background:var(--surface-3);border-radius:var(--r-media);
+}
+.poster > img,.poster > svg{width:100%;height:100%;object-fit:cover;display:block}
+.poster::after{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(185deg,rgba(3,7,6,0) 46%,rgba(3,7,6,.72) 100%);
+}
+.poster:has(> svg.dia)::after{background:linear-gradient(185deg,rgba(3,7,6,0) 50%,var(--dia-scrim) 100%)}
+.dia .bg{fill:var(--dia-bg)}
+.dia .c{fill:none;stroke:var(--dia-line);stroke-width:1.5}
+.dia .a{fill:none;stroke:var(--dia-acc);stroke-width:2}
+.dia .f{fill:var(--dia-dot);stroke:none}
+
+.badge{
+  position:absolute;z-index:2;
+  font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:5px 9px;border-radius:var(--r-badge);
+  background:rgba(3,7,6,.72);color:var(--on-media);
+  backdrop-filter:blur(6px);
+}
+.badge.dur{right:10px;bottom:10px;font-family:var(--mono);font-weight:500;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.badge.pro{left:10px;top:10px;background:var(--accent);color:#fff;box-shadow:0 4px 12px -4px rgba(200,30,20,.7)}
+.badge.konto{left:10px;top:10px}
+.badge.neu{left:10px;top:10px;background:rgba(244,247,243,.94);color:#0A1411}
+.lock{
+  position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;
+  background:rgba(3,7,6,.5);border-radius:inherit;
+}
+.lock.konto{background:rgba(3,7,6,.34)}
+.lock span{
+  width:46px;height:46px;border-radius:99px;display:flex;align-items:center;justify-content:center;
+  background:rgba(3,7,6,.55);backdrop-filter:blur(8px);
+  box-shadow:inset 0 0 0 1px rgba(244,247,243,.28);
+}
+.lock svg{width:20px;height:20px;fill:none;stroke:var(--on-media);stroke-width:1.9}
+
+/* ---------- Karten ---------- */
+.card{
+  display:block;width:100%;text-align:left;
+  background:var(--surface);border-radius:var(--r-card);padding:8px;
+  box-shadow:var(--e1),var(--edge);
+  transition:transform .35s var(--spring),box-shadow .35s var(--ease);
+}
+.card:hover{box-shadow:var(--e2),var(--edge);transform:translateY(-3px)}
+.card:active{transform:scale(.985)}
+.card .body{padding:12px 8px 8px;display:flex;flex-direction:column;gap:7px}
+.card .t{
+  display:block;font-size:15.5px;font-weight:700;line-height:1.28;margin:0;color:var(--ink);
+  letter-spacing:-.004em;
+}
+.card .m{display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);line-height:1.4}
+.dot{width:8px;height:8px;border-radius:99px;flex:0 0 auto;display:inline-block;vertical-align:middle}
+.card .m .dot{margin-right:7px}
+
+/* ---------- Der Held der Startseite ---------- */
+.hero{
+  position:relative;display:block;width:100%;text-align:left;
+  border-radius:var(--r-card);overflow:hidden;
+  box-shadow:var(--e2);
+  transition:transform .4s var(--spring);
+  background:var(--surface);
+}
+.hero:active{transform:scale(.99)}
+.hero .hm{position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;background:var(--surface-3)}
+.hero .hm > img,.hero .hm > svg{width:100%;height:100%;object-fit:cover;display:block}
+.hero .hm::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(178deg,rgba(3,7,6,.25) 0%,rgba(3,7,6,.04) 22%,rgba(3,7,6,.7) 52%,rgba(3,7,6,.97) 100%);
+}
+.hero .hc{
+  position:absolute;left:0;right:0;bottom:0;z-index:3;
+  padding:22px 104px 24px 20px;display:flex;flex-direction:column;gap:9px;
+}
+.hero .hk{
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:#fff;opacity:.92;text-shadow:0 1px 10px rgba(3,7,6,.8);
+}
+.hero .ht{
+  font-family:var(--display);font-weight:400;text-transform:uppercase;
+  font-size:22.5px;line-height:1.04;letter-spacing:.012em;color:#fff;
+  text-shadow:0 2px 20px rgba(3,7,6,.75);
+}
+.hero .hmeta{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:rgba(244,247,243,.86)}
+.hero .hplay{
+  position:absolute;right:20px;bottom:22px;z-index:4;
+  width:62px;height:62px;border-radius:99px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 14px 30px -10px rgba(200,30,20,.8),inset 0 1px 0 rgba(255,255,255,.3);
+  transition:transform .35s var(--spring);
+}
+.hero:hover .hplay{transform:scale(1.07)}
+.hero .hplay svg{width:20px;height:20px;fill:#fff;margin-left:3px}
+.hero .hbar{position:absolute;left:0;right:0;bottom:0;z-index:5;height:4px;background:rgba(244,247,243,.22)}
+.hero .hbar i{display:block;height:100%;background:var(--accent);box-shadow:0 0 12px rgba(200,30,20,.8)}
+
+/* ---------- Reihen und Raster ---------- */
+.row{display:flex;gap:14px;overflow-x:auto;padding:4px 18px 8px;margin:0 -18px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.row > *{flex:0 0 200px;scroll-snap-align:start}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+
+/* ---------- Chips ---------- */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 18px 4px;margin:0 -18px}
+.chip{
+  flex:0 0 auto;font-size:13.5px;font-weight:600;letter-spacing:.005em;
+  padding:10px 15px;border-radius:var(--r-chip);white-space:nowrap;
+  background:var(--surface);color:var(--ink-2);
+  box-shadow:var(--e1),var(--edge);
+  transition:color .25s var(--ease),background .25s var(--ease),transform .25s var(--spring);
+}
+.chip:active{transform:scale(.96)}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--canvas);box-shadow:var(--e1)}
+.chip.lv{--c:var(--ink)}
+.chip.lv[aria-pressed="true"]{background:var(--c);color:#fff;box-shadow:var(--e1)}
+
+/* ---------- Suche ---------- */
+.search{
+  display:flex;align-items:center;gap:11px;padding:14px 16px;
+  background:var(--surface);border-radius:var(--r-btn);
+  box-shadow:var(--e1),var(--edge);
+}
+.search svg{width:18px;height:18px;fill:none;stroke:var(--ink-3);stroke-width:2;flex:0 0 auto}
+.search input{
+  flex:1;min-width:0;background:none;border:0;color:var(--ink);
+  font-family:var(--body);font-size:16px;font-weight:500;
+  border-radius:0;-webkit-appearance:none;appearance:none;
+}
+.search input::placeholder{color:var(--ink-3);font-weight:450}
+.search input:focus{outline:none}
+
+/* ---------- Flaechen ---------- */
+.panel{
+  background:var(--surface);border-radius:var(--r-card);padding:20px;
+  display:flex;flex-direction:column;gap:14px;
+  box-shadow:var(--e1),var(--edge);
+}
+.goal{display:flex;align-items:flex-end;justify-content:space-between;gap:14px}
+.goal .n{font-family:var(--display);font-size:46px;line-height:.84;font-weight:400;letter-spacing:.01em}
+.goal .n em{font-style:normal;color:var(--ink-3);font-size:17px;font-family:var(--body);font-weight:600;letter-spacing:0}
+.pips{display:flex;gap:6px}
+.pips i{width:100%;height:7px;flex:1 1 auto;background:var(--surface-3);border-radius:99px}
+.pips i.on{background:var(--lv1)}
+.note{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0}
+
+.wide{
+  position:relative;display:block;width:100%;text-align:left;overflow:hidden;
+  background:var(--surface);border-radius:var(--r-card);
+  box-shadow:var(--e1),var(--edge);
+  transition:transform .35s var(--spring),box-shadow .35s var(--ease);
+}
+.wide:hover{box-shadow:var(--e2),var(--edge);transform:translateY(-3px)}
+.wide:active{transform:scale(.99)}
+.wide .poster{aspect-ratio:16/8;border-radius:var(--r-card) var(--r-card) 0 0}
+.wide .body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:9px}
+.wide .t{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:22px;line-height:1.02;margin:0}
+.wide p{margin:0;font-size:14.5px;color:var(--ink-2);line-height:1.5}
+
+/* ---------- Der Abo-Streifen ---------- */
+.proband{
+  position:relative;width:100%;text-align:left;overflow:hidden;
+  border-radius:var(--r-card);padding:24px 22px;
+  display:flex;flex-direction:column;gap:14px;
+  background:linear-gradient(152deg,var(--accent) 0%,var(--accent-2) 58%,#7C0F09 100%);
+  color:#fff;box-shadow:0 20px 40px -18px rgba(200,30,20,.7);
+  transition:transform .35s var(--spring);
+}
+.proband:active{transform:scale(.99)}
+.proband::after{
+  content:"";position:absolute;right:-70px;top:-90px;width:260px;height:260px;border-radius:99px;
+  background:radial-gradient(circle,rgba(255,255,255,.18),transparent 66%);pointer-events:none;
+}
+.proband .note{color:rgba(255,255,255,.82)}
+.proband .t{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:27px;line-height:1;margin:0;position:relative}
+.proband p{margin:0;font-size:14.5px;color:rgba(255,255,255,.9);line-height:1.5;position:relative;max-width:32ch}
+.proband .btn{background:#fff;color:var(--accent-2);box-shadow:0 8px 20px -8px rgba(0,0,0,.5);position:relative}
+
+/* ---------- Knoepfe ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-height:54px;width:100%;
+  font-family:var(--body);font-size:16px;font-weight:700;letter-spacing:.005em;
+  padding:15px 22px;border-radius:var(--r-btn);
+  background:var(--accent);color:#fff;
+  box-shadow:var(--glow);
+  transition:transform .3s var(--spring),box-shadow .3s var(--ease),background .3s var(--ease);
+}
+.btn:hover{background:var(--accent-2)}
+.btn:active{transform:scale(.98)}
+.btn svg{fill:none;stroke:currentColor;stroke-width:2;width:19px;height:19px}
+.btn.ghost{
+  background:var(--surface);color:var(--ink);
+  box-shadow:var(--e1),var(--edge);
+}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.done{background:var(--surface);color:var(--lv2);box-shadow:var(--e1),inset 0 0 0 2px var(--lv2)}
+.btn.done svg{stroke:var(--lv2)}
+
+/* ---------- Tableiste ---------- */
+.tabs{
+  flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);
+  padding:10px 8px 26px;
+  background:var(--veil);backdrop-filter:blur(20px) saturate(1.4);
+  box-shadow:0 -1px 0 var(--line);
+}
+.tab{
+  display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 2px;
+  font-size:11.5px;font-weight:600;letter-spacing:.005em;color:var(--ink-3);
+  transition:color .25s var(--ease);
+}
+.tab .ti{
+  width:52px;height:32px;border-radius:99px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .3s var(--ease),transform .35s var(--spring);
+}
+.tab svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab[aria-current="page"]{color:var(--accent)}
+.tab[aria-current="page"] .ti{background:var(--accent-soft)}
+.tab:active .ti{transform:scale(.92)}
+
+/* ---------- Schiebeblatt ---------- */
+.sheet{
+  position:absolute;inset:0;z-index:6;background:var(--canvas);
+  overflow-y:auto;overscroll-behavior:contain;
+  transform:translateX(8%);opacity:0;
+  transition:transform .32s var(--ease),opacity .32s var(--ease);
+}
+.sheet.on{transform:none;opacity:1}
+.sheet-head{
+  position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:10px;
+  padding:12px 16px;background:var(--veil);backdrop-filter:blur(18px) saturate(1.4);
+  box-shadow:0 1px 0 var(--line);
+}
+.back{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:15.5px;font-weight:600;color:var(--ink);min-height:40px;
+}
+.back svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.4}
+.sheet-head .note{margin-left:auto}
+.sheet-body{padding:22px 18px 40px;display:flex;flex-direction:column;gap:26px}
+
+/* ---------- Spieler ---------- */
+.player{position:relative;margin:-22px -18px 0;background:var(--canvas-2)}
+.player .poster{aspect-ratio:16/9;border-radius:0}
+.player .poster::after{background:linear-gradient(185deg,rgba(3,7,6,.1) 0%,rgba(3,7,6,0) 40%,rgba(3,7,6,.8) 100%)}
+.pbtn{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center}
+.pbtn span{
+  width:74px;height:74px;border-radius:99px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 18px 40px -12px rgba(200,30,20,.85),inset 0 1px 0 rgba(255,255,255,.3);
+  transition:transform .35s var(--spring);
+}
+.pbtn:hover span{transform:scale(1.06)}
+.pbtn:active span{transform:scale(.96)}
+.pbtn svg{width:24px;height:24px;fill:#fff;margin-left:3px}
+.pbtn span svg[stroke]{fill:none;stroke:#fff;margin-left:0}
+.pctl{
+  position:absolute;left:0;right:0;bottom:0;z-index:4;padding:14px 16px 16px;
+  display:flex;align-items:center;gap:12px;
+}
+.pctl .bar{flex:1;background:rgba(244,247,243,.26);height:5px;border-radius:99px}
+.pctl .bar i{background:#fff;border-radius:99px}
+.pctl .tm{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--on-media);font-variant-numeric:tabular-nums}
+.bar{display:block;height:5px;background:var(--surface-3);border-radius:99px;position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);display:block;border-radius:99px}
+
+/* ---------- Werkzeuge am Player ---------- */
+.ptools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ptool{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;
+  border-radius:var(--r-btn);background:var(--surface);color:var(--ink-2);
+  font-size:14px;font-weight:600;
+  box-shadow:var(--e1),var(--edge);
+  transition:color .25s var(--ease),transform .25s var(--spring),box-shadow .25s var(--ease);
+}
+.ptool:active{transform:scale(.97)}
+.ptool[aria-pressed="true"]{color:var(--accent);box-shadow:var(--e1),inset 0 0 0 2px var(--accent)}
+.ptool svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- Text im Blatt ---------- */
+.meta{display:flex;flex-wrap:wrap;gap:8px 10px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.meta span{display:inline-flex;align-items:center;gap:7px;background:var(--surface);padding:7px 12px;border-radius:99px;box-shadow:var(--e1),var(--edge)}
+.prose{margin:0;color:var(--ink-body);font-size:17px;line-height:1.58}
+
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;counter-reset:s}
+.steps li{
+  counter-increment:s;display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px;align-items:start;
+  background:var(--surface);border-radius:var(--r-media);padding:16px 18px;
+  font-size:16px;color:var(--ink-body);line-height:1.5;
+  box-shadow:var(--e1),var(--edge);
+}
+.steps li::before{
+  content:counter(s,decimal-leading-zero);
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);
+  font-variant-numeric:tabular-nums;
+}
+.callout{
+  border-radius:var(--r-media);background:var(--accent-soft);
+  padding:18px 20px;display:flex;flex-direction:column;gap:7px;
+  box-shadow:inset 0 0 0 1px var(--accent-line);
+}
+.callout.stille{background:var(--surface);box-shadow:var(--e1),var(--edge)}
+.callout .h{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)}
+.callout.stille .h{color:var(--ink-2)}
+.callout p{margin:0;font-size:15.5px;color:var(--ink-body);line-height:1.5}
+
+.coach{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:var(--r-card);padding:14px 16px;box-shadow:var(--e1),var(--edge)}
+.coach img{width:52px;height:52px;border-radius:99px;object-fit:cover;filter:grayscale(1) contrast(1.06);flex:0 0 auto}
+.coach .n{font-size:15.5px;font-weight:700;line-height:1.3;color:var(--ink)}
+.coach .n span{display:block;color:var(--ink-2);font-size:13px;font-weight:500;margin-top:2px}
+
+.marke{display:flex;align-items:center;gap:18px;border-radius:var(--r-card);background:var(--surface);padding:20px;box-shadow:var(--e1),var(--edge)}
+.marke .z{font-family:var(--display);font-size:58px;line-height:.8;color:var(--accent);font-variant-numeric:tabular-nums}
+.marke .w{font-size:13.5px;font-weight:500;color:var(--ink-2);line-height:1.45}
+.marke .w b{display:block;color:var(--ink);font-weight:700;font-size:15.5px;margin-bottom:3px}
+
+/* ---------- Pyramide ---------- */
+.pyr{width:100%;max-width:100%;aspect-ratio:100/78;display:block;overflow:visible}
+.pyr .edge{fill:none;stroke:var(--line-2);stroke-width:.45;stroke-linecap:round}
+.pyr .plate{cursor:pointer}
+.pyr .plate polygon{transition:fill-opacity .4s var(--ease),stroke-opacity .4s var(--ease)}
+.pyr .nm{font-family:var(--display);font-size:4.6px;letter-spacing:.05px;text-transform:uppercase;fill:var(--ink);text-anchor:middle}
+.pyr .ag{font-family:var(--body);font-weight:600;font-size:2.9px;letter-spacing:.05px;fill:var(--ink-2);text-anchor:middle}
+.pyr .fz{font-family:var(--mono);font-size:2.6px;font-weight:700;letter-spacing:.2px;fill:var(--ink-3);text-anchor:middle}
+.lvpanel{
+  background:var(--surface);border-radius:var(--r-card);padding:20px;
+  display:flex;flex-direction:column;gap:10px;
+  box-shadow:var(--e1),var(--edge);border-left:4px solid var(--c);
+}
+.lvpanel .t{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:24px;line-height:1;margin:0;color:var(--c)}
+.duchip{
+  display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+  font-size:12px;font-weight:700;letter-spacing:.02em;
+  color:#fff;background:var(--c);padding:6px 12px;border-radius:99px;
+}
+
+/* ---------- Listen ---------- */
+.path{display:flex;flex-direction:column;gap:10px}
+.unit{
+  display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:14px;
+  width:100%;text-align:left;padding:15px 18px;
+  background:var(--surface);border-radius:var(--r-media);
+  box-shadow:var(--e1),var(--edge);
+  transition:transform .3s var(--spring);
+}
+.unit:active{transform:scale(.99)}
+.unit .w{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink-3)}
+.unit .t{display:block;font-size:15.5px;font-weight:700;line-height:1.3;margin:0}
+.unit .s{display:block;font-size:13px;font-weight:500;color:var(--ink-2);margin:3px 0 0}
+.tick{width:26px;height:26px;border-radius:99px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;background:var(--surface-3)}
+.tick.on{background:var(--lv2)}
+.tick svg{width:13px;height:13px;fill:none;stroke:#fff;stroke-width:2.6;display:none}
+.tick.on svg{display:block}
+
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.stat{
+  padding:18px 14px;display:flex;flex-direction:column;gap:5px;
+  background:var(--surface);border-radius:var(--r-media);
+  box-shadow:var(--e1),var(--edge);
+}
+.stat .v{font-family:var(--display);font-size:32px;line-height:.86;font-variant-numeric:tabular-nums}
+.stat .k{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+
+.rows{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-card);box-shadow:var(--e1),var(--edge);overflow:hidden}
+.lrow{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;
+  padding:17px 20px;font-size:16px;font-weight:500;
+  box-shadow:0 1px 0 var(--line);
+  transition:background .25s var(--ease);
+}
+.lrow:last-child{box-shadow:none}
+.lrow:hover{background:var(--surface-2)}
+.lrow .r{font-size:14px;font-weight:600;color:var(--ink-3);display:inline-flex;align-items:center;gap:10px}
+.lrow .r::after{
+  content:"";width:7px;height:7px;flex:0 0 auto;
+  border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);
+  transform:rotate(-45deg);border-radius:1px;
+}
+.vid-admin{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;
+  padding:15px 18px;background:var(--surface);border-radius:var(--r-media);
+  box-shadow:var(--e1),var(--edge);
+}
+.vid-admin .t{display:block;font-size:15px;font-weight:700;line-height:1.3;margin:0}
+.vid-admin .n{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums}
+
+/* ---------- Formulare ---------- */
+.field{display:flex;flex-direction:column;gap:9px}
+.field label{font-size:13.5px;font-weight:700;color:var(--ink-2)}
+.field input,.field select,.field textarea{
+  width:100%;background:var(--field);color:var(--ink);
+  border:0;border-radius:var(--r-btn);
+  box-shadow:var(--e1),var(--edge),inset 0 0 0 1px var(--line);
+  padding:15px 16px;font-family:var(--body);font-size:16px;font-weight:500;
+  -webkit-appearance:none;appearance:none;
+}
+.field textarea{min-height:100px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;box-shadow:var(--e1),inset 0 0 0 2px var(--accent)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;padding:6px;background:var(--surface-3);border-radius:var(--r-btn)}
+.seg button{
+  padding:12px 6px;border-radius:10px;font-size:14px;font-weight:600;color:var(--ink-2);min-height:46px;
+  transition:background .25s var(--ease),color .25s var(--ease),box-shadow .25s var(--ease);
+}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--e1)}
+.seg button.lv[aria-pressed="true"]{background:var(--c);color:#fff}
+.drop{
+  border-radius:var(--r-card);padding:30px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;
+  text-align:center;width:100%;background:var(--surface);
+  box-shadow:var(--e1),var(--edge),inset 0 0 0 2px var(--line-2);
+  transition:box-shadow .3s var(--ease);
+}
+.drop svg{width:30px;height:30px;fill:none;stroke:var(--ink-2);stroke-width:1.8}
+.drop .h{font-size:15.5px;font-weight:700;color:var(--ink)}
+.drop .s{font-size:13.5px;font-weight:500;color:var(--ink-3)}
+.drop.has{box-shadow:var(--e1),var(--edge),inset 0 0 0 2px var(--lv2)}
+
+/* ---------- Preise ---------- */
+.prices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.price{
+  border-radius:var(--r-card);padding:18px 16px;display:flex;flex-direction:column;gap:5px;text-align:left;
+  background:var(--surface);box-shadow:var(--e1),var(--edge);
+  transition:box-shadow .3s var(--ease),transform .3s var(--spring);
+}
+.price:active{transform:scale(.98)}
+.price[aria-pressed="true"]{box-shadow:var(--e2),inset 0 0 0 2px var(--accent)}
+.price .p{font-family:var(--display);font-size:28px;line-height:1;letter-spacing:.01em}
+.price .k{font-size:13px;font-weight:600;color:var(--ink-2)}
+.price .x{font-size:12.5px;font-weight:700;color:var(--lv2)}
+.ticks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.ticks li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;font-size:16px;color:var(--ink-body);line-height:1.45}
+.ticks svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2.4;margin-top:3px}
+.fine{font-size:13.5px;color:var(--ink-3);line-height:1.55;margin:0}
+
+/* ---------- Mitteilung ---------- */
+.push{
+  display:flex;gap:13px;align-items:flex-start;border-radius:var(--r-media);
+  background:var(--surface);padding:15px 16px;box-shadow:var(--e2),var(--edge);
+}
+.push .ic{width:44px;height:44px;flex:0 0 auto;border-radius:11px;overflow:hidden;box-shadow:var(--e1)}
+.push .ic img{width:100%;height:100%;object-fit:cover}
+.push .tx{min-width:0;flex:1}
+.push .h{font-size:12.5px;font-weight:700;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px}
+.push .b{font-size:15px;line-height:1.4;margin:4px 0 0;color:var(--ink);font-weight:500}
+
+/* Die Symbolwahl. Das zweite Symbol gehoert zum Abo und ist das
+   Einzige daran, was man auf dem Startbildschirm sieht. */
+.aktionen{display:grid;grid-template-columns:minmax(0,1fr) 56px;gap:10px}
+.aktionen .btn{width:100%}
+.btn.merk{padding:0;min-height:54px}
+.btn.merk svg{width:23px;height:23px}
+.btn.merk.an{color:var(--accent);box-shadow:var(--e1),inset 0 0 0 2px var(--accent)}
+.btn.merk.an svg{fill:currentColor}
+a.btn{text-decoration:none}
+.leer{
+  display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;
+  padding:46px 24px;border-radius:var(--r-card);background:var(--surface);
+  box-shadow:var(--e1),var(--edge);
+}
+.leer svg{width:34px;height:34px;fill:none;stroke:var(--ink-3);stroke-width:1.6}
+.leer p{margin:0;color:var(--ink-2);font-size:15.5px;line-height:1.5;max-width:30ch}
+
+.symwahl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.sym{
+  display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 14px;
+  border-radius:var(--r-card);background:var(--surface);
+  box-shadow:var(--e1),var(--edge);
+  transition:box-shadow .3s var(--ease),transform .3s var(--spring);
+}
+.sym:active{transform:scale(.98)}
+.sym[aria-pressed="true"]{box-shadow:var(--e2),inset 0 0 0 2px var(--accent)}
+.sym .bild{position:relative;width:88px;height:88px;border-radius:22.37%;overflow:hidden;box-shadow:var(--e2)}
+.sym .bild img{width:100%;height:100%;object-fit:cover;display:block}
+.sym .nm{font-size:15.5px;font-weight:700;line-height:1.2}
+.sym .zu{font-size:12.5px;font-weight:600;color:var(--ink-2);margin-top:-6px}
+.sym[aria-pressed="true"] .zu{color:var(--accent)}
+.sym .schloss{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(3,7,6,.46);border-radius:inherit;
+}
+.sym .schloss svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2}
+
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.day{
+  min-height:48px;border-radius:12px;background:var(--surface);color:var(--ink-2);
+  font-size:13.5px;font-weight:700;
+  box-shadow:var(--e1),var(--edge);
+  transition:transform .25s var(--spring),background .25s var(--ease),color .25s var(--ease);
+}
+.day:active{transform:scale(.94)}
+.day[aria-pressed="true"]{background:var(--accent);color:#fff;box-shadow:var(--glow)}
+
+/* ---------- Hinweis ---------- */
+.toast{
+  position:absolute;left:50%;bottom:104px;z-index:40;transform:translate(-50%,14px);
+  background:var(--ink);color:var(--canvas);padding:13px 20px;border-radius:99px;
+  font-size:14px;font-weight:600;
+  box-shadow:var(--e2);
+  opacity:0;transition:opacity .3s var(--ease),transform .35s var(--spring);pointer-events:none;max-width:84%;text-align:center;
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- Auf dem Handy ist die App das ganze Bild ---------- */
+@media (max-width:560px), (display-mode:standalone){
+  body{padding:0;height:100dvh;overflow:hidden}
+  .env{display:none}
+  .stage{max-width:none}
+  .device{
+    max-width:none;width:100%;height:100dvh;min-height:0;
+    border-radius:0;box-shadow:none;outline:none;
+  }
+  .statusbar,.homebar{display:none}
+  .app{inset:0;padding-top:env(safe-area-inset-top,0px)}
+  .tabs{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+  .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+<svg class="vh" aria-hidden="true" focusable="false" width="0" height="0">
+  <filter id="logoLight" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -0.33 -0.34 -0.33 0 1" result="k"/>
+    <feComposite in="k" in2="SourceGraphic" operator="in"/>
+  </filter>
+  <filter id="logoDark" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.33 -0.34 -0.33 0 1" result="k"/>
+    <feComposite in="k" in2="SourceGraphic" operator="in"/>
+  </filter>
+</svg>
+
+<div class="env" aria-hidden="true"></div>
+
+<div class="stage">
+
+  <div class="device">
+    <!-- Statusleiste und Home-Indikator: zwei Kleinigkeiten, die aus
+         einer Webseite im Rahmen eine App machen. -->
+    <div class="statusbar" aria-hidden="true">
+      <span class="uhr">9:41</span>
+      <span class="sys">
+        <svg width="17" height="11" viewBox="0 0 17 11"><rect y="7" width="3" height="4" rx="1"/><rect x="4.7" y="5" width="3" height="6" rx="1"/><rect x="9.4" y="2.5" width="3" height="8.5" rx="1"/><rect x="14.1" width="3" height="11" rx="1"/></svg>
+        <svg width="16" height="11" viewBox="0 0 16 11"><path d="M8 10.4 6 8.4a2.8 2.8 0 0 1 4 0l-2 2Z"/><path d="M8 6.4c-1.2 0-2.3.5-3.1 1.3L3.5 6.3A6.4 6.4 0 0 1 8 4.5c1.7 0 3.3.7 4.5 1.8l-1.4 1.4A4.4 4.4 0 0 0 8 6.4Z"/><path d="M8 2.3c-2.3 0-4.4.9-6 2.4L.7 3.3A10.5 10.5 0 0 1 8 .4c2.8 0 5.4 1.1 7.3 2.9L14 4.7A8.5 8.5 0 0 0 8 2.3Z"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12"><rect x=".5" y=".5" width="21" height="11" rx="3.2" fill="none" stroke="currentColor" stroke-opacity=".38"/><rect x="2" y="2" width="16" height="8" rx="2"/><path d="M23 4.2v3.6a2 2 0 0 0 0-3.6Z" opacity=".38"/></svg>
+      </span>
+    </div>
+    <span class="homebar" aria-hidden="true"></span>
+    <div class="app">
+      <header class="appbar">
+        <img class="mark" src="img/logo.png" alt="KM1 Training">
+        <span class="lvchip" id="lvchip"></span>
+      </header>
+
+      <div class="screens" id="screens"></div>
+
+      <div class="sheet" id="sheet" hidden></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+      <nav class="tabs" id="tabs" aria-label="Hauptbereiche"></nav>
+    </div>
+  </div>
+
+
+</div>
+
+<script>
+/* ============================================================
+   Daten. Bewusst schon die Form, die spaeter in der Datenbank
+   steht: ein Video kennt Kategorie, Ebene, Dauer und ob es frei
+   oder PRO ist. Die Schritte sind der Kern, denn danach sucht
+   ein Kind, wenn es etwas ueben will.
+   ============================================================ */
+var LEVELS = [
+  {n:1, nm:'Foundational', md:'Gruppentraining',    ag:'U6 bis U13',  c:'var(--lv1)',
+   tx:'Grundlagen, Teamgeist und die Begeisterung für Fußball.'},
+  {n:2, nm:'Development',  md:'Fördertraining',     ag:'U8 bis U15',  c:'var(--lv2)',
+   tx:'Gezielte Weiterentwicklung, vorbereitet auf höhere Leistungsniveaus.'},
+  {n:3, nm:'Performance',  md:'Individualtraining', ag:'U17 und U19', c:'var(--lv3)',
+   tx:'Fortgeschrittene Fähigkeiten und taktisches Bewusstsein für den Wettkampf auf Profiniveau.'},
+  {n:4, nm:'Professional', md:'Individualtraining', ag:'Profis',      c:'var(--lv4)',
+   tx:'Leistung, taktisches Verständnis und Fitness für nationale und internationale Profispieler.'}
+];
+
+var KAT = {
+  dribbling:'Dribbling', passen:'Passen', flanken:'Flanken', schuss:'Torschuss',
+  annahme:'Ballannahme', athletik:'Athletik', torwart:'Torwart', taktik:'Taktik'
+};
+
+var VIDEOS = [
+  {id:'flanke-innen', t:'Die Flanke mit der Innenseite', k:'flanken', lv:2, d:'7:24', zg:'offen', neu:true, img:'pitch', views:1284,
+   be:'Die beste Flanke ist die, die ankommt. Die Innenseite macht den Ball berechenbar: flach am Boden oder halbhoch auf den Elfmeterpunkt, immer mit derselben Bewegung.',
+   st:['Standbein neben den Ball, die Fußspitze zeigt dorthin, wo der Ball hin soll.','Vor dem Schuss einmal kurz den Kopf heben: Wo läuft der Mitspieler hin, nicht wo steht er.','Knöchel fest, mit der Innenseite durch die Ballmitte streichen, nicht darunter.','In die Laufrichtung nachziehen statt abzustoppen.'],
+   fe:'Zu nah am Ball stehen. Dann kommt der Fuß nicht durch und die Flanke rutscht hinter das Tor.'},
+
+  {id:'uebersteiger', t:'Übersteiger mit Tempowechsel', k:'dribbling', lv:2, d:'5:48', zg:'offen', neu:true, views:2140,
+   be:'Der Übersteiger allein schlägt keinen Gegner. Was ihn gefährlich macht, ist das, was danach passiert: der Antritt in die andere Richtung.',
+   st:['Mit Tempo auf den Gegner zu, aber zwei Meter vorher langsamer werden.','Den Fuß außen um den Ball führen, die Schulter geht mit.','Sofort mit dem Außenrist des anderen Fußes wegdrücken und drei Meter sprinten.'],
+   fe:'Zwei oder drei Übersteiger hintereinander. Der Gegner steht dann ruhig, weil nichts passiert.'},
+
+  {id:'kopfball', t:'Kopfball: das Timing im Anlauf', k:'schuss', lv:2, d:'5:05', zg:'offen', neu:true, views:756,
+   be:'Kopfball ist kein Mut, sondern Timing. Wer zu früh springt, verliert den Ball an den, der später kommt.',
+   st:['Zwei Schritte Anlauf, den letzten kurz und schnell.','Mit dem Absprung warten, bis der Ball auf Höhe des Sechzehners ist.','Die Stirn trifft, der Oberkörper klappt nach vorn, Augen bleiben offen.'],
+   fe:'Mit dem Kopf auf den Ball warten statt dem Ball entgegenzugehen.'},
+
+  {id:'erste-beruehrung', t:'Die erste Berührung aus dem Körper heraus', k:'annahme', lv:1, d:'4:55', zg:'offen', views:1902,
+   be:'Die erste Berührung entscheidet, ob du Zeit hast oder nicht. Wir nehmen den Ball nicht an, wir nehmen ihn mit.',
+   st:['Vor der Annahme über die Schulter schauen: Wo ist Platz?','Den Ball mit der Innenseite in den freien Raum legen, nicht vor die eigenen Füße.','Nach der Berührung sofort zwei Schritte machen.'],
+   fe:'Den Ball stoppen. Damit schenkst du dem Gegner die halbe Sekunde, die du gebraucht hättest.'},
+
+  {id:'flacher-pass', t:'Flacher Pass über 20 Meter', k:'passen', lv:1, d:'6:02', zg:'offen', views:1655,
+   be:'Der Pass, den du in jedem Spiel hundertmal brauchst. Flach, fest, auf den richtigen Fuß.',
+   st:['Standbein zeigt zum Ziel, Arme raus für die Balance.','Innenseite quer zum Ball, Knöchel bleibt steif.','Durch die Ballmitte spielen und den Fuß bis zum Ziel nachführen.'],
+   fe:'Den Pass zu weich spielen. Ein langsamer Ball ist für den Mitspieler schwerer als ein fester.'},
+
+  {id:'leiter', t:'Koordinationsleiter: sechs Basis-Muster', k:'athletik', lv:1, d:'7:15', zg:'offen', img:'ladder', views:980,
+   be:'Sechs Muster, die du überall üben kannst. Sie schulen den schnellen Fuß, den du für den ersten Schritt im Spiel brauchst.',
+   st:['Immer auf dem Ballen laufen, die Ferse berührt den Boden nicht.','Arme mitlaufen lassen, sie geben den Takt vor.','Kurze Sätze: 20 Sekunden schnell, 40 Sekunden Pause.'],
+   fe:'Schnell und schlampig. Sauber und mittelschnell bringt mehr als hektisch und falsch.'},
+
+  {id:'torwart-grund', t:'Torwart: Grundstellung und erster Schritt', k:'torwart', lv:1, d:'6:30', zg:'offen', views:412,
+   be:'Der erste Schritt entscheidet über die meisten Bälle. Er beginnt in der Grundstellung, lange bevor geschossen wird.',
+   st:['Füße etwa schulterbreit, Gewicht auf den Ballen, Hände offen vor dem Körper.','Kurz vor dem Schuss ein kleiner Hüpfer, damit die Beine geladen sind.','Der erste Schritt geht seitlich zum Ball, nicht nach hinten.'],
+   fe:'Zu tief stehen. Aus der tiefen Hocke kommt kein Torwart schnell in die Ecke.'},
+
+  {id:'abstoppen', t:'Abstoppen und sofort andribbeln', k:'dribbling', lv:1, d:'4:30', zg:'offen', views:1120,
+   be:'Anhalten und wieder losfahren, das ist der einfachste Weg, einen Gegner loszuwerden. Ohne Trick, nur mit Tempo.',
+   st:['Mit der Sohle abstoppen, der Körper geht leicht über den Ball.','Eine Sekunde Ruhe, den Gegner herankommen lassen.','Mit dem Außenrist antreten und nicht mehr hinschauen.'],
+   fe:'Zu früh antreten. Der Gegner muss erst stehen, sonst läuft er einfach mit.'},
+
+  {id:'vollspann', t:'Torschuss: den Vollspann flach halten', k:'schuss', lv:2, d:'6:40', zg:'offen', views:2310,
+   be:'Der harte Schuss nützt nichts über dem Tor. Drei Details halten ihn unten.',
+   st:['Standbein neben den Ball, Knie über dem Ball.','Fußspitze nach unten strecken, mit dem Schnürsenkel treffen.','Oberkörper über den Ball beugen und nach vorn nachziehen.'],
+   fe:'Sich beim Schuss zurücklehnen. Der Ball geht dann zwangsläufig hoch.'},
+
+  {id:'ballmitnahme', t:'Ballmitnahme im Sprint', k:'annahme', lv:2, d:'5:20', zg:'konto', views:640,
+   be:'Den Ball im vollen Lauf mitnehmen, ohne das Tempo zu verlieren. Für Außenspieler die wichtigste Bewegung überhaupt.',
+   st:['Den Ball früh anschauen und das Tempo schon vor der Berührung anpassen.','Mit dem Außenrist nach vorn schieben, nicht anhalten.','Der nächste Schritt ist ein Sprintschritt, kein Bremsschritt.'],
+   fe:'Den Ball zu weit vorlegen und dann hinterherlaufen müssen.'},
+
+  {id:'doppelpass', t:'Der Doppelpass im Halbraum', k:'passen', lv:3, d:'8:10', zg:'konto', views:534,
+   be:'Zwei Pässe, ein Gegner weniger. Der Doppelpass lebt vom Timing des Mitspielers, nicht von der Härte des Passes.',
+   st:['Den Gegner anlaufen, damit er auf den Ball geht.','Fest in den Fuß des Mitspielers spielen und sofort in den Rücken des Gegners starten.','Der Mitspieler klatscht mit einem Kontakt in den Lauf, nie in die Füße.'],
+   fe:'Nach dem Pass stehen bleiben und auf den Ball warten.'},
+
+  {id:'innenrist-flanke', t:'Innenrist-Flanke aus dem Halbfeld', k:'flanken', lv:3, d:'9:30', zg:'konto', img:'goal', views:488,
+   be:'Die Flanke mit Drall, die vom Tor wegdreht. Sie ist schwerer zu verteidigen als jede gerade Hereingabe.',
+   st:['Den Ball seitlich vorlegen, damit du im Bogen anlaufen kannst.','Mit dem Innenrist unter die Ballhälfte treffen, nicht durch die Mitte.','Den Fuß über die Körperachse hinaus nachziehen, das erzeugt den Drall.'],
+   fe:'Zu viel Kraft. Der Drall macht die Flanke gefährlich, nicht das Tempo.'},
+
+  {id:'eins-gegen-eins', t:'1 gegen 1: Tempowechsel statt Tricks', k:'dribbling', lv:3, d:'10:20', zg:'offen', views:1290,
+   be:'Profis schlagen ihren Gegner mit Rhythmus, nicht mit Tricks. Drei Muster, die fast immer funktionieren.',
+   st:['Aus dem Lauf verlangsamen und den Gegner zum Stehen bringen.','Den Ball zeigen, damit er den Fuß ausstreckt.','Im Moment der Gewichtsverlagerung antreten, auf die offene Seite.'],
+   fe:'Den Trick vorbereiten wollen. Der Gegner liest die Absicht und stellt sich hin.'},
+
+  {id:'diagonalball', t:'Der Diagonalball auf die zweite Spitze', k:'passen', lv:3, d:'7:50', zg:'konto', views:377,
+   be:'Der lange Ball, der die Seite verlagert. Er gewinnt Raum, weil die gegnerische Kette die ganze Breite verschieben muss.',
+   st:['Kopf hoch, bevor der Ball kommt: Wer steht auf der anderen Seite frei?','Den Ball aus dem Körper heraus vorlegen, damit du Anlauf hast.','Mit dem Innenrist unter den Ball, Ziel ist die Brust des Mitspielers.'],
+   fe:'Den Ball in den Lauf statt in den Fuß spielen, wenn der Außenverteidiger schon schiebt.'},
+
+  {id:'rumpf', t:'Rumpfstabilität für Zweikämpfe', k:'athletik', lv:3, d:'12:00', zg:'konto', views:702,
+   be:'Wer im Zweikampf umfällt, hat selten zu wenig Kraft in den Beinen. Meistens fehlt die Mitte.',
+   st:['Unterarmstütz mit Beinheben, drei Sätze zu 30 Sekunden.','Seitstütz mit gestrecktem Arm, beide Seiten gleich lange.','Zum Schluss zwei Minuten Ausfallschritte im Wechsel, ruhig und kontrolliert.'],
+   fe:'Ins Hohlkreuz gehen. Lieber kürzer halten und die Spannung behalten.'},
+
+  {id:'schnittstelle', t:'Der Schnittstellenpass', k:'passen', lv:4, d:'11:05', zg:'konto', views:296,
+   be:'Der Pass zwischen zwei Verteidiger. Er entsteht nicht im Fuß, sondern im Kopf, zwei Sekunden vorher.',
+   st:['Die Kette beobachten, während der Ball noch unterwegs ist.','Den Ball so annehmen, dass der Passweg frei wird.','Flach und fest zwischen die beiden spielen, im Moment des Losgehens.'],
+   fe:'Zu lange warten. Die Lücke ist eine halbe Sekunde offen, nicht länger.'},
+
+  {id:'anlaufen', t:'Anlaufen im 4-3-3: der erste Schritt', k:'taktik', lv:4, d:'9:40', zg:'konto', views:184,
+   be:'Pressing beginnt mit einem einzigen Laufweg. Wer falsch anläuft, öffnet die Seite für die ganze Mannschaft.',
+   st:['Bogenlauf, damit der Rückpass zum Torwart zugestellt ist.','Den Gegner auf die schwächere Seite lenken, nicht frontal anlaufen.','Das Signal geben, damit die Kette zeitgleich nachschiebt.'],
+   fe:'Allein anlaufen. Ohne die Mannschaft dahinter ist jeder Pressingversuch ein Loch.'},
+
+  {id:'standard-ecke', t:'Standard: die kurz ausgespielte Ecke', k:'schuss', lv:4, d:'6:15', zg:'konto', views:221,
+   be:'Kurz ausgespielt zieht die Verteidigung aus der Ordnung. Zwei Varianten, die im Spiel immer wieder funktionieren.',
+   st:['Der zweite Mann geht an, der Gegner muss mit herausrücken.','Zurücklegen und sofort mit dem ersten Kontakt flanken.','Die Spitzen starten erst, wenn der Ball zurückgelegt ist.'],
+   fe:'Zu früh in den Strafraum starten. Dann steht die Mannschaft, wenn die Flanke kommt.'},
+
+  {id:'finishing-mued', t:'Abschluss unter Müdigkeit', k:'schuss', lv:4, d:'8:45', zg:'konto', views:315,
+   be:'In der 85. Minute entscheidet sich der Abschluss. Wir trainieren ihn deshalb am Ende der Einheit, nicht am Anfang.',
+   st:['Zwei Sprints über 30 Meter, direkt danach der Abschluss.','Die Technik nicht verkürzen, auch wenn die Beine schwer sind.','Immer den Nachschuss mitgehen.'],
+   fe:'Ausruhen zwischen den Wiederholungen. Der Reiz entsteht genau in der Erschöpfung.'},
+
+  {id:'regeneration', t:'Regeneration zwischen zwei Spielen', k:'athletik', lv:4, d:'9:20', zg:'konto', views:268,
+   be:'Englische Woche heißt nicht weniger trainieren, sondern anders. Ein Ablauf für die 48 Stunden nach dem Spiel.',
+   st:['Direkt nach dem Spiel zehn Minuten locker ausradeln.','Am Folgetag Mobilisation und ein kurzer Aktivierungsblock.','48 Stunden vorher wieder Intensität, sonst fehlt am Spieltag die Spritzigkeit.'],
+   fe:'Zwei Tage gar nichts machen. Der Körper wird dadurch träger, nicht frischer.'},
+
+  /* Die Profi-Einheiten. Gedreht mit aktiven Profispielern, und als
+     einzige Inhalte im Abo. Die Namen der Gäste stehen erst fest, wenn
+     die Einverständniserklärungen unterschrieben sind. */
+  {id:'profi-freistoss', t:'Der Freistoß über die Mauer', k:'schuss', lv:3, d:'14:20', zg:'pro', neu:true,
+   gast:'Profi, 2. Bundesliga', views:0,
+   be:'Der Freistoß aus 20 Metern, erklärt von jemandem, der ihn im Ligabetrieb schießt. Anlauf, Treffpunkt, Nachziehen, und was er sich vorher im Kopf zurechtlegt.',
+   st:['Den Ball so hinlegen, dass das Ventil zum Tor zeigt. Klingt nach Aberglaube, gibt dir aber jedes Mal denselben Anhaltspunkt.','Drei Schritte Anlauf, leicht seitlich, der letzte Schritt ist der längste.','Mit dem Innenrist unter die untere Ballhälfte, den Fuß über die Körperachse hinaus nachziehen.'],
+   fe:'Zu viel Kraft. Ein Freistoß wird durch den Drall gefährlich, nicht durch das Tempo.'},
+
+  {id:'profi-flanke-druck', t:'Flanken unter Gegnerdruck', k:'flanken', lv:3, d:'12:40', zg:'pro',
+   gast:'Profi, 3. Liga', views:0,
+   be:'Flanken im leeren Training kann jeder. Hier geht es um die Flanke, wenn ein Gegner am Trikot zieht und die Grundlinie zwei Meter entfernt ist.',
+   st:['Den Ball mit dem Körper abschirmen, bevor du überhaupt hochschaust.','Einen halben Schritt weg vom Gegner, damit der Fuß Platz zum Durchschwingen hat.','Den ersten Anlauf antäuschen, dann flanken. Der Verteidiger streckt das Bein, und du hast die Lücke.'],
+   fe:'Warten, bis die Situation perfekt ist. Im Spiel wird sie das nie.'},
+
+  {id:'profi-strafraum', t:'Der erste Kontakt im Strafraum', k:'annahme', lv:3, d:'11:15', zg:'pro',
+   gast:'Stürmer, 2. Bundesliga', views:0,
+   be:'Im Strafraum entscheidet die erste Berührung über Tor oder Abstoß. Ein Stürmer aus dem Profibereich zeigt, wohin er den Ball legt und warum.',
+   st:['Vor der Flanke einmal über die Schulter: Wo steht der Verteidiger, wo der Torwart?','Den Ball nie zum Tor hin annehmen, sondern quer, weg vom Verteidiger.','Nach der Annahme sofort schießen, auch aus unbequemer Lage. Der zweite Kontakt kommt meistens zu spät.'],
+   fe:'Den Ball breit annehmen und sich den Winkel selbst zumachen.'},
+
+  {id:'profi-zweikampf', t:'Körper vor Ball: der saubere Zweikampf', k:'taktik', lv:2, d:'10:05', zg:'pro',
+   gast:'Innenverteidiger, 3. Liga', views:0,
+   be:'Zweikämpfe gewinnt selten der Stärkere, meistens der, der früher steht. Ein Innenverteidiger erklärt, wie er den Körper einsetzt, ohne zu foulen.',
+   st:['Den Gegner früh spüren lassen: Schulter an Schulter, bevor der Ball da ist.','Immer zwischen Ball und Gegner bleiben, auch wenn das heißt, rückwärts zu laufen.','Den Fuß erst rausstellen, wenn der Ball vom Gegner weggeht, nie davor.'],
+   fe:'Mit gestrecktem Bein reingrätschen. Sieht gut aus, kostet Gelb und den Zweikampf.'},
+
+  {id:'profi-torwart', t:'Torwart: Strafraumbeherrschung', k:'torwart', lv:3, d:'13:30', zg:'pro',
+   gast:'Torwart, 2. Bundesliga', views:0,
+   be:'Wann kommt ein Torwart raus und wann bleibt er? Ein Profitorwart zeigt seine Entscheidungsregeln bei Flanken und langen Bällen.',
+   st:['Die Ausgangsposition ist keine Linie, sondern ein Bogen: je weiter der Ball außen steht, desto weiter vorn stehst du.','Bei der Flanke früh loslaufen und den höchsten Punkt anpeilen, nicht den Ball.','Rufen, bevor du losläufst. Eine stumme Herausnahme ist ein Eigentor mit Ansage.'],
+   fe:'Halb rauskommen. Entweder ganz oder gar nicht, alles dazwischen ist der Fehler.'},
+
+  {id:'profi-alltag', t:'Ein Tag im Profialltag', k:'athletik', lv:1, d:'16:50', zg:'pro',
+   gast:'Profi, 2. Bundesliga', views:0,
+   be:'Kein Techniktraining, sondern ein ganzer Tag: Frühstück, Videoanalyse, Einheit, Regeneration, Abendessen. Damit klar wird, wie viel neben dem Platz passiert.',
+   st:['Der Tag beginnt mit Wiegen und einem kurzen Gespräch über den Schlaf.','Zwischen den Einheiten sind Essen und Schlafen Teil des Trainings, nicht Pause davon.','Nach dem Abschlusstraining kommt die Videoanalyse des nächsten Gegners.'],
+   fe:'Denken, Profi sein heißt zweimal am Tag Fußball spielen. Der größere Teil ist alles drumherum.'}
+];
+
+var PFAD = {
+  1:[{w:1,id:'erste-beruehrung'},{w:2,id:'flacher-pass'},{w:3,id:'abstoppen'},{w:4,id:'leiter'},{w:5,id:'torwart-grund'}],
+  2:[{w:1,id:'flanke-innen'},{w:2,id:'uebersteiger'},{w:3,id:'vollspann'},{w:4,id:'ballmitnahme'},{w:5,id:'kopfball'}],
+  3:[{w:1,id:'doppelpass'},{w:2,id:'innenrist-flanke'},{w:3,id:'eins-gegen-eins'},{w:4,id:'diagonalball'},{w:5,id:'rumpf'}],
+  4:[{w:1,id:'anlaufen'},{w:2,id:'schnittstelle'},{w:3,id:'standard-ecke'},{w:4,id:'finishing-mued'},{w:5,id:'regeneration'}]
+};
+
+/* Schlag den Coach. Ansehen, nachmachen, im Training zeigen.
+   Bewusst ohne Einsendungen: in der App gibt es keine fremden Videos. */
+var CHALLENGES = [
+  {m:'September', t:'50 Übersteiger in 60 Sekunden', marke:43, eh:'Übersteiger',
+   be:'Eine Minute, ein Ball, so viele saubere Übersteiger wie möglich. Kader hat es an einem Dienstagabend auf 43 gebracht.',
+   rg:['Der Ball bleibt im Kreis, sonst zählt der Durchgang nicht.','Nur Übersteiger mit Richtungswechsel zählen.','Wer stehen bleibt, fängt die Zählung von vorn an.']},
+  {m:'August',    t:'Jonglieren ohne Bodenkontakt', marke:78, eh:'Kontakte', be:'', rg:[]},
+  {m:'Juli',      t:'Torwand: fünf Schüsse',        marke:4,  eh:'Treffer',  be:'', rg:[]}
+];
+
+var state = {
+  tab:'start', theme:'hell',
+  konto:null,                 /* null = Gast. Freie Videos laufen trotzdem. */
+  pro:false, owner:false,
+  meinLv:1, lvSel:1,
+  kat:'alle', fltLv:0, suche:'',
+  done:{}, preis:'jahr', nachLogin:null, loginModus:'neu',
+  tempo:1, dauer:444, symbol:'standard', merk:{},
+  erinnerung:{an:true, tage:['mi','sa'], zeit:'17:00'},
+  up:{datei:null, lv:1, vis:'offen', busy:false}
+};
+
+/* ============================================================
+   Werkzeug
+   ============================================================ */
+function h(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function byId(id){return VIDEOS.filter(function(v){return v.id===id;})[0];}
+function lvOf(n){return LEVELS[n-1];}
+function drin(){return !!state.konto;}
+function sek(d){var t=String(d).split(':');return (+t[0])*60 + (+t[1]||0);}
+function fmtZeit(s){var m=Math.floor(s/60), r=Math.round(s%60);return m+':'+(r<10?'0':'')+r;}
+function tempoLabel(){return state.tempo===1 ? '1\u00d7' : (state.tempo===0.75 ? '0,75\u00d7' : '0,5\u00d7');}
+function lvFortschritt(nr){
+  var u = PFAD[nr];
+  return {fertig: u.filter(function(x){return state.done[x.id];}).length, gesamt: u.length};
+}
+/* Drei Stufen: offen fuer jeden, mit kostenlosem Konto, und die
+   Profi-Einheiten im Abo. Was gesperrt ist, entscheidet die Stufe. */
+function gesperrt(v){
+  if(v.zg==='pro') return !state.pro;
+  if(v.zg==='konto') return !drin();
+  return false;
+}
+function zugangName(zg){
+  return zg==='pro' ? 'Profi-Einheit' : (zg==='konto' ? 'Mit Konto' : 'Ohne Anmeldung');
+}
+function zaehl(zg){return VIDEOS.filter(function(v){return v.zg===zg;}).length;}
+function offenFuerMich(){return VIDEOS.filter(function(v){return !gesperrt(v);}).length;}
+
+var ICON = {
+  play:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l12 7-12 7z"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="5" width="3.5" height="14"/><rect x="13.5" y="5" width="3.5" height="14"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/></svg>',
+  check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
+  back:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>',
+  such:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',
+  rew:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.6 6v5.2h5.2"/><path d="M4.4 11.2a8 8 0 1 0 2.4-5.4L3.6 8.9"/></svg>',
+  herz:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.4 4.7 13.1a4.7 4.7 0 0 1 6.6-6.7l.7.7.7-.7a4.7 4.7 0 0 1 6.6 6.7z"/></svg>',
+  upl:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 16v3h16v-3"/></svg>',
+  apple:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.3 12.6c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.6-1.9-1.5-.2-3 .9-3.7.9-.8 0-2-.9-3.2-.8-1.7 0-3.2 1-4 2.5-1.7 2.9-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.6z"/><path d="M14.2 5.4c.7-.8 1.1-1.9 1-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.8-1.3z"/></svg>',
+  tabStart:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5l3.2 5.3-3.2 2.6-3.2-2.6z"/><path d="M8.8 11.4L7 17.2M15.2 11.4L17 17.2"/></svg>',
+  tabTech:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14"/><path d="M10 9.5l5 2.5-5 2.5z"/></svg>',
+  tabPyr:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5L21 20H3z"/><path d="M8.2 13h7.6M6.2 16.5h11.6"/></svg>',
+  tabProf:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg>'
+};
+
+/* Kreidezeichnungen als Vorschaubild. Struktur in Kreide, die
+   Aktion in Koeln-Rot. Die Farben kommen aus den Tokens, damit
+   die Zeichnungen in beiden Fassungen stimmen. */
+function dia(k){
+  var d = {
+    flanken:'<path class="c" d="M112 12V88"/><path class="c" d="M112 26h40v48h-40"/><path class="c" d="M152 40v20"/><path class="a" d="M22 82C54 40 96 30 128 44" stroke-dasharray="5 4"/><path class="a" d="M120 40l9 4-7 6"/><circle class="f" cx="22" cy="82" r="3.4"/><circle class="f" cx="130" cy="45" r="3.4"/>',
+    dribbling:'<path class="a" d="M10 50c10-24 26-24 33 0s23 24 30 0 26-24 33 0 23 24 30 0"/><g class="c"><path d="M25 44l6 12H19z"/><path d="M55 44l6 12H49z"/><path d="M85 44l6 12H79z"/><path d="M115 44l6 12h-12z"/></g>',
+    passen:'<circle class="f" cx="28" cy="78" r="3.6"/><circle class="f" cx="80" cy="24" r="3.6"/><circle class="f" cx="134" cy="72" r="3.6"/><path class="a" d="M33 74L74 29" stroke-dasharray="5 4"/><path class="a" d="M68 31l8-4 1 8"/><path class="a" d="M86 28l42 40" stroke-dasharray="5 4"/><path class="a" d="M122 66l8 4-2-8"/>',
+    schuss:'<path class="c" d="M40 30V14h80v16"/><path class="c" d="M40 14v16M120 14v16"/><g class="c" opacity=".5"><path d="M52 14v16M64 14v16M76 14v16M88 14v16M100 14v16M108 14v16"/></g><circle class="f" cx="80" cy="84" r="3.6"/><path class="a" d="M77 80L48 32" stroke-dasharray="5 4"/><path class="a" d="M83 80l29-48" stroke-dasharray="5 4"/>',
+    annahme:'<path class="a" d="M14 14l52 36" stroke-dasharray="5 4"/><path class="a" d="M58 48l9 3-3-8"/><circle class="f" cx="70" cy="52" r="4"/><path class="c" d="M70 40v-8M70 64v8"/><path class="a" d="M76 56l52 22"/><path class="a" d="M120 72l9 6-9 3"/>',
+    athletik:'<path class="c" d="M50 94L66 18M110 94L94 18"/><g class="a"><path d="M52 84h56M56 70h48M60 57h40M64 45h32M68 34h24M71 25h18"/></g>',
+    torwart:'<path class="c" d="M40 26V12h80v14"/><path class="c" d="M40 12v14M120 12v14"/><path class="c" d="M28 26h104v34H28z" opacity=".55"/><circle class="f" cx="80" cy="36" r="3.6"/><path class="a" d="M80 82L44 28" stroke-dasharray="5 4"/><path class="a" d="M80 82l36-54" stroke-dasharray="5 4"/><circle class="f" cx="80" cy="84" r="3"/>',
+    taktik:'<path class="c" d="M56 8v84M104 8v84" opacity=".55"/><circle class="f" cx="30" cy="50" r="3.6"/><circle class="f" cx="80" cy="26" r="3.6"/><circle class="f" cx="80" cy="74" r="3.6"/><path class="a" d="M36 48c18-10 30-14 40-18"/><path class="a" d="M70 28l9-2-4 8"/><path class="a" d="M36 54c18 10 30 14 40 18"/><path class="a" d="M70 72l9 2-4-8"/><path class="a" d="M110 50h26"/><path class="a" d="M130 45l8 5-8 5"/>'
+  }[k] || '';
+  return '<svg class="dia" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+    '<rect class="bg" width="160" height="100"/>' +
+    '<g stroke-linecap="round" stroke-linejoin="round">' + d + '</g></svg>';
+}
+
+function posterOf(v){
+  return v.img ? '<img src="img/'+v.img+'.jpg" alt="" loading="lazy">' : dia(v.k);
+}
+
+/* Die grosse Karte oben auf der Startseite. Sie traegt das Bild in
+   voller Breite, die Zeile darueber und den roten Knopf: das erste,
+   was jemand sieht, wenn die App aufgeht. */
+function heroKarte(v, kicker, meta, pct){
+  return '<button class="hero" type="button" data-act="video:'+v.id+'">' +
+    '<span class="hm">'+posterOf(v)+'</span>' +
+    '<span class="hc">' +
+      '<span class="hk">'+h(kicker)+'</span>' +
+      '<span class="ht">'+h(v.t)+'</span>' +
+      '<span class="hmeta">'+h(meta)+'</span>' +
+    '</span>' +
+    '<span class="hplay">'+ICON.play+'</span>' +
+    (pct ? '<span class="hbar"><i style="width:'+pct+'%"></i></span>' : '') +
+  '</button>';
+}
+
+function karte(v){
+  return '<button class="card" type="button" data-act="video:'+v.id+'">' +
+    '<span class="poster">'+posterOf(v)+
+      (gesperrt(v) ? '<span class="lock'+(v.zg==='konto'?' konto':'')+'"><span>'+ICON.lock+'</span></span>' : '') +
+      (v.zg==='pro' ? '<span class="badge pro">Profi</span>' :
+        (v.zg==='konto' ? '<span class="badge konto">Konto</span>' :
+          (v.neu ? '<span class="badge neu">Neu</span>' : ''))) +
+      '<span class="badge dur">'+v.d+'</span>' +
+    '</span>' +
+    '<span class="body">' +
+      '<span class="t">'+h(v.t)+'</span>' +
+      '<span class="m"><i class="dot" style="background:'+lvOf(v.lv).c+'"></i>'+lvOf(v.lv).nm+' · '+KAT[v.k]+'</span>' +
+    '</span></button>';
+}
+
+/* ============================================================
+   Die vier Bereiche
+   ============================================================ */
+function screenStart(){
+  var neu = VIDEOS.filter(function(v){return v.neu;});
+  var erledigt = Object.keys(state.done).length;
+  var ch = CHALLENGES[0];
+
+  var kopfteil, mitte;
+  if(drin()){
+    var r = byId('flanke-innen');
+    kopfteil = '<div><p class="eyebrow">Mittwoch, Trainingstag</p><h1 class="big">Moin '+h(state.konto.vn)+'.<br>Weiter geht’s.</h1></div>' +
+      heroKarte(r, 'Weitertrainieren', '2:49 übrig · '+lvOf(r.lv).nm, 62);
+    var ziel = Math.min(erledigt,5), pips = '';
+    for(var i=0;i<5;i++) pips += '<i class="'+(i<ziel?'on':'')+'"></i>';
+    mitte = '<div class="panel">' +
+      '<p class="note">Dein Wochenziel</p>' +
+      '<div class="goal"><span class="n">'+ziel+'<em> / 5 Einheiten</em></span></div>' +
+      '<span class="pips">'+pips+'</span>' +
+    '</div>';
+  } else {
+    var s = byId('erste-beruehrung');
+    kopfteil = '<div><p class="eyebrow">Ohne Anmeldung</p><h1 class="big">Moin.<br>Fang einfach an.</h1>' +
+      '</div>' +
+      heroKarte(s, 'Fang hier an', s.d+' · '+lvOf(s.lv).nm, 0);
+    mitte = '<div class="panel">' +
+      '<p class="note">Kostenlos</p>' +
+      '<h2 class="sec">Fortschritt sichern</h2>' +
+      '<button class="btn" type="button" data-act="login:neu">Konto anlegen</button>' +
+      '<button class="btn ghost" type="button" data-act="login:alt">Ich habe schon eins</button>' +
+    '</div>';
+  }
+
+  return '<section class="screen">' +
+    kopfteil +
+
+    '<div class="block">' +
+      '<div class="block-head"><h2 class="sec">Neu diese Woche</h2><span class="more">'+neu.length+' Videos</span></div>' +
+      '<div class="row">'+neu.map(karte).join('')+'</div>' +
+    '</div>' +
+
+    mitte +
+
+    '<button class="wide" type="button" data-act="challenge">' +
+      '<span class="poster">'+dia('dribbling')+'<span class="badge neu">Challenge '+ch.m+'</span></span>' +
+      '<span class="body">' +
+        '<span class="t">Schlag den Coach</span>' +
+        '<p>'+h(ch.t)+'. Kader steht bei '+ch.marke+'. Zeig es ihm im nächsten Training.</p>' +
+      '</span></button>' +
+
+    '<div class="block">' +
+      '<div class="block-head"><h2 class="sec">Profi-Einheiten</h2>' +
+        '<span class="more">'+(state.pro?'Freigeschaltet':'Mit Pro')+'</span></div>' +
+      '<div class="row">'+VIDEOS.filter(function(v){return v.zg==='pro';}).map(karte).join('')+'</div>' +
+    '</div>' +
+
+    (state.pro ? '' :
+    '<button class="proband" type="button" data-act="paywall">' +
+      '<span class="note" style="color:var(--accent)">KM1 Pro</span>' +
+      '<span class="t">Die Profis.<br>Aus der Nähe.</span>' +
+      '<p>'+zaehl('pro')+' Einheiten mit aktiven Profispielern.</p>' +
+      '<span class="btn" style="pointer-events:none">Pro ansehen</span>' +
+    '</button>') +
+
+    '<button class="wide" type="button" data-act="camps">' +
+      '<span class="poster"><img src="img/goal.jpg" alt="" loading="lazy"></span>' +
+      '<span class="body">' +
+        '<span class="t">Herbstcamp Köln</span>' +
+        '<p>20. bis 24. Oktober, fünf Tage in den Herbstferien.</p>' +
+      '</span></button>' +
+
+  '</section>';
+}
+
+function screenTechnik(){
+  var liste = VIDEOS.filter(function(v){
+    if(state.kat==='profi'){ if(v.zg!=='pro') return false; }
+    else if(state.kat!=='alle' && v.k!==state.kat) return false;
+    if(state.fltLv && v.lv!==state.fltLv) return false;
+    if(state.suche && v.t.toLowerCase().indexOf(state.suche.toLowerCase())<0 && KAT[v.k].toLowerCase().indexOf(state.suche.toLowerCase())<0) return false;
+    return true;
+  });
+
+  var katChips = '<button class="chip" type="button" data-act="kat:alle" aria-pressed="'+(state.kat==='alle')+'">Alle</button>' +
+    '<button class="chip" type="button" data-act="kat:profi" aria-pressed="'+(state.kat==='profi')+'">Profi-Einheiten</button>' +
+    Object.keys(KAT).map(function(k){
+      return '<button class="chip" type="button" data-act="kat:'+k+'" aria-pressed="'+(state.kat===k)+'">'+KAT[k]+'</button>';
+    }).join('');
+
+  var lvChips = '<button class="chip lv" type="button" data-act="fltlv:0" aria-pressed="'+(state.fltLv===0)+'">Jede Ebene</button>' +
+    LEVELS.map(function(l){
+      return '<button class="chip lv" type="button" data-act="fltlv:'+l.n+'" style="--c:'+l.c+'" aria-pressed="'+(state.fltLv===l.n)+'">'+l.nm+'</button>';
+    }).join('');
+
+  return '<section class="screen">' +
+    '<div><p class="eyebrow">Videothek</p><h1 class="big">Technik</h1>' +
+    '</div>' +
+
+    '<label class="search"><span class="vh">Videos durchsuchen</span>'+ICON.such+
+      '<input id="suche" type="search" placeholder="Flanke, Dribbling, Torwart …" value="'+h(state.suche)+'"></label>' +
+
+    '<div class="block"><div class="chips">'+katChips+'</div><div class="chips">'+lvChips+'</div></div>' +
+
+    (liste.length ?
+      '<div class="grid">'+liste.map(karte).join('')+'</div>' :
+      '<div class="leer">'+ICON.such+'<p>Dazu haben wir noch nichts.</p></div>') +
+  '</section>';
+}
+
+function pyramide(){
+  var geo = [
+    {n:4, y0:0.78,  y1:17.94, x0a:33.67, x1a:66.33, x0b:26.41, x1b:73.59},
+    {n:3, y0:19.89, y1:37.05, x0a:25.58, x1a:74.42, x0b:18.32, x1b:81.68},
+    {n:2, y0:39.00, y1:56.16, x0a:17.50, x1a:82.50, x0b:10.24, x1b:89.76},
+    {n:1, y0:58.11, y1:75.27, x0a:9.41,  x1a:90.59, x0b:2.16,  x1b:97.84}
+  ];
+  /* Jede Ebene fuellt sich von unten, so weit ihr Pfad abgehakt ist.
+     Die eigene Ebene steht in voller Linie, die naechste gestrichelt:
+     angedeutet, aber noch nicht deins. */
+  var defs = '', plates = '';
+  geo.forEach(function(g){
+    var l = lvOf(g.n);
+    var an = state.lvSel===g.n, mein = drin() && state.meinLv===g.n, naechste = drin() && (state.meinLv+1)===g.n;
+    var pts = g.x0a+','+g.y0+' '+g.x1a+','+g.y0+' '+g.x1b+','+g.y1+' '+g.x0b+','+g.y1;
+    var my = g.y0 + (g.y1-g.y0)/2;
+    var f = lvFortschritt(g.n), q = drin() ? f.fertig/f.gesamt : 0;
+    var hoehe = (g.y1-g.y0)*q;
+    var yNm = drin() ? my-1.1 : my+0.4;
+    var yAg = drin() ? my+2.9 : my+4.6;
+    defs += '<clipPath id="cp'+g.n+'"><polygon points="'+pts+'"/></clipPath>';
+    plates += '<g class="plate" data-act="lv:'+g.n+'" role="button" tabindex="0" aria-label="'+l.nm+', '+l.ag+
+        (drin() ? ', '+f.fertig+' von '+f.gesamt+' Einheiten' : '')+'">' +
+      '<polygon points="'+pts+'" fill="'+l.c+'" fill-opacity="'+(an?.16:.07)+'"/>' +
+      (q>0 ? '<g clip-path="url(#cp'+g.n+')"><rect x="0" y="'+(g.y1-hoehe).toFixed(2)+
+             '" width="100" height="'+hoehe.toFixed(2)+'" fill="'+l.c+'" fill-opacity=".42"/></g>' : '') +
+      '<polygon points="'+pts+'" fill="none" stroke="'+l.c+
+        '" stroke-opacity="'+(mein?1:(an?.85:(naechste?.5:.3)))+
+        '" stroke-width="'+((mein||an)?.75:.4)+'"'+((naechste&&!an)?' stroke-dasharray="2.2 1.8"':'')+'/>' +
+      '<text class="nm" x="50" y="'+yNm+'">'+l.nm+'</text>' +
+      '<text class="ag" x="50" y="'+yAg+'">'+l.ag+'</text>' +
+      (drin() ? '<text class="fz" x="50" y="'+(my+6.7)+'">'+f.fertig+' / '+f.gesamt+'</text>' : '') +
+    '</g>';
+  });
+
+  return '<svg class="pyr" viewBox="0 0 100 78" role="img" aria-label="Die KM1-Pyramide mit vier Ebenen">' +
+    '<defs>'+defs+'</defs>' +
+    '<path class="edge" d="M33.3 0.4L1.8 76.2M66.7 0.4L98.2 76.2M1.8 76.2h96.4"/>' + plates + '</svg>';
+}
+
+function screenPyramide(){
+  var l = lvOf(state.lvSel), f = lvFortschritt(state.lvSel);
+  var anzahl = VIDEOS.filter(function(v){return v.lv===state.lvSel;}).length;
+  var pfad = PFAD[state.lvSel].map(function(u){
+    var v = byId(u.id), fertig = !!state.done[v.id];
+    return '<button class="unit" type="button" data-act="video:'+v.id+'">' +
+      '<span class="w">W'+u.w+'</span>' +
+      '<span><span class="t">'+h(v.t)+'</span><span class="s">'+KAT[v.k]+' · '+v.d+(v.zg==='pro'?' · Profi':(v.zg==='konto'?' · Konto':''))+'</span></span>' +
+      '<span class="tick '+(fertig?'on':'')+'">'+ICON.check+'</span>' +
+    '</button>';
+  }).join('');
+
+  var chip = '';
+  if(drin() && state.lvSel===state.meinLv) chip = '<span class="duchip">Du bist hier</span>';
+  else if(drin() && state.lvSel===state.meinLv+1)
+    chip = '<span class="duchip" style="background:transparent;color:var(--c);box-shadow:inset 0 0 0 1px var(--c)">Deine nächste Ebene</span>';
+
+  var pips = '';
+  for(var i=0;i<f.gesamt;i++) pips += '<i class="'+(i<f.fertig?'on':'')+'"></i>';
+
+  return '<section class="screen">' +
+    '<div><p class="eyebrow">Vier Ebenen, eine Richtung</p><h1 class="big">Die KM1-<br>Pyramide</h1>' +
+    '</div>' +
+    pyramide() +
+    '<div class="lvpanel" style="--c:'+l.c+'">' +
+      chip +
+      '<p class="note">'+l.md+' · '+l.ag+'</p>' +
+      '<p class="t">'+l.nm+' Area</p>' +
+      '<p class="sub" style="margin:0">'+l.tx+'</p>' +
+      (drin() ? '<span class="pips lvp" style="--c:'+l.c+';margin-top:4px">'+pips+'</span>' +
+                '<p class="note">'+f.fertig+' von '+f.gesamt+' Einheiten</p>' : '') +
+    '</div>' +
+    '<div class="block">' +
+      '<div class="block-head"><h2 class="sec">Dein Pfad</h2><span class="more">'+anzahl+' Videos</span></div>' +
+      '<div class="path">'+pfad+'</div>' +
+    '</div>' +
+  '</section>';
+}
+
+function darstellung(){
+  return '<div class="block">' +
+    '<h2 class="sec">Darstellung</h2>' +
+    '<div class="seg">' +
+      ['hell','dunkel','auto'].map(function(t){
+        return '<button type="button" data-act="theme:'+t+'" aria-pressed="'+(state.theme===t)+'">' +
+          (t==='hell'?'Hell':t==='dunkel'?'Dunkel':'Automatisch')+'</button>';
+      }).join('') +
+    '</div>' +
+  '</div>';
+}
+
+function screenProfil(){
+  var erledigt = Object.keys(state.done).length;
+  var frei = zaehl('offen');
+
+  if(!drin()){
+    return '<section class="screen">' +
+      '<div><p class="eyebrow">Gast</p><h1 class="big">Du schaust<br>ohne Konto zu.</h1>' +
+      '</div>' +
+      '<div class="panel">' +
+        '<p class="note">Kostenlos</p>' +
+        '<button class="btn" type="button" data-act="login:neu">Konto anlegen</button>' +
+        '<button class="btn ghost" type="button" data-act="login:alt">Anmelden</button>' +
+      '</div>' +
+      darstellung() +
+      '<div class="rows">' +
+        '<button class="lrow" type="button" data-act="erinnerung"><span>Erinnerung ans Training</span><span class="r">'+erinnerungText()+'</span></button>' +
+        '<button class="lrow" type="button" data-act="eltern"><span>Für Eltern</span><span class="r">Lesen</span></button>' +
+        '<button class="lrow" type="button" data-act="daten"><span>Datenschutz</span><span class="r">Lesen</span></button>' +
+      '</div>' +
+    '</section>';
+  }
+
+  var trainer = state.owner ?
+    '<div class="block">' +
+      '<div class="block-head"><h2 class="sec">Trainerbereich</h2><span class="more">Letzte 30 Tage</span></div>' +
+      '<button class="btn" type="button" data-act="upload">'+ICON.upl+' Video hochladen</button>' +
+      '<div class="path" style="margin-top:6px">' +
+        VIDEOS.slice().sort(function(a,b){return b.views-a.views;}).slice(0,5).map(function(v){
+          return '<div class="vid-admin"><span class="t">'+h(v.t)+'</span><span class="n">'+v.views.toLocaleString('de-DE')+'</span></div>';
+        }).join('') +
+      '</div>' +
+    '</div>' : '';
+
+  return '<section class="screen">' +
+    '<div class="coach">' +
+      '<img src="img/coach.jpg" alt="">' +
+      '<span class="n">'+h(state.konto.name)+'<span>'+lvOf(state.meinLv).nm+' · seit März 2026</span></span>' +
+    '</div>' +
+
+    '<div class="stats">' +
+      '<div class="stat"><span class="v">'+erledigt+'</span><span class="k">Übungen</span></div>' +
+      '<div class="stat"><span class="v">'+offenFuerMich()+'</span><span class="k">Videos offen</span></div>' +
+      '<div class="stat"><span class="v">6</span><span class="k">Tage Serie</span></div>' +
+    '</div>' +
+
+    (state.pro ?
+      '<div class="panel"><p class="note" style="color:var(--lv2)">KM1 Pro aktiv</p><p class="sub" style="margin:0">Verlängert sich am 18. Oktober.</p></div>' :
+      '<button class="proband" type="button" data-act="paywall">' +
+        '<span class="note" style="color:var(--accent)">KM1 Pro</span>' +
+        '<span class="t">Die Profi-Einheiten</span>' +
+        '<p>Ab 6,99 € im Monat.</p>' +
+        '<span class="btn" style="pointer-events:none">Pro ansehen</span>' +
+      '</button>') +
+
+    trainer +
+    darstellung() +
+
+    '<div class="rows">' +
+      '<button class="lrow" type="button" data-act="merkliste"><span>Merkliste</span><span class="r">'+Object.keys(state.merk).length+'</span></button>' +
+      '<button class="lrow" type="button" data-act="symbol"><span>App-Symbol</span><span class="r">'+(state.symbol==='pro'?'Flutlicht':'Standard')+'</span></button>' +
+      '<button class="lrow" type="button" data-act="erinnerung"><span>Erinnerung ans Training</span><span class="r">'+erinnerungText()+'</span></button>' +
+      '<button class="lrow" type="button" data-act="eltern"><span>Für Eltern</span><span class="r">Lesen</span></button>' +
+      '<button class="lrow" type="button" data-act="daten"><span>Datenschutz</span><span class="r">Lesen</span></button>' +
+      '<button class="lrow" type="button" data-act="logout"><span>Abmelden</span><span class="r">'+h(state.konto.vn)+'</span></button>' +
+    '</div>' +
+  '</section>';
+}
+
+/* ============================================================
+   Schiebeblaetter
+   ============================================================ */
+var stack = [], timer = null;
+
+function openSheet(html){
+  stack.push(html);
+  var s = document.getElementById('sheet');
+  s.innerHTML = html; s.hidden = false; s.scrollTop = 0;
+  s.classList.remove('on');
+  requestAnimationFrame(function(){ s.classList.add('on'); });
+}
+function closeSheet(){
+  stopPlayer();
+  stack.pop();
+  var s = document.getElementById('sheet');
+  if(!stack.length){ s.classList.remove('on'); s.hidden = true; s.innerHTML=''; return; }
+  s.innerHTML = stack[stack.length-1];
+  s.scrollTop = 0;
+}
+function refreshSheet(html){
+  stack[stack.length-1] = html;
+  var s = document.getElementById('sheet');
+  var y = s.scrollTop;
+  s.innerHTML = html;
+  s.scrollTop = y;
+}
+function kopf(titel){
+  return '<div class="sheet-head"><button class="back" type="button" data-act="back">'+ICON.back+'Zurück</button>' +
+    '<span class="note" style="margin-left:auto">'+h(titel)+'</span></div>';
+}
+
+function sheetVideo(id){
+  var v = byId(id), l = lvOf(v.lv), zu = gesperrt(v), fertig = !!state.done[v.id];
+  var gemerkt = !!state.merk[v.id];
+  state.dauer = sek(v.d);
+  var verwandt = VIDEOS.filter(function(x){return x.k===v.k && x.id!==v.id;}).slice(0,4);
+  if(!verwandt.length) verwandt = VIDEOS.filter(function(x){return x.lv===v.lv && x.id!==v.id;}).slice(0,4);
+
+  return kopf(KAT[v.k]) +
+    '<div class="sheet-body">' +
+      '<div class="player">' +
+        '<div class="poster">'+posterOf(v)+'</div>' +
+        (zu ?
+          '<button class="pbtn" type="button" data-act="'+(v.zg==='pro'?'paywall':'kontologin:'+v.id)+'">' +
+            '<span>'+ICON.lock+'</span></button>'
+          :
+          '<button class="pbtn" type="button" data-act="play" id="pbtn"><span>'+ICON.play+'</span></button>' +
+          '<div class="pctl"><span class="tm" id="ptm">0:00</span><span class="bar"><i id="pbar" data-dauer="'+sek(v.d)+'" style="width:0%"></i></span><span class="tm">'+v.d+'</span></div>'
+        ) +
+      '</div>' +
+      (zu ? '' : ptools()) +
+
+      '<div><p class="eyebrow">'+l.nm+' · '+l.ag+'</p><h1 class="big" style="font-size:25px">'+h(v.t)+'</h1></div>' +
+
+      '<div class="meta">' +
+        '<span><i class="dot" style="background:'+l.c+'"></i>Ebene '+v.lv+'</span>' +
+        '<span>'+v.d+'</span>' +
+        '<span>'+zugangName(v.zg)+'</span>' +
+        (v.gast ? '<span>Gast · '+h(v.gast)+'</span>' : '') +
+      '</div>' +
+
+      (zu ?
+        (v.zg==='pro'
+          ? '<button class="btn" type="button" data-act="paywall">Mit KM1 Pro ansehen</button>'
+          : '<button class="btn" type="button" data-act="kontologin:'+v.id+'">Kostenloses Konto anlegen</button>')
+        :
+        '<p class="prose">'+h(v.be)+'</p>' +
+        '<div class="block"><h2 class="sec">So geht’s</h2>' +
+          '<ol class="steps">'+v.st.map(function(s){return '<li>'+h(s)+'</li>';}).join('')+'</ol>' +
+        '</div>' +
+        '<div class="callout"><span class="h">Häufiger Fehler</span><p>'+h(v.fe)+'</p></div>' +
+        '<div class="aktionen">' +
+          '<button class="btn '+(fertig?'done':'')+'" type="button" data-act="check:'+v.id+'">' +
+            (fertig ? ICON.check+' Auf dem Platz geschafft' : 'Übung abhaken') +
+          '</button>' +
+          '<button class="btn ghost merk'+(gemerkt?' an':'')+'" type="button" data-act="merk:'+v.id+'"' +
+            ' aria-pressed="'+gemerkt+'" aria-label="'+(gemerkt?'Aus der Merkliste nehmen':'Auf die Merkliste')+'">' +
+            ICON.herz+'</button>' +
+        '</div>' +
+        '<div class="coach"><img src="img/coach.jpg" alt=""><span class="n">' +
+          (v.gast ? h(v.gast)+'<span>Zu Gast bei KM1</span>' : 'Kader<span>Gründer und Trainer</span>') +
+        '</span></div>'
+      ) +
+
+      '<div class="block">' +
+        '<div class="block-head"><h2 class="sec">Passt dazu</h2></div>' +
+        '<div class="row">'+verwandt.map(karte).join('')+'</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function sheetChallenge(){
+  var c = CHALLENGES[0], fertig = !!state.done['challenge-'+c.m];
+  state.dauer = 72;
+  return kopf('Challenge') +
+    '<div class="sheet-body">' +
+      '<div class="player">' +
+        '<div class="poster">'+dia('dribbling')+'</div>' +
+        '<button class="pbtn" type="button" data-act="play" id="pbtn"><span>'+ICON.play+'</span></button>' +
+        '<div class="pctl"><span class="tm" id="ptm">0:00</span><span class="bar"><i id="pbar" data-dauer="72" style="width:0%"></i></span><span class="tm">1:12</span></div>' +
+      '</div>' +
+      ptools() +
+
+      '<div><p class="eyebrow">Challenge im '+c.m+'</p><h1 class="big">Schlag den Coach</h1></div>' +
+      '<p class="prose">'+h(c.be)+'</p>' +
+
+      '<div class="marke">' +
+        '<span class="z">'+c.marke+'</span>' +
+        '<span class="w"><b>'+h(c.t)+'</b>Kaders Marke · '+c.eh+'</span>' +
+      '</div>' +
+
+      '<div class="block"><h2 class="sec">So zählt es</h2>' +
+        '<ol class="steps">'+c.rg.map(function(r){return '<li>'+h(r)+'</li>';}).join('')+'</ol>' +
+      '</div>' +
+
+      '<button class="btn '+(fertig?'done':'')+'" type="button" data-act="check:challenge-'+c.m+'">' +
+        (fertig ? ICON.check+' Geschafft, zeig es im Training' : 'Ich hab’s geschafft') +
+      '</button>' +
+
+      '<div class="block">' +
+        '<div class="block-head"><h2 class="sec">Frühere Challenges</h2></div>' +
+        '<div class="path">' + CHALLENGES.slice(1).map(function(x){
+          return '<div class="unit"><span class="w">'+x.m.slice(0,3)+'</span>' +
+            '<span><span class="t">'+h(x.t)+'</span><span class="s">Kader: '+x.marke+' '+x.eh+'</span></span><span></span></div>';
+        }).join('') + '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function sheetLogin(grund){
+  var neu = state.loginModus === 'neu';
+  return kopf(neu ? 'Konto anlegen' : 'Anmelden') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">'+(neu?'Kostenlos':'Willkommen zurück')+'</p>' +
+      '<h1 class="big">'+(neu?'Konto anlegen':'Anmelden')+'</h1>' +
+      '</div>' +
+
+      '<div class="seg">' +
+        '<button type="button" data-act="lmodus:neu" aria-pressed="'+neu+'">Neu hier</button>' +
+        '<button type="button" data-act="lmodus:alt" aria-pressed="'+(!neu)+'">Ich habe ein Konto</button>' +
+      '</div>' +
+
+      (neu ? '<div class="field"><label for="lg-name">Vorname</label><input id="lg-name" type="text" placeholder="Luis"></div>' : '') +
+      '<div class="field"><label for="lg-mail">E-Mail</label><input id="lg-mail" type="email" placeholder="name@beispiel.de"></div>' +
+      '<div class="field"><label for="lg-pw">Passwort</label><input id="lg-pw" type="password" placeholder="mindestens 8 Zeichen"></div>' +
+
+      '<button class="btn" type="button" data-act="signin">'+(neu?'Konto anlegen':'Anmelden')+'</button>' +
+      '<button class="btn ghost" type="button" data-act="signin">'+ICON.apple+' Mit Apple anmelden</button>' +
+      '<button class="btn ghost" type="button" data-act="back">Weiter ohne Konto</button>' +
+
+      '<p class="fine">Für Kinder unter 16 Jahren legen die Eltern das Konto an.</p>' +
+    '</div>';
+}
+
+var TAGE = [['mo','Mo'],['di','Di'],['mi','Mi'],['do','Do'],['fr','Fr'],['sa','Sa'],['so','So']];
+function tagName(k){var t=TAGE.filter(function(x){return x[0]===k;})[0];return t?t[1]:k;}
+function erinnerungText(){
+  var e = state.erinnerung;
+  if(!e.an || !e.tage.length) return 'Aus';
+  return e.tage.map(tagName).join(' + ')+', '+e.zeit;
+}
+
+/* Der Elternbereich. Andere Leserichtung als der Rest der App:
+   hier steht Sie, nicht du, denn hier liest jemand anderes mit. */
+function sheetEltern(){
+  var akt = drin() ? byId('erste-beruehrung') : null;
+  return kopf('Für Eltern') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Für Eltern</p><h1 class="big">Was Ihr Kind<br>hier übt.</h1></div>' +
+      '<p class="prose">KM1 ersetzt kein Vereinstraining. Die App füllt die Lücke dazwischen: die zwanzig Minuten am Mittwoch im Hof, nach denen eine Sache sitzt, für die im Mannschaftstraining keine Zeit war.</p>' +
+
+      (akt ?
+      '<div class="panel">' +
+        '<p class="note">Gerade dran</p>' +
+        '<p class="sub" style="margin:0;color:var(--ink);font-size:15px">'+h(akt.t)+'</p>' +
+        '<p class="sub" style="margin:0">Warum das zählt: Wer den Ball sauber mitnimmt, hat im Spiel eine halbe Sekunde mehr Zeit. Diese halbe Sekunde ist der Unterschied zwischen abspielen und verlieren.</p>' +
+      '</div>' : '') +
+
+      '<div class="block"><h2 class="sec">Wie viel Zeit sinnvoll ist</h2>' +
+        '<ul class="ticks">' +
+          ['15 bis 20 Minuten am Stück, zwei- bis dreimal die Woche.',
+           'Lieber kurz und regelmäßig als einmal eine Stunde am Sonntag.',
+           'Ein Ball und zehn Quadratmeter reichen. Ein Hinterhof tut es.'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+
+      '<div class="block"><h2 class="sec">Wobei Sie helfen können</h2>' +
+        '<ul class="ticks">' +
+          ['Zählen lassen statt korrigieren. Ihr Kind merkt selbst, wann es sitzt.',
+           'Einmal zuschauen, wenn es etwas zeigen will. Mehr Motivation gibt es nicht.',
+           'Hinterher fragen, was geklappt hat, nicht was schiefging.'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+
+      '<div class="callout stille"><span class="h">Kein Ort zum Verweilen</span>' +
+        '<p>Die App hat keine Endlosliste und kein Video, das von allein weiterläuft. Wer eine Übung gesehen hat, soll rausgehen, nicht weiterscrollen.</p></div>' +
+
+      '<div class="block"><h2 class="sec">Was wir speichern</h2>' +
+        '<ul class="ticks">' +
+          ['E-Mail und Vorname, damit das Konto existiert.',
+           'Welche Übungen abgehakt sind, und wo ein Video stehen geblieben ist.',
+           'Sonst nichts: kein Tracking, keine Werbung, keine Weitergabe an Dritte.'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul>' +
+        '<div class="rows"><button class="lrow" type="button" data-act="loeschen">' +
+          '<span>Konto und alle Daten löschen</span><span class="r">Sofort</span></button></div>' +
+      '</div>' +
+
+      '<div class="block"><h2 class="sec">Was kostet was</h2>' +
+        '<ul class="ticks">' +
+          ['Ohne Anmeldung: '+zaehl('offen')+' Videos, sofort, ohne E-Mail.',
+           'Mit kostenlosem Konto: '+zaehl('konto')+' weitere Videos und der gespeicherte Fortschritt.',
+           'KM1 PRO, 6,99 € im Monat: die '+zaehl('pro')+' Einheiten mit Profispielern. Sonst nichts kostenpflichtig.',
+           'Abrechnung über den App Store, kündbar mit einem Tipp.'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul>' +
+        '<p class="fine">Der Kauf läuft über Ihre Apple-ID. Ihr Kind kann nichts kaufen, ohne dass Sie es freigeben. Für Kinder unter 16 Jahren legen Sie das Konto an.</p>' +
+      '</div>' +
+    '</div>';
+}
+
+/* Erinnerung. Zwei Mitteilungen in der Woche, an den Trainingstagen. */
+function sheetErinnerung(){
+  var e = state.erinnerung;
+  var zeiten = ['15:00','16:00','16:30','17:00','17:30','18:00','19:00'];
+  return kopf('Erinnerung') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Zwei mal die Woche</p><h1 class="big">Erinnerung<br>ans Training</h1>' +
+      '</div>' +
+
+      '<div class="push">' +
+        '<span class="ic"><img src="'+symbolDatei()+'" alt=""></span>' +
+        '<span class="tx"><span class="h"><span>KM1 Training</span><span>'+h(e.zeit)+'</span></span>' +
+        '<span class="b">Heute ist Trainingstag. Die erste Berührung wartet, vier Minuten.</span></span>' +
+      '</div>' +
+
+      '<div class="field"><label>Erinnerung</label>' +
+        '<div class="seg">' +
+          '<button type="button" data-act="eran:1" aria-pressed="'+e.an+'">An</button>' +
+          '<button type="button" data-act="eran:0" aria-pressed="'+(!e.an)+'">Aus</button>' +
+        '</div></div>' +
+
+      '<div class="field"><label>An diesen Tagen</label>' +
+        '<div class="days">'+TAGE.map(function(t){
+          return '<button class="day" type="button" data-act="ertag:'+t[0]+'" aria-pressed="'+(e.tage.indexOf(t[0])>=0)+'">'+t[1]+'</button>';
+        }).join('')+'</div></div>' +
+
+      '<div class="field"><label for="er-zeit">Uhrzeit</label>' +
+        '<select id="er-zeit">'+zeiten.map(function(z){
+          return '<option value="'+z+'"'+(z===e.zeit?' selected':'')+'>'+z+'</option>';
+        }).join('')+'</select></div>' +
+
+      '<button class="btn" type="button" data-act="ersave">Erinnerung speichern</button>' +
+    '</div>';
+}
+
+function sheetMerk(){
+  var liste = VIDEOS.filter(function(v){return state.merk[v.id];});
+  return kopf('Merkliste') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Für später</p><h1 class="big">Merkliste</h1></div>' +
+      (liste.length
+        ? '<div class="grid">'+liste.map(karte).join('')+'</div>'
+        : '<div class="leer">'+ICON.herz+'<p>Noch nichts gemerkt.</p></div>') +
+    '</div>';
+}
+
+function sheetCamp(){
+  return kopf('Camp') +
+    '<div class="sheet-body">' +
+      '<div class="player"><div class="poster"><img src="img/goal.jpg" alt=""></div></div>' +
+      '<div><p class="eyebrow">Herbstferien</p><h1 class="big">Herbstcamp<br>Köln</h1></div>' +
+      '<div class="meta"><span>20. bis 24. Oktober</span><span>U8 bis U15</span><span>9 bis 16 Uhr</span></div>' +
+      '<p class="prose">Fünf Tage am Stück auf dem Platz. Vormittags Technik in kleinen Gruppen, nachmittags Spielformen, am letzten Tag ein Turnier mit allen Eltern an der Linie.</p>' +
+      '<div class="block"><h2 class="sec">Was dabei ist</h2>' +
+        '<ul class="ticks">' +
+          ['Training in Gruppen von höchstens zehn Kindern',
+           'Mittagessen und Getränke an allen fünf Tagen',
+           'Ein KM1-Trikot, das bleibt',
+           'Abschlussturnier am Freitag mit Urkunde'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+      '<a class="btn" href="https://km1-training.de" target="_blank" rel="noopener">Auf die Warteliste</a>' +
+    '</div>';
+}
+
+function sheetDaten(){
+  return kopf('Datenschutz') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Ohne Juristendeutsch</p><h1 class="big">Deine Daten</h1></div>' +
+      '<div class="block"><h2 class="sec">Was wir speichern</h2>' +
+        '<ul class="ticks">' +
+          ['E-Mail und Vorname, damit dein Konto existiert',
+           'Welche Übungen du abgehakt hast und wo ein Video stehen geblieben ist',
+           'Ob dein Abo läuft'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+      '<div class="block"><h2 class="sec">Was wir nicht tun</h2>' +
+        '<ul class="ticks">' +
+          ['Kein Tracking, keine Werbenetzwerke',
+           'Keine Weitergabe an Dritte',
+           'Keine Auswertung, wer wie oft welches Video schaut'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+      '<div class="rows"><button class="lrow" type="button" data-act="loeschen">' +
+        '<span>Konto und alle Daten löschen</span><span class="r">Sofort</span></button></div>' +
+      '<p class="fine">Die vollständige Datenschutzerklärung steht auf km1-training.de.</p>' +
+    '</div>';
+}
+
+function symbolDatei(){
+  return state.symbol==='pro' ? 'img/app-symbol-pro.png' : 'img/app-symbol.png';
+}
+function sheetSymbol(){
+  var zu = !state.pro;
+  function wahl(id, datei, nm, unter, gesperrt){
+    return '<button class="sym" type="button" data-act="sym:'+id+'" aria-pressed="'+(state.symbol===id)+'">' +
+      '<span class="bild"><img src="'+datei+'" alt="">' +
+        (gesperrt ? '<span class="schloss">'+ICON.lock+'</span>' : '') +
+      '</span>' +
+      '<span class="nm">'+nm+'</span><span class="zu">'+unter+'</span>' +
+    '</button>';
+  }
+  return kopf('App-Symbol') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Auf dem Startbildschirm</p><h1 class="big">Dein Symbol</h1>' +
+      '</div>' +
+
+      '<div class="symwahl">' +
+        wahl('standard','img/app-symbol.png','Standard','Für alle', false) +
+        wahl('pro','img/app-symbol-pro.png','Flutlicht', zu ? 'Mit KM1 Pro' : 'Freigeschaltet', zu) +
+      '</div>' +
+
+      (zu ? '<button class="btn" type="button" data-act="paywall">Pro ansehen</button>' : '') +
+
+    '</div>';
+}
+
+function sheetPaywall(){
+  var jahr = state.preis==='jahr';
+  return kopf('KM1 Pro') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Sieben Tage gratis</p><h1 class="big">Die Profis.<br>Aus der Nähe.</h1></div>' +
+      '<ul class="ticks">' +
+        ['Alle '+zaehl('pro')+' Einheiten mit Profispielern',
+         'Jeden Monat eine neue Einheit mit einem neuen Gast',
+         'Jede Übung Schritt für Schritt, in Zeitlupe zum Nachmachen',
+         'Früher Zugang zu Camps und Challenges'
+        ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+      '</ul>' +
+      '<div class="prices">' +
+        '<button class="price" type="button" data-act="preis:monat" aria-pressed="'+(!jahr)+'">' +
+          '<span class="k">Monatlich</span><span class="p">6,99 €</span><span class="k">pro Monat</span></button>' +
+        '<button class="price" type="button" data-act="preis:jahr" aria-pressed="'+jahr+'">' +
+          '<span class="k">Jährlich</span><span class="p">59,00 €</span><span class="x">2 Monate geschenkt</span></button>' +
+      '</div>' +
+      '<button class="btn" type="button" data-act="buy">'+(drin()?'7 Tage gratis testen':'Konto anlegen und testen')+'</button>' +
+      '<p class="fine">Abrechnung über deine Apple-ID, jederzeit kündbar.</p>' +
+      '<button class="btn ghost" type="button" data-act="eltern">Für Eltern</button>' +
+      '<button class="btn ghost" type="button" data-act="restore">Kauf wiederherstellen</button>' +
+    '</div>';
+}
+
+function sheetUpload(){
+  var u = state.up;
+  return kopf('Nur KM1') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Trainerbereich</p><h1 class="big">Neues Video</h1>' +
+      '</div>' +
+
+      '<button class="drop '+(u.datei?'has':'')+'" type="button" data-act="pickfile">' +
+        ICON.upl +
+        '<span class="h">'+(u.datei ? h(u.datei) : 'Video auswählen')+'</span>' +
+        '<span class="s">'+(u.datei ? '248 MB · 1080p · bereit' : 'MP4 oder MOV, bis 2 GB')+'</span>' +
+      '</button>' +
+
+      '<div class="field"><label for="up-titel">Titel</label>' +
+        '<input id="up-titel" type="text" placeholder="z. B. Die Flanke mit der Innenseite"></div>' +
+
+      '<div class="field"><label for="up-kat">Kategorie</label>' +
+        '<select id="up-kat">'+Object.keys(KAT).map(function(k){return '<option value="'+k+'">'+KAT[k]+'</option>';}).join('')+'</select></div>' +
+
+      '<div class="field"><label>Ebene</label>' +
+        '<div class="seg">'+LEVELS.map(function(l){
+          return '<button class="lv" type="button" data-act="uplv:'+l.n+'" style="--c:'+l.c+'" aria-pressed="'+(u.lv===l.n)+'">'+l.n+'</button>';
+        }).join('')+'</div></div>' +
+
+      '<div class="field"><label>Sichtbar für</label>' +
+        '<div class="seg">' +
+          '<button type="button" data-act="upvis:offen" aria-pressed="'+(u.vis==='offen')+'">Alle</button>' +
+          '<button type="button" data-act="upvis:konto" aria-pressed="'+(u.vis==='konto')+'">Mit Konto</button>' +
+          '<button type="button" data-act="upvis:pro" aria-pressed="'+(u.vis==='pro')+'">Profi (Abo)</button>' +
+        '</div></div>' +
+
+      (u.vis==='pro' ?
+      '<div class="field"><label for="up-gast">Gast vor der Kamera</label>' +
+        '<input id="up-gast" type="text" placeholder="z. B. Profi, 2. Bundesliga"></div>' : '') +
+
+      '<div class="field"><label for="up-be">Worum geht es</label>' +
+        '<textarea id="up-be" placeholder="Zwei Sätze, die ein Kind versteht."></textarea></div>' +
+
+      '<div class="bar" id="up-bar" hidden><i style="width:0%"></i></div>' +
+      '<button class="btn" type="button" data-act="publish" id="up-go">Veröffentlichen</button>' +
+    '</div>';
+}
+
+/* ============================================================
+   Player, Attrappe mit ehrlichem Etikett
+   ============================================================ */
+function stopPlayer(){ if(timer){ clearInterval(timer); timer=null; } }
+
+/* Zeitlupe und fuenf Sekunden zurueck. Fuer Technikvideos die beiden
+   Knoepfe, die wirklich zaehlen: eine Bewegung dreimal langsam sehen. */
+function ptools(){
+  return '<div class="ptools">' +
+    '<button class="ptool" type="button" data-act="rew">'+ICON.rew+'5 Sekunden</button>' +
+    '<button class="ptool" type="button" data-act="tempo" aria-pressed="'+(state.tempo!==1)+'">' +
+      'Tempo <span class="tv">'+tempoLabel()+'</span></button>' +
+  '</div>';
+}
+function dauerJetzt(){
+  var bar = document.getElementById('pbar');
+  return (bar && +bar.getAttribute('data-dauer')) || state.dauer;
+}
+function setzeZeit(p){
+  var bar = document.getElementById('pbar'), tm = document.getElementById('ptm');
+  if(!bar) return;
+  bar.style.width = p+'%';
+  if(tm) tm.textContent = fmtZeit(p/100*dauerJetzt());
+}
+function playToggle(){
+  var bar = document.getElementById('pbar'), btn = document.getElementById('pbtn');
+  if(!bar) return;
+  if(timer){ stopPlayer(); btn.innerHTML = '<span>'+ICON.play+'</span>'; return; }
+  btn.innerHTML = '<span>'+ICON.pause+'</span>';
+  timer = setInterval(function(){
+    var p = (parseFloat(bar.style.width) || 0) + 1.2*state.tempo;
+    if(p >= 100){ p = 100; stopPlayer(); if(btn) btn.innerHTML = '<span>'+ICON.play+'</span>'; }
+    setzeZeit(p);
+  }, 120);
+}
+
+/* ============================================================
+   Zeichnen
+   ============================================================ */
+function applyTheme(){
+  var t = state.theme, dunkel;
+  if(t === 'auto'){
+    dunkel = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  } else {
+    dunkel = (t === 'dunkel');
+  }
+  document.documentElement.setAttribute('data-theme', dunkel ? 'dark' : 'light');
+}
+function renderTabs(){
+  var t = [
+    ['start','Start',ICON.tabStart],['technik','Technik',ICON.tabTech],
+    ['pyramide','Pyramide',ICON.tabPyr],['profil','Profil',ICON.tabProf]
+  ];
+  document.getElementById('tabs').innerHTML = t.map(function(x){
+    return '<button class="tab" type="button" data-act="tab:'+x[0]+'"'+(state.tab===x[0]?' aria-current="page"':'')+'>' +
+      '<span class="ti">'+x[2]+'</span><span>'+x[1]+'</span></button>';
+  }).join('');
+}
+function render(){
+  var s = {start:screenStart, technik:screenTechnik, pyramide:screenPyramide, profil:screenProfil}[state.tab];
+  document.getElementById('screens').innerHTML = s();
+  renderTabs();
+  var chip = document.getElementById('lvchip');
+  if(drin()){
+    var l = lvOf(state.meinLv);
+    chip.innerHTML = '<i style="background:'+l.c+'"></i>'+l.nm;
+  } else {
+    chip.innerHTML = '<i style="background:var(--ink-3)"></i>Gast';
+  }
+}
+var toastT = null;
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ t.classList.remove('on'); }, 2300);
+}
+function anmelden(name){
+  state.konto = {name: name || 'Luis M.', vn: (name || 'Luis M.').split(' ')[0]};
+  if(!Object.keys(state.done).length){
+    state.done = {'erste-beruehrung':1, 'flacher-pass':1, 'abstoppen':1, 'flanke-innen':1};
+  }
+}
+
+/* ============================================================
+   Ein Klickfaenger fuer alles
+   ============================================================ */
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-act]');
+  if(!b) return;
+  var a = b.getAttribute('data-act'), i = a.indexOf(':');
+  var k = i<0 ? a : a.slice(0,i), v = i<0 ? '' : a.slice(i+1);
+
+  if(k==='tab'){ state.tab = v; while(stack.length) closeSheet(); render(); }
+  else if(k==='video'){ openSheet(sheetVideo(v)); }
+  else if(k==='back'){ closeSheet(); }
+  else if(k==='challenge'){ openSheet(sheetChallenge()); }
+  else if(k==='paywall'){ openSheet(sheetPaywall()); }
+  else if(k==='preis'){ state.preis = v; refreshSheet(sheetPaywall()); }
+  else if(k==='login'){ state.loginModus = (v==='alt') ? 'alt' : 'neu'; openSheet(sheetLogin()); }
+  else if(k==='kontologin'){
+    state.nachLogin = 'video:'+v; state.loginModus = 'neu';
+    openSheet(sheetLogin('Dieses Video gehört zu den '+zaehl('konto')+', für die ein kostenloses Konto reicht.'));
+  }
+  else if(k==='lmodus'){ state.loginModus = v; refreshSheet(sheetLogin()); }
+  else if(k==='signin'){
+    var nm = (document.getElementById('lg-name')||{}).value;
+    var mail = (document.getElementById('lg-mail')||{}).value || '';
+    /* Die Trainerrolle haengt am Konto, nicht an einem Schalter. */
+    var trainer = /kader|km1-training/i.test(mail);
+    state.owner = trainer;
+    anmelden(trainer ? 'Kader' : (nm && nm.trim() ? nm.trim() : 'Luis M.'));
+    closeSheet();
+    var n = state.nachLogin; state.nachLogin = null;
+    render();
+    if(n && n.indexOf('check:')===0){
+      var cid = n.slice(6);
+      state.done[cid] = 1; render();
+      if(stack.length) refreshSheet(cid.indexOf('challenge-')===0 ? sheetChallenge() : sheetVideo(cid));
+      toast('Angemeldet. Abgehakt.');
+    }
+    else if(n && n.indexOf('video:')===0){
+      var vid = n.slice(6);
+      if(stack.length) refreshSheet(sheetVideo(vid)); else openSheet(sheetVideo(vid));
+      toast('Angemeldet, Video ist offen');
+    }
+    else if(n === 'pro'){ openSheet(sheetPaywall()); toast('Angemeldet'); }
+    else toast('Angemeldet');
+  }
+  else if(k==='logout'){
+    state.konto = null; state.pro = false; state.owner = false; state.done = {};
+    state.symbol = 'standard'; state.merk = {};
+    render(); toast('Abgemeldet');
+  }
+  else if(k==='buy'){
+    if(!drin()){ state.nachLogin = 'pro'; state.loginModus='neu'; openSheet(sheetLogin('Für ein Abo braucht es ein Konto, sonst weiß niemand, wem PRO gehört.')); return; }
+    state.pro = true;
+    while(stack.length) closeSheet();
+    render(); toast('KM1 Pro ist aktiv');
+  }
+  else if(k==='check'){
+    if(!drin()){
+      state.nachLogin = 'check:'+v; state.loginModus='neu';
+      openSheet(sheetLogin('Damit dein Fortschritt gespeichert wird, brauchst du ein Konto.'));
+      return;
+    }
+    if(state.done[v]) delete state.done[v]; else state.done[v] = 1;
+    var istCh = v.indexOf('challenge-')===0;
+    refreshSheet(istCh ? sheetChallenge() : sheetVideo(v));
+    toast(state.done[v] ? 'Abgehakt. Stark.' : 'Haken entfernt');
+  }
+  else if(k==='play'){ playToggle(); }
+  else if(k==='rew'){
+    var bp = document.getElementById('pbar');
+    if(bp){ setzeZeit(Math.max(0, (parseFloat(bp.style.width)||0) - (5/dauerJetzt()*100))); toast('5 Sekunden zurück'); }
+  }
+  else if(k==='tempo'){
+    state.tempo = state.tempo===1 ? 0.75 : (state.tempo===0.75 ? 0.5 : 1);
+    b.setAttribute('aria-pressed', String(state.tempo!==1));
+    var tv = b.querySelector('.tv');
+    if(tv) tv.textContent = tempoLabel();
+    toast(state.tempo===1 ? 'Normales Tempo' : 'Zeitlupe '+tempoLabel());
+  }
+  else if(k==='eltern'){ openSheet(sheetEltern()); }
+  else if(k==='symbol'){ openSheet(sheetSymbol()); }
+  else if(k==='merkliste'){ openSheet(sheetMerk()); }
+  else if(k==='merk'){
+    if(!drin()){
+      state.nachLogin = 'video:'+v; state.loginModus = 'neu';
+      openSheet(sheetLogin('Damit deine Merkliste erhalten bleibt, brauchst du ein Konto.'));
+      return;
+    }
+    if(state.merk[v]) delete state.merk[v]; else state.merk[v] = 1;
+    refreshSheet(sheetVideo(v));
+    toast(state.merk[v] ? 'Gemerkt' : 'Aus der Merkliste genommen');
+  }
+  else if(k==='daten'){ openSheet(sheetDaten()); }
+  else if(k==='loeschen'){ toast('Wir schicken dir eine E-Mail zur Bestätigung'); }
+  else if(k==='restore'){ toast('Keine früheren Käufe gefunden'); }
+  else if(k==='sym'){
+    if(v==='pro' && !state.pro){ openSheet(sheetPaywall()); return; }
+    state.symbol = v;
+    refreshSheet(sheetSymbol());
+    toast(v==='pro' ? 'Symbol: Flutlicht' : 'Symbol: Standard');
+  }
+  else if(k==='erinnerung'){ openSheet(sheetErinnerung()); }
+  else if(k==='eran'){ state.erinnerung.an = (v==='1'); refreshSheet(sheetErinnerung()); }
+  else if(k==='ertag'){
+    var ix = state.erinnerung.tage.indexOf(v);
+    if(ix>=0) state.erinnerung.tage.splice(ix,1); else state.erinnerung.tage.push(v);
+    state.erinnerung.tage.sort(function(x,y){
+      return TAGE.map(function(t){return t[0];}).indexOf(x) - TAGE.map(function(t){return t[0];}).indexOf(y);
+    });
+    refreshSheet(sheetErinnerung());
+  }
+  else if(k==='ersave'){
+    var z = document.getElementById('er-zeit');
+    if(z) state.erinnerung.zeit = z.value;
+    if(state.erinnerung.an && !state.erinnerung.tage.length){ toast('Wähl mindestens einen Tag'); return; }
+    closeSheet(); render();
+    toast(state.erinnerung.an ? 'Erinnerung: '+erinnerungText() : 'Erinnerung aus');
+  }
+  else if(k==='lv'){ state.lvSel = +v; render(); }
+  else if(k==='kat'){ state.kat = v; render(); }
+  else if(k==='fltlv'){ state.fltLv = +v; render(); }
+  else if(k==='theme'){ state.theme = v; applyTheme(); render(); }
+  else if(k==='upload'){ openSheet(sheetUpload()); }
+  else if(k==='pickfile'){ state.up.datei = 'flanke-innenseite-2026.mp4'; refreshSheet(sheetUpload()); }
+  else if(k==='uplv'){ state.up.lv = +v; refreshSheet(sheetUpload()); }
+  else if(k==='upvis'){ state.up.vis = v; refreshSheet(sheetUpload()); }
+  else if(k==='publish'){ publish(); }
+  else if(k==='camps'){ openSheet(sheetCamp()); }
+});
+
+document.addEventListener('keydown', function(e){
+  var g = e.target.closest && e.target.closest('.plate');
+  if(g && (e.key==='Enter' || e.key===' ')){ e.preventDefault(); g.click(); }
+});
+
+document.addEventListener('input', function(e){
+  if(e.target.id==='suche'){
+    state.suche = e.target.value;
+    var pos = e.target.selectionStart;
+    render();
+    var f = document.getElementById('suche');
+    if(f){ f.focus(); try{ f.setSelectionRange(pos,pos); }catch(err){} }
+  }
+});
+
+if(window.matchMedia){
+  try{
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){
+      if(state.theme==='auto') applyTheme();
+    });
+  }catch(err){}
+}
+
+function publish(){
+  var u = state.up;
+  var titel = (document.getElementById('up-titel')||{}).value || '';
+  if(!u.datei){ toast('Erst ein Video auswählen'); return; }
+  if(!titel.trim()){ toast('Der Titel fehlt'); return; }
+  if(u.busy) return;
+  u.busy = true;
+
+  var bar = document.getElementById('up-bar'), go = document.getElementById('up-go');
+  bar.hidden = false;
+  go.textContent = 'Lädt hoch …';
+  var p = 0;
+  var t = setInterval(function(){
+    p += 7;
+    if(p >= 100){
+      clearInterval(t); u.busy = false;
+      VIDEOS.unshift({
+        id:'neu-'+Date.now(), t:titel.trim(),
+        k:(document.getElementById('up-kat')||{}).value || 'dribbling',
+        lv:u.lv, d:'0:00', zg:u.vis, neu:true, views:0,
+        gast:(u.vis==='pro' ? ((document.getElementById('up-gast')||{}).value || 'Gastspieler') : null),
+        be:(document.getElementById('up-be')||{}).value || 'Noch keine Beschreibung.',
+        st:['Schritte ergänzt Kader nach dem Upload.'],
+        fe:'Wird nachgetragen.'
+      });
+      var war = u.vis;
+      state.up = {datei:null, lv:1, vis:'offen', busy:false};
+      state.tab = 'technik'; state.kat = 'alle'; state.fltLv = 0; state.suche = '';
+      while(stack.length) closeSheet();
+      render();
+      toast(war==='pro' ? 'Veröffentlicht als Profi-Einheit' :
+            (war==='konto' ? 'Veröffentlicht, sichtbar mit Konto' : 'Veröffentlicht, sichtbar für alle'));
+      return;
+    }
+    bar.firstElementChild.style.width = p+'%';
+  }, 120);
+}
+
+/* Die Kopfzeile legt sich erst in den Schatten, wenn etwas darunter
+   weggescrollt ist. Kleinigkeit, aber genau daran erkennt das Auge
+   eine App und keine Webseite. */
+(function(){
+  var sc = document.getElementById('screens'), ab = document.querySelector('.appbar');
+  if(!sc || !ab) return;
+  sc.addEventListener('scroll', function(){
+    ab.classList.toggle('scrolled', sc.scrollTop > 4);
+  }, {passive:true});
+})();
+
+applyTheme();
+render();
+</script>
+
+<script>
+/* Legt die App ins Regal, damit sie beim naechsten Mal auch ohne Netz startet. */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
