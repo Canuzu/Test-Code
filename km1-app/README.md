@@ -12,6 +12,7 @@ Hochladen darf ausschließlich der KM1-Account, alle anderen sehen nur zu.
 | `icon/` | App-Symbol und Markenbilder, dazu `bauen.py`, das sie aus dem Logo erzeugt |
 | `artefakt.py` | Macht aus `app/` die Fassung für die Vorschau auf claude.ai |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, App Store |
+| `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
 
 ## Auf dem Handy installieren
 
