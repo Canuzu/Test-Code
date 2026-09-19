@@ -164,9 +164,10 @@ Vertrauen. (1 Tag, plus deine Texte)
 - **Ein Begrüßungsablauf.** Drei Fragen beim ersten Start: wie alt, welche
   Position, wie oft in der Woche. Danach ist die Startseite passend gefüllt
   statt für alle gleich. Ohne Konto, rein auf dem Gerät. *(KONZEPT §12)*
-- **Haptik.** Kurzes Vibrieren beim Abhaken, beim Sprung im Video, beim
-  Ebenenaufstieg. Kostet eine Stunde Arbeit und lässt die App doppelt so teuer
-  wirken.
+- **Haptik.** ~~Kurzes Vibrieren beim Abhaken, beim Sprung im Video, beim
+  Ebenenaufstieg.~~ **Erledigt** — acht Muster, siehe KONZEPT §11. Im Web nur
+  auf Android zu spüren; auf dem iPhone erst in der echten App, dort dafür
+  besser als auf jedem Android-Gerät.
 
 ---
 

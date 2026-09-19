@@ -550,11 +550,35 @@ Systemeinstellung, die `expo-haptics` von sich aus beachtet. Ein zweiter
 Schalter wäre eine Einstellung mehr, die erklärt werden will, und würde die
 Systemeinstellung am Ende doch nicht überstimmen.
 
-Im Prototyp ist das nur zur Hälfte zu spüren: `navigator.vibrate` kennt
-Android, iOS Safari nicht. Für iOS liegt ein Versuch über einen versteckten
-Schalter im Formular drin, den Safari ab 17.4 antippen lässt — der gibt aber
-nur einen einzelnen Tick her, keine Muster. Erst die echte App spricht die
-Taptic Engine direkt an.
+### Warum das im Web nur auf Android zu spüren ist
+
+`navigator.vibrate` hat WebKit nie eingebaut. Da jeder Browser auf dem iPhone
+WebKit benutzt, gibt es auf iOS keine Vibration aus einer Webseite — auch nicht
+in Chrome oder Firefox, und auch nicht in einer installierten Web-App.
+
+Es gab einen Umweg: Safari 17.4 brachte `<input type="checkbox" switch>`, und
+das Umlegen dieses Schalters klopft. Ruft man den Klick über sein Label aus dem
+Skript auf, klopft es auch — das war bis **iOS 26.4** so. Mit **iOS 26.5** hat
+Apple das zugemacht; seitdem zählt nur noch ein echter Fingertipp auf den
+Schalter selbst.
+
+Der Aufruf bleibt im Prototyp stehen, weil er nichts kostet und auf älteren
+Geräten hilft. Er gibt ohnehin nur einen einzelnen Tick her, keine Muster.
+
+Es gibt noch einen Rest-Umweg: einen unsichtbaren Schalter unter jedes
+antippbare Element legen, damit iOS den Tipp als echte Bedienung eines
+Schalters liest. **Davon rate ich ab.** Er liefert weiterhin nur einen
+einzigen Tick statt acht Mustern, er funktioniert nur bei direkten Tipps — der
+Rand der Zeitleiste, der nachgeholte Haken nach der Anmeldung und das fertige
+Hochladen fallen raus —, er legt unsichtbare Bedienelemente unter die
+Oberfläche, die dem Screenreader und der Fingersteuerung des Players in die
+Quere kommen, und Apple hat bereits einmal gezeigt, dass es diesen Weg
+schließt.
+
+**In der echten App ist nichts davon ein Thema.** `expo-haptics` spricht die
+Taptic Engine direkt an, und die ist feiner als jeder Vibrationsmotor in einem
+Android-Gerät: Die App wird sich am Ende auf dem iPhone am besten anfühlen,
+nur eben nicht im Browser.
 
 ## 12. Vorschläge, noch offen
 
