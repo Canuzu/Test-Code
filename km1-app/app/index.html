@@ -1878,12 +1878,17 @@ function sheetUpload(){
    Was oefter als ein paarmal pro Minute vorkommt, schweigt: Tabs,
    Blaetter, Filter, Play. Und nie zwei Impulse fuer eine Handlung.
 
-   Im Web ist das die halbe Miete: navigator.vibrate kennt Android,
-   iOS Safari nicht. Fuer iOS steht unten ein Versuch ueber einen
-   versteckten Schalter, der je nach Fassung greift und nur einen
-   einzelnen Tick hergibt. Die echte App nimmt expo-haptics und
-   spricht die Taptic Engine direkt an; die Zuordnung steht in
-   KONZEPT.md.
+   Im Web laeuft das nur auf Android: navigator.vibrate hat WebKit nie
+   eingebaut, und damit kennt es kein Browser auf dem iPhone. Unten
+   steht ein Versuch ueber einen versteckten Schalter — der greift auf
+   iOS 17.4 bis 26.4 und gibt auch dort nur einen einzelnen Tick her.
+   Seit iOS 26.5 klopft nur noch ein echter Fingertipp auf den Schalter
+   selbst, nicht mehr ein click() aus dem Skript.
+
+   Verloren ist der Entwurf deshalb nicht, im Gegenteil: die echte App
+   nimmt expo-haptics und spricht die Taptic Engine direkt an, und die
+   ist praeziser als jeder Vibrationsmotor in einem Android-Geraet.
+   Welches Muster auf welchen Aufruf geht, steht in KONZEPT.md.
    ============================================================ */
 var MUSTER = {
   tick:     [7],                  /* rasten, wie ein Schieberegler */
@@ -1907,9 +1912,11 @@ function haptik(name){
   }catch(e){}
   iosImpuls();
 }
-/* Safari ab 17.4 kennt den Schalter im Formular und laesst ihn
-   klopfen. Gibt es ihn nicht, bleibt es still — ohne Ersatzanzeige,
-   denn ein Impuls, den man sieht, ist keiner. */
+/* Safari 17.4 bis 26.4 laesst den Schalter im Formular klopfen, wenn
+   der Klick ueber sein Label laeuft. Ab 26.5 hat Apple das zugemacht.
+   Der Aufruf bleibt trotzdem stehen: er kostet nichts, schadet nichts
+   und hilft auf aelteren Geraeten. Gibt es ihn nicht, bleibt es still —
+   ohne Ersatzanzeige, denn ein Impuls, den man sieht, ist keiner. */
 var iosSchalter;
 function iosImpuls(){
   if(iosSchalter === false) return;
