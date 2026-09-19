@@ -5,7 +5,9 @@
     python3 bauen.py --entwuerfe     # zusaetzlich die drei Entwuerfe von der Auswahl
 
 Gewaehlt ist: heller Grund, Figur in Schwarz. Das ist das gedruckte Logo
-als Symbol.
+als Symbol. Dazu ein zweites Symbol fuer Abonnenten: die Flutlichtnacht
+der Marke, Figur in Weiss. Beide liegen in der App, umgeschaltet wird zur
+Laufzeit.
 
 Der Weg in drei Schritten:
 1. Die Spielerfigur aus dem Logo herausloesen. Sie ist der groesste
@@ -27,6 +29,9 @@ ROT = (200, 30, 20)
 WEISS = (255, 255, 255)
 GRUND_INNEN = (252, 253, 251)
 GRUND_AUSSEN = (224, 232, 222)
+NACHT_INNEN = (26, 45, 37)
+NACHT_AUSSEN = (4, 10, 8)
+HELL = (244, 247, 243)
 
 
 # ---------------------------------------------------------------- Grundlagen
@@ -156,6 +161,11 @@ def grundflaeche(groesse=S):
     return radial(groesse, GRUND_INNEN, GRUND_AUSSEN)
 
 
+def nachtflaeche(groesse=S):
+    g = radial(groesse, NACHT_INNEN, NACHT_AUSSEN, cx=.34, cy=.24, r=1.05)
+    return schein(g, .22, .14, .85, (226, 240, 232), 30)
+
+
 def paket(logo):
     figur = silhouette(logo)
     figur.save('spieler-glatt.png')
@@ -185,6 +195,20 @@ def paket(logo):
               (int(48 - w / 2), int(48 - h / 2)), m)
     mit.save('android-mitteilung-96.png')
 
+    # 3b. Das zweite Symbol, nur fuer Abonnenten: die Flutlichtnacht.
+    pro = platziere(nachtflaeche(), figur, HELL, schatten=120, versatz=18, weich=30)
+    pro = vignette(pro, 44)
+    pro.save('km1-symbol-pro-1024.png')
+    pro.resize((512, 512), Image.LANCZOS).save('km1-symbol-pro-512.png')
+
+    nachtflaeche().save('android-hintergrund-pro-1024.png')
+    vorder_pro = Image.new('RGBA', (S, S), (0, 0, 0, 0))
+    h = int(S * HOEHE_ADAPTIV); w = int(figur.width * h / figur.height)
+    m = figur.resize((w, h), Image.LANCZOS)
+    vorder_pro.paste(Image.new('RGBA', (w, h), HELL + (255,)),
+                     (int(S * .5 - w / 2), int(S * .5 - h / 2)), m)
+    vorder_pro.save('android-vordergrund-pro-1024.png')
+
     # 4. Die Wortmarke freigestellt, schwarz und weiss.
     wm = wortmarke(logo)
     fuer_hell = Image.new('RGBA', wm.size, (0, 0, 0, 0))
@@ -205,16 +229,14 @@ def paket(logo):
         sb.paste(farbe, (int(bw / 2 - breite / 2), int(bh / 2 - hoehe / 2)), mm)
         sb.save(name)
 
-    print('Paket gebaut: Symbol, Android-Schichten, Mitteilung, Wortmarken, Startbildschirm.')
+    print('Paket gebaut: zwei Symbole, Android-Schichten, Mitteilung,')
+    print('Wortmarken und Startbildschirm.')
 
 
 def entwuerfe(logo):
-    """Die drei Entwuerfe, ueber die entschieden wurde."""
+    """Die Entwuerfe, ueber die entschieden wurde. A ist inzwischen das
+    PRO-Symbol, siehe paket()."""
     figur = silhouette(logo)
-    a = radial(S, (26, 45, 37), (4, 10, 8), cx=.34, cy=.24, r=1.05)
-    a = schein(a, .22, .14, .85, (226, 240, 232), 30)
-    vignette(platziere(a, figur, (244, 247, 243), schatten=120, versatz=18, weich=30), 44).save('entwurf-a-flutlicht-1024.png')
-
     b = diagonal(S, (219, 42, 30), (146, 16, 10))
     b = schein(b, .26, .18, .8, WEISS, 26)
     vignette(platziere(b, figur, WEISS, schatten=70, versatz=16, weich=26), 30).save('entwurf-b-koeln-1024.png')

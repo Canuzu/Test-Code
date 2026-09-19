@@ -687,6 +687,28 @@ h2.sec{
 .push .h{font-size:12.5px;font-weight:700;color:var(--ink-2);display:flex;justify-content:space-between;gap:10px}
 .push .b{font-size:15px;line-height:1.4;margin:4px 0 0;color:var(--ink);font-weight:500}
 
+/* Die Symbolwahl. Das zweite Symbol gehoert zum Abo und ist das
+   Einzige daran, was man auf dem Startbildschirm sieht. */
+.symwahl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.sym{
+  display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 14px;
+  border-radius:var(--r-card);background:var(--surface);
+  box-shadow:var(--e1),var(--edge);
+  transition:box-shadow .3s var(--ease),transform .3s var(--spring);
+}
+.sym:active{transform:scale(.98)}
+.sym[aria-pressed="true"]{box-shadow:var(--e2),inset 0 0 0 2px var(--accent)}
+.sym .bild{position:relative;width:88px;height:88px;border-radius:22.37%;overflow:hidden;box-shadow:var(--e2)}
+.sym .bild img{width:100%;height:100%;object-fit:cover;display:block}
+.sym .nm{font-size:15.5px;font-weight:700;line-height:1.2}
+.sym .zu{font-size:12.5px;font-weight:600;color:var(--ink-2);margin-top:-6px}
+.sym[aria-pressed="true"] .zu{color:var(--accent)}
+.sym .schloss{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(3,7,6,.46);border-radius:inherit;
+}
+.sym .schloss svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2}
+
 .days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
 .day{
   min-height:48px;border-radius:12px;background:var(--surface);color:var(--ink-2);
@@ -1006,7 +1028,7 @@ var state = {
   meinLv:1, lvSel:1,
   kat:'alle', fltLv:0, suche:'',
   done:{}, preis:'jahr', nachLogin:null, loginModus:'neu',
-  tempo:1, dauer:444,
+  tempo:1, dauer:444, symbol:'standard',
   erinnerung:{an:true, tage:['mi','sa'], zeit:'17:00'},
   up:{datei:null, lv:1, vis:'offen', busy:false}
 };
@@ -1374,6 +1396,7 @@ function screenProfil(){
 
     '<div class="rows">' +
       '<button class="lrow" type="button" data-act="bald"><span>Merkliste</span><span class="r">3</span></button>' +
+      '<button class="lrow" type="button" data-act="symbol"><span>App-Symbol</span><span class="r">'+(state.symbol==='pro'?'Flutlicht':'Standard')+'</span></button>' +
       '<button class="lrow" type="button" data-act="erinnerung"><span>Erinnerung ans Training</span><span class="r">'+erinnerungText()+'</span></button>' +
       '<button class="lrow" type="button" data-act="eltern"><span>Für Eltern</span><span class="r">Lesen</span></button>' +
       '<button class="lrow" type="button" data-act="bald"><span>Datenschutz</span><span class="r">Öffnen</span></button>' +
@@ -1619,7 +1642,7 @@ function sheetErinnerung(){
       '<p class="sub">An deinen Trainingstagen eine kurze Mitteilung. Mehr nicht, und jederzeit wieder aus.</p></div>' +
 
       '<div class="push">' +
-        '<span class="ic"><img src="img/app-symbol.png" alt=""></span>' +
+        '<span class="ic"><img src="'+symbolDatei()+'" alt=""></span>' +
         '<span class="tx"><span class="h"><span>KM1 Training</span><span>'+h(e.zeit)+'</span></span>' +
         '<span class="b">Heute ist Trainingstag. Die erste Berührung wartet, vier Minuten.</span></span>' +
       '</div>' +
@@ -1642,6 +1665,38 @@ function sheetErinnerung(){
 
       '<button class="btn" type="button" data-act="ersave">Erinnerung speichern</button>' +
       '<p class="fine">Beim ersten Mal fragt dein Handy, ob KM1 dir Mitteilungen schicken darf. Sagst du nein, bleibt der Rest der App unverändert. Die Erinnerung liegt auf dem Gerät, wir schicken nichts über einen Server.</p>' +
+    '</div>';
+}
+
+function symbolDatei(){
+  return state.symbol==='pro' ? 'img/app-symbol-pro.png' : 'img/app-symbol.png';
+}
+function sheetSymbol(){
+  var zu = !state.pro;
+  function wahl(id, datei, nm, unter, gesperrt){
+    return '<button class="sym" type="button" data-act="sym:'+id+'" aria-pressed="'+(state.symbol===id)+'">' +
+      '<span class="bild"><img src="'+datei+'" alt="">' +
+        (gesperrt ? '<span class="schloss">'+ICON.lock+'</span>' : '') +
+      '</span>' +
+      '<span class="nm">'+nm+'</span><span class="zu">'+unter+'</span>' +
+    '</button>';
+  }
+  return kopf('App-Symbol') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Auf dem Startbildschirm</p><h1 class="big">Dein Symbol</h1>' +
+      '<p class="sub">Das Symbol der App lässt sich wechseln. Die Flutlicht-Fassung gehört zu KM1 PRO — und sie ist das Einzige am Abo, das man jedes Mal sieht, wenn man das Handy entsperrt.</p></div>' +
+
+      '<div class="symwahl">' +
+        wahl('standard','img/app-symbol.png','Standard','Für alle', false) +
+        wahl('pro','img/app-symbol-pro.png','Flutlicht', zu ? 'Mit KM1 Pro' : 'Freigeschaltet', zu) +
+      '</div>' +
+
+      '<div class="callout stille"><span class="h">Was beim Wechsel passiert</span>' +
+        '<p>Dein Handy zeigt einmal kurz einen Hinweis, dass die App ihr Symbol geändert hat. Das gehört zum System und lässt sich nicht abschalten. Danach steht das neue Symbol auf dem Startbildschirm, bis du es wieder wechselst.</p></div>' +
+
+      (zu ? '<button class="btn" type="button" data-act="paywall">Pro ansehen</button>' : '') +
+
+      '<p class="fine">Endet das Abo, stellt die App wieder auf das Standard-Symbol zurück. Beide Symbole sind in der App enthalten, es wird nichts nachgeladen.</p>' +
     '</div>';
 }
 
@@ -1850,7 +1905,11 @@ document.addEventListener('click', function(e){
     else if(n === 'pro'){ openSheet(sheetPaywall()); toast('Angemeldet'); }
     else toast('Angemeldet');
   }
-  else if(k==='logout'){ state.konto = null; state.pro = false; state.owner = false; state.done = {}; render(); toast('Abgemeldet'); }
+  else if(k==='logout'){
+    state.konto = null; state.pro = false; state.owner = false; state.done = {};
+    state.symbol = 'standard';
+    render(); toast('Abgemeldet');
+  }
   else if(k==='buy'){
     if(!drin()){ state.nachLogin = 'pro'; state.loginModus='neu'; openSheet(sheetLogin('Für ein Abo braucht es ein Konto, sonst weiß niemand, wem PRO gehört.')); return; }
     state.pro = true;
@@ -1881,6 +1940,13 @@ document.addEventListener('click', function(e){
     toast(state.tempo===1 ? 'Normales Tempo' : 'Zeitlupe '+tempoLabel());
   }
   else if(k==='eltern'){ openSheet(sheetEltern()); }
+  else if(k==='symbol'){ openSheet(sheetSymbol()); }
+  else if(k==='sym'){
+    if(v==='pro' && !state.pro){ openSheet(sheetPaywall()); return; }
+    state.symbol = v;
+    refreshSheet(sheetSymbol());
+    toast(v==='pro' ? 'Symbol: Flutlicht' : 'Symbol: Standard');
+  }
   else if(k==='erinnerung'){ openSheet(sheetErinnerung()); }
   else if(k==='eran'){ state.erinnerung.an = (v==='1'); refreshSheet(sheetErinnerung()); }
   else if(k==='ertag'){
@@ -1923,6 +1989,7 @@ document.addEventListener('click', function(e){
   else if(k==='toggle-pro'){
     if(!state.pro && !drin()) anmelden('Luis M.');
     state.pro = !state.pro;
+    if(!state.pro) state.symbol = 'standard';
     if(stack.length) refreshSheet(stack[stack.length-1]);
     render(); toast(state.pro ? 'Pro aktiv' : 'Pro aus');
   }

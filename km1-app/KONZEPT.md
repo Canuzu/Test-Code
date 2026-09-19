@@ -247,6 +247,32 @@ einmal schreibt, muss es halten, sonst kündigen die Leute im dritten Monat.
 Sicherer, solange die Reihe jung ist: "regelmäßig neue Einheiten" und dann
 lieber öfter liefern als angekündigt.
 
+### Das zweite Symbol
+
+Abonnenten können das App-Symbol auf die Flutlichtnacht umstellen: weiße Figur
+auf tiefem Grün-Schwarz statt schwarzer Figur auf Hell. Es ist das Einzige am
+Abo, das man jedes Mal sieht, wenn man das Handy entsperrt — und damit die
+billigste Belohnung im ganzen Paket.
+
+**Auf dem iPhone** ist das vorgesehen und seit iOS 10.3 möglich. Beide Symbole
+werden mit der App ausgeliefert, nachladen geht nicht. Ein Haken: iOS zeigt bei
+jedem Wechsel einen Systemhinweis, der sich nicht abschalten lässt. Deshalb
+wechselt die App nur, wenn sich wirklich etwas geändert hat, und nicht bei
+jedem Start.
+
+**Auf Android** gibt es dafür keinen offiziellen Weg. Man legt das zweite
+Symbol als weitere Startadresse an und schaltet zwischen beiden um. Das
+funktioniert, beendet die App dabei aber kurz, und manche Startbildschirme
+aktualisieren erst verzögert. Vorschlag: zuerst nur auf dem iPhone.
+
+**Wenn das Abo endet**, stellt die App beim nächsten Start auf das
+Standard-Symbol zurück. Sonst behielte jemand nach der Kündigung ein Abzeichen,
+das er nicht mehr hat.
+
+Technisch braucht es in Expo ein kleines Zusatzstück, das die Einträge in die
+iOS-Konfiguration schreibt, und einen eigenen Entwicklungs-Build — in Expo Go
+läuft es nicht. Die Dateien liegen fertig in `km1-app/icon/`.
+
 ## 6. Das Designsystem
 
 Die App soll aussehen wie eine App, die man im Store kauft, nicht wie ein

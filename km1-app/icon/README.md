@@ -9,6 +9,10 @@ statt 142 Pixeln.
 | `km1-symbol-1024.png` | App Store, Expo `icon` | 1024 × 1024 |
 | `km1-symbol-512.png` | Play-Store-Eintrag | 512 × 512 |
 | `km1-symbol-48.png` | Web, Lesezeichen | 48 × 48 |
+| `km1-symbol-pro-1024.png` | zweites Symbol für Abonnenten | 1024 × 1024 |
+| `km1-symbol-pro-512.png` | dasselbe für Play | 512 × 512 |
+| `android-vordergrund-pro-1024.png` | adaptives PRO-Symbol, Figur | 1024 × 1024, transparent |
+| `android-hintergrund-pro-1024.png` | adaptives PRO-Symbol, Grund | 1024 × 1024 |
 | `android-vordergrund-1024.png` | adaptives Symbol, Figur | 1024 × 1024, transparent |
 | `android-hintergrund-1024.png` | adaptives Symbol, Grund | 1024 × 1024 |
 | `android-mitteilung-96.png` | Statusleiste Android | 96 × 96, weiß auf transparent |
