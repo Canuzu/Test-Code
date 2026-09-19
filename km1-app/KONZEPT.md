@@ -460,14 +460,27 @@ echten App bedeuten:
 
 ### Zeitlupe und fünf Sekunden zurück
 
-Unter dem Video zwei Knöpfe: *5 Sekunden* springt zurück, *Tempo* schaltet
-zwischen 1×, 0,75× und 0,5×. Für Technikvideos die einzigen zwei Knöpfe, die
-wirklich zählen — eine Bewegung dreimal langsam sehen, ohne auf der Zeitleiste
-herumzutippen.
+Bedient wird das Video so, wie man es von YouTube kennt, ohne zusätzliche
+Knopfreihe darunter:
+
+- **Doppeltipp links** springt fünf Sekunden zurück, **Doppeltipp rechts** fünf
+  Sekunden vor. Eine kurze Anzeige blitzt auf, damit der Sprung sichtbar ist.
+- **Einfacher Tipp** in die Mitte hält an und spielt weiter.
+- Die **Zeitleiste lässt sich ziehen**, mit Finger oder Maus, von Minute 7 auf
+  Minute 1 in einer Bewegung.
+- **Vollbild** über den Knopf rechts in der Leiste. Steht das Handy hochkant,
+  legt die App das Bild selbst quer — der Sperrbefehl fürs Display greift in
+  installierten Web-Apps nicht zuverlässig, eine Drehung im Layout dagegen
+  immer.
+- Das **Tempo** sitzt im Vollbild, nicht auf der Videoseite: 0,25× bis 1,5×.
+  Wer eine Bewegung dreimal langsam sehen will, ist ohnehin im Vollbild.
+- Im Vollbild zieht sich die Bedienung nach gut zwei Sekunden zurück, ein Tipp
+  holt sie wieder.
 
 Technisch geschenkt: `expo-video` setzt Abspielrate und Position direkt, auch
-bei HLS. Die gewählte Geschwindigkeit bleibt über Videos hinweg stehen; wer
-einmal Zeitlupe will, will sie meistens wieder.
+bei HLS; die Doppeltipp-Flächen und die Zeitleiste sind eigene Bedienelemente
+über dem Bild. Die gewählte Geschwindigkeit bleibt über Videos hinweg stehen;
+wer einmal Zeitlupe will, will sie meistens wieder.
 
 ### Elternbereich
 
