@@ -516,6 +516,46 @@ Push-Zertifikate, kein Konto nötig. Wichtig für die Prüfung und für die Nerv
 der Nutzer: die Erlaubnis wird erst gefragt, wenn jemand die Erinnerung
 einschaltet, nicht beim ersten Start.
 
+### Haptik
+
+Zwei Regeln stehen über allem:
+
+1. **Ein Impuls bestätigt, was passiert ist — er schmückt nicht.** Was öfter
+   als ein paarmal pro Minute vorkommt, schweigt: Tabs, Blätter, Zurück,
+   Filter, Play und Pause. Dadurch bleibt Vibrieren etwas Besonderes und heißt
+   immer dasselbe: du hast etwas geschafft, oder hier geht es nicht weiter.
+2. **Nie zwei Impulse für eine Handlung.** Wer ohne Konto abhakt, stößt an die
+   Schranke, meldet sich an und hakt dadurch ab, spürt genau einen Impuls —
+   den für das, was er wollte, nicht den fürs Anmelden.
+
+Acht Muster, mehr braucht es nicht:
+
+| Muster | Wofür | `expo-haptics` |
+| --- | --- | --- |
+| `tick` | Zeitleiste anfassen und loslassen, Tempo wählen | `selectionAsync()` |
+| `leicht` | Sprung um fünf Sekunden, Merken, Hell/Dunkel, Symbol, Haken entfernen | `impactAsync(Light)` |
+| `mittel` | Vollbild auf und zu | `impactAsync(Medium)` |
+| `wand` | Gesperrtes Video, Abo-Schranke, Anfang oder Ende der Zeitleiste | `impactAsync(Rigid)` |
+| `erfolg` | Abhaken, Anmelden, Video veröffentlicht | `notificationAsync(Success)` |
+| `serie` | Erster Haken des Tages | `Success` + `impactAsync(Medium)` nach 120 ms |
+| `aufstieg` | Ebenenaufstieg, Abo abgeschlossen | `Light`, `Light`, `Heavy` im Abstand von 110 ms |
+| `fehler` | Formular unvollständig | `notificationAsync(Error)` |
+
+Die Schranke stößt an, sie schimpft nicht: `Rigid` fühlt sich an wie eine Wand,
+der Warnimpuls des Systems wie ein Tadel. Bei einer App für Kinder ist das der
+Unterschied zwischen „hier geht's weiter, wenn du willst" und „falsch".
+
+**Kein eigener Schalter im Profil.** iOS und Android haben eine
+Systemeinstellung, die `expo-haptics` von sich aus beachtet. Ein zweiter
+Schalter wäre eine Einstellung mehr, die erklärt werden will, und würde die
+Systemeinstellung am Ende doch nicht überstimmen.
+
+Im Prototyp ist das nur zur Hälfte zu spüren: `navigator.vibrate` kennt
+Android, iOS Safari nicht. Für iOS liegt ein Versuch über einen versteckten
+Schalter im Formular drin, den Safari ab 17.4 antippen lässt — der gibt aber
+nur einen einzelnen Tick her, keine Muster. Erst die echte App spricht die
+Taptic Engine direkt an.
+
 ## 12. Vorschläge, noch offen
 
 Sortiert nach Verhältnis von Nutzen zu Aufwand. Keiner davon ist beschlossen.

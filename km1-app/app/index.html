@@ -1099,7 +1099,7 @@ var state = {
   meinLv:1, lvSel:1,
   kat:'alle', fltLv:0, suche:'',
   done:{}, preis:'jahr', nachLogin:null, loginModus:'neu',
-  tempo:1, symbol:'standard', merk:{},
+  tempo:1, symbol:'standard', merk:{}, serieHeute:0,
   erinnerung:{an:true, tage:['mi','sa'], zeit:'17:00'},
   up:{datei:null, lv:1, vis:'offen', busy:false}
 };
@@ -1873,6 +1873,62 @@ function sheetUpload(){
 }
 
 /* ============================================================
+   Haptik.
+   Ein Impuls bestaetigt, was passiert ist — er schmueckt nicht.
+   Was oefter als ein paarmal pro Minute vorkommt, schweigt: Tabs,
+   Blaetter, Filter, Play. Und nie zwei Impulse fuer eine Handlung.
+
+   Im Web ist das die halbe Miete: navigator.vibrate kennt Android,
+   iOS Safari nicht. Fuer iOS steht unten ein Versuch ueber einen
+   versteckten Schalter, der je nach Fassung greift und nur einen
+   einzelnen Tick hergibt. Die echte App nimmt expo-haptics und
+   spricht die Taptic Engine direkt an; die Zuordnung steht in
+   KONZEPT.md.
+   ============================================================ */
+var MUSTER = {
+  tick:     [7],                  /* rasten, wie ein Schieberegler */
+  leicht:   [14],                 /* verstanden */
+  mittel:   [24],                 /* Zustand gewechselt */
+  wand:     [30],                 /* hier geht es nicht weiter */
+  erfolg:   [16, 45, 26],         /* geschafft */
+  serie:    [14, 40, 14, 40, 28], /* erster Haken des Tages */
+  aufstieg: [14, 55, 14, 55, 40], /* leicht, leicht, kraeftig */
+  fehler:   [22, 70, 22]          /* so nicht */
+};
+var letzterImpuls = 0;
+function haptik(name){
+  var m = MUSTER[name];
+  if(!m) return;
+  var jetzt = Date.now();
+  if(jetzt - letzterImpuls < 60) return;   /* zwei Impulse stapeln sich nicht */
+  letzterImpuls = jetzt;
+  try{
+    if(navigator.vibrate){ navigator.vibrate(m); return; }
+  }catch(e){}
+  iosImpuls();
+}
+/* Safari ab 17.4 kennt den Schalter im Formular und laesst ihn
+   klopfen. Gibt es ihn nicht, bleibt es still — ohne Ersatzanzeige,
+   denn ein Impuls, den man sieht, ist keiner. */
+var iosSchalter;
+function iosImpuls(){
+  if(iosSchalter === false) return;
+  if(!iosSchalter){
+    var feld = document.createElement('input');
+    feld.type = 'checkbox';
+    if(!('switch' in feld)){ iosSchalter = false; return; }
+    feld.setAttribute('switch', '');
+    var huelle = document.createElement('label');
+    huelle.setAttribute('aria-hidden', 'true');
+    huelle.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden';
+    huelle.appendChild(feld);
+    document.body.appendChild(huelle);
+    iosSchalter = huelle;
+  }
+  try{ iosSchalter.click(); }catch(e){}
+}
+
+/* ============================================================
    Der Player.
    Noch ohne echte Datei: die Leiste laeuft, das Standbild bleibt
    stehen. Bedient wird er wie gewohnt — Doppeltipp links und rechts
@@ -1964,7 +2020,10 @@ function spiele(an){
 
 function springe(sek){
   if(!P.id) return;
+  var vorher = P.sek;
   P.sek = Math.max(0, Math.min(P.dauer, P.sek + sek));
+  /* Steht die Zeit schon am Rand, spuert man die Wand statt des Sprungs. */
+  haptik(P.sek === vorher ? 'wand' : 'leicht');
   zeigeSprung(sek < 0 ? 'links' : 'rechts');
   zeichnePlayer();
 }
@@ -2005,6 +2064,9 @@ function scrubZu(e, sc){
   var quer = !!(sc.closest && sc.closest('.dreh.quer'));
   var roh = quer ? (e.clientY - r.top) / r.height : (e.clientX - r.left) / r.width;
   var pr = Math.max(0, Math.min(1, roh));
+  /* Am Anfang und am Ende einmal anstossen, nicht dauernd. */
+  if(pr === 0 || pr === 1){ if(P.rand !== pr){ P.rand = pr; haptik('wand'); } }
+  else P.rand = null;
   P.sek = pr * P.dauer;
   zeichnePlayer();
 }
@@ -2013,6 +2075,7 @@ function scrubZu(e, sc){
 function kinoAuf(){
   if(!P.id || P.kino) return;
   P.kino = true;
+  haptik('mittel');
   var el = document.createElement('div');
   el.className = 'kino'; el.id = 'kino';
   el.innerHTML =
@@ -2051,6 +2114,7 @@ function drehAnpassen(){
   }
 }
 function kinoZu(){
+  if(P.kino) haptik('mittel');
   window.removeEventListener('resize', drehAnpassen);
   var el = document.getElementById('kino');
   if(el){ el.classList.remove('an'); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 240); }
@@ -2083,6 +2147,8 @@ document.addEventListener('pointerdown', function(e){
   var sc = e.target.closest && e.target.closest('[data-scrub]');
   if(!sc) return;
   P.zieht = sc;
+  P.rand = null;
+  haptik('tick');
   try{ sc.setPointerCapture(e.pointerId); }catch(err){}
   scrubZu(e, sc);
   steuerungZeigen();
@@ -2092,7 +2158,7 @@ document.addEventListener('pointermove', function(e){
   if(P.zieht) scrubZu(e, P.zieht);
 });
 document.addEventListener('pointerup', function(e){
-  if(P.zieht){ P.zieht = null; ruhePlanen(); return; }
+  if(P.zieht){ P.zieht = null; haptik('tick'); ruhePlanen(); return; }
   var z = e.target.closest && e.target.closest('[data-zone]');
   if(z) zonenTipp(z.getAttribute('data-zone'));
 });
@@ -2159,10 +2225,11 @@ document.addEventListener('click', function(e){
   else if(k==='video'){ openSheet(sheetVideo(v)); }
   else if(k==='back'){ closeSheet(); }
   else if(k==='challenge'){ openSheet(sheetChallenge()); }
-  else if(k==='paywall'){ openSheet(sheetPaywall()); }
+  else if(k==='paywall'){ haptik('wand'); openSheet(sheetPaywall()); }
   else if(k==='preis'){ state.preis = v; refreshSheet(sheetPaywall()); }
   else if(k==='login'){ state.loginModus = (v==='alt') ? 'alt' : 'neu'; openSheet(sheetLogin()); }
   else if(k==='kontologin'){
+    haptik('wand');
     state.nachLogin = 'video:'+v; state.loginModus = 'neu';
     openSheet(sheetLogin('Dieses Video gehört zu den '+zaehl('konto')+', für die ein kostenloses Konto reicht.'));
   }
@@ -2177,19 +2244,25 @@ document.addEventListener('click', function(e){
     closeSheet();
     var n = state.nachLogin; state.nachLogin = null;
     render();
+    /* Anmelden und der aufgeschobene Haken sind ein Vorgang, nicht zwei:
+       es gibt einen Impuls, und zwar den fuer das, was der Nutzer wollte. */
     if(n && n.indexOf('check:')===0){
       var cid = n.slice(6);
-      state.done[cid] = 1; render();
+      state.done[cid] = 1;
+      haptik(state.serieHeute ? 'erfolg' : 'serie');
+      state.serieHeute = 1;
+      render();
       if(stack.length) refreshSheet(cid.indexOf('challenge-')===0 ? sheetChallenge() : sheetVideo(cid));
       toast('Angemeldet. Abgehakt.');
     }
     else if(n && n.indexOf('video:')===0){
+      haptik('erfolg');
       var vid = n.slice(6);
       if(stack.length) refreshSheet(sheetVideo(vid)); else openSheet(sheetVideo(vid));
       toast('Angemeldet, Video ist offen');
     }
-    else if(n === 'pro'){ openSheet(sheetPaywall()); toast('Angemeldet'); }
-    else toast('Angemeldet');
+    else if(n === 'pro'){ haptik('erfolg'); openSheet(sheetPaywall()); toast('Angemeldet'); }
+    else { haptik('erfolg'); toast('Angemeldet'); }
   }
   else if(k==='logout'){
     state.konto = null; state.pro = false; state.owner = false; state.done = {};
@@ -2197,18 +2270,29 @@ document.addEventListener('click', function(e){
     render(); toast('Abgemeldet');
   }
   else if(k==='buy'){
-    if(!drin()){ state.nachLogin = 'pro'; state.loginModus='neu'; openSheet(sheetLogin('Für ein Abo braucht es ein Konto, sonst weiß niemand, wem PRO gehört.')); return; }
+    if(!drin()){ haptik('wand'); state.nachLogin = 'pro'; state.loginModus='neu'; openSheet(sheetLogin('Für ein Abo braucht es ein Konto, sonst weiß niemand, wem PRO gehört.')); return; }
     state.pro = true;
+    haptik('aufstieg');          /* Ein Kauf muss ankommen */
     while(stack.length) closeSheet();
     render(); toast('KM1 Pro ist aktiv');
   }
   else if(k==='check'){
     if(!drin()){
+      haptik('wand');
       state.nachLogin = 'check:'+v; state.loginModus='neu';
       openSheet(sheetLogin('Damit dein Fortschritt gespeichert wird, brauchst du ein Konto.'));
       return;
     }
-    if(state.done[v]) delete state.done[v]; else state.done[v] = 1;
+    if(state.done[v]){
+      delete state.done[v];
+      haptik('leicht');          /* Rueckgaengig ist keine Belohnung */
+    } else {
+      state.done[v] = 1;
+      /* Der erste Haken des Tages traegt die Serie. Hier im Entwurf
+         zaehlt der erste seit dem Start, spaeter der erste im Kalendertag. */
+      haptik(state.serieHeute ? 'erfolg' : 'serie');
+      state.serieHeute = 1;
+    }
     var istCh = v.indexOf('challenge-')===0;
     refreshSheet(istCh ? sheetChallenge() : sheetVideo(v));
     toast(state.done[v] ? 'Abgehakt. Stark.' : 'Haken entfernt');
@@ -2222,6 +2306,7 @@ document.addEventListener('click', function(e){
   }
   else if(k==='tempowahl'){
     state.tempo = parseFloat(v);
+    haptik('tick');              /* rastet wie ein Rad */
     var li2 = document.getElementById('tempoliste');
     if(li2){
       li2.hidden = true;
@@ -2238,11 +2323,13 @@ document.addEventListener('click', function(e){
   else if(k==='merkliste'){ openSheet(sheetMerk()); }
   else if(k==='merk'){
     if(!drin()){
+      haptik('wand');
       state.nachLogin = 'video:'+v; state.loginModus = 'neu';
       openSheet(sheetLogin('Damit deine Merkliste erhalten bleibt, brauchst du ein Konto.'));
       return;
     }
     if(state.merk[v]) delete state.merk[v]; else state.merk[v] = 1;
+    haptik('leicht');
     refreshSheet(sheetVideo(v));
     toast(state.merk[v] ? 'Gemerkt' : 'Aus der Merkliste genommen');
   }
@@ -2250,13 +2337,14 @@ document.addEventListener('click', function(e){
   else if(k==='loeschen'){ toast('Wir schicken dir eine E-Mail zur Bestätigung'); }
   else if(k==='restore'){ toast('Keine früheren Käufe gefunden'); }
   else if(k==='sym'){
-    if(v==='pro' && !state.pro){ openSheet(sheetPaywall()); return; }
+    if(v==='pro' && !state.pro){ haptik('wand'); openSheet(sheetPaywall()); return; }
     state.symbol = v;
+    haptik('leicht');
     refreshSheet(sheetSymbol());
     toast(v==='pro' ? 'Symbol: Flutlicht' : 'Symbol: Standard');
   }
   else if(k==='erinnerung'){ openSheet(sheetErinnerung()); }
-  else if(k==='eran'){ state.erinnerung.an = (v==='1'); refreshSheet(sheetErinnerung()); }
+  else if(k==='eran'){ state.erinnerung.an = (v==='1'); haptik('leicht'); refreshSheet(sheetErinnerung()); }
   else if(k==='ertag'){
     var ix = state.erinnerung.tage.indexOf(v);
     if(ix>=0) state.erinnerung.tage.splice(ix,1); else state.erinnerung.tage.push(v);
@@ -2268,14 +2356,14 @@ document.addEventListener('click', function(e){
   else if(k==='ersave'){
     var z = document.getElementById('er-zeit');
     if(z) state.erinnerung.zeit = z.value;
-    if(state.erinnerung.an && !state.erinnerung.tage.length){ toast('Wähl mindestens einen Tag'); return; }
+    if(state.erinnerung.an && !state.erinnerung.tage.length){ haptik('fehler'); toast('Wähl mindestens einen Tag'); return; }
     closeSheet(); render();
     toast(state.erinnerung.an ? 'Erinnerung: '+erinnerungText() : 'Erinnerung aus');
   }
   else if(k==='lv'){ state.lvSel = +v; render(); }
   else if(k==='kat'){ state.kat = v; render(); }
   else if(k==='fltlv'){ state.fltLv = +v; render(); }
-  else if(k==='theme'){ state.theme = v; applyTheme(); render(); }
+  else if(k==='theme'){ state.theme = v; haptik('leicht'); applyTheme(); render(); }
   else if(k==='upload'){ openSheet(sheetUpload()); }
   else if(k==='pickfile'){ state.up.datei = 'flanke-innenseite-2026.mp4'; refreshSheet(sheetUpload()); }
   else if(k==='uplv'){ state.up.lv = +v; refreshSheet(sheetUpload()); }
@@ -2310,8 +2398,8 @@ if(window.matchMedia){
 function publish(){
   var u = state.up;
   var titel = (document.getElementById('up-titel')||{}).value || '';
-  if(!u.datei){ toast('Erst ein Video auswählen'); return; }
-  if(!titel.trim()){ toast('Der Titel fehlt'); return; }
+  if(!u.datei){ haptik('fehler'); toast('Erst ein Video auswählen'); return; }
+  if(!titel.trim()){ haptik('fehler'); toast('Der Titel fehlt'); return; }
   if(u.busy) return;
   u.busy = true;
 
@@ -2333,6 +2421,7 @@ function publish(){
         fe:'Wird nachgetragen.'
       });
       var war = u.vis;
+      haptik('erfolg');
       state.up = {datei:null, lv:1, vis:'offen', busy:false};
       state.tab = 'technik'; state.kat = 'alle'; state.fltLv = 0; state.suche = '';
       while(stack.length) closeSheet();
