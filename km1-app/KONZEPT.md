@@ -247,22 +247,88 @@ einmal schreibt, muss es halten, sonst kündigen die Leute im dritten Monat.
 Sicherer, solange die Reihe jung ist: "regelmäßig neue Einheiten" und dann
 lieber öfter liefern als angekündigt.
 
-## 6. Darstellung: hell und dunkel
+## 6. Das Designsystem
 
-**Hell ist die Grundeinstellung**, dunkel eine Option im Profil, dazu
-"Automatisch" für alle, die ihr Handy abends umstellen.
+Die App soll aussehen wie eine App, die man im Store kauft, nicht wie ein
+Entwurf. Was einen Entwurf verrät, sind drei Dinge, und alle drei sind
+Entscheidungen, keine Geschmacksfragen:
 
-Beides sind eigene Fassungen, kein abgedunkeltes Hell: eigene Flächen, eigene
-Linien, eigene Kontraste, genau wie auf der Website. Die Farben liegen als
-Tokens an einer Stelle, umgeschaltet wird über ein Attribut am Wurzelelement.
-In React Native übernimmt das ein Theme-Objekt mit denselben Namen.
+1. **Alles ist ein Rechteck mit Haarlinie.** Keine Höhe, keine Ebenen, kein
+   Material. Echte Apps arbeiten mit Flächen, die übereinander liegen.
+2. **Die Schrift ist zu klein und zu leise.** 13-Pixel-Text und 10-Pixel-Labels
+   liest niemand auf einem Platz im Gegenlicht.
+3. **Überall winzige Versalien in Monospace.** Das sieht aus wie ein Dashboard,
+   nicht wie eine Trainings-App.
 
-Zwei Dinge wechseln dabei mit:
+Also gilt:
 
-- **Das Logo.** Schwarz auf hellem Grund, weiß auf dunklem.
-- **Die Kreidezeichnungen** der Vorschaubilder. Dunkle Linien auf hellem Papier,
-  helle Linien auf dunklem Grund. Die echten Videostandbilder bleiben in beiden
-  Fassungen gleich.
+### Schriftgrößen
+
+| Rolle | Größe | Schnitt |
+| --- | --- | --- |
+| Überschrift Bildschirm | 37 px | Anton, Versalien |
+| Abschnittsüberschrift | 23 px | Anton, Versalien |
+| Titel im Held | 22,5 px | Anton, Versalien |
+| Fließtext | 17 px | Chivo 450 |
+| Kartentitel | 15,5 px | Chivo 700 |
+| Sekundärtext | 15,5 px | Chivo 450 |
+| Beschriftung | 13,5 px | Chivo 600 |
+| Kleingedrucktes | 13,5 px | Chivo 450 |
+
+**Nichts unter 12 Pixel.** Monospace trägt nur noch drei Dinge: die Zeile über
+einer Überschrift, Zahlen (Dauer, Zähler, Uhrzeit) und die Wochenmarken im
+Pfad. Knöpfe, Beschriftungen und Listen laufen in normaler Schreibweise, nicht
+in Versalien.
+
+### Farben
+
+Beide Fassungen sind vollständig, keine ist die abgedunkelte andere. Hell ist
+die Grundeinstellung, Dunkel liegt im Profil, dazu "Automatisch" für alle, die
+ihr Handy abends umstellen.
+
+| Token | Hell | Dunkel |
+| --- | --- | --- |
+| Grund | `#EEF2ED` | `#060C0A` |
+| Fläche | `#FFFFFF` | `#101C18` |
+| Schrift | `#0A1411` | `#F2F5F1` |
+| Schrift, leiser | `#53645D` | `#94A79E` |
+| Akzent | `#C81E14` | `#DE2F25` |
+| Ebene 1 bis 4 | `#0D7C75` `#3C8329` `#A9630A` `#C81E14` | `#2FA8A0` `#5FB04A` `#E8952F` `#E0342A` |
+
+Rot ist der einzige Akzent und wird sparsam eingesetzt: ein Hauptknopf pro
+Bildschirm, der aktive Reiter, die Schrittnummern. Die vier Ebenenfarben
+gehören der Pyramide und den Fortschrittsanzeigen, sonst nichts.
+
+### Höhe und Form
+
+- **Radien:** Karten 18 px, Bilder 14 px, Knöpfe 14 px, Chips 11 px.
+- **Drei Höhenstufen** statt Rahmen: leicht (Karten in Ruhe), deutlich
+  (angehobene Karten, der Held, Mitteilungen), sehr hoch (das Gerät selbst).
+  In der dunklen Fassung kommt eine feine helle Innenkante dazu — das ist der
+  Trick, der dunkle Oberflächen teuer aussehen lässt.
+- **Knöpfe sind 54 Pixel hoch** und werfen einen rot getönten Schatten.
+- **Antippen drückt.** Jede Karte, jeder Knopf geht beim Drücken auf 98 bis 99
+  Prozent. Ohne diese Rückmeldung fühlt sich eine App tot an.
+
+### Bilder
+
+Die Fotos der Marke sind Flutlichtaufnahmen bei Nacht. Damit die gezeichneten
+Vorschaubilder danebenstehen können, sind **die Kreidezeichnungen in beiden
+Fassungen dunkel**: heller Kreidestrich auf tiefem Rasengrün, die Bewegung in
+Köln-Rot. Eine helle Zeichnung neben einem Nachtfoto sieht aus wie ein
+Platzhalter.
+
+Oben auf der Startseite steht ein **Held**: ein Bild über die volle Breite,
+darauf der Titel in Anton und ein roter Abspielknopf. Das ist das Erste, was
+jemand sieht, und es ist ein Bild, keine Liste.
+
+### Was die Kleinigkeiten ausmachen
+
+Statusleiste mit Uhrzeit und Symbolen, der Home-Balken unten, die Kopfzeile,
+die erst beim Scrollen einen Schatten bekommt, die Reiterleiste mit weicher
+Pille hinter dem aktiven Symbol. Nichts davon ist Funktion. Zusammen sind sie
+der Unterschied zwischen "sieht aus wie eine Webseite" und "sieht aus wie eine
+App".
 
 ## 7. Wie Kader hochlädt
 
