@@ -640,6 +640,35 @@ h2.sec{
   font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);
   font-variant-numeric:tabular-nums;
 }
+/* Die Schritte sind zugleich Kapitelmarken: ein Tipp springt an die Stelle. */
+.steps li button{
+  display:flex;align-items:baseline;gap:14px;width:100%;
+  font:inherit;color:inherit;text-align:left;
+}
+.steps li .tx{flex:1 1 auto;min-width:0}
+.steps li .zt{
+  flex:0 0 auto;font-family:var(--mono);font-size:12.5px;font-weight:600;
+  color:var(--ink-3);font-variant-numeric:tabular-nums;
+  transition:color .2s var(--ease);
+}
+.steps li.jetzt{box-shadow:var(--e1),inset 0 0 0 1.5px var(--accent)}
+.steps li.jetzt .zt{color:var(--accent)}
+.steps li.jetzt::before{color:var(--accent)}
+
+/* Der Aufstieg. Selten genug, um eine eigene Seite zu verdienen. */
+.feier{
+  text-align:center;align-items:center;justify-content:center;
+  min-height:68svh;gap:16px;padding-top:24px;
+}
+.feier .ring{
+  width:96px;height:96px;border-radius:99px;display:flex;align-items:center;justify-content:center;
+  background:var(--c);box-shadow:0 22px 48px -18px var(--c);margin:0 auto 6px;
+}
+.feier .ring svg{width:38px;height:38px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.feier .eyebrow{justify-content:center}
+.feier .meta{justify-content:center}
+.feier .btn{margin-top:8px}
+
 .callout{
   border-radius:var(--r-media);background:var(--accent-soft);
   padding:18px 20px;display:flex;flex-direction:column;gap:7px;
@@ -1100,6 +1129,7 @@ var state = {
   kat:'alle', fltLv:0, suche:'',
   done:{}, preis:'jahr', nachLogin:null, loginModus:'neu',
   tempo:1, symbol:'standard', merk:{}, serieHeute:0,
+  gesehen:{}, zuletzt:null,
   erinnerung:{an:true, tage:['mi','sa'], zeit:'17:00'},
   up:{datei:null, lv:1, vis:'offen', busy:false}
 };
@@ -1131,6 +1161,28 @@ function zugangName(zg){
   return zg==='pro' ? 'Profi-Einheit' : (zg==='konto' ? 'Mit Konto' : 'Ohne Anmeldung');
 }
 function zaehl(zg){return VIDEOS.filter(function(v){return v.zg===zg;}).length;}
+
+/* Kapitelmarken. Bis die Videos geschnitten sind, verteilen wir die
+   Schritte gleichmaessig ueber die Laufzeit; beim Hochladen traegt Kader
+   die echte Sekunde ein, das Feld dafuer steht im Datenmodell. */
+function kapitelSek(v, i){
+  if(v.sk && v.sk[i] != null) return v.sk[i];
+  var d = sek(v.d), n = (v.st || []).length || 1;
+  var los = Math.round(d * 0.06);
+  return Math.round(los + (d - los) * (i / n));
+}
+
+/* Wer alles geschafft hat, was auf seiner Ebene offen steht, steigt auf.
+   Gesperrte Videos zaehlen nicht mit — sonst haengt der Aufstieg am Abo. */
+function pruefeAufstieg(){
+  if(!drin() || state.meinLv >= LEVELS.length) return false;
+  var meine = VIDEOS.filter(function(v){ return v.lv === state.meinLv && !gesperrt(v); });
+  if(!meine.length) return false;
+  var fertig = meine.every(function(v){ return !!state.done[v.id]; });
+  if(!fertig) return false;
+  state.meinLv += 1;
+  return true;
+}
 function offenFuerMich(){return VIDEOS.filter(function(v){return !gesperrt(v);}).length;}
 
 var ICON = {
@@ -1210,6 +1262,23 @@ function karte(v){
 /* ============================================================
    Die vier Bereiche
    ============================================================ */
+/* Die Karte oben auf der Startseite: das angefangene Video, sonst das
+   naechste offene der eigenen Ebene. */
+function startKarte(){
+  var id = state.zuletzt, stelle = id && state.gesehen[id], v = id && byId(id);
+  if(v && stelle && !gesperrt(v)){
+    var d = sek(v.d);
+    return heroKarte(v, 'Weitertrainieren',
+      fmtZeit(d - stelle)+' übrig · '+lvOf(v.lv).nm,
+      Math.max(3, Math.round(stelle / d * 100)));
+  }
+  var ebene = drin() ? state.meinLv : 1;
+  var offen = VIDEOS.filter(function(x){ return !gesperrt(x) && !state.done[x.id] && x.lv === ebene; });
+  if(!offen.length) offen = VIDEOS.filter(function(x){ return !gesperrt(x) && !state.done[x.id]; });
+  var n = offen[0] || VIDEOS[0];
+  return heroKarte(n, drin() ? 'Als Nächstes' : 'Fang hier an', n.d+' · '+lvOf(n.lv).nm, 0);
+}
+
 function screenStart(){
   var neu = VIDEOS.filter(function(v){return v.neu;});
   var erledigt = Object.keys(state.done).length;
@@ -1217,9 +1286,8 @@ function screenStart(){
 
   var kopfteil, mitte;
   if(drin()){
-    var r = byId('flanke-innen');
     kopfteil = '<div><p class="eyebrow">Mittwoch, Trainingstag</p><h1 class="big">Moin '+h(state.konto.vn)+'.<br>Weiter geht’s.</h1></div>' +
-      heroKarte(r, 'Weitertrainieren', '2:49 übrig · '+lvOf(r.lv).nm, 62);
+      startKarte();
     var ziel = Math.min(erledigt,5), pips = '';
     for(var i=0;i<5;i++) pips += '<i class="'+(i<ziel?'on':'')+'"></i>';
     mitte = '<div class="panel">' +
@@ -1228,10 +1296,9 @@ function screenStart(){
       '<span class="pips">'+pips+'</span>' +
     '</div>';
   } else {
-    var s = byId('erste-beruehrung');
     kopfteil = '<div><p class="eyebrow">Ohne Anmeldung</p><h1 class="big">Moin.<br>Fang einfach an.</h1>' +
       '</div>' +
-      heroKarte(s, 'Fang hier an', s.d+' · '+lvOf(s.lv).nm, 0);
+      startKarte();
     mitte = '<div class="panel">' +
       '<p class="note">Kostenlos</p>' +
       '<h2 class="sec">Fortschritt sichern</h2>' +
@@ -1492,7 +1559,11 @@ function closeSheet(){
   stopPlayer();
   stack.pop();
   var s = document.getElementById('sheet');
-  if(!stack.length){ s.classList.remove('on'); s.hidden = true; s.innerHTML=''; return; }
+  if(!stack.length){
+    s.classList.remove('on'); s.hidden = true; s.innerHTML = '';
+    render();          /* damit die Karte oben die neue Stelle zeigt */
+    return;
+  }
   s.innerHTML = stack[stack.length-1];
   s.scrollTop = 0;
 }
@@ -1540,7 +1611,12 @@ function sheetVideo(id){
         :
         '<p class="prose">'+h(v.be)+'</p>' +
         '<div class="block"><h2 class="sec">So geht’s</h2>' +
-          '<ol class="steps">'+v.st.map(function(s){return '<li>'+h(s)+'</li>';}).join('')+'</ol>' +
+          '<ol class="steps">'+v.st.map(function(s, i){
+            if(zu) return '<li>'+h(s)+'</li>';
+            var t = kapitelSek(v, i);
+            return '<li><button type="button" data-act="kapitel:'+t+'">' +
+              '<span class="tx">'+h(s)+'</span><span class="zt">'+fmtZeit(t)+'</span></button></li>';
+          }).join('')+'</ol>' +
         '</div>' +
         '<div class="callout"><span class="h">Häufiger Fehler</span><p>'+h(v.fe)+'</p></div>' +
         '<div class="aktionen">' +
@@ -1561,6 +1637,20 @@ function sheetVideo(id){
         '<div class="row">'+verwandt.map(karte).join('')+'</div>' +
       '</div>' +
     '</div>';
+}
+
+/* Der Aufstieg bekommt eine eigene Seite. Er passiert dreimal im Leben
+   eines Nutzers — dafuer darf er den Bildschirm haben. */
+function sheetAufstieg(){
+  var l = lvOf(state.meinLv);
+  return '<div class="sheet-body feier">' +
+    '<span class="ring" style="--c:'+l.c+'">'+ICON.check+'</span>' +
+    '<p class="eyebrow">Neue Ebene</p>' +
+    '<h1 class="big">'+h(l.nm)+'</h1>' +
+    '<p class="prose">'+h(l.tx)+'</p>' +
+    '<div class="meta"><span>'+h(l.md)+'</span><span>'+h(l.ag)+'</span></div>' +
+    '<button class="btn" type="button" data-act="back">Weiter</button>' +
+  '</div>';
 }
 
 function sheetChallenge(){
@@ -1946,8 +2036,19 @@ var P = {id:null, titel:'', poster:'', dauer:0, sek:0, laeuft:false, takt:null,
          kino:false, zieht:null, tippZeit:0, tippSeite:'', ruhe:null};
 
 function stopPlayer(){
+  merkeStelle();
   if(P.takt){ clearInterval(P.takt); P.takt = null; }
   P.laeuft = false;
+}
+
+/* Wo jemand stehen geblieben ist. Ganz am Anfang und fast am Ende
+   zaehlt nicht — sonst steht auf der Startseite ein Video, das man
+   schon gesehen hat. */
+function merkeStelle(){
+  if(!P.id || P.id === 'challenge' || !P.dauer) return;
+  if(P.sek < 5 || P.sek / P.dauer > 0.95){ delete state.gesehen[P.id]; return; }
+  state.gesehen[P.id] = P.sek;
+  state.zuletzt = P.id;
 }
 
 /* Die beiden Haelften zum Doppeltippen, dazu die Anzeige, die
@@ -1978,7 +2079,8 @@ function steuerung(gross){
 /* o = {id, titel, poster, dauer}. Ein anderes Video faengt vorne an,
    dasselbe behaelt seine Stelle, auch wenn das Blatt neu gebaut wird. */
 function playerInline(o){
-  if(P.id !== o.id){ stopPlayer(); P.id = o.id; P.sek = 0; }
+  /* Ein anderes Video steigt da ein, wo man aufgehoert hat. */
+  if(P.id !== o.id){ stopPlayer(); P.id = o.id; P.sek = state.gesehen[o.id] || 0; }
   P.titel = o.titel; P.poster = o.poster; P.dauer = o.dauer;
   return '<div class="player" id="player">' +
     '<div class="poster">'+o.poster+'</div>' +
@@ -1999,6 +2101,14 @@ function zeichnePlayer(){
     var m = c.querySelector('.mini');     if(m) m.innerHTML   = P.laeuft ? ICON.pause : ICON.play;
     var t = c.querySelector('.tempo');    if(t) t.textContent = tempoLabel();
   });
+  var kap = document.querySelectorAll('[data-act^="kapitel:"]');
+  if(kap.length){
+    var jetzt = -1;
+    for(var i = 0; i < kap.length; i++){
+      if(P.sek + 0.5 >= parseFloat(kap[i].getAttribute('data-act').split(':')[1])) jetzt = i;
+    }
+    for(var j = 0; j < kap.length; j++) kap[j].parentNode.classList.toggle('jetzt', j === jetzt);
+  }
   var pb = document.querySelector('#player .pbtn[data-act="play"]');
   if(pb) pb.hidden = P.laeuft;
   var kp = document.querySelector('.kino-play');
@@ -2017,6 +2127,7 @@ function spiele(an){
   if(neu){
     P.takt = setInterval(function(){
       P.sek = Math.min(P.dauer, P.sek + 0.25 * state.tempo);
+      merkeStelle();
       if(P.sek >= P.dauer){ stopPlayer(); }
       zeichnePlayer();
     }, 250);
@@ -2193,9 +2304,16 @@ function renderTabs(){
       '<span class="ti">'+x[2]+'</span><span>'+x[1]+'</span></button>';
   }).join('');
 }
+var letzterTab = null;
 function render(){
   var s = {start:screenStart, technik:screenTechnik, pyramide:screenPyramide, profil:screenProfil}[state.tab];
-  document.getElementById('screens').innerHTML = s();
+  var flaeche = document.getElementById('screens');
+  /* Beim Neuzeichnen derselben Seite bleibt die Liste stehen, wo sie stand;
+     ein Tabwechsel faengt oben an. */
+  var y = (state.tab === letzterTab) ? flaeche.scrollTop : 0;
+  flaeche.innerHTML = s();
+  flaeche.scrollTop = y;
+  letzterTab = state.tab;
   renderTabs();
   var chip = document.getElementById('lvchip');
   if(drin()){
@@ -2256,9 +2374,11 @@ document.addEventListener('click', function(e){
     if(n && n.indexOf('check:')===0){
       var cid = n.slice(6);
       state.done[cid] = 1;
-      haptik(state.serieHeute ? 'erfolg' : 'serie');
+      var aufL = pruefeAufstieg();
+      haptik(aufL ? 'aufstieg' : (state.serieHeute ? 'erfolg' : 'serie'));
       state.serieHeute = 1;
       render();
+      if(aufL){ openSheet(sheetAufstieg()); toast('Angemeldet. Abgehakt.'); return; }
       if(stack.length) refreshSheet(cid.indexOf('challenge-')===0 ? sheetChallenge() : sheetVideo(cid));
       toast('Angemeldet. Abgehakt.');
     }
@@ -2290,21 +2410,34 @@ document.addEventListener('click', function(e){
       openSheet(sheetLogin('Damit dein Fortschritt gespeichert wird, brauchst du ein Konto.'));
       return;
     }
+    var auf = false;
     if(state.done[v]){
       delete state.done[v];
       haptik('leicht');          /* Rueckgaengig ist keine Belohnung */
     } else {
       state.done[v] = 1;
-      /* Der erste Haken des Tages traegt die Serie. Hier im Entwurf
-         zaehlt der erste seit dem Start, spaeter der erste im Kalendertag. */
-      haptik(state.serieHeute ? 'erfolg' : 'serie');
+      auf = pruefeAufstieg();
+      /* Der groessere Impuls gewinnt: wer durch den Haken aufsteigt,
+         spuert den Aufstieg, nicht den Haken. Der erste Haken des Tages
+         traegt die Serie — hier im Entwurf der erste seit dem Start,
+         spaeter der erste im Kalendertag. */
+      haptik(auf ? 'aufstieg' : (state.serieHeute ? 'erfolg' : 'serie'));
       state.serieHeute = 1;
     }
     var istCh = v.indexOf('challenge-')===0;
     refreshSheet(istCh ? sheetChallenge() : sheetVideo(v));
+    if(auf){ render(); openSheet(sheetAufstieg()); return; }
     toast(state.done[v] ? 'Abgehakt. Stark.' : 'Haken entfernt');
   }
   else if(k==='play'){ spiele(); }
+  else if(k==='kapitel'){
+    if(!P.id) return;
+    P.sek = Math.max(0, Math.min(P.dauer, parseFloat(v)));
+    haptik('leicht');
+    zeichnePlayer();
+    var pl = document.getElementById('player');
+    if(pl) pl.scrollIntoView({block:'start', behavior:'smooth'});
+  }
   else if(k==='kino'){ kinoAuf(); }
   else if(k==='kinozu'){ kinoZu(); }
   else if(k==='tempo'){

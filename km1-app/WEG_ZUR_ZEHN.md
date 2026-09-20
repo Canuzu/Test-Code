@@ -101,8 +101,10 @@ Die vier Schritte unter dem Video springen an die passende Stelle. Aus einem
 Video werden vier nachschlagbare Antworten. Zusammen mit der Zeitlupe und den
 Fünf-Sekunden-Sprüngen ist das der komplette Werkzeugkasten zum Üben.
 
-**Für mich der stärkste Einzelpunkt der ganzen Liste.** Das Datenmodell kann es
-schon (`video_schritte.sekunde`), es fehlt nur die Bedienung. (1 Tag)
+**Erledigt.** Jeder Schritt trägt seine Zeit und springt beim Antippen dorthin;
+der Schritt, bei dem der Player gerade steht, ist hervorgehoben. Bis die Videos
+geschnitten sind, verteilt die App die Schritte gleichmäßig über die Laufzeit —
+beim Hochladen trägt Kader die echte Sekunde ein.
 
 ### 2.2 Selbstaufnahme mit Vergleich — nur auf dem Gerät
 
@@ -127,13 +129,11 @@ Plan hat einen Anfang und ein Ende, eine Videosammlung hat das nicht. Wer in
 Woche vier ist, kündigt nicht. (2–3 Tage in der App, plus die inhaltliche
 Arbeit)
 
-### 2.4 „Weiterschauen"
+### 2.4 „Weiterschauen" — **erledigt**
 
-Wer bei Minute 4 aufhört, will beim nächsten Öffnen bei Minute 4 weitermachen.
-Auf der Startseite eine Zeile: das zuletzt angefangene Video mit Fortschritt.
-
-Fehlt komplett und fällt sofort auf, weil jede andere Video-App das kann.
-(halber Tag)
+Die Karte oben auf der Startseite zeigt das angefangene Video mit Restzeit und
+Fortschritt; beim Öffnen steigt der Player an derselben Stelle wieder ein. Ist
+nichts angefangen, schlägt sie das nächste offene Video der eigenen Ebene vor.
 
 ### 2.5 Suche nach Problem statt nach Kategorie *(KONZEPT §12)*
 
