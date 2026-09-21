@@ -604,6 +604,30 @@ Kulisse für die Vorschau; jetzt heißt schmal einfach Hochformat über den ganz
 Bildschirm und breit Seitenleiste. Ein Tablet im Querformat bekommt die große
 Fassung, im Hochformat die schmale.
 
+### Der optische Durchgang
+
+Zwölf Punkte standen zur Auswahl, elf sind gebaut. Sie ändern nichts am
+Aufbau, nur daran, wie die App wirkt.
+
+| | Was | Warum |
+| --- | --- | --- |
+| 1 | Dichte: `.screen` mit 20 statt 30 Pixeln Abstand, `h1.big` auf 33 Pixel, kleinere Chips | Auf der Technikseite waren 44 % der Höhe weg, bevor das erste Video zu sehen war. Jetzt 30 %. |
+| 2 | Ebenenfilter als Blatt statt zweiter Chipreihe, neben dem Suchfeld | Spart eine ganze Zeile, ohne den Filter zu verstecken. |
+| 3 | Dunkelmodus: hellere Flächen, volle Haarlinie statt nur oben | Karte gegen Hintergrund stand bei 1,13 : 1, also unsichtbar. Jetzt 1,38 : 1 plus Kante. |
+| 4 | „KM1 Pro" weiß statt in der Akzentfarbe | Dunkelrot auf Rot war nicht zu lesen. |
+| 5 | *Nicht gebaut.* Metazeile der Karte sollte nur die Kategorie zeigen | Cans Entscheidung: Ebene und Kategorie bleiben beide im Text. |
+| 6 | Titel der Heldenkarte in drei Schriftstufen | „Strafraumbeherrschung" ist breiter als die Textspalte. Statt abzuschneiden, wird kleiner gesetzt. |
+| 7 | Kacheln im Profil flacher, Beschriftung einzeilig, „Videos offen" → „Offen" | Drei Kacheln nebeneinander, eine davon zweizeilig, verzog die Reihe. |
+| 8 | `h2.sec.leise` für Einstellungen | Eine Hell-Dunkel-Wahl braucht keine Versalien in 23 Pixeln. |
+| 9 | Zwei Kartengewichte: Inhalt schwebt, Listen liegen flach | Vorher trug jede weiße Fläche denselben Schatten, also sagte er nichts mehr. |
+| 10 | Aufblenden beim Tabwechsel, 45 ms versetzt | Nur beim Wechsel, nicht bei jedem Neuzeichnen — sonst zappelt die Seite, sobald man ein Video abhakt. |
+| 11 | Platzhalterkarten beim Start | Heute kosmetisch, weil die Daten im Dokument liegen. Nötig, sobald die Liste vom Server kommt. |
+| 12 | `--mein`: Fortschritt trägt die Farbe der eigenen Ebene | Rot ist die Farbe der Marke, nicht die des Spielers. |
+
+Dabei behoben: das Bildfeld der Heldenkarte ist ein `<span>`. Auf einer
+Zeilenbox greifen weder `aspect-ratio` noch `max-height`, deshalb war die Karte
+am PC 600 statt der vorgesehenen 360 Pixel hoch. Als Block greifen beide.
+
 ## 12. Vorschläge, noch offen
 
 Sortiert nach Verhältnis von Nutzen zu Aufwand. Keiner davon ist beschlossen.

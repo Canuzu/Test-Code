@@ -102,17 +102,19 @@
 :root[data-theme="dark"]{
   color-scheme:dark;
 
-  --canvas:#060C0A;
+  --canvas:#070D0B;
   --canvas-2:#030706;
-  --surface:#101C18;
-  --surface-2:#16241F;
-  --surface-3:#1B2C26;
+  --surface:#1E2E28;
+  --surface-2:#253830;
+  --surface-3:#2C4139;
   --field:#0A1310;
   --veil:rgba(16,28,24,.84);
 
-  --line:rgba(242,245,241,.09);
-  --line-2:rgba(242,245,241,.16);
-  --edge:inset 0 1px 0 rgba(242,245,241,.06);
+  --line:rgba(242,245,241,.13);
+  --line-2:rgba(242,245,241,.2);
+  /* Volle Haarlinie statt nur oben: im Dunkeln ist das der einzige
+     Hinweis darauf, wo eine Karte anfaengt und aufhoert. */
+  --edge:inset 0 0 0 1px rgba(242,245,241,.08);
 
   --ink:#F2F5F1;
   --ink-body:#C2D1CA;
@@ -135,7 +137,7 @@
   --e3:0 50px 100px -30px rgba(0,0,0,.9), 0 0 0 1px rgba(242,245,241,.06);
   --glow:0 12px 30px -10px rgba(224,52,42,.55);
 
-  --dia-bg:#0D1A16;
+  --dia-bg:#1B2A24;
   --dia-line:rgba(242,245,241,.4);
   --dia-acc:#E8433A;
   --dia-dot:rgba(242,245,241,.9);
@@ -238,7 +240,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
    rutscht die mittig gesetzte Seite um seine Breite, sobald ein
    Filter die Liste so kurz macht, dass nichts mehr zu rollen ist. */
 .screens{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable}
-.screen{display:flex;flex-direction:column;gap:30px;padding:8px 18px 34px}
+/* Enger. Vorher waren auf der Technikseite 44 % der Hoehe weg, bevor
+   das erste Video zu sehen war. */
+.screen{display:flex;flex-direction:column;gap:20px;padding:2px 18px 34px}
 
 /* ---------- Schrift ---------- */
 .eyebrow{
@@ -248,11 +252,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
 .eyebrow::before{content:"";width:16px;height:2px;background:var(--accent);flex:0 0 auto;border-radius:2px}
 h1.big{
   font-family:var(--display);font-weight:400;text-transform:uppercase;
-  font-size:37px;line-height:.94;letter-spacing:.004em;margin:10px 0 0;text-wrap:balance;
+  font-size:33px;line-height:.94;letter-spacing:.004em;margin:6px 0 0;text-wrap:balance;
 }
 h2.sec{
   font-family:var(--display);font-weight:400;text-transform:uppercase;
   font-size:23px;line-height:1.02;letter-spacing:.012em;margin:0;
+}
+/* Fuer Einstellungen: dieselbe Rolle, aber leise. Eine Hell-Dunkel-Wahl
+   braucht keine Versalien in 23 Pixeln. */
+h2.sec.leise{
+  font-family:var(--mono);font-size:11.5px;font-weight:700;
+  letter-spacing:.15em;color:var(--ink-2);
 }
 .sub{color:var(--ink-2);font-size:15.5px;margin:12px 0 0;line-height:1.55;max-width:38ch}
 .block{display:flex;flex-direction:column;gap:14px}
@@ -325,7 +335,10 @@ h2.sec{
   background:var(--surface);
 }
 .hero:active{transform:scale(.99)}
-.hero .hm{position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;background:var(--surface-3)}
+/* display:block ist noetig: als Zeilenbox ignoriert das <span> sowohl
+   aspect-ratio als auch das max-height am PC, und die Karte wurde so
+   hoch wie das Bild. */
+.hero .hm{position:relative;display:block;width:100%;aspect-ratio:16/9;overflow:hidden;background:var(--surface-3)}
 .hero .hm > img,.hero .hm > svg{width:100%;height:100%;object-fit:cover;display:block}
 .hero .hm::after{
   content:"";position:absolute;inset:0;
@@ -333,7 +346,7 @@ h2.sec{
 }
 .hero .hc{
   position:absolute;left:0;right:0;bottom:0;z-index:3;
-  padding:22px 104px 24px 20px;display:flex;flex-direction:column;gap:9px;
+  padding:22px 92px 24px 20px;display:flex;flex-direction:column;gap:9px;
 }
 .hero .hk{
   font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
@@ -343,11 +356,19 @@ h2.sec{
   font-family:var(--display);font-weight:400;text-transform:uppercase;
   font-size:22.5px;line-height:1.04;letter-spacing:.012em;color:#fff;
   text-shadow:0 2px 20px rgba(3,7,6,.75);
+  /* Hoechstens zwei Zeilen. Bei dreien stiess der Titel an den Knopf. */
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+  overflow-wrap:break-word;
 }
+/* Kein Titel soll abgeschnitten werden, aber auch keiner die halbe Karte
+   fuellen. Lange Titel werden deshalb eine Stufe kleiner gesetzt, sehr
+   lange zwei. Die Klasse vergibt titelKlasse() beim Bauen der Karte. */
+.hero .ht.mittel{font-size:19.5px;line-height:1.07}
+.hero .ht.eng{font-size:17px;line-height:1.1;letter-spacing:.015em}
 .hero .hmeta{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:rgba(244,247,243,.86)}
 .hero .hplay{
-  position:absolute;right:20px;bottom:22px;z-index:4;
-  width:62px;height:62px;border-radius:99px;background:var(--accent);
+  position:absolute;right:18px;bottom:20px;z-index:4;
+  width:56px;height:56px;border-radius:99px;background:var(--accent);
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 14px 30px -10px rgba(200,30,20,.8),inset 0 1px 0 rgba(255,255,255,.3);
   transition:transform .35s var(--spring);
@@ -355,7 +376,7 @@ h2.sec{
 .hero:hover .hplay{transform:scale(1.07)}
 .hero .hplay svg{width:20px;height:20px;fill:#fff;margin-left:3px}
 .hero .hbar{position:absolute;left:0;right:0;bottom:0;z-index:5;height:4px;background:rgba(244,247,243,.22)}
-.hero .hbar i{display:block;height:100%;background:var(--accent);box-shadow:0 0 12px rgba(200,30,20,.8)}
+.hero .hbar i{display:block;height:100%;background:var(--mein,var(--accent))}
 
 /* ---------- Reihen und Raster ---------- */
 .row{display:flex;gap:14px;overflow-x:auto;padding:4px 18px 8px;margin:0 -18px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
@@ -365,8 +386,8 @@ h2.sec{
 /* ---------- Chips ---------- */
 .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 18px 4px;margin:0 -18px}
 .chip{
-  flex:0 0 auto;font-size:13.5px;font-weight:600;letter-spacing:.005em;
-  padding:10px 15px;border-radius:var(--r-chip);white-space:nowrap;
+  flex:0 0 auto;font-size:13px;font-weight:600;letter-spacing:.005em;
+  padding:8px 13px;border-radius:var(--r-chip);white-space:nowrap;
   background:var(--surface);color:var(--ink-2);
   box-shadow:var(--e1),var(--edge);
   transition:color .25s var(--ease),background .25s var(--ease),transform .25s var(--spring);
@@ -378,14 +399,49 @@ h2.sec{
 
 /* ---------- Suche ---------- */
 .search{
-  display:flex;align-items:center;gap:11px;padding:14px 16px;
+  flex:1 1 auto;min-width:0;
+  display:flex;align-items:center;gap:10px;padding:11px 14px;
   background:var(--surface);border-radius:var(--r-btn);
   box-shadow:var(--e1),var(--edge);
 }
 .search svg{width:18px;height:18px;fill:none;stroke:var(--ink-3);stroke-width:2;flex:0 0 auto}
+/* Suchfeld und Ebenenfilter teilen sich eine Zeile. Das spart die
+   zweite Chipreihe, ohne den Filter zu verstecken. */
+.suchzeile{display:flex;align-items:stretch;gap:10px}
+.ebfilter{
+  flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:0 14px;
+  background:var(--surface);border-radius:var(--r-btn);
+  box-shadow:var(--e1),var(--edge);
+  font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap;
+}
+.ebfilter .pkt{width:9px;height:9px;border-radius:99px;background:var(--c,var(--ink-3))}
+.ebfilter svg{width:13px;height:13px;fill:none;stroke:var(--ink-3);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+
+.ebliste{display:flex;flex-direction:column;gap:8px}
+.ebzeile{
+  display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+  padding:16px 18px;border-radius:var(--r-media);
+  background:var(--surface);box-shadow:var(--e1),var(--edge);
+  font-size:15.5px;font-weight:600;color:var(--ink);
+  transition:box-shadow .25s var(--ease);
+}
+.ebzeile .pkt{width:11px;height:11px;border-radius:99px;flex:0 0 auto;background:var(--c,var(--ink-3))}
+.ebzeile span{flex:1;min-width:0}
+.ebzeile svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.ebzeile[aria-pressed="true"]{box-shadow:var(--e1),inset 0 0 0 1.5px var(--c,var(--accent))}
+
+/* Der Titel wandert beim Scrollen in die Kopfzeile. */
+.kopftitel{
+  position:absolute;left:50%;transform:translate(-50%,6px);
+  font-size:16px;font-weight:700;color:var(--ink);white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity .22s var(--ease),transform .28s var(--spring);
+}
+.appbar{position:relative}
+.appbar.tief .kopftitel{opacity:1;transform:translate(-50%,0)}
+.appbar.tief .mark{opacity:0;transition:opacity .2s var(--ease)}
 .search input{
   flex:1;min-width:0;background:none;border:0;color:var(--ink);
-  font-family:var(--body);font-size:16px;font-weight:500;
+  font-family:var(--body);font-size:15px;font-weight:500;
   border-radius:0;-webkit-appearance:none;appearance:none;
 }
 .search input::placeholder{color:var(--ink-3);font-weight:450}
@@ -395,14 +451,18 @@ h2.sec{
 .panel{
   background:var(--surface);border-radius:var(--r-card);padding:20px;
   display:flex;flex-direction:column;gap:14px;
-  box-shadow:var(--e1),var(--edge);
+  box-shadow:var(--edge);
 }
+/* Was Fortschritt zeigt, darf schweben. */
+.panel.traegt{box-shadow:var(--e1),var(--edge)}
 .goal{display:flex;align-items:flex-end;justify-content:space-between;gap:14px}
-.goal .n{font-family:var(--display);font-size:46px;line-height:.84;font-weight:400;letter-spacing:.01em}
+.goal .n{font-family:var(--display);font-size:46px;line-height:.84;font-weight:400;letter-spacing:.01em;color:var(--mein,var(--ink))}
 .goal .n em{font-style:normal;color:var(--ink-3);font-size:17px;font-family:var(--body);font-weight:600;letter-spacing:0}
 .pips{display:flex;gap:6px}
 .pips i{width:100%;height:7px;flex:1 1 auto;background:var(--surface-3);border-radius:99px}
-.pips i.on{background:var(--lv1)}
+/* Punkt 12: der Fortschritt traegt die Farbe der eigenen Ebene,
+   nicht immer Rot. --mein wird beim Zeichnen gesetzt. */
+.pips i.on{background:var(--mein,var(--lv1))}
 .note{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0}
 
 .wide{
@@ -762,14 +822,23 @@ h2.sec{
 
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .stat{
-  padding:18px 14px;display:flex;flex-direction:column;gap:5px;
+  padding:15px 13px 13px;display:flex;flex-direction:column;gap:3px;
   background:var(--surface);border-radius:var(--r-media);
   box-shadow:var(--e1),var(--edge);
 }
-.stat .v{font-family:var(--display);font-size:32px;line-height:.86;font-variant-numeric:tabular-nums}
-.stat .k{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.stat .v{font-family:var(--display);font-size:30px;line-height:.86;font-variant-numeric:tabular-nums;color:var(--mein,var(--ink))}
+.stat .k{
+  font-size:12px;font-weight:600;color:var(--ink-2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
 
-.rows{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-card);box-shadow:var(--e1),var(--edge);overflow:hidden}
+/* Gruppierte Listen sind Beiwerk: flach, nur eine Kante. Was Inhalt
+   traegt — Videos, Heldenkarte, Abo — behaelt seinen Schatten. So gibt
+   es zwei Gewichte statt ueberall derselben weissen Karte. */
+.rows{
+  display:flex;flex-direction:column;background:var(--surface);
+  border-radius:var(--r-card);box-shadow:var(--edge);overflow:hidden;
+}
 .lrow{
   display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;
   padding:17px 20px;font-size:16px;font-weight:500;
@@ -993,7 +1062,7 @@ a.btn{text-decoration:none}
      hoeher als der Bildschirm. */
   .pyr{max-width:660px;margin:0 auto}
   .lvpanel{max-width:660px;margin:0 auto;width:100%}
-  .hero .hc{padding:28px 130px 30px 30px}
+  .hero .hc{padding:28px 118px 30px 30px}
 
   /* Das Videoblatt: Lesebreite, und der Player bleibt beim Scrollen
      oben stehen — so kann man die Schritte lesen, waehrend es laeuft. */
@@ -1012,6 +1081,36 @@ a.btn{text-decoration:none}
   .kino .pctl{padding:14px 22px 20px}
   .kino-oben{padding:16px 20px}
 }
+
+/* ---------- Punkt 10: Bewegung beim Seitenwechsel ----------
+   Die Bloecke blenden leicht versetzt auf, statt hart umzuschalten.
+   Nur beim Tabwechsel, nicht bei jedem Neuzeichnen — sonst zappelt
+   die Seite, sobald man ein Video abhakt. */
+@keyframes auf{
+  from{opacity:0;transform:translateY(9px)}
+  to{opacity:1;transform:none}
+}
+.screen.frisch > *{animation:auf .34s var(--ease) both}
+
+/* ---------- Punkt 11: Platzhalter statt Leere ----------
+   Im Entwurf liegen die Daten im Dokument, deshalb ist hier nur der
+   erste Start echt. In der fertigen App steht das hier, solange die
+   Videoliste vom Server unterwegs ist. */
+@keyframes pulsen{
+  0%,100%{opacity:.55}
+  50%{opacity:.95}
+}
+.skelett{
+  background:var(--surface);border-radius:var(--r-card);padding:8px;
+  box-shadow:var(--e1),var(--edge);
+  animation:pulsen 1.4s var(--ease) infinite;
+}
+.skelett .bild{display:block;aspect-ratio:16/10;border-radius:var(--r-media);background:var(--surface-3)}
+.skelett .zeile{display:block;height:13px;border-radius:99px;background:var(--surface-3);margin:14px 8px 0}
+.skelett .zeile.kurz{width:58%;height:11px;margin-top:9px}
+.skelett:nth-child(2){animation-delay:.18s}
+.skelett:nth-child(3){animation-delay:.36s}
+.skelett:nth-child(4){animation-delay:.54s}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
@@ -1049,6 +1148,7 @@ a.btn{text-decoration:none}
     <div class="app">
       <header class="appbar">
         <img class="mark" src="img/logo.png" alt="KM1 Training">
+        <span class="kopftitel" id="kopftitel" aria-hidden="true"></span>
         <span class="lvchip" id="lvchip"></span>
       </header>
 
@@ -1252,7 +1352,7 @@ var state = {
   meinLv:1, lvSel:1,
   kat:'alle', fltLv:0, suche:'',
   done:{}, preis:'jahr', nachLogin:null, loginModus:'neu',
-  tempo:1, symbol:'standard', merk:{}, serieHeute:0,
+  tempo:1, symbol:'standard', merk:{}, serieHeute:0, laedt:true,
   gesehen:{}, zuletzt:null,
   erinnerung:{an:true, tage:['mi','sa'], zeit:'17:00'},
   up:{datei:null, lv:1, vis:'offen', busy:false}
@@ -1316,6 +1416,7 @@ var ICON = {
   check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
   back:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>',
   such:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',
+  runter:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
   voll:'<svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor"><path d="M9 4H4v5M15 4h5v5M15 20h5v-5M9 20H4v-5"/></svg>',
   klein:'<svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor"><path d="M4 9h5V4M20 9h-5V4M20 15h-5v5M4 15h5v5"/></svg>',
   x:'<svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -1332,7 +1433,7 @@ var ICON = {
 /* Kreidezeichnungen als Vorschaubild. Struktur in Kreide, die
    Aktion in Koeln-Rot. Die Farben kommen aus den Tokens, damit
    die Zeichnungen in beiden Fassungen stimmen. */
-function dia(k){
+function dia(k, lv){
   var d = {
     flanken:'<path class="c" d="M112 12V88"/><path class="c" d="M112 26h40v48h-40"/><path class="c" d="M152 40v20"/><path class="a" d="M22 82C54 40 96 30 128 44" stroke-dasharray="5 4"/><path class="a" d="M120 40l9 4-7 6"/><circle class="f" cx="22" cy="82" r="3.4"/><circle class="f" cx="130" cy="45" r="3.4"/>',
     dribbling:'<path class="a" d="M10 50c10-24 26-24 33 0s23 24 30 0 26-24 33 0 23 24 30 0"/><g class="c"><path d="M25 44l6 12H19z"/><path d="M55 44l6 12H49z"/><path d="M85 44l6 12H79z"/><path d="M115 44l6 12h-12z"/></g>',
@@ -1343,29 +1444,51 @@ function dia(k){
     torwart:'<path class="c" d="M40 26V12h80v14"/><path class="c" d="M40 12v14M120 12v14"/><path class="c" d="M28 26h104v34H28z" opacity=".55"/><circle class="f" cx="80" cy="36" r="3.6"/><path class="a" d="M80 82L44 28" stroke-dasharray="5 4"/><path class="a" d="M80 82l36-54" stroke-dasharray="5 4"/><circle class="f" cx="80" cy="84" r="3"/>',
     taktik:'<path class="c" d="M56 8v84M104 8v84" opacity=".55"/><circle class="f" cx="30" cy="50" r="3.6"/><circle class="f" cx="80" cy="26" r="3.6"/><circle class="f" cx="80" cy="74" r="3.6"/><path class="a" d="M36 48c18-10 30-14 40-18"/><path class="a" d="M70 28l9-2-4 8"/><path class="a" d="M36 54c18 10 30 14 40 18"/><path class="a" d="M70 72l9 2-4-8"/><path class="a" d="M110 50h26"/><path class="a" d="M130 45l8 5-8 5"/>'
   }[k] || '';
-  return '<svg class="dia" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+  /* Die Zeichnung traegt die Farbe ihrer Ebene. Vorher war alles rot,
+     und eine Liste aus zwoelf Karten sah aus wie zwoelfmal dasselbe. */
+  var ton = lv ? ' style="--dia-acc:var(--lv'+lv+')"' : '';
+  return '<svg class="dia" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true"'+ton+'>' +
     '<rect class="bg" width="160" height="100"/>' +
     '<g stroke-linecap="round" stroke-linejoin="round">' + d + '</g></svg>';
 }
 
 function posterOf(v){
-  return v.img ? '<img src="img/'+v.img+'.jpg" alt="" loading="lazy">' : dia(v.k);
+  return v.img ? '<img src="img/'+v.img+'.jpg" alt="" loading="lazy">' : dia(v.k, v.lv);
 }
 
 /* Die grosse Karte oben auf der Startseite. Sie traegt das Bild in
    voller Breite, die Zeile darueber und den roten Knopf: das erste,
    was jemand sieht, wenn die App aufgeht. */
+/* Waehlt die Schriftstufe fuer den Titel der grossen Karte: ein sehr
+   langes Wort oder ein sehr langer Titel bekommt die kleinste Stufe. */
+function titelKlasse(titel){
+  var lang = titel.split(/\s+/).some(function(w){ return w.length > 15; });
+  if(lang || titel.length > 34) return ' eng';
+  if(titel.length > 24) return ' mittel';
+  return '';
+}
+
 function heroKarte(v, kicker, meta, pct){
   return '<button class="hero" type="button" data-act="video:'+v.id+'">' +
     '<span class="hm">'+posterOf(v)+'</span>' +
     '<span class="hc">' +
       '<span class="hk">'+h(kicker)+'</span>' +
-      '<span class="ht">'+h(v.t)+'</span>' +
+      '<span class="ht'+titelKlasse(v.t)+'">'+h(v.t)+'</span>' +
       '<span class="hmeta">'+h(meta)+'</span>' +
     '</span>' +
     '<span class="hplay">'+ICON.play+'</span>' +
     (pct ? '<span class="hbar"><i style="width:'+pct+'%"></i></span>' : '') +
   '</button>';
+}
+
+/* Punkt 11: vier Platzhalterkarten, solange nichts da ist. */
+function skelette(anzahl){
+  var out = '';
+  for(var i = 0; i < (anzahl || 4); i++){
+    out += '<div class="skelett"><span class="bild"></span>' +
+      '<span class="zeile"></span><span class="zeile kurz"></span></div>';
+  }
+  return '<div class="grid">'+out+'</div>';
 }
 
 function karte(v){
@@ -1414,7 +1537,7 @@ function screenStart(){
       startKarte();
     var ziel = Math.min(erledigt,5), pips = '';
     for(var i=0;i<5;i++) pips += '<i class="'+(i<ziel?'on':'')+'"></i>';
-    mitte = '<div class="panel">' +
+    mitte = '<div class="panel traegt">' +
       '<p class="note">Dein Wochenziel</p>' +
       '<div class="goal"><span class="n">'+ziel+'<em> / 5 Einheiten</em></span></div>' +
       '<span class="pips">'+pips+'</span>' +
@@ -1456,7 +1579,7 @@ function screenStart(){
 
     (state.pro ? '' :
     '<button class="proband" type="button" data-act="paywall">' +
-      '<span class="note" style="color:var(--accent)">KM1 Pro</span>' +
+      '<span class="note">KM1 Pro</span>' +
       '<span class="t">Die Profis.<br>Aus der Nähe.</span>' +
       '<p>'+zaehl('pro')+' Einheiten mit aktiven Profispielern.</p>' +
       '<span class="btn" style="pointer-events:none">Pro ansehen</span>' +
@@ -1487,23 +1610,25 @@ function screenTechnik(){
       return '<button class="chip" type="button" data-act="kat:'+k+'" aria-pressed="'+(state.kat===k)+'">'+KAT[k]+'</button>';
     }).join('');
 
-  var lvChips = '<button class="chip lv" type="button" data-act="fltlv:0" aria-pressed="'+(state.fltLv===0)+'">Jede Ebene</button>' +
-    LEVELS.map(function(l){
-      return '<button class="chip lv" type="button" data-act="fltlv:'+l.n+'" style="--c:'+l.c+'" aria-pressed="'+(state.fltLv===l.n)+'">'+l.nm+'</button>';
-    }).join('');
+  var eb = state.fltLv ? lvOf(state.fltLv) : null;
 
   return '<section class="screen">' +
     '<div><p class="eyebrow">Videothek</p><h1 class="big">Technik</h1>' +
     '</div>' +
 
-    '<label class="search"><span class="vh">Videos durchsuchen</span>'+ICON.such+
-      '<input id="suche" type="search" placeholder="Flanke, Dribbling, Torwart …" value="'+h(state.suche)+'"></label>' +
+    '<div class="suchzeile">' +
+      '<label class="search"><span class="vh">Videos durchsuchen</span>'+ICON.such+
+        '<input id="suche" type="search" placeholder="Suchen …" value="'+h(state.suche)+'"></label>' +
+      '<button class="ebfilter" type="button" data-act="ebwahl"'+(eb?' style="--c:'+eb.c+'"':'')+'>' +
+        '<i class="pkt"></i>'+(eb ? h(eb.nm) : 'Ebene')+ICON.runter+'</button>' +
+    '</div>' +
 
-    '<div class="block"><div class="chips">'+katChips+'</div><div class="chips">'+lvChips+'</div></div>' +
+    '<div class="chips">'+katChips+'</div>' +
 
-    (liste.length ?
-      '<div class="grid">'+liste.map(karte).join('')+'</div>' :
-      '<div class="leer">'+ICON.such+'<p>Dazu haben wir noch nichts.</p></div>') +
+    (state.laedt ? skelette(6) :
+      (liste.length ?
+        '<div class="grid">'+liste.map(karte).join('')+'</div>' :
+        '<div class="leer">'+ICON.such+'<p>Dazu haben wir noch nichts.</p></div>')) +
   '</section>';
 }
 
@@ -1588,7 +1713,7 @@ function screenPyramide(){
 
 function darstellung(){
   return '<div class="block">' +
-    '<h2 class="sec">Darstellung</h2>' +
+    '<h2 class="sec leise">Darstellung</h2>' +
     '<div class="seg">' +
       ['hell','dunkel','auto'].map(function(t){
         return '<button type="button" data-act="theme:'+t+'" aria-pressed="'+(state.theme===t)+'">' +
@@ -1640,14 +1765,14 @@ function screenProfil(){
 
     '<div class="stats">' +
       '<div class="stat"><span class="v">'+erledigt+'</span><span class="k">Übungen</span></div>' +
-      '<div class="stat"><span class="v">'+offenFuerMich()+'</span><span class="k">Videos offen</span></div>' +
+      '<div class="stat"><span class="v">'+offenFuerMich()+'</span><span class="k">Offen</span></div>' +
       '<div class="stat"><span class="v">6</span><span class="k">Tage Serie</span></div>' +
     '</div>' +
 
     (state.pro ?
       '<div class="panel"><p class="note" style="color:var(--lv2)">KM1 Pro aktiv</p><p class="sub" style="margin:0">Verlängert sich am 18. Oktober.</p></div>' :
       '<button class="proband" type="button" data-act="paywall">' +
-        '<span class="note" style="color:var(--accent)">KM1 Pro</span>' +
+        '<span class="note">KM1 Pro</span>' +
         '<span class="t">Die Profi-Einheiten</span>' +
         '<p>Ab 6,99 € im Monat.</p>' +
         '<span class="btn" style="pointer-events:none">Pro ansehen</span>' +
@@ -1776,6 +1901,23 @@ function sheetAufstieg(){
     '<div class="meta"><span>'+h(l.md)+'</span><span>'+h(l.ag)+'</span></div>' +
     '<button class="btn" type="button" data-act="back">Weiter</button>' +
   '</div>';
+}
+
+/* Die Ebenenwahl als kleines Blatt statt als zweite Chipreihe. */
+function sheetEbene(){
+  var zeile = function(n, nm, farbe){
+    return '<button class="ebzeile" type="button" data-act="fltlv:'+n+'"'+
+      (farbe ? ' style="--c:'+farbe+'"' : '')+' aria-pressed="'+(state.fltLv===n)+'">' +
+      '<i class="pkt"></i><span>'+h(nm)+'</span>'+(state.fltLv===n ? ICON.check : '')+'</button>';
+  };
+  return kopf('Ebene') +
+    '<div class="sheet-body">' +
+      '<div><h1 class="big">Welche Ebene?</h1></div>' +
+      '<div class="ebliste">' +
+        zeile(0, 'Jede Ebene', '') +
+        LEVELS.map(function(l){ return zeile(l.n, l.nm + ' · ' + l.ag, l.c); }).join('') +
+      '</div>' +
+    '</div>';
 }
 
 function sheetChallenge(){
@@ -2495,11 +2637,12 @@ function render(){
   var flaeche = document.getElementById('screens');
   /* Beim Neuzeichnen derselben Seite bleibt die Liste stehen, wo sie stand;
      ein Tabwechsel faengt oben an. */
-  var y = (state.tab === letzterTab) ? flaeche.scrollTop : 0;
+  var tabWechsel = state.tab !== letzterTab;
+  var y = tabWechsel ? 0 : flaeche.scrollTop;
   /* Auch die waagerechten Leisten bleiben stehen, wo sie standen. Sonst
      springt die gerade angetippte Schaltflaeche aus dem Bild, weil die
      Leiste beim Neuzeichnen wieder von vorne anfaengt. */
-  var x = (state.tab === letzterTab)
+  var x = (!tabWechsel)
     ? [].map.call(flaeche.querySelectorAll('.chips,.row'), function(l){ return l.scrollLeft; })
     : [];
   flaeche.innerHTML = s();
@@ -2508,6 +2651,27 @@ function render(){
     if(x[i]) l.scrollLeft = x[i];
   });
   letzterTab = state.tab;
+  /* Der Titel in der Kopfzeile, der beim Scrollen einblendet. */
+  var kt = document.getElementById('kopftitel');
+  if(kt) kt.textContent = {start:'Start', technik:'Technik', pyramide:'Pyramide', profil:'Profil'}[state.tab] || '';
+  var ab = document.querySelector('.appbar');
+  if(ab && y === 0) ab.classList.remove('tief', 'scrolled');
+
+  /* Punkt 12: die Farbe der eigenen Ebene als Leitfarbe. Ohne Konto
+     bleibt es beim Rot der Marke. */
+  document.documentElement.style.setProperty('--mein',
+    drin() ? lvOf(state.meinLv).c : 'var(--accent)');
+
+  /* Punkt 10: nur beim Wechsel der Seite blenden die Bloecke auf. */
+  if(tabWechsel){
+    var sec = flaeche.querySelector('.screen');
+    if(sec){
+      sec.classList.add('frisch');
+      [].forEach.call(sec.children, function(kind, i){
+        kind.style.animationDelay = Math.min(i * 45, 200) + 'ms';
+      });
+    }
+  }
   renderTabs();
   var chip = document.getElementById('lvchip');
   if(drin()){
@@ -2697,7 +2861,8 @@ document.addEventListener('click', function(e){
   }
   else if(k==='lv'){ state.lvSel = +v; render(); }
   else if(k==='kat'){ state.kat = v; render(); }
-  else if(k==='fltlv'){ state.fltLv = +v; render(); }
+  else if(k==='ebwahl'){ openSheet(sheetEbene()); }
+  else if(k==='fltlv'){ state.fltLv = +v; if(stack.length) closeSheet(); render(); }
   else if(k==='theme'){ state.theme = v; haptik('leicht'); applyTheme(); render(); }
   else if(k==='upload'){ openSheet(sheetUpload()); }
   else if(k==='pickfile'){ state.up.datei = 'flanke-innenseite-2026.mp4'; refreshSheet(sheetUpload()); }
@@ -2777,11 +2942,31 @@ function publish(){
   if(!sc || !ab) return;
   sc.addEventListener('scroll', function(){
     ab.classList.toggle('scrolled', sc.scrollTop > 4);
+    /* Ist die grosse Ueberschrift weggescrollt, uebernimmt die Kopfzeile. */
+    ab.classList.toggle('tief', sc.scrollTop > 46);
   }, {passive:true});
 })();
 
 applyTheme();
 render();
+
+/* Punkt 11: der Entwurf hat seine Daten schon im Dokument, aber die
+   Schriften kommen ueber das Netz. Sobald sie stehen, ist geladen —
+   in der fertigen App endet der Zustand, wenn die Videoliste da ist. */
+(function(){
+  var fertig = function(){
+    if(!state.laedt) return;
+    state.laedt = false;
+    letzterTab = null;      /* damit die Bloecke einmal aufblenden */
+    render();
+  };
+  var spaetestens = setTimeout(fertig, 1400);
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){
+      setTimeout(function(){ clearTimeout(spaetestens); fertig(); }, 450);
+    });
+  }
+})();
 </script>
 
 <script>
