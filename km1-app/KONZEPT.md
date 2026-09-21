@@ -628,6 +628,58 @@ Dabei behoben: das Bildfeld der Heldenkarte ist ein `<span>`. Auf einer
 Zeilenbox greifen weder `aspect-ratio` noch `max-height`, deshalb war die Karte
 am PC 600 statt der vorgesehenen 360 Pixel hoch. Als Block greifen beide.
 
+### Der Startbildschirm
+
+Bis hierher hing die Seite an den Schriften: das Stylesheet von Google stand
+im Kopf und blockierte die Ausgabe, also blieb der Bildschirm leer, solange es
+unterwegs war. Gemessen mit einer künstlich auf 2,5 Sekunden verzögerten
+Auslieferung:
+
+| | erste Ausgabe auf dem Bildschirm |
+| --- | --- |
+| vorher | 2568 ms (leer) |
+| jetzt | 72 ms (Logo und Balken) |
+
+Zwei Dinge zusammen bewirken das:
+
+- Das Schrift-Stylesheet lädt mit `media="print"` nebenher und wird erst beim
+  `onload` scharf geschaltet. Damit hält es nichts mehr auf.
+- Ein Startbildschirm liegt im Dokument, direkt hinter den Logo-Filtern. Er
+  braucht nur den Kopf, keine Bilder, keine Schriften.
+
+**Der Balken zeigt echte Schritte, keine erfundene Zahl.** Vier Ereignisse mit
+festen Gewichten:
+
+| Schritt | Gewicht | fertig, wenn |
+| --- | --- | --- |
+| `dom` | 20 | das Dokument gelesen ist |
+| `logo` | 20 | `img/logo.png` da ist |
+| `schrift` | 35 | die Schriften geladen sind |
+| `app` | 25 | `render()` zum ersten Mal durch ist |
+
+Die Breite sagt, wie weit es ist. Der Schimmer darüber sagt, dass überhaupt
+noch etwas passiert — sonst sähe ein Balken, der zwei Sekunden auf 65 % steht,
+kaputt aus.
+
+Drei Regeln halten ihn ertäglich:
+
+- **Auf schnellem Netz wird er nie sichtbar.** Er blendet sich erst nach 150
+  Millisekunden ein; wer vorher fertig ist, sieht ihn gar nicht. Gemessen:
+  höchste Deckkraft 0,00, nach 380 ms aus dem Dokument entfernt.
+- **Er bleibt nie hängen.** Schriften geben nach 2,2 Sekunden auf, der ganze
+  Bildschirm nach 6. Fällt Google komplett aus, ist er nach rund einer Sekunde
+  weg und die App läuft in der Ersatzschrift.
+- **Er übergibt, statt abzulösen.** Kurz bevor er abblendet, setzt er die
+  echten Karten (`state.laedt = false`). Sonst sähe man zwei Ladezustände
+  hintereinander: erst den Startbildschirm, dann die Platzhalterkarten aus
+  Punkt 11. Die Platzhalter bleiben im Code — sie werden gebraucht, sobald die
+  Videoliste vom Server kommt statt aus dem Dokument.
+
+Nebenbei: `img/logo.png` lag als RGB-Bild vor, obwohl es rein grau ist. Als
+Graustufenbild ist es Pixel für Pixel dasselbe und halb so groß, 34 kB → 18 kB.
+Das Logo ist das erste, was auf dem Startbildschirm erscheinen soll, deshalb
+zählt seine Größe doppelt.
+
 ## 12. Vorschläge, noch offen
 
 Sortiert nach Verhältnis von Nutzen zu Aufwand. Keiner davon ist beschlossen.

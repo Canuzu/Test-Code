@@ -25,7 +25,18 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Chivo:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Das Logo des Startbildschirms soll sofort unterwegs sein. -->
+<link rel="preload" as="image" href="img/logo.png">
+
+<!-- Die Schriften kommen von Google und haben die Seite bisher aufgehalten:
+     solange dieses Stylesheet unterwegs war, blieb der Bildschirm leer. Mit
+     media="print" laedt es nebenher und wird erst beim onload scharf
+     geschaltet. Der Startbildschirm deckt die Umstellung zu, deshalb sieht
+     niemand die Ersatzschrift aufblitzen. -->
+<link id="schriften" rel="stylesheet" media="print" onload="this.media='all'"
+      href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Chivo:wght@400;500;700;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<noscript><link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Chivo:wght@400;500;700;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap"></noscript>
 
 <style>
 /* ============================================================
@@ -1112,6 +1123,45 @@ a.btn{text-decoration:none}
 .skelett:nth-child(3){animation-delay:.36s}
 .skelett:nth-child(4){animation-delay:.54s}
 
+/* ---------- Der Startbildschirm ----------
+   Deckt die Zeit ab, in der die Seite laedt. Vorher sah man auf schlechtem
+   Netz nur eine leere Flaeche, bis die Schriften von Google da waren.
+
+   Der Balken zeigt echte Schritte, keine erfundene Zahl: Dokument gelesen,
+   Logo da, Schriften da, erste Zeichnung fertig. Die Breite sagt, wie weit
+   es ist; der Schimmer darueber sagt, dass ueberhaupt noch etwas passiert.
+   Auf schnellem Netz wird er nie sichtbar, siehe die 150 Millisekunden
+   im Skript. */
+.start{
+  position:fixed;inset:0;z-index:120;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--canvas);
+  opacity:0;transition:opacity .24s var(--ease);
+}
+.start.sichtbar{opacity:1}
+.start.weg{opacity:0;pointer-events:none}
+.start-mitte{display:flex;flex-direction:column;align-items:center;gap:22px;padding:0 32px}
+.start-logo{
+  height:46px;width:auto;filter:url(#logoDark);
+  opacity:0;transition:opacity .3s var(--ease);
+}
+.start-logo.da{opacity:1}
+.start-bahn{
+  display:block;width:min(124px,34vw);height:4px;border-radius:99px;
+  background:var(--line-2);overflow:hidden;
+}
+.start-bahn i{
+  position:relative;display:block;height:100%;width:6%;border-radius:99px;
+  background:var(--accent);overflow:hidden;
+  transition:width .35s var(--ease);
+}
+.start-bahn i::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);
+  animation:startSchimmer 1.15s var(--ease) infinite;
+}
+@keyframes startSchimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
 }
@@ -1128,6 +1178,123 @@ a.btn{text-decoration:none}
     <feComposite in="k" in2="SourceGraphic" operator="in"/>
   </filter>
 </svg>
+
+<!-- Der Startbildschirm. Steht so weit oben, dass er gezeichnet werden
+     kann, sobald der Kopf gelesen ist — also lange bevor Bilder oder
+     Schriften da sind. Er braucht die Filter oben drueber, deshalb steht
+     er dahinter. -->
+<div class="start" id="start">
+  <div class="start-mitte">
+    <img class="start-logo" id="startlogo" src="img/logo.png" alt="KM1 Training" width="487" height="181">
+    <span class="start-bahn" id="startbahn" role="progressbar" aria-label="Ladefortschritt"
+          aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="startbalken"></i></span>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Der Startbildschirm.
+
+   Vier Schritte tragen den Balken, jeder mit seinem Gewicht. Alle vier
+   sind echte Ereignisse, nichts ist geschaetzt:
+
+     dom      das Dokument ist gelesen
+     logo     das Logo ist da
+     schrift  die Schriften von Google sind da
+     app      die App hat zum ersten Mal gezeichnet
+
+   Zwei Regeln halten ihn ertraeglich: auf schnellem Netz wird er nie
+   sichtbar, weil er sich erst nach 150 Millisekunden einblendet; und er
+   bleibt nie haengen, weil Schriften nach 2,2 Sekunden und der ganze
+   Bildschirm nach 6 Sekunden aufgeben.
+   ============================================================ */
+window.km1Start = (function(){
+  var el = document.getElementById('start');
+  var bahn = document.getElementById('startbahn');
+  var balken = document.getElementById('startbalken');
+  if(!el || !balken) return null;
+
+  var GEWICHT = {dom:20, logo:20, schrift:35, app:25};
+  var erledigt = {}, vorbei = false, sichtbar = false, davor = null;
+
+  function male(){
+    var summe = 0;
+    for(var k in GEWICHT) if(erledigt[k]) summe += GEWICHT[k];
+    var p = Math.max(6, summe);
+    balken.style.width = p + '%';
+    if(bahn) bahn.setAttribute('aria-valuenow', p);
+  }
+  function fertig(name){
+    if(vorbei || erledigt[name] || !GEWICHT[name]) return;
+    erledigt[name] = true;
+    male();
+    for(var k in GEWICHT) if(!erledigt[k]) return;
+    schliessen();
+  }
+  function schliessen(){
+    if(vorbei) return;
+    vorbei = true;
+    balken.style.width = '100%';
+    if(bahn) bahn.setAttribute('aria-valuenow', 100);
+    /* Erst die echten Inhalte setzen, dann abblenden. Sonst sieht man
+       zwei Ladezustaende hintereinander. */
+    if(davor){ try{ davor(); }catch(e){} davor = null; }
+    setTimeout(function(){
+      el.classList.remove('sichtbar');
+      el.classList.add('weg');
+      setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 400);
+    }, sichtbar ? 200 : 0);
+  }
+
+  /* Wer schnelles Netz hat, soll kein Aufblitzen sehen. */
+  setTimeout(function(){ if(!vorbei){ sichtbar = true; el.classList.add('sichtbar'); } }, 150);
+  setTimeout(function(){ fertig('schrift'); }, 2200);
+  setTimeout(schliessen, 6000);
+
+  var logo = document.getElementById('startlogo');
+  if(logo){
+    if(logo.complete){ logo.classList.add('da'); fertig('logo'); }
+    else {
+      logo.addEventListener('load', function(){ logo.classList.add('da'); fertig('logo'); });
+      logo.addEventListener('error', function(){ fertig('logo'); });
+    }
+  } else fertig('logo');
+
+  if(document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', function(){ fertig('dom'); });
+  else fertig('dom');
+
+  /* Die Schriften: erst wenn das Stylesheet da ist, stehen die
+     Schriftschnitte ueberhaupt fest. Deshalb wird danach ausdruecklich
+     geladen — document.fonts.ready allein waere schon vorher fertig,
+     solange das Stylesheet noch auf media="print" steht. */
+  function schriftLaden(){
+    if(!document.fonts || !document.fonts.load || !window.Promise) return fertig('schrift');
+    var los = function(){ fertig('schrift'); };
+    try{
+      Promise.all([
+        document.fonts.load('400 1em Anton'),
+        document.fonts.load('700 1em Chivo'),
+        document.fonts.load('700 1em "JetBrains Mono"')
+      ]).then(los, los);
+    }catch(e){ los(); }
+  }
+  var sl = document.getElementById('schriften');
+  if(!sl) fertig('schrift');
+  else if(sl.sheet) schriftLaden();
+  else {
+    sl.addEventListener('load', schriftLaden);
+    sl.addEventListener('error', function(){ fertig('schrift'); });
+  }
+
+  male();
+  return {
+    fertig: fertig,
+    /* Was die App tun will, kurz bevor abgeblendet wird. */
+    kurzVorSchluss: function(f){ if(vorbei) f(); else davor = f; }
+  };
+})();
+</script>
 
 <div class="env" aria-hidden="true"></div>
 
@@ -2949,10 +3116,16 @@ function publish(){
 
 applyTheme();
 render();
+if(window.km1Start) window.km1Start.fertig('app');
 
-/* Punkt 11: der Entwurf hat seine Daten schon im Dokument, aber die
-   Schriften kommen ueber das Netz. Sobald sie stehen, ist geladen —
-   in der fertigen App endet der Zustand, wenn die Videoliste da ist. */
+/* Punkt 11: die Platzhalterkarten. Den Zeitpunkt gibt jetzt der
+   Startbildschirm vor — kurz bevor er abblendet, stehen die echten
+   Karten schon da. So gibt es einen Uebergang statt zweier
+   Ladezustaende hintereinander. Der Zeitgeber faengt den Fall ab,
+   dass es den Startbildschirm nicht gibt.
+
+   In der fertigen App endet der Zustand, wenn die Videoliste vom
+   Server da ist; heute liegt sie im Dokument. */
 (function(){
   var fertig = function(){
     if(!state.laedt) return;
@@ -2960,12 +3133,8 @@ render();
     letzterTab = null;      /* damit die Bloecke einmal aufblenden */
     render();
   };
-  var spaetestens = setTimeout(fertig, 1400);
-  if(document.fonts && document.fonts.ready){
-    document.fonts.ready.then(function(){
-      setTimeout(function(){ clearTimeout(spaetestens); fertig(); }, 450);
-    });
-  }
+  if(window.km1Start) window.km1Start.kurzVorSchluss(fertig);
+  setTimeout(fertig, 2600);
 })();
 </script>
 

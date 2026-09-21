@@ -2,7 +2,7 @@
    Legt die App beim ersten Besuch ins Regal, damit sie danach auch ohne Netz
    startet. Bei einer neuen Fassung die Zahl in VERSION erhoehen: der alte
    Speicher wird dann geloescht und alles frisch geholt. */
-const VERSION = 'km1-v8';
+const VERSION = 'km1-v9';
 const SCHRANK = VERSION + '-schrank';
 const SCHRIFT = VERSION + '-schrift';
 
