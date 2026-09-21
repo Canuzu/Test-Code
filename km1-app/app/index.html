@@ -874,8 +874,11 @@ a.btn{text-decoration:none}
 }
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
-/* ---------- Auf dem Handy ist die App das ganze Bild ---------- */
-@media (max-width:560px), (display-mode:standalone){
+/* ---------- Unter der Schreibtischbreite ist die App das ganze Bild ----------
+   Der Telefonrahmen war Kulisse fuer die Vorschau im Browser. Seit der
+   PC eine eigene Fassung hat, braucht ihn niemand mehr: schmal heisst
+   Hochformat ueber den ganzen Bildschirm, breit heisst Seitenleiste. */
+@media (max-width:999px), (display-mode:standalone){
   body{padding:0;height:100dvh;overflow:hidden}
   .env{display:none}
   .stage{max-width:none}
@@ -887,6 +890,90 @@ a.btn{text-decoration:none}
   .app{inset:0;padding-top:env(safe-area-inset-top,0px)}
   .tabs{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
   .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+}
+
+/* ============================================================
+   Am Schreibtisch.
+   Dieselbe App, derselbe Code — nur nutzt sie ab hier den Platz,
+   statt ein Handy in einem Rahmen zu spielen. Aus der Leiste unten
+   wird eine Seitenleiste, aus der Liste ein Raster, und das Video
+   bleibt oben stehen, waehrend die Schritte darunter durchlaufen.
+   ============================================================ */
+@media (min-width:1000px){
+  body{padding:0;height:100dvh;overflow:hidden}
+  .env{display:none}
+  .stage{max-width:none;align-items:stretch;height:100dvh}
+  .device{
+    max-width:none;width:100%;height:100dvh;min-height:0;
+    border-radius:0;box-shadow:none;outline:none;
+  }
+  .statusbar,.homebar{display:none}
+
+  /* Marke und Navigation links, Inhalt rechts. Das Blatt deckt nur
+     den Inhalt zu, damit die Seitenleiste bedienbar bleibt. */
+  .app{
+    inset:0;display:grid;
+    grid-template-columns:254px minmax(0,1fr);
+    grid-template-rows:auto minmax(0,1fr);
+    grid-template-areas:"marke inhalt" "nav inhalt";
+  }
+  .appbar{
+    grid-area:marke;flex-direction:column;align-items:flex-start;gap:16px;
+    padding:26px 22px 18px;background:var(--surface-2);
+  }
+  .appbar.scrolled{box-shadow:none}
+  .mark{height:26px}
+  .screens{grid-area:inhalt}
+  .sheet{grid-area:inhalt;transform:translateX(2%)}
+  .toast{grid-area:inhalt;bottom:34px}
+
+  /* Aus der Tableiste wird eine Seitenleiste. */
+  .tabs{
+    grid-area:nav;display:flex;flex-direction:column;gap:3px;
+    grid-template-columns:none;align-content:start;
+    padding:4px 14px 22px;background:var(--surface-2);
+    box-shadow:inset -1px 0 0 var(--line);
+  }
+  .tab{
+    flex-direction:row;justify-content:flex-start;gap:14px;
+    padding:11px 14px;border-radius:13px;font-size:15px;
+    transition:background .2s var(--ease),color .2s var(--ease);
+  }
+  .tab:hover{background:var(--surface-3)}
+  .tab .ti{width:auto;height:auto;background:none}
+  .tab[aria-current="page"]{background:var(--accent-soft)}
+  .tab[aria-current="page"] .ti{background:none}
+  .tab svg{width:21px;height:21px}
+
+  /* Der Inhalt bekommt eine Lesebreite statt der ganzen Fensterbreite. */
+  .screen{max-width:1180px;margin:0 auto;padding:30px 42px 64px;gap:40px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:18px}
+  .row{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));
+    gap:18px;overflow:visible;margin:0;padding:0;
+  }
+  .row > *{flex:none}
+  .chips{margin:0;padding:2px 0 4px;flex-wrap:wrap;overflow:visible}
+  /* Ohne Deckel fuellt die Heldenkarte den ganzen Bildschirm. */
+  .hero .hm{aspect-ratio:21/9;max-height:360px}
+  .hero .hc{padding:28px 130px 30px 30px}
+
+  /* Das Videoblatt: Lesebreite, und der Player bleibt beim Scrollen
+     oben stehen — so kann man die Schritte lesen, waehrend es laeuft. */
+  .sheet-head{padding:14px 26px}
+  .sheet-body{max-width:820px;margin:0 auto;padding:0 30px 72px}
+  .player{
+    /* Parkt unter der Kopfzeile, nicht dahinter. */
+    position:sticky;top:68px;z-index:3;
+    margin:0 -30px 30px;
+  }
+  .player .poster{max-height:46svh}
+  .steps li button{cursor:pointer}
+  .steps li:hover{box-shadow:var(--e2),var(--edge)}
+
+  /* Im Vollbild braucht es keine Drehung: das Fenster liegt schon quer. */
+  .kino .pctl{padding:14px 22px 20px}
+  .kino-oben{padding:16px 20px}
 }
 
 @media (prefers-reduced-motion:reduce){
@@ -2213,12 +2300,29 @@ function kinoAuf(){
       }).join('') +
     '</div></div>';
   document.querySelector('.device').appendChild(el);
+  if(echtesVollbild()){ try{ el.requestFullscreen().catch(function(){}); }catch(e){} }
   drehAnpassen();
   window.addEventListener('resize', drehAnpassen);
   requestAnimationFrame(function(){ el.classList.add('an'); });
   try{ if(screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function(){}); }catch(e){}
   steuerungZeigen();
 }
+/* Am Schreibtisch heisst Vollbild wirklich Vollbild: das Fenster gibt
+   seine Leisten ab. Auf dem Handy gibt es das nicht — dort bleibt es
+   die gedrehte Flaeche aus drehAnpassen. */
+function amSchreibtisch(){
+  /* Dieselbe Schwelle wie im Stil. Absichtlich ohne pointer:fine:
+     ein Tablet im Querformat soll die grosse Fassung bekommen. */
+  return window.matchMedia('(min-width:1000px)').matches;
+}
+function echtesVollbild(){
+  return amSchreibtisch() && !!document.fullscreenEnabled;
+}
+document.addEventListener('fullscreenchange', function(){
+  /* Wer mit Escape aus dem Vollbild geht, will auch aus dem Kino. */
+  if(!document.fullscreenElement && P.kino && amSchreibtisch()) kinoZu();
+});
+
 function drehAnpassen(){
   var el = document.getElementById('kino'), d = document.getElementById('dreh');
   if(!el || !d) return;
@@ -2233,6 +2337,7 @@ function drehAnpassen(){
 }
 function kinoZu(){
   if(P.kino) haptik('mittel');
+  try{ if(document.fullscreenElement) document.exitFullscreen().catch(function(){}); }catch(e){}
   window.removeEventListener('resize', drehAnpassen);
   var el = document.getElementById('kino');
   if(el){ el.classList.remove('an'); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 240); }
@@ -2281,6 +2386,29 @@ document.addEventListener('pointerup', function(e){
   if(z) zonenTipp(z.getAttribute('data-zone'));
 });
 document.addEventListener('pointercancel', function(){ P.zieht = null; });
+
+/* Tastatur am Schreibtisch: was man von einem Videoplayer erwartet.
+   Leertaste und K halten an, die Pfeile springen fuenf Sekunden, F
+   schaltet das Vollbild, Escape geht zurueck. */
+document.addEventListener('keydown', function(e){
+  var feld = e.target && e.target.tagName;
+  if(feld === 'INPUT' || feld === 'TEXTAREA' || feld === 'SELECT') return;
+  if(e.metaKey || e.ctrlKey || e.altKey) return;
+  var k = e.key;
+
+  if(k === 'Escape'){
+    if(P.kino) kinoZu();
+    else if(stack.length) closeSheet();
+    return;
+  }
+  /* Nur wenn ein Player wirklich zu sehen ist. */
+  if(!P.id || !(P.kino || document.getElementById('player'))) return;
+
+  if(k === ' ' || k === 'k' || k === 'K'){ e.preventDefault(); spiele(); }
+  else if(k === 'ArrowLeft' || k === 'j' || k === 'J'){ e.preventDefault(); springe(-5); }
+  else if(k === 'ArrowRight' || k === 'l' || k === 'L'){ e.preventDefault(); springe(5); }
+  else if(k === 'f' || k === 'F'){ e.preventDefault(); if(P.kino) kinoZu(); else kinoAuf(); }
+});
 
 /* ============================================================
    Zeichnen

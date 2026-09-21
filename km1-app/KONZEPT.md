@@ -580,6 +580,30 @@ Taptic Engine direkt an, und die ist feiner als jeder Vibrationsmotor in einem
 Android-Gerät: Die App wird sich am Ende auf dem iPhone am besten anfühlen,
 nur eben nicht im Browser.
 
+### Am Schreibtisch
+
+Die App ist Web, also läuft sie auf dem PC ohne zweite Codebasis. Ab
+**1000 Pixel Breite** schaltet sie auf ein eigenes Layout um, statt ein Handy
+in einem Rahmen zu spielen:
+
+- Aus der Tableiste unten wird eine **Seitenleiste** links, mit Marke und
+  Ebenen-Abzeichen darüber. Sie bleibt bedienbar, während ein Video offen ist —
+  das Videoblatt deckt nur die Inhaltsspalte zu.
+- Listen werden zu einem **Raster**, das sich nach der Fensterbreite richtet.
+- Im Videoblatt **bleibt der Player oben stehen**, während die Schritte darunter
+  durchlaufen. Zusammen mit den Kapitelmarken ist das der eigentliche Gewinn am
+  großen Bildschirm: lesen, was zu tun ist, ohne das Bild zu verlieren.
+- **Vollbild heißt Vollbild.** Am Schreibtisch fordert die App echtes
+  Vollbild an, das Fenster gibt seine Leisten ab. Die Drehung im Layout, die
+  das Handy braucht, entfällt.
+- **Tastatur:** Leertaste und `K` halten an, `←` und `→` springen fünf
+  Sekunden, `J` und `L` genauso, `F` schaltet das Vollbild, `Esc` geht zurück.
+
+Der Telefonrahmen, der vorher im Browser zu sehen war, ist damit weg. Er war
+Kulisse für die Vorschau; jetzt heißt schmal einfach Hochformat über den ganzen
+Bildschirm und breit Seitenleiste. Ein Tablet im Querformat bekommt die große
+Fassung, im Hochformat die schmale.
+
 ## 12. Vorschläge, noch offen
 
 Sortiert nach Verhältnis von Nutzen zu Aufwand. Keiner davon ist beschlossen.

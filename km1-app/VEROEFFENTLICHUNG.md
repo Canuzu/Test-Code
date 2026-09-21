@@ -151,7 +151,37 @@ unterwegs.
 
 ---
 
-## 8. Wer macht was
+## 8. Die Fassung für den PC
+
+Die App läuft ab 1000 Pixel Breite in einem eigenen Layout (siehe KONZEPT §11).
+Das ist nicht nur Bequemlichkeit, es hat drei handfeste Folgen für die
+Veröffentlichung:
+
+- **Kein Store dazwischen.** Was über die Webfassung verkauft wird, läuft nicht
+  über Apple oder Google und kostet damit keine 15 % Provision, sondern die
+  Gebühren des Zahlungsdienstleisters — bei EU-Karten grob 1,5 % plus ein paar
+  Cent. Achtung: aus der iOS-App heraus auf diesen Weg zu verweisen, ist
+  reglementiert. Beides parallel anzubieten, ist erlaubt.
+- **Kein Installationshindernis.** Eltern können sich die App ansehen, bevor
+  sie irgendetwas installieren. Für die Seite „Wer ist Kader" (WEG_ZUR_ZEHN
+  §2.6) ist das der natürliche Ort.
+- **Sie lässt sich trotzdem installieren.** Chrome und Edge bieten „App
+  installieren" an: eigenes Fenster, eigenes Symbol im Startmenü, keine
+  Browserleisten. Für den Alltag ist das eine PC-App, ohne dass ein
+  Installationspaket gebaut werden muss.
+
+Eine **echte native Desktop-App** (Electron oder Tauri, mit eigenem Installer
+und Eintrag im Microsoft Store) wäre möglich, bringt für eine Video-App aber
+fast nichts und kostet eigene Pflege. Davon rate ich ab, solange kein
+konkreter Grund dafür auftaucht.
+
+Offen ist nur die Adresse: heute liegt alles unter der GitHub-Pages-Adresse.
+Für den Start gehört die Webfassung unter eine eigene, zum Beispiel
+`km1-training.de/training`.
+
+---
+
+## 9. Wer macht was
 
 | Deins | Meins |
 | --- | --- |
