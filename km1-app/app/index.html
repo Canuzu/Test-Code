@@ -102,17 +102,19 @@
 :root[data-theme="dark"]{
   color-scheme:dark;
 
-  --canvas:#060C0A;
+  --canvas:#070D0B;
   --canvas-2:#030706;
-  --surface:#101C18;
-  --surface-2:#16241F;
-  --surface-3:#1B2C26;
+  --surface:#1E2E28;
+  --surface-2:#253830;
+  --surface-3:#2C4139;
   --field:#0A1310;
   --veil:rgba(16,28,24,.84);
 
-  --line:rgba(242,245,241,.09);
-  --line-2:rgba(242,245,241,.16);
-  --edge:inset 0 1px 0 rgba(242,245,241,.06);
+  --line:rgba(242,245,241,.13);
+  --line-2:rgba(242,245,241,.2);
+  /* Volle Haarlinie statt nur oben: im Dunkeln ist das der einzige
+     Hinweis darauf, wo eine Karte anfaengt und aufhoert. */
+  --edge:inset 0 0 0 1px rgba(242,245,241,.08);
 
   --ink:#F2F5F1;
   --ink-body:#C2D1CA;
@@ -135,7 +137,7 @@
   --e3:0 50px 100px -30px rgba(0,0,0,.9), 0 0 0 1px rgba(242,245,241,.06);
   --glow:0 12px 30px -10px rgba(224,52,42,.55);
 
-  --dia-bg:#0D1A16;
+  --dia-bg:#1B2A24;
   --dia-line:rgba(242,245,241,.4);
   --dia-acc:#E8433A;
   --dia-dot:rgba(242,245,241,.9);
@@ -234,8 +236,13 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
 }
 .lvchip i{width:8px;height:8px;border-radius:99px;flex:0 0 auto}
 
-.screens{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-.screen{display:flex;flex-direction:column;gap:30px;padding:8px 18px 34px}
+/* scrollbar-gutter haelt den Platz fuer den Rollbalken frei. Sonst
+   rutscht die mittig gesetzte Seite um seine Breite, sobald ein
+   Filter die Liste so kurz macht, dass nichts mehr zu rollen ist. */
+.screens{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable}
+/* Enger. Vorher waren auf der Technikseite 44 % der Hoehe weg, bevor
+   das erste Video zu sehen war. */
+.screen{display:flex;flex-direction:column;gap:20px;padding:2px 18px 34px}
 
 /* ---------- Schrift ---------- */
 .eyebrow{
@@ -245,11 +252,17 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
 .eyebrow::before{content:"";width:16px;height:2px;background:var(--accent);flex:0 0 auto;border-radius:2px}
 h1.big{
   font-family:var(--display);font-weight:400;text-transform:uppercase;
-  font-size:37px;line-height:.94;letter-spacing:.004em;margin:10px 0 0;text-wrap:balance;
+  font-size:33px;line-height:.94;letter-spacing:.004em;margin:6px 0 0;text-wrap:balance;
 }
 h2.sec{
   font-family:var(--display);font-weight:400;text-transform:uppercase;
   font-size:23px;line-height:1.02;letter-spacing:.012em;margin:0;
+}
+/* Fuer Einstellungen: dieselbe Rolle, aber leise. Eine Hell-Dunkel-Wahl
+   braucht keine Versalien in 23 Pixeln. */
+h2.sec.leise{
+  font-family:var(--mono);font-size:11.5px;font-weight:700;
+  letter-spacing:.15em;color:var(--ink-2);
 }
 .sub{color:var(--ink-2);font-size:15.5px;margin:12px 0 0;line-height:1.55;max-width:38ch}
 .block{display:flex;flex-direction:column;gap:14px}
@@ -322,7 +335,10 @@ h2.sec{
   background:var(--surface);
 }
 .hero:active{transform:scale(.99)}
-.hero .hm{position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;background:var(--surface-3)}
+/* display:block ist noetig: als Zeilenbox ignoriert das <span> sowohl
+   aspect-ratio als auch das max-height am PC, und die Karte wurde so
+   hoch wie das Bild. */
+.hero .hm{position:relative;display:block;width:100%;aspect-ratio:16/9;overflow:hidden;background:var(--surface-3)}
 .hero .hm > img,.hero .hm > svg{width:100%;height:100%;object-fit:cover;display:block}
 .hero .hm::after{
   content:"";position:absolute;inset:0;
@@ -330,7 +346,7 @@ h2.sec{
 }
 .hero .hc{
   position:absolute;left:0;right:0;bottom:0;z-index:3;
-  padding:22px 104px 24px 20px;display:flex;flex-direction:column;gap:9px;
+  padding:22px 92px 24px 20px;display:flex;flex-direction:column;gap:9px;
 }
 .hero .hk{
   font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
@@ -340,11 +356,19 @@ h2.sec{
   font-family:var(--display);font-weight:400;text-transform:uppercase;
   font-size:22.5px;line-height:1.04;letter-spacing:.012em;color:#fff;
   text-shadow:0 2px 20px rgba(3,7,6,.75);
+  /* Hoechstens zwei Zeilen. Bei dreien stiess der Titel an den Knopf. */
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+  overflow-wrap:break-word;
 }
+/* Kein Titel soll abgeschnitten werden, aber auch keiner die halbe Karte
+   fuellen. Lange Titel werden deshalb eine Stufe kleiner gesetzt, sehr
+   lange zwei. Die Klasse vergibt titelKlasse() beim Bauen der Karte. */
+.hero .ht.mittel{font-size:19.5px;line-height:1.07}
+.hero .ht.eng{font-size:17px;line-height:1.1;letter-spacing:.015em}
 .hero .hmeta{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:rgba(244,247,243,.86)}
 .hero .hplay{
-  position:absolute;right:20px;bottom:22px;z-index:4;
-  width:62px;height:62px;border-radius:99px;background:var(--accent);
+  position:absolute;right:18px;bottom:20px;z-index:4;
+  width:56px;height:56px;border-radius:99px;background:var(--accent);
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 14px 30px -10px rgba(200,30,20,.8),inset 0 1px 0 rgba(255,255,255,.3);
   transition:transform .35s var(--spring);
@@ -352,7 +376,7 @@ h2.sec{
 .hero:hover .hplay{transform:scale(1.07)}
 .hero .hplay svg{width:20px;height:20px;fill:#fff;margin-left:3px}
 .hero .hbar{position:absolute;left:0;right:0;bottom:0;z-index:5;height:4px;background:rgba(244,247,243,.22)}
-.hero .hbar i{display:block;height:100%;background:var(--accent);box-shadow:0 0 12px rgba(200,30,20,.8)}
+.hero .hbar i{display:block;height:100%;background:var(--mein,var(--accent))}
 
 /* ---------- Reihen und Raster ---------- */
 .row{display:flex;gap:14px;overflow-x:auto;padding:4px 18px 8px;margin:0 -18px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
@@ -362,8 +386,8 @@ h2.sec{
 /* ---------- Chips ---------- */
 .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 18px 4px;margin:0 -18px}
 .chip{
-  flex:0 0 auto;font-size:13.5px;font-weight:600;letter-spacing:.005em;
-  padding:10px 15px;border-radius:var(--r-chip);white-space:nowrap;
+  flex:0 0 auto;font-size:13px;font-weight:600;letter-spacing:.005em;
+  padding:8px 13px;border-radius:var(--r-chip);white-space:nowrap;
   background:var(--surface);color:var(--ink-2);
   box-shadow:var(--e1),var(--edge);
   transition:color .25s var(--ease),background .25s var(--ease),transform .25s var(--spring);
@@ -375,14 +399,49 @@ h2.sec{
 
 /* ---------- Suche ---------- */
 .search{
-  display:flex;align-items:center;gap:11px;padding:14px 16px;
+  flex:1 1 auto;min-width:0;
+  display:flex;align-items:center;gap:10px;padding:11px 14px;
   background:var(--surface);border-radius:var(--r-btn);
   box-shadow:var(--e1),var(--edge);
 }
 .search svg{width:18px;height:18px;fill:none;stroke:var(--ink-3);stroke-width:2;flex:0 0 auto}
+/* Suchfeld und Ebenenfilter teilen sich eine Zeile. Das spart die
+   zweite Chipreihe, ohne den Filter zu verstecken. */
+.suchzeile{display:flex;align-items:stretch;gap:10px}
+.ebfilter{
+  flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:0 14px;
+  background:var(--surface);border-radius:var(--r-btn);
+  box-shadow:var(--e1),var(--edge);
+  font-size:13.5px;font-weight:700;color:var(--ink);white-space:nowrap;
+}
+.ebfilter .pkt{width:9px;height:9px;border-radius:99px;background:var(--c,var(--ink-3))}
+.ebfilter svg{width:13px;height:13px;fill:none;stroke:var(--ink-3);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+
+.ebliste{display:flex;flex-direction:column;gap:8px}
+.ebzeile{
+  display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+  padding:16px 18px;border-radius:var(--r-media);
+  background:var(--surface);box-shadow:var(--e1),var(--edge);
+  font-size:15.5px;font-weight:600;color:var(--ink);
+  transition:box-shadow .25s var(--ease);
+}
+.ebzeile .pkt{width:11px;height:11px;border-radius:99px;flex:0 0 auto;background:var(--c,var(--ink-3))}
+.ebzeile span{flex:1;min-width:0}
+.ebzeile svg{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.ebzeile[aria-pressed="true"]{box-shadow:var(--e1),inset 0 0 0 1.5px var(--c,var(--accent))}
+
+/* Der Titel wandert beim Scrollen in die Kopfzeile. */
+.kopftitel{
+  position:absolute;left:50%;transform:translate(-50%,6px);
+  font-size:16px;font-weight:700;color:var(--ink);white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity .22s var(--ease),transform .28s var(--spring);
+}
+.appbar{position:relative}
+.appbar.tief .kopftitel{opacity:1;transform:translate(-50%,0)}
+.appbar.tief .mark{opacity:0;transition:opacity .2s var(--ease)}
 .search input{
   flex:1;min-width:0;background:none;border:0;color:var(--ink);
-  font-family:var(--body);font-size:16px;font-weight:500;
+  font-family:var(--body);font-size:15px;font-weight:500;
   border-radius:0;-webkit-appearance:none;appearance:none;
 }
 .search input::placeholder{color:var(--ink-3);font-weight:450}
@@ -392,14 +451,18 @@ h2.sec{
 .panel{
   background:var(--surface);border-radius:var(--r-card);padding:20px;
   display:flex;flex-direction:column;gap:14px;
-  box-shadow:var(--e1),var(--edge);
+  box-shadow:var(--edge);
 }
+/* Was Fortschritt zeigt, darf schweben. */
+.panel.traegt{box-shadow:var(--e1),var(--edge)}
 .goal{display:flex;align-items:flex-end;justify-content:space-between;gap:14px}
-.goal .n{font-family:var(--display);font-size:46px;line-height:.84;font-weight:400;letter-spacing:.01em}
+.goal .n{font-family:var(--display);font-size:46px;line-height:.84;font-weight:400;letter-spacing:.01em;color:var(--mein,var(--ink))}
 .goal .n em{font-style:normal;color:var(--ink-3);font-size:17px;font-family:var(--body);font-weight:600;letter-spacing:0}
 .pips{display:flex;gap:6px}
 .pips i{width:100%;height:7px;flex:1 1 auto;background:var(--surface-3);border-radius:99px}
-.pips i.on{background:var(--lv1)}
+/* Punkt 12: der Fortschritt traegt die Farbe der eigenen Ebene,
+   nicht immer Rot. --mein wird beim Zeichnen gesetzt. */
+.pips i.on{background:var(--mein,var(--lv1))}
 .note{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-2);margin:0}
 
 .wide{
@@ -480,7 +543,7 @@ h2.sec{
 /* ---------- Schiebeblatt ---------- */
 .sheet{
   position:absolute;inset:0;z-index:6;background:var(--canvas);
-  overflow-y:auto;overscroll-behavior:contain;
+  overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;
   transform:translateX(8%);opacity:0;
   transition:transform .32s var(--ease),opacity .32s var(--ease);
 }
@@ -640,6 +703,35 @@ h2.sec{
   font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);
   font-variant-numeric:tabular-nums;
 }
+/* Die Schritte sind zugleich Kapitelmarken: ein Tipp springt an die Stelle. */
+.steps li button{
+  display:flex;align-items:baseline;gap:14px;width:100%;
+  font:inherit;color:inherit;text-align:left;
+}
+.steps li .tx{flex:1 1 auto;min-width:0}
+.steps li .zt{
+  flex:0 0 auto;font-family:var(--mono);font-size:12.5px;font-weight:600;
+  color:var(--ink-3);font-variant-numeric:tabular-nums;
+  transition:color .2s var(--ease);
+}
+.steps li.jetzt{box-shadow:var(--e1),inset 0 0 0 1.5px var(--accent)}
+.steps li.jetzt .zt{color:var(--accent)}
+.steps li.jetzt::before{color:var(--accent)}
+
+/* Der Aufstieg. Selten genug, um eine eigene Seite zu verdienen. */
+.feier{
+  text-align:center;align-items:center;justify-content:center;
+  min-height:68svh;gap:16px;padding-top:24px;
+}
+.feier .ring{
+  width:96px;height:96px;border-radius:99px;display:flex;align-items:center;justify-content:center;
+  background:var(--c);box-shadow:0 22px 48px -18px var(--c);margin:0 auto 6px;
+}
+.feier .ring svg{width:38px;height:38px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.feier .eyebrow{justify-content:center}
+.feier .meta{justify-content:center}
+.feier .btn{margin-top:8px}
+
 .callout{
   border-radius:var(--r-media);background:var(--accent-soft);
   padding:18px 20px;display:flex;flex-direction:column;gap:7px;
@@ -652,6 +744,28 @@ h2.sec{
 
 .coach{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:var(--r-card);padding:14px 16px;box-shadow:var(--e1),var(--edge)}
 .coach img{width:52px;height:52px;border-radius:99px;object-fit:cover;filter:grayscale(1) contrast(1.06);flex:0 0 auto}
+.coach .gross{
+  flex:0 0 auto;border-radius:99px;display:block;
+  transition:transform .3s var(--spring);
+}
+.coach .gross:hover{transform:scale(1.06)}
+.coach .gross:active{transform:scale(.96)}
+.coach .gross:focus-visible{outline:2.5px solid var(--accent);outline-offset:3px}
+
+/* Das Portrait in gross. Ein Klick irgendwohin schliesst es wieder. */
+.lupe{
+  position:absolute;inset:0;z-index:70;
+  display:flex;align-items:center;justify-content:center;padding:32px;
+  background:rgba(3,7,6,.82);backdrop-filter:blur(10px);
+  opacity:0;transition:opacity .25s var(--ease);
+}
+.lupe.an{opacity:1}
+.lupe img{
+  max-width:min(560px,86%);max-height:78%;object-fit:contain;
+  border-radius:var(--r-card);box-shadow:0 30px 70px -24px rgba(0,0,0,.9);
+  transform:scale(.94);transition:transform .35s var(--spring);
+}
+.lupe.an img{transform:none}
 .coach .n{font-size:15.5px;font-weight:700;line-height:1.3;color:var(--ink)}
 .coach .n span{display:block;color:var(--ink-2);font-size:13px;font-weight:500;margin-top:2px}
 
@@ -664,6 +778,14 @@ h2.sec{
 .pyr{width:100%;max-width:100%;aspect-ratio:100/78;display:block;overflow:visible}
 .pyr .edge{fill:none;stroke:var(--line-2);stroke-width:.45;stroke-linecap:round}
 .pyr .plate{cursor:pointer}
+/* Ohne das malt der Browser seinen eigenen, tiefschwarzen Ring um die
+   Gruppe. Mit der Maus soll gar nichts zu sehen sein, mit der Tastatur
+   ein Ring in der Hausfarbe. */
+.pyr .plate:focus{outline:none}
+/* Achtung: im SVG rechnet der Ring in Nutzereinheiten und wird mit
+   skaliert. Deshalb die kleinen Zahlen — sichtbar sind daraus rund
+   zwei Pixel. */
+.pyr .plate:focus-visible{outline:.32px solid var(--accent);outline-offset:.55px;border-radius:.8px}
 .pyr .plate polygon{transition:fill-opacity .4s var(--ease),stroke-opacity .4s var(--ease)}
 .pyr .nm{font-family:var(--display);font-size:4.6px;letter-spacing:.05px;text-transform:uppercase;fill:var(--ink);text-anchor:middle}
 .pyr .ag{font-family:var(--body);font-weight:600;font-size:2.9px;letter-spacing:.05px;fill:var(--ink-2);text-anchor:middle}
@@ -700,14 +822,23 @@ h2.sec{
 
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .stat{
-  padding:18px 14px;display:flex;flex-direction:column;gap:5px;
+  padding:15px 13px 13px;display:flex;flex-direction:column;gap:3px;
   background:var(--surface);border-radius:var(--r-media);
   box-shadow:var(--e1),var(--edge);
 }
-.stat .v{font-family:var(--display);font-size:32px;line-height:.86;font-variant-numeric:tabular-nums}
-.stat .k{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.stat .v{font-family:var(--display);font-size:30px;line-height:.86;font-variant-numeric:tabular-nums;color:var(--mein,var(--ink))}
+.stat .k{
+  font-size:12px;font-weight:600;color:var(--ink-2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
 
-.rows{display:flex;flex-direction:column;background:var(--surface);border-radius:var(--r-card);box-shadow:var(--e1),var(--edge);overflow:hidden}
+/* Gruppierte Listen sind Beiwerk: flach, nur eine Kante. Was Inhalt
+   traegt — Videos, Heldenkarte, Abo — behaelt seinen Schatten. So gibt
+   es zwei Gewichte statt ueberall derselben weissen Karte. */
+.rows{
+  display:flex;flex-direction:column;background:var(--surface);
+  border-radius:var(--r-card);box-shadow:var(--edge);overflow:hidden;
+}
 .lrow{
   display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;
   padding:17px 20px;font-size:16px;font-weight:500;
@@ -845,8 +976,11 @@ a.btn{text-decoration:none}
 }
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
-/* ---------- Auf dem Handy ist die App das ganze Bild ---------- */
-@media (max-width:560px), (display-mode:standalone){
+/* ---------- Unter der Schreibtischbreite ist die App das ganze Bild ----------
+   Der Telefonrahmen war Kulisse fuer die Vorschau im Browser. Seit der
+   PC eine eigene Fassung hat, braucht ihn niemand mehr: schmal heisst
+   Hochformat ueber den ganzen Bildschirm, breit heisst Seitenleiste. */
+@media (max-width:999px), (display-mode:standalone){
   body{padding:0;height:100dvh;overflow:hidden}
   .env{display:none}
   .stage{max-width:none}
@@ -859,6 +993,124 @@ a.btn{text-decoration:none}
   .tabs{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
   .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 }
+
+/* ============================================================
+   Am Schreibtisch.
+   Dieselbe App, derselbe Code — nur nutzt sie ab hier den Platz,
+   statt ein Handy in einem Rahmen zu spielen. Aus der Leiste unten
+   wird eine Seitenleiste, aus der Liste ein Raster, und das Video
+   bleibt oben stehen, waehrend die Schritte darunter durchlaufen.
+   ============================================================ */
+@media (min-width:1000px){
+  body{padding:0;height:100dvh;overflow:hidden}
+  .env{display:none}
+  .stage{max-width:none;align-items:stretch;height:100dvh}
+  .device{
+    max-width:none;width:100%;height:100dvh;min-height:0;
+    border-radius:0;box-shadow:none;outline:none;
+  }
+  .statusbar,.homebar{display:none}
+
+  /* Marke und Navigation links, Inhalt rechts. Das Blatt deckt nur
+     den Inhalt zu, damit die Seitenleiste bedienbar bleibt. */
+  .app{
+    inset:0;display:grid;
+    grid-template-columns:254px minmax(0,1fr);
+    grid-template-rows:auto minmax(0,1fr);
+    grid-template-areas:"marke inhalt" "nav inhalt";
+  }
+  .appbar{
+    grid-area:marke;flex-direction:column;align-items:flex-start;gap:16px;
+    padding:26px 22px 18px;background:var(--surface-2);
+  }
+  .appbar.scrolled{box-shadow:none}
+  .mark{height:26px}
+  .screens{grid-area:inhalt}
+  .sheet{grid-area:inhalt;transform:translateX(2%)}
+  .toast{grid-area:inhalt;bottom:34px}
+
+  /* Aus der Tableiste wird eine Seitenleiste. */
+  .tabs{
+    grid-area:nav;display:flex;flex-direction:column;gap:3px;
+    grid-template-columns:none;align-content:start;
+    padding:4px 14px 22px;background:var(--surface-2);
+    box-shadow:inset -1px 0 0 var(--line);
+  }
+  .tab{
+    flex-direction:row;justify-content:flex-start;gap:14px;
+    padding:11px 14px;border-radius:13px;font-size:15px;
+    transition:background .2s var(--ease),color .2s var(--ease);
+  }
+  .tab:hover{background:var(--surface-3)}
+  .tab .ti{width:auto;height:auto;background:none}
+  .tab[aria-current="page"]{background:var(--accent-soft)}
+  .tab[aria-current="page"] .ti{background:none}
+  .tab svg{width:21px;height:21px}
+
+  /* Der Inhalt bekommt eine Lesebreite statt der ganzen Fensterbreite. */
+  .screen{max-width:1180px;margin:0 auto;padding:30px 42px 64px;gap:40px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:18px}
+  .row{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));
+    gap:18px;overflow:visible;margin:0;padding:0;
+  }
+  .row > *{flex:none}
+  .chips{margin:0;padding:2px 0 4px;flex-wrap:wrap;overflow:visible}
+  /* Ohne Deckel fuellt die Heldenkarte den ganzen Bildschirm. */
+  .hero .hm{aspect-ratio:21/9;max-height:360px}
+  /* Dasselbe gilt fuer die Pyramide: ueber die ganze Breite waere sie
+     hoeher als der Bildschirm. */
+  .pyr{max-width:660px;margin:0 auto}
+  .lvpanel{max-width:660px;margin:0 auto;width:100%}
+  .hero .hc{padding:28px 118px 30px 30px}
+
+  /* Das Videoblatt: Lesebreite, und der Player bleibt beim Scrollen
+     oben stehen — so kann man die Schritte lesen, waehrend es laeuft. */
+  .sheet-head{padding:14px 26px}
+  .sheet-body{max-width:820px;margin:0 auto;padding:0 30px 72px}
+  .player{
+    /* Parkt unter der Kopfzeile, nicht dahinter. */
+    position:sticky;top:68px;z-index:3;
+    margin:0 -30px 30px;
+  }
+  .player .poster{max-height:46svh}
+  .steps li button{cursor:pointer}
+  .steps li:hover{box-shadow:var(--e2),var(--edge)}
+
+  /* Im Vollbild braucht es keine Drehung: das Fenster liegt schon quer. */
+  .kino .pctl{padding:14px 22px 20px}
+  .kino-oben{padding:16px 20px}
+}
+
+/* ---------- Punkt 10: Bewegung beim Seitenwechsel ----------
+   Die Bloecke blenden leicht versetzt auf, statt hart umzuschalten.
+   Nur beim Tabwechsel, nicht bei jedem Neuzeichnen — sonst zappelt
+   die Seite, sobald man ein Video abhakt. */
+@keyframes auf{
+  from{opacity:0;transform:translateY(9px)}
+  to{opacity:1;transform:none}
+}
+.screen.frisch > *{animation:auf .34s var(--ease) both}
+
+/* ---------- Punkt 11: Platzhalter statt Leere ----------
+   Im Entwurf liegen die Daten im Dokument, deshalb ist hier nur der
+   erste Start echt. In der fertigen App steht das hier, solange die
+   Videoliste vom Server unterwegs ist. */
+@keyframes pulsen{
+  0%,100%{opacity:.55}
+  50%{opacity:.95}
+}
+.skelett{
+  background:var(--surface);border-radius:var(--r-card);padding:8px;
+  box-shadow:var(--e1),var(--edge);
+  animation:pulsen 1.4s var(--ease) infinite;
+}
+.skelett .bild{display:block;aspect-ratio:16/10;border-radius:var(--r-media);background:var(--surface-3)}
+.skelett .zeile{display:block;height:13px;border-radius:99px;background:var(--surface-3);margin:14px 8px 0}
+.skelett .zeile.kurz{width:58%;height:11px;margin-top:9px}
+.skelett:nth-child(2){animation-delay:.18s}
+.skelett:nth-child(3){animation-delay:.36s}
+.skelett:nth-child(4){animation-delay:.54s}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
@@ -896,6 +1148,7 @@ a.btn{text-decoration:none}
     <div class="app">
       <header class="appbar">
         <img class="mark" src="img/logo.png" alt="KM1 Training">
+        <span class="kopftitel" id="kopftitel" aria-hidden="true"></span>
         <span class="lvchip" id="lvchip"></span>
       </header>
 
@@ -1099,7 +1352,8 @@ var state = {
   meinLv:1, lvSel:1,
   kat:'alle', fltLv:0, suche:'',
   done:{}, preis:'jahr', nachLogin:null, loginModus:'neu',
-  tempo:1, symbol:'standard', merk:{}, serieHeute:0,
+  tempo:1, symbol:'standard', merk:{}, serieHeute:0, laedt:true,
+  gesehen:{}, zuletzt:null,
   erinnerung:{an:true, tage:['mi','sa'], zeit:'17:00'},
   up:{datei:null, lv:1, vis:'offen', busy:false}
 };
@@ -1131,6 +1385,28 @@ function zugangName(zg){
   return zg==='pro' ? 'Profi-Einheit' : (zg==='konto' ? 'Mit Konto' : 'Ohne Anmeldung');
 }
 function zaehl(zg){return VIDEOS.filter(function(v){return v.zg===zg;}).length;}
+
+/* Kapitelmarken. Bis die Videos geschnitten sind, verteilen wir die
+   Schritte gleichmaessig ueber die Laufzeit; beim Hochladen traegt Kader
+   die echte Sekunde ein, das Feld dafuer steht im Datenmodell. */
+function kapitelSek(v, i){
+  if(v.sk && v.sk[i] != null) return v.sk[i];
+  var d = sek(v.d), n = (v.st || []).length || 1;
+  var los = Math.round(d * 0.06);
+  return Math.round(los + (d - los) * (i / n));
+}
+
+/* Wer alles geschafft hat, was auf seiner Ebene offen steht, steigt auf.
+   Gesperrte Videos zaehlen nicht mit — sonst haengt der Aufstieg am Abo. */
+function pruefeAufstieg(){
+  if(!drin() || state.meinLv >= LEVELS.length) return false;
+  var meine = VIDEOS.filter(function(v){ return v.lv === state.meinLv && !gesperrt(v); });
+  if(!meine.length) return false;
+  var fertig = meine.every(function(v){ return !!state.done[v.id]; });
+  if(!fertig) return false;
+  state.meinLv += 1;
+  return true;
+}
 function offenFuerMich(){return VIDEOS.filter(function(v){return !gesperrt(v);}).length;}
 
 var ICON = {
@@ -1140,6 +1416,7 @@ var ICON = {
   check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
   back:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>',
   such:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',
+  runter:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
   voll:'<svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor"><path d="M9 4H4v5M15 4h5v5M15 20h5v-5M9 20H4v-5"/></svg>',
   klein:'<svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor"><path d="M4 9h5V4M20 9h-5V4M20 15h-5v5M4 15h5v5"/></svg>',
   x:'<svg viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -1156,7 +1433,7 @@ var ICON = {
 /* Kreidezeichnungen als Vorschaubild. Struktur in Kreide, die
    Aktion in Koeln-Rot. Die Farben kommen aus den Tokens, damit
    die Zeichnungen in beiden Fassungen stimmen. */
-function dia(k){
+function dia(k, lv){
   var d = {
     flanken:'<path class="c" d="M112 12V88"/><path class="c" d="M112 26h40v48h-40"/><path class="c" d="M152 40v20"/><path class="a" d="M22 82C54 40 96 30 128 44" stroke-dasharray="5 4"/><path class="a" d="M120 40l9 4-7 6"/><circle class="f" cx="22" cy="82" r="3.4"/><circle class="f" cx="130" cy="45" r="3.4"/>',
     dribbling:'<path class="a" d="M10 50c10-24 26-24 33 0s23 24 30 0 26-24 33 0 23 24 30 0"/><g class="c"><path d="M25 44l6 12H19z"/><path d="M55 44l6 12H49z"/><path d="M85 44l6 12H79z"/><path d="M115 44l6 12h-12z"/></g>',
@@ -1167,29 +1444,51 @@ function dia(k){
     torwart:'<path class="c" d="M40 26V12h80v14"/><path class="c" d="M40 12v14M120 12v14"/><path class="c" d="M28 26h104v34H28z" opacity=".55"/><circle class="f" cx="80" cy="36" r="3.6"/><path class="a" d="M80 82L44 28" stroke-dasharray="5 4"/><path class="a" d="M80 82l36-54" stroke-dasharray="5 4"/><circle class="f" cx="80" cy="84" r="3"/>',
     taktik:'<path class="c" d="M56 8v84M104 8v84" opacity=".55"/><circle class="f" cx="30" cy="50" r="3.6"/><circle class="f" cx="80" cy="26" r="3.6"/><circle class="f" cx="80" cy="74" r="3.6"/><path class="a" d="M36 48c18-10 30-14 40-18"/><path class="a" d="M70 28l9-2-4 8"/><path class="a" d="M36 54c18 10 30 14 40 18"/><path class="a" d="M70 72l9 2-4-8"/><path class="a" d="M110 50h26"/><path class="a" d="M130 45l8 5-8 5"/>'
   }[k] || '';
-  return '<svg class="dia" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+  /* Die Zeichnung traegt die Farbe ihrer Ebene. Vorher war alles rot,
+     und eine Liste aus zwoelf Karten sah aus wie zwoelfmal dasselbe. */
+  var ton = lv ? ' style="--dia-acc:var(--lv'+lv+')"' : '';
+  return '<svg class="dia" viewBox="0 0 160 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true"'+ton+'>' +
     '<rect class="bg" width="160" height="100"/>' +
     '<g stroke-linecap="round" stroke-linejoin="round">' + d + '</g></svg>';
 }
 
 function posterOf(v){
-  return v.img ? '<img src="img/'+v.img+'.jpg" alt="" loading="lazy">' : dia(v.k);
+  return v.img ? '<img src="img/'+v.img+'.jpg" alt="" loading="lazy">' : dia(v.k, v.lv);
 }
 
 /* Die grosse Karte oben auf der Startseite. Sie traegt das Bild in
    voller Breite, die Zeile darueber und den roten Knopf: das erste,
    was jemand sieht, wenn die App aufgeht. */
+/* Waehlt die Schriftstufe fuer den Titel der grossen Karte: ein sehr
+   langes Wort oder ein sehr langer Titel bekommt die kleinste Stufe. */
+function titelKlasse(titel){
+  var lang = titel.split(/\s+/).some(function(w){ return w.length > 15; });
+  if(lang || titel.length > 34) return ' eng';
+  if(titel.length > 24) return ' mittel';
+  return '';
+}
+
 function heroKarte(v, kicker, meta, pct){
   return '<button class="hero" type="button" data-act="video:'+v.id+'">' +
     '<span class="hm">'+posterOf(v)+'</span>' +
     '<span class="hc">' +
       '<span class="hk">'+h(kicker)+'</span>' +
-      '<span class="ht">'+h(v.t)+'</span>' +
+      '<span class="ht'+titelKlasse(v.t)+'">'+h(v.t)+'</span>' +
       '<span class="hmeta">'+h(meta)+'</span>' +
     '</span>' +
     '<span class="hplay">'+ICON.play+'</span>' +
     (pct ? '<span class="hbar"><i style="width:'+pct+'%"></i></span>' : '') +
   '</button>';
+}
+
+/* Punkt 11: vier Platzhalterkarten, solange nichts da ist. */
+function skelette(anzahl){
+  var out = '';
+  for(var i = 0; i < (anzahl || 4); i++){
+    out += '<div class="skelett"><span class="bild"></span>' +
+      '<span class="zeile"></span><span class="zeile kurz"></span></div>';
+  }
+  return '<div class="grid">'+out+'</div>';
 }
 
 function karte(v){
@@ -1210,6 +1509,23 @@ function karte(v){
 /* ============================================================
    Die vier Bereiche
    ============================================================ */
+/* Die Karte oben auf der Startseite: das angefangene Video, sonst das
+   naechste offene der eigenen Ebene. */
+function startKarte(){
+  var id = state.zuletzt, stelle = id && state.gesehen[id], v = id && byId(id);
+  if(v && stelle && !gesperrt(v)){
+    var d = sek(v.d);
+    return heroKarte(v, 'Weitertrainieren',
+      fmtZeit(d - stelle)+' übrig · '+lvOf(v.lv).nm,
+      Math.max(3, Math.round(stelle / d * 100)));
+  }
+  var ebene = drin() ? state.meinLv : 1;
+  var offen = VIDEOS.filter(function(x){ return !gesperrt(x) && !state.done[x.id] && x.lv === ebene; });
+  if(!offen.length) offen = VIDEOS.filter(function(x){ return !gesperrt(x) && !state.done[x.id]; });
+  var n = offen[0] || VIDEOS[0];
+  return heroKarte(n, drin() ? 'Als Nächstes' : 'Fang hier an', n.d+' · '+lvOf(n.lv).nm, 0);
+}
+
 function screenStart(){
   var neu = VIDEOS.filter(function(v){return v.neu;});
   var erledigt = Object.keys(state.done).length;
@@ -1217,21 +1533,19 @@ function screenStart(){
 
   var kopfteil, mitte;
   if(drin()){
-    var r = byId('flanke-innen');
     kopfteil = '<div><p class="eyebrow">Mittwoch, Trainingstag</p><h1 class="big">Moin '+h(state.konto.vn)+'.<br>Weiter geht’s.</h1></div>' +
-      heroKarte(r, 'Weitertrainieren', '2:49 übrig · '+lvOf(r.lv).nm, 62);
+      startKarte();
     var ziel = Math.min(erledigt,5), pips = '';
     for(var i=0;i<5;i++) pips += '<i class="'+(i<ziel?'on':'')+'"></i>';
-    mitte = '<div class="panel">' +
+    mitte = '<div class="panel traegt">' +
       '<p class="note">Dein Wochenziel</p>' +
       '<div class="goal"><span class="n">'+ziel+'<em> / 5 Einheiten</em></span></div>' +
       '<span class="pips">'+pips+'</span>' +
     '</div>';
   } else {
-    var s = byId('erste-beruehrung');
     kopfteil = '<div><p class="eyebrow">Ohne Anmeldung</p><h1 class="big">Moin.<br>Fang einfach an.</h1>' +
       '</div>' +
-      heroKarte(s, 'Fang hier an', s.d+' · '+lvOf(s.lv).nm, 0);
+      startKarte();
     mitte = '<div class="panel">' +
       '<p class="note">Kostenlos</p>' +
       '<h2 class="sec">Fortschritt sichern</h2>' +
@@ -1265,7 +1579,7 @@ function screenStart(){
 
     (state.pro ? '' :
     '<button class="proband" type="button" data-act="paywall">' +
-      '<span class="note" style="color:var(--accent)">KM1 Pro</span>' +
+      '<span class="note">KM1 Pro</span>' +
       '<span class="t">Die Profis.<br>Aus der Nähe.</span>' +
       '<p>'+zaehl('pro')+' Einheiten mit aktiven Profispielern.</p>' +
       '<span class="btn" style="pointer-events:none">Pro ansehen</span>' +
@@ -1296,23 +1610,25 @@ function screenTechnik(){
       return '<button class="chip" type="button" data-act="kat:'+k+'" aria-pressed="'+(state.kat===k)+'">'+KAT[k]+'</button>';
     }).join('');
 
-  var lvChips = '<button class="chip lv" type="button" data-act="fltlv:0" aria-pressed="'+(state.fltLv===0)+'">Jede Ebene</button>' +
-    LEVELS.map(function(l){
-      return '<button class="chip lv" type="button" data-act="fltlv:'+l.n+'" style="--c:'+l.c+'" aria-pressed="'+(state.fltLv===l.n)+'">'+l.nm+'</button>';
-    }).join('');
+  var eb = state.fltLv ? lvOf(state.fltLv) : null;
 
   return '<section class="screen">' +
     '<div><p class="eyebrow">Videothek</p><h1 class="big">Technik</h1>' +
     '</div>' +
 
-    '<label class="search"><span class="vh">Videos durchsuchen</span>'+ICON.such+
-      '<input id="suche" type="search" placeholder="Flanke, Dribbling, Torwart …" value="'+h(state.suche)+'"></label>' +
+    '<div class="suchzeile">' +
+      '<label class="search"><span class="vh">Videos durchsuchen</span>'+ICON.such+
+        '<input id="suche" type="search" placeholder="Suchen …" value="'+h(state.suche)+'"></label>' +
+      '<button class="ebfilter" type="button" data-act="ebwahl"'+(eb?' style="--c:'+eb.c+'"':'')+'>' +
+        '<i class="pkt"></i>'+(eb ? h(eb.nm) : 'Ebene')+ICON.runter+'</button>' +
+    '</div>' +
 
-    '<div class="block"><div class="chips">'+katChips+'</div><div class="chips">'+lvChips+'</div></div>' +
+    '<div class="chips">'+katChips+'</div>' +
 
-    (liste.length ?
-      '<div class="grid">'+liste.map(karte).join('')+'</div>' :
-      '<div class="leer">'+ICON.such+'<p>Dazu haben wir noch nichts.</p></div>') +
+    (state.laedt ? skelette(6) :
+      (liste.length ?
+        '<div class="grid">'+liste.map(karte).join('')+'</div>' :
+        '<div class="leer">'+ICON.such+'<p>Dazu haben wir noch nichts.</p></div>')) +
   '</section>';
 }
 
@@ -1397,7 +1713,7 @@ function screenPyramide(){
 
 function darstellung(){
   return '<div class="block">' +
-    '<h2 class="sec">Darstellung</h2>' +
+    '<h2 class="sec leise">Darstellung</h2>' +
     '<div class="seg">' +
       ['hell','dunkel','auto'].map(function(t){
         return '<button type="button" data-act="theme:'+t+'" aria-pressed="'+(state.theme===t)+'">' +
@@ -1442,20 +1758,21 @@ function screenProfil(){
 
   return '<section class="screen">' +
     '<div class="coach">' +
-      '<img src="img/coach.jpg" alt="">' +
+      '<button class="gross" type="button" data-act="portrait" aria-label="Bild vergrößern">' +
+        '<img src="img/coach.jpg" alt=""></button>' +
       '<span class="n">'+h(state.konto.name)+'<span>'+lvOf(state.meinLv).nm+' · seit März 2026</span></span>' +
     '</div>' +
 
     '<div class="stats">' +
       '<div class="stat"><span class="v">'+erledigt+'</span><span class="k">Übungen</span></div>' +
-      '<div class="stat"><span class="v">'+offenFuerMich()+'</span><span class="k">Videos offen</span></div>' +
+      '<div class="stat"><span class="v">'+offenFuerMich()+'</span><span class="k">Offen</span></div>' +
       '<div class="stat"><span class="v">6</span><span class="k">Tage Serie</span></div>' +
     '</div>' +
 
     (state.pro ?
       '<div class="panel"><p class="note" style="color:var(--lv2)">KM1 Pro aktiv</p><p class="sub" style="margin:0">Verlängert sich am 18. Oktober.</p></div>' :
       '<button class="proband" type="button" data-act="paywall">' +
-        '<span class="note" style="color:var(--accent)">KM1 Pro</span>' +
+        '<span class="note">KM1 Pro</span>' +
         '<span class="t">Die Profi-Einheiten</span>' +
         '<p>Ab 6,99 € im Monat.</p>' +
         '<span class="btn" style="pointer-events:none">Pro ansehen</span>' +
@@ -1492,7 +1809,11 @@ function closeSheet(){
   stopPlayer();
   stack.pop();
   var s = document.getElementById('sheet');
-  if(!stack.length){ s.classList.remove('on'); s.hidden = true; s.innerHTML=''; return; }
+  if(!stack.length){
+    s.classList.remove('on'); s.hidden = true; s.innerHTML = '';
+    render();          /* damit die Karte oben die neue Stelle zeigt */
+    return;
+  }
   s.innerHTML = stack[stack.length-1];
   s.scrollTop = 0;
 }
@@ -1540,7 +1861,12 @@ function sheetVideo(id){
         :
         '<p class="prose">'+h(v.be)+'</p>' +
         '<div class="block"><h2 class="sec">So geht’s</h2>' +
-          '<ol class="steps">'+v.st.map(function(s){return '<li>'+h(s)+'</li>';}).join('')+'</ol>' +
+          '<ol class="steps">'+v.st.map(function(s, i){
+            if(zu) return '<li>'+h(s)+'</li>';
+            var t = kapitelSek(v, i);
+            return '<li><button type="button" data-act="kapitel:'+t+'">' +
+              '<span class="tx">'+h(s)+'</span><span class="zt">'+fmtZeit(t)+'</span></button></li>';
+          }).join('')+'</ol>' +
         '</div>' +
         '<div class="callout"><span class="h">Häufiger Fehler</span><p>'+h(v.fe)+'</p></div>' +
         '<div class="aktionen">' +
@@ -1559,6 +1885,37 @@ function sheetVideo(id){
       '<div class="block">' +
         '<div class="block-head"><h2 class="sec">Passt dazu</h2></div>' +
         '<div class="row">'+verwandt.map(karte).join('')+'</div>' +
+      '</div>' +
+    '</div>';
+}
+
+/* Der Aufstieg bekommt eine eigene Seite. Er passiert dreimal im Leben
+   eines Nutzers — dafuer darf er den Bildschirm haben. */
+function sheetAufstieg(){
+  var l = lvOf(state.meinLv);
+  return '<div class="sheet-body feier">' +
+    '<span class="ring" style="--c:'+l.c+'">'+ICON.check+'</span>' +
+    '<p class="eyebrow">Neue Ebene</p>' +
+    '<h1 class="big">'+h(l.nm)+'</h1>' +
+    '<p class="prose">'+h(l.tx)+'</p>' +
+    '<div class="meta"><span>'+h(l.md)+'</span><span>'+h(l.ag)+'</span></div>' +
+    '<button class="btn" type="button" data-act="back">Weiter</button>' +
+  '</div>';
+}
+
+/* Die Ebenenwahl als kleines Blatt statt als zweite Chipreihe. */
+function sheetEbene(){
+  var zeile = function(n, nm, farbe){
+    return '<button class="ebzeile" type="button" data-act="fltlv:'+n+'"'+
+      (farbe ? ' style="--c:'+farbe+'"' : '')+' aria-pressed="'+(state.fltLv===n)+'">' +
+      '<i class="pkt"></i><span>'+h(nm)+'</span>'+(state.fltLv===n ? ICON.check : '')+'</button>';
+  };
+  return kopf('Ebene') +
+    '<div class="sheet-body">' +
+      '<div><h1 class="big">Welche Ebene?</h1></div>' +
+      '<div class="ebliste">' +
+        zeile(0, 'Jede Ebene', '') +
+        LEVELS.map(function(l){ return zeile(l.n, l.nm + ' · ' + l.ag, l.c); }).join('') +
       '</div>' +
     '</div>';
 }
@@ -1946,8 +2303,19 @@ var P = {id:null, titel:'', poster:'', dauer:0, sek:0, laeuft:false, takt:null,
          kino:false, zieht:null, tippZeit:0, tippSeite:'', ruhe:null};
 
 function stopPlayer(){
+  merkeStelle();
   if(P.takt){ clearInterval(P.takt); P.takt = null; }
   P.laeuft = false;
+}
+
+/* Wo jemand stehen geblieben ist. Ganz am Anfang und fast am Ende
+   zaehlt nicht — sonst steht auf der Startseite ein Video, das man
+   schon gesehen hat. */
+function merkeStelle(){
+  if(!P.id || P.id === 'challenge' || !P.dauer) return;
+  if(P.sek < 5 || P.sek / P.dauer > 0.95){ delete state.gesehen[P.id]; return; }
+  state.gesehen[P.id] = P.sek;
+  state.zuletzt = P.id;
 }
 
 /* Die beiden Haelften zum Doppeltippen, dazu die Anzeige, die
@@ -1978,7 +2346,8 @@ function steuerung(gross){
 /* o = {id, titel, poster, dauer}. Ein anderes Video faengt vorne an,
    dasselbe behaelt seine Stelle, auch wenn das Blatt neu gebaut wird. */
 function playerInline(o){
-  if(P.id !== o.id){ stopPlayer(); P.id = o.id; P.sek = 0; }
+  /* Ein anderes Video steigt da ein, wo man aufgehoert hat. */
+  if(P.id !== o.id){ stopPlayer(); P.id = o.id; P.sek = state.gesehen[o.id] || 0; }
   P.titel = o.titel; P.poster = o.poster; P.dauer = o.dauer;
   return '<div class="player" id="player">' +
     '<div class="poster">'+o.poster+'</div>' +
@@ -1999,6 +2368,14 @@ function zeichnePlayer(){
     var m = c.querySelector('.mini');     if(m) m.innerHTML   = P.laeuft ? ICON.pause : ICON.play;
     var t = c.querySelector('.tempo');    if(t) t.textContent = tempoLabel();
   });
+  var kap = document.querySelectorAll('[data-act^="kapitel:"]');
+  if(kap.length){
+    var jetzt = -1;
+    for(var i = 0; i < kap.length; i++){
+      if(P.sek + 0.5 >= parseFloat(kap[i].getAttribute('data-act').split(':')[1])) jetzt = i;
+    }
+    for(var j = 0; j < kap.length; j++) kap[j].parentNode.classList.toggle('jetzt', j === jetzt);
+  }
   var pb = document.querySelector('#player .pbtn[data-act="play"]');
   if(pb) pb.hidden = P.laeuft;
   var kp = document.querySelector('.kino-play');
@@ -2017,6 +2394,7 @@ function spiele(an){
   if(neu){
     P.takt = setInterval(function(){
       P.sek = Math.min(P.dauer, P.sek + 0.25 * state.tempo);
+      merkeStelle();
       if(P.sek >= P.dauer){ stopPlayer(); }
       zeichnePlayer();
     }, 250);
@@ -2102,12 +2480,29 @@ function kinoAuf(){
       }).join('') +
     '</div></div>';
   document.querySelector('.device').appendChild(el);
+  if(echtesVollbild()){ try{ el.requestFullscreen().catch(function(){}); }catch(e){} }
   drehAnpassen();
   window.addEventListener('resize', drehAnpassen);
   requestAnimationFrame(function(){ el.classList.add('an'); });
   try{ if(screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function(){}); }catch(e){}
   steuerungZeigen();
 }
+/* Am Schreibtisch heisst Vollbild wirklich Vollbild: das Fenster gibt
+   seine Leisten ab. Auf dem Handy gibt es das nicht — dort bleibt es
+   die gedrehte Flaeche aus drehAnpassen. */
+function amSchreibtisch(){
+  /* Dieselbe Schwelle wie im Stil. Absichtlich ohne pointer:fine:
+     ein Tablet im Querformat soll die grosse Fassung bekommen. */
+  return window.matchMedia('(min-width:1000px)').matches;
+}
+function echtesVollbild(){
+  return amSchreibtisch() && !!document.fullscreenEnabled;
+}
+document.addEventListener('fullscreenchange', function(){
+  /* Wer mit Escape aus dem Vollbild geht, will auch aus dem Kino. */
+  if(!document.fullscreenElement && P.kino && amSchreibtisch()) kinoZu();
+});
+
 function drehAnpassen(){
   var el = document.getElementById('kino'), d = document.getElementById('dreh');
   if(!el || !d) return;
@@ -2122,6 +2517,7 @@ function drehAnpassen(){
 }
 function kinoZu(){
   if(P.kino) haptik('mittel');
+  try{ if(document.fullscreenElement) document.exitFullscreen().catch(function(){}); }catch(e){}
   window.removeEventListener('resize', drehAnpassen);
   var el = document.getElementById('kino');
   if(el){ el.classList.remove('an'); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 240); }
@@ -2171,6 +2567,48 @@ document.addEventListener('pointerup', function(e){
 });
 document.addEventListener('pointercancel', function(){ P.zieht = null; });
 
+/* Das Portrait in gross. Liegt ueber allem, geht bei jedem Klick und
+   mit Escape wieder zu. */
+function portraitAuf(){
+  if(document.getElementById('lupe')) return;
+  var el = document.createElement('div');
+  el.className = 'lupe'; el.id = 'lupe';
+  el.innerHTML = '<img src="img/coach.jpg" alt="">';
+  el.addEventListener('click', portraitZu);
+  document.querySelector('.device').appendChild(el);
+  requestAnimationFrame(function(){ el.classList.add('an'); });
+}
+function portraitZu(){
+  var el = document.getElementById('lupe');
+  if(!el) return;
+  el.classList.remove('an');
+  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 240);
+}
+
+/* Tastatur am Schreibtisch: was man von einem Videoplayer erwartet.
+   Leertaste und K halten an, die Pfeile springen fuenf Sekunden, F
+   schaltet das Vollbild, Escape geht zurueck. */
+document.addEventListener('keydown', function(e){
+  var feld = e.target && e.target.tagName;
+  if(feld === 'INPUT' || feld === 'TEXTAREA' || feld === 'SELECT') return;
+  if(e.metaKey || e.ctrlKey || e.altKey) return;
+  var k = e.key;
+
+  if(k === 'Escape'){
+    if(document.getElementById('lupe')) portraitZu();
+    else if(P.kino) kinoZu();
+    else if(stack.length) closeSheet();
+    return;
+  }
+  /* Nur wenn ein Player wirklich zu sehen ist. */
+  if(!P.id || !(P.kino || document.getElementById('player'))) return;
+
+  if(k === ' ' || k === 'k' || k === 'K'){ e.preventDefault(); spiele(); }
+  else if(k === 'ArrowLeft' || k === 'j' || k === 'J'){ e.preventDefault(); springe(-5); }
+  else if(k === 'ArrowRight' || k === 'l' || k === 'L'){ e.preventDefault(); springe(5); }
+  else if(k === 'f' || k === 'F'){ e.preventDefault(); if(P.kino) kinoZu(); else kinoAuf(); }
+});
+
 /* ============================================================
    Zeichnen
    ============================================================ */
@@ -2193,9 +2631,47 @@ function renderTabs(){
       '<span class="ti">'+x[2]+'</span><span>'+x[1]+'</span></button>';
   }).join('');
 }
+var letzterTab = null;
 function render(){
   var s = {start:screenStart, technik:screenTechnik, pyramide:screenPyramide, profil:screenProfil}[state.tab];
-  document.getElementById('screens').innerHTML = s();
+  var flaeche = document.getElementById('screens');
+  /* Beim Neuzeichnen derselben Seite bleibt die Liste stehen, wo sie stand;
+     ein Tabwechsel faengt oben an. */
+  var tabWechsel = state.tab !== letzterTab;
+  var y = tabWechsel ? 0 : flaeche.scrollTop;
+  /* Auch die waagerechten Leisten bleiben stehen, wo sie standen. Sonst
+     springt die gerade angetippte Schaltflaeche aus dem Bild, weil die
+     Leiste beim Neuzeichnen wieder von vorne anfaengt. */
+  var x = (!tabWechsel)
+    ? [].map.call(flaeche.querySelectorAll('.chips,.row'), function(l){ return l.scrollLeft; })
+    : [];
+  flaeche.innerHTML = s();
+  flaeche.scrollTop = y;
+  [].forEach.call(flaeche.querySelectorAll('.chips,.row'), function(l, i){
+    if(x[i]) l.scrollLeft = x[i];
+  });
+  letzterTab = state.tab;
+  /* Der Titel in der Kopfzeile, der beim Scrollen einblendet. */
+  var kt = document.getElementById('kopftitel');
+  if(kt) kt.textContent = {start:'Start', technik:'Technik', pyramide:'Pyramide', profil:'Profil'}[state.tab] || '';
+  var ab = document.querySelector('.appbar');
+  if(ab && y === 0) ab.classList.remove('tief', 'scrolled');
+
+  /* Punkt 12: die Farbe der eigenen Ebene als Leitfarbe. Ohne Konto
+     bleibt es beim Rot der Marke. */
+  document.documentElement.style.setProperty('--mein',
+    drin() ? lvOf(state.meinLv).c : 'var(--accent)');
+
+  /* Punkt 10: nur beim Wechsel der Seite blenden die Bloecke auf. */
+  if(tabWechsel){
+    var sec = flaeche.querySelector('.screen');
+    if(sec){
+      sec.classList.add('frisch');
+      [].forEach.call(sec.children, function(kind, i){
+        kind.style.animationDelay = Math.min(i * 45, 200) + 'ms';
+      });
+    }
+  }
   renderTabs();
   var chip = document.getElementById('lvchip');
   if(drin()){
@@ -2256,9 +2732,11 @@ document.addEventListener('click', function(e){
     if(n && n.indexOf('check:')===0){
       var cid = n.slice(6);
       state.done[cid] = 1;
-      haptik(state.serieHeute ? 'erfolg' : 'serie');
+      var aufL = pruefeAufstieg();
+      haptik(aufL ? 'aufstieg' : (state.serieHeute ? 'erfolg' : 'serie'));
       state.serieHeute = 1;
       render();
+      if(aufL){ openSheet(sheetAufstieg()); toast('Angemeldet. Abgehakt.'); return; }
       if(stack.length) refreshSheet(cid.indexOf('challenge-')===0 ? sheetChallenge() : sheetVideo(cid));
       toast('Angemeldet. Abgehakt.');
     }
@@ -2290,21 +2768,34 @@ document.addEventListener('click', function(e){
       openSheet(sheetLogin('Damit dein Fortschritt gespeichert wird, brauchst du ein Konto.'));
       return;
     }
+    var auf = false;
     if(state.done[v]){
       delete state.done[v];
       haptik('leicht');          /* Rueckgaengig ist keine Belohnung */
     } else {
       state.done[v] = 1;
-      /* Der erste Haken des Tages traegt die Serie. Hier im Entwurf
-         zaehlt der erste seit dem Start, spaeter der erste im Kalendertag. */
-      haptik(state.serieHeute ? 'erfolg' : 'serie');
+      auf = pruefeAufstieg();
+      /* Der groessere Impuls gewinnt: wer durch den Haken aufsteigt,
+         spuert den Aufstieg, nicht den Haken. Der erste Haken des Tages
+         traegt die Serie — hier im Entwurf der erste seit dem Start,
+         spaeter der erste im Kalendertag. */
+      haptik(auf ? 'aufstieg' : (state.serieHeute ? 'erfolg' : 'serie'));
       state.serieHeute = 1;
     }
     var istCh = v.indexOf('challenge-')===0;
     refreshSheet(istCh ? sheetChallenge() : sheetVideo(v));
+    if(auf){ render(); openSheet(sheetAufstieg()); return; }
     toast(state.done[v] ? 'Abgehakt. Stark.' : 'Haken entfernt');
   }
   else if(k==='play'){ spiele(); }
+  else if(k==='kapitel'){
+    if(!P.id) return;
+    P.sek = Math.max(0, Math.min(P.dauer, parseFloat(v)));
+    haptik('leicht');
+    zeichnePlayer();
+    var pl = document.getElementById('player');
+    if(pl) pl.scrollIntoView({block:'start', behavior:'smooth'});
+  }
   else if(k==='kino'){ kinoAuf(); }
   else if(k==='kinozu'){ kinoZu(); }
   else if(k==='tempo'){
@@ -2325,6 +2816,7 @@ document.addEventListener('click', function(e){
     if(P.laeuft) spiele(true); else zeichnePlayer();
     steuerungZeigen();
   }
+  else if(k==='portrait'){ portraitAuf(); }
   else if(k==='eltern'){ openSheet(sheetEltern()); }
   else if(k==='symbol'){ openSheet(sheetSymbol()); }
   else if(k==='merkliste'){ openSheet(sheetMerk()); }
@@ -2369,7 +2861,8 @@ document.addEventListener('click', function(e){
   }
   else if(k==='lv'){ state.lvSel = +v; render(); }
   else if(k==='kat'){ state.kat = v; render(); }
-  else if(k==='fltlv'){ state.fltLv = +v; render(); }
+  else if(k==='ebwahl'){ openSheet(sheetEbene()); }
+  else if(k==='fltlv'){ state.fltLv = +v; if(stack.length) closeSheet(); render(); }
   else if(k==='theme'){ state.theme = v; haptik('leicht'); applyTheme(); render(); }
   else if(k==='upload'){ openSheet(sheetUpload()); }
   else if(k==='pickfile'){ state.up.datei = 'flanke-innenseite-2026.mp4'; refreshSheet(sheetUpload()); }
@@ -2449,11 +2942,31 @@ function publish(){
   if(!sc || !ab) return;
   sc.addEventListener('scroll', function(){
     ab.classList.toggle('scrolled', sc.scrollTop > 4);
+    /* Ist die grosse Ueberschrift weggescrollt, uebernimmt die Kopfzeile. */
+    ab.classList.toggle('tief', sc.scrollTop > 46);
   }, {passive:true});
 })();
 
 applyTheme();
 render();
+
+/* Punkt 11: der Entwurf hat seine Daten schon im Dokument, aber die
+   Schriften kommen ueber das Netz. Sobald sie stehen, ist geladen —
+   in der fertigen App endet der Zustand, wenn die Videoliste da ist. */
+(function(){
+  var fertig = function(){
+    if(!state.laedt) return;
+    state.laedt = false;
+    letzterTab = null;      /* damit die Bloecke einmal aufblenden */
+    render();
+  };
+  var spaetestens = setTimeout(fertig, 1400);
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(function(){
+      setTimeout(function(){ clearTimeout(spaetestens); fertig(); }, 450);
+    });
+  }
+})();
 </script>
 
 <script>
