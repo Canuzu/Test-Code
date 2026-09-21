@@ -234,7 +234,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
 }
 .lvchip i{width:8px;height:8px;border-radius:99px;flex:0 0 auto}
 
-.screens{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+/* scrollbar-gutter haelt den Platz fuer den Rollbalken frei. Sonst
+   rutscht die mittig gesetzte Seite um seine Breite, sobald ein
+   Filter die Liste so kurz macht, dass nichts mehr zu rollen ist. */
+.screens{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable}
 .screen{display:flex;flex-direction:column;gap:30px;padding:8px 18px 34px}
 
 /* ---------- Schrift ---------- */
@@ -480,7 +483,7 @@ h2.sec{
 /* ---------- Schiebeblatt ---------- */
 .sheet{
   position:absolute;inset:0;z-index:6;background:var(--canvas);
-  overflow-y:auto;overscroll-behavior:contain;
+  overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;
   transform:translateX(8%);opacity:0;
   transition:transform .32s var(--ease),opacity .32s var(--ease);
 }
@@ -681,6 +684,28 @@ h2.sec{
 
 .coach{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:var(--r-card);padding:14px 16px;box-shadow:var(--e1),var(--edge)}
 .coach img{width:52px;height:52px;border-radius:99px;object-fit:cover;filter:grayscale(1) contrast(1.06);flex:0 0 auto}
+.coach .gross{
+  flex:0 0 auto;border-radius:99px;display:block;
+  transition:transform .3s var(--spring);
+}
+.coach .gross:hover{transform:scale(1.06)}
+.coach .gross:active{transform:scale(.96)}
+.coach .gross:focus-visible{outline:2.5px solid var(--accent);outline-offset:3px}
+
+/* Das Portrait in gross. Ein Klick irgendwohin schliesst es wieder. */
+.lupe{
+  position:absolute;inset:0;z-index:70;
+  display:flex;align-items:center;justify-content:center;padding:32px;
+  background:rgba(3,7,6,.82);backdrop-filter:blur(10px);
+  opacity:0;transition:opacity .25s var(--ease);
+}
+.lupe.an{opacity:1}
+.lupe img{
+  max-width:min(560px,86%);max-height:78%;object-fit:contain;
+  border-radius:var(--r-card);box-shadow:0 30px 70px -24px rgba(0,0,0,.9);
+  transform:scale(.94);transition:transform .35s var(--spring);
+}
+.lupe.an img{transform:none}
 .coach .n{font-size:15.5px;font-weight:700;line-height:1.3;color:var(--ink)}
 .coach .n span{display:block;color:var(--ink-2);font-size:13px;font-weight:500;margin-top:2px}
 
@@ -693,6 +718,14 @@ h2.sec{
 .pyr{width:100%;max-width:100%;aspect-ratio:100/78;display:block;overflow:visible}
 .pyr .edge{fill:none;stroke:var(--line-2);stroke-width:.45;stroke-linecap:round}
 .pyr .plate{cursor:pointer}
+/* Ohne das malt der Browser seinen eigenen, tiefschwarzen Ring um die
+   Gruppe. Mit der Maus soll gar nichts zu sehen sein, mit der Tastatur
+   ein Ring in der Hausfarbe. */
+.pyr .plate:focus{outline:none}
+/* Achtung: im SVG rechnet der Ring in Nutzereinheiten und wird mit
+   skaliert. Deshalb die kleinen Zahlen — sichtbar sind daraus rund
+   zwei Pixel. */
+.pyr .plate:focus-visible{outline:.32px solid var(--accent);outline-offset:.55px;border-radius:.8px}
 .pyr .plate polygon{transition:fill-opacity .4s var(--ease),stroke-opacity .4s var(--ease)}
 .pyr .nm{font-family:var(--display);font-size:4.6px;letter-spacing:.05px;text-transform:uppercase;fill:var(--ink);text-anchor:middle}
 .pyr .ag{font-family:var(--body);font-weight:600;font-size:2.9px;letter-spacing:.05px;fill:var(--ink-2);text-anchor:middle}
@@ -956,6 +989,10 @@ a.btn{text-decoration:none}
   .chips{margin:0;padding:2px 0 4px;flex-wrap:wrap;overflow:visible}
   /* Ohne Deckel fuellt die Heldenkarte den ganzen Bildschirm. */
   .hero .hm{aspect-ratio:21/9;max-height:360px}
+  /* Dasselbe gilt fuer die Pyramide: ueber die ganze Breite waere sie
+     hoeher als der Bildschirm. */
+  .pyr{max-width:660px;margin:0 auto}
+  .lvpanel{max-width:660px;margin:0 auto;width:100%}
   .hero .hc{padding:28px 130px 30px 30px}
 
   /* Das Videoblatt: Lesebreite, und der Player bleibt beim Scrollen
@@ -1596,7 +1633,8 @@ function screenProfil(){
 
   return '<section class="screen">' +
     '<div class="coach">' +
-      '<img src="img/coach.jpg" alt="">' +
+      '<button class="gross" type="button" data-act="portrait" aria-label="Bild vergrößern">' +
+        '<img src="img/coach.jpg" alt=""></button>' +
       '<span class="n">'+h(state.konto.name)+'<span>'+lvOf(state.meinLv).nm+' · seit März 2026</span></span>' +
     '</div>' +
 
@@ -2387,6 +2425,24 @@ document.addEventListener('pointerup', function(e){
 });
 document.addEventListener('pointercancel', function(){ P.zieht = null; });
 
+/* Das Portrait in gross. Liegt ueber allem, geht bei jedem Klick und
+   mit Escape wieder zu. */
+function portraitAuf(){
+  if(document.getElementById('lupe')) return;
+  var el = document.createElement('div');
+  el.className = 'lupe'; el.id = 'lupe';
+  el.innerHTML = '<img src="img/coach.jpg" alt="">';
+  el.addEventListener('click', portraitZu);
+  document.querySelector('.device').appendChild(el);
+  requestAnimationFrame(function(){ el.classList.add('an'); });
+}
+function portraitZu(){
+  var el = document.getElementById('lupe');
+  if(!el) return;
+  el.classList.remove('an');
+  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 240);
+}
+
 /* Tastatur am Schreibtisch: was man von einem Videoplayer erwartet.
    Leertaste und K halten an, die Pfeile springen fuenf Sekunden, F
    schaltet das Vollbild, Escape geht zurueck. */
@@ -2397,7 +2453,8 @@ document.addEventListener('keydown', function(e){
   var k = e.key;
 
   if(k === 'Escape'){
-    if(P.kino) kinoZu();
+    if(document.getElementById('lupe')) portraitZu();
+    else if(P.kino) kinoZu();
     else if(stack.length) closeSheet();
     return;
   }
@@ -2439,8 +2496,17 @@ function render(){
   /* Beim Neuzeichnen derselben Seite bleibt die Liste stehen, wo sie stand;
      ein Tabwechsel faengt oben an. */
   var y = (state.tab === letzterTab) ? flaeche.scrollTop : 0;
+  /* Auch die waagerechten Leisten bleiben stehen, wo sie standen. Sonst
+     springt die gerade angetippte Schaltflaeche aus dem Bild, weil die
+     Leiste beim Neuzeichnen wieder von vorne anfaengt. */
+  var x = (state.tab === letzterTab)
+    ? [].map.call(flaeche.querySelectorAll('.chips,.row'), function(l){ return l.scrollLeft; })
+    : [];
   flaeche.innerHTML = s();
   flaeche.scrollTop = y;
+  [].forEach.call(flaeche.querySelectorAll('.chips,.row'), function(l, i){
+    if(x[i]) l.scrollLeft = x[i];
+  });
   letzterTab = state.tab;
   renderTabs();
   var chip = document.getElementById('lvchip');
@@ -2586,6 +2652,7 @@ document.addEventListener('click', function(e){
     if(P.laeuft) spiele(true); else zeichnePlayer();
     steuerungZeigen();
   }
+  else if(k==='portrait'){ portraitAuf(); }
   else if(k==='eltern'){ openSheet(sheetEltern()); }
   else if(k==='symbol'){ openSheet(sheetSymbol()); }
   else if(k==='merkliste'){ openSheet(sheetMerk()); }
