@@ -2,9 +2,8 @@
    Legt die App beim ersten Besuch ins Regal, damit sie danach auch ohne Netz
    startet. Bei einer neuen Fassung die Zahl in VERSION erhoehen: der alte
    Speicher wird dann geloescht und alles frisch geholt. */
-const VERSION = 'km1-v9';
+const VERSION = 'km1-v10';
 const SCHRANK = VERSION + '-schrank';
-const SCHRIFT = VERSION + '-schrift';
 
 const GRUNDAUSSTATTUNG = [
   './',
@@ -19,7 +18,12 @@ const GRUNDAUSSTATTUNG = [
   './img/app-symbol-pro.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/apple-touch-icon-180.png'
+  './icons/apple-touch-icon-180.png',
+  // Die Schriften liegen seit km1-v10 neben der App. Die Erweiterungen
+  // fuer Namen wie „Çağlar" kommen erst mit, wenn sie gebraucht werden.
+  './fonts/anton-latin.woff2',
+  './fonts/chivo-latin.woff2',
+  './fonts/jetbrains-mono-latin.woff2'
 ];
 
 self.addEventListener('install', (e) => {
@@ -42,21 +46,6 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
-
-  // Schriften von Google: einmal holen, danach aus dem Regal.
-  if (url.hostname.endsWith('googleapis.com') || url.hostname.endsWith('gstatic.com')) {
-    e.respondWith(
-      caches.open(SCHRIFT).then((c) =>
-        c.match(e.request).then((treffer) =>
-          treffer || fetch(e.request).then((antwort) => {
-            c.put(e.request, antwort.clone());
-            return antwort;
-          }).catch(() => treffer)
-        )
-      )
-    );
-    return;
-  }
 
   if (url.origin !== location.origin) return;
 

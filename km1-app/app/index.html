@@ -23,20 +23,15 @@
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32">
 <link rel="icon" href="icons/icon-192.png" sizes="192x192">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Das Logo des Startbildschirms soll sofort unterwegs sein. -->
 <link rel="preload" as="image" href="img/logo.png">
 
-<!-- Die Schriften kommen von Google und haben die Seite bisher aufgehalten:
-     solange dieses Stylesheet unterwegs war, blieb der Bildschirm leer. Mit
-     media="print" laedt es nebenher und wird erst beim onload scharf
-     geschaltet. Der Startbildschirm deckt die Umstellung zu, deshalb sieht
-     niemand die Ersatzschrift aufblitzen. -->
-<link id="schriften" rel="stylesheet" media="print" onload="this.media='all'"
-      href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Chivo:wght@400;500;700;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
-<noscript><link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Chivo:wght@400;500;700;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap"></noscript>
+<!-- Die Schriften liegen neben der App in fonts/, nicht mehr bei Google.
+     Jeder Abruf von Google haette die IP-Adresse des Kindes dorthin
+     geschickt, und das widerspricht dem Satz „keine Weitergabe an
+     Dritte". Die beiden Schnitte des ersten Bildschirms laden sofort mit. -->
+<link rel="preload" as="font" type="font/woff2" href="fonts/anton-latin.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="fonts/chivo-latin.woff2" crossorigin>
 
 <style>
 /* ============================================================
@@ -50,6 +45,28 @@
    winzigen Monospace-Labels. Monospace traegt hier nur noch
    Zahlen und die eine Zeile ueber jeder Ueberschrift.
    ============================================================ */
+/* Die Schriften. Chivo und JetBrains Mono sind variable Schriften: eine
+   Datei traegt alle Staerken. Sie stehen trotzdem einzeln da, in genau den
+   Stufen, die vorher von Google kamen — so bleibt jede Staerke im Bild
+   dieselbe wie bisher. Die Erweiterung laedt nur, wenn ein Name wie
+   „Çağlar" sie braucht. */
+@font-face{font-family:'Anton';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/anton-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Anton';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/anton-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Chivo';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/chivo-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Chivo';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/chivo-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Chivo';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/chivo-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Chivo';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/chivo-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Chivo';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/chivo-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Chivo';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/chivo-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Chivo';font-style:normal;font-weight:900;font-display:swap;src:url(fonts/chivo-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Chivo';font-style:normal;font-weight:900;font-display:swap;src:url(fonts/chivo-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/jetbrains-mono-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/jetbrains-mono-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/jetbrains-mono-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
 :root{
   color-scheme:light;
 
@@ -68,14 +85,22 @@
   --ink:#0A1411;
   --ink-body:#2E3E37;
   --ink-2:#53645D;
-  --ink-3:#7A8C84;
+  /* Die leiseste Schrift. Vorher #7A8C84 mit 3,1 : 1 auf der Flaeche —
+     zu blass fuer Werte, Wochenmarken und Kleingedrucktes. Jetzt
+     mindestens 4,6 : 1 auf jedem Hintergrund der hellen Fassung. */
+  --ink-3:#5F6E68;
 
   --accent:#C81E14;
   --accent-2:#A5150D;
   --accent-soft:rgba(200,30,20,.09);
   --accent-line:rgba(200,30,20,.3);
+  /* Rot als Schriftfarbe. Im Hellen dasselbe wie der Akzent, im Dunkeln
+     heller, sonst liest sich die rote Zeile ueber jeder Ueberschrift nicht. */
+  --accent-ink:#C81E14;
   --on-accent:#FFFFFF;
   --on-media:#F4F7F3;
+  /* Schrift auf einer Ebenenfarbe, etwa im Schild „Du bist hier". */
+  --on-lv:#FFFFFF;
 
   --lv1:#0D7C75;
   --lv2:#3C8329;
@@ -130,18 +155,22 @@
   --ink:#F2F5F1;
   --ink-body:#C2D1CA;
   --ink-2:#94A79E;
-  --ink-3:#71847C;
+  --ink-3:#84968E;
 
   --accent:#DE2F25;
   --accent-2:#C81E14;
   --accent-soft:rgba(224,52,42,.14);
   --accent-line:rgba(224,52,42,.4);
+  --accent-ink:#FF5A4F;
   --on-accent:#FFFFFF;
+  /* Die Ebenenfarben sind im Dunkeln hell. Weiss darauf kam auf 2,4 bis
+     2,9 : 1, dunkle Schrift kommt auf mindestens 4,6 : 1. */
+  --on-lv:#07100D;
 
   --lv1:#2FA8A0;
   --lv2:#5FB04A;
   --lv3:#E8952F;
-  --lv4:#E0342A;
+  --lv4:#E24036;
 
   --e1:0 1px 2px rgba(0,0,0,.5), 0 6px 14px -6px rgba(0,0,0,.6);
   --e2:0 2px 6px rgba(0,0,0,.5), 0 20px 40px -18px rgba(0,0,0,.9);
@@ -258,7 +287,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webki
 /* ---------- Schrift ---------- */
 .eyebrow{
   font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.17em;text-transform:uppercase;
-  color:var(--accent);display:flex;align-items:center;gap:9px;margin:0;
+  color:var(--accent-ink);display:flex;align-items:center;gap:9px;margin:0;
 }
 .eyebrow::before{content:"";width:16px;height:2px;background:var(--accent);flex:0 0 auto;border-radius:2px}
 h1.big{
@@ -278,7 +307,8 @@ h2.sec.leise{
 .sub{color:var(--ink-2);font-size:15.5px;margin:12px 0 0;line-height:1.55;max-width:38ch}
 .block{display:flex;flex-direction:column;gap:14px}
 .block-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.block-head .more{font-size:13px;font-weight:600;color:var(--accent);white-space:nowrap}
+/* Eine Angabe, kein Link. In Rot sah sie antippbar aus und tat nichts. */
+.block-head .more{font-size:13px;font-weight:600;color:var(--ink-2);white-space:nowrap}
 
 /* ---------- Bilder ---------- */
 .poster{
@@ -321,7 +351,10 @@ h2.sec.leise{
 
 /* ---------- Karten ---------- */
 .card{
-  display:block;width:100%;text-align:left;
+  /* Als Flex-Spalte, nicht als Block: ein <button> setzt seinen Inhalt
+     sonst senkrecht in die Mitte. Im Raster sind alle Karten einer Zeile
+     gleich hoch, und bei kuerzerem Titel rutschte das Bild nach unten. */
+  display:flex;flex-direction:column;justify-content:flex-start;width:100%;text-align:left;
   background:var(--surface);border-radius:var(--r-card);padding:8px;
   box-shadow:var(--e1),var(--edge);
   transition:transform .35s var(--spring),box-shadow .35s var(--ease);
@@ -332,6 +365,8 @@ h2.sec.leise{
 .card .t{
   display:block;font-size:15.5px;font-weight:700;line-height:1.28;margin:0;color:var(--ink);
   letter-spacing:-.004em;
+  /* Lange Woerter werden getrennt statt ueber den Rand geschoben. */
+  -webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word;
 }
 .card .m{display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);line-height:1.4}
 .dot{width:8px;height:8px;border-radius:99px;flex:0 0 auto;display:inline-block;vertical-align:middle}
@@ -390,23 +425,31 @@ h2.sec.leise{
 .hero .hbar i{display:block;height:100%;background:var(--mein,var(--accent))}
 
 /* ---------- Reihen und Raster ---------- */
-.row{display:flex;gap:14px;overflow-x:auto;padding:4px 18px 8px;margin:0 -18px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+/* scroll-padding sagt dem Einrasten, wo der Seitenrand liegt. Ohne das
+   rastete die erste Karte am Bildschirmrand ein, 18 Pixel zu weit links. */
+.row{display:flex;gap:14px;overflow-x:auto;padding:4px 18px 8px;margin:0 -18px;scroll-snap-type:x mandatory;scroll-padding-inline:18px;-webkit-overflow-scrolling:touch}
 .row > *{flex:0 0 200px;scroll-snap-align:start}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+/* Unter 360 Pixeln bleiben fuer zwei Spalten je 136 Pixel, und Titel
+   liefen ueber fuenf Zeilen. Eine Spalte liest sich dort besser. */
+@media (max-width:359px){ .grid{grid-template-columns:minmax(0,1fr)} }
 
 /* ---------- Chips ---------- */
-.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 18px 4px;margin:0 -18px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 18px 6px;margin:0 -18px}
+/* Sichtbar 40 Pixel hoch, antippbar 44: der unsichtbare Rand darunter
+   und darueber faengt den Finger mit. */
 .chip{
-  flex:0 0 auto;font-size:13px;font-weight:600;letter-spacing:.005em;
-  padding:8px 13px;border-radius:var(--r-chip);white-space:nowrap;
+  position:relative;flex:0 0 auto;font-size:13px;font-weight:600;letter-spacing:.005em;
+  min-height:40px;padding:10px 14px;border-radius:var(--r-chip);white-space:nowrap;
   background:var(--surface);color:var(--ink-2);
   box-shadow:var(--e1),var(--edge);
   transition:color .25s var(--ease),background .25s var(--ease),transform .25s var(--spring);
 }
+.chip::after{content:"";position:absolute;left:0;right:0;top:-2px;bottom:-2px}
 .chip:active{transform:scale(.96)}
 .chip[aria-pressed="true"]{background:var(--ink);color:var(--canvas);box-shadow:var(--e1)}
 .chip.lv{--c:var(--ink)}
-.chip.lv[aria-pressed="true"]{background:var(--c);color:#fff;box-shadow:var(--e1)}
+.chip.lv[aria-pressed="true"]{background:var(--c);color:var(--on-lv);box-shadow:var(--e1)}
 
 /* ---------- Suche ---------- */
 .search{
@@ -521,6 +564,7 @@ h2.sec.leise{
 .btn:hover{background:var(--accent-2)}
 .btn:active{transform:scale(.98)}
 .btn svg{fill:none;stroke:currentColor;stroke-width:2;width:19px;height:19px}
+.btn svg.farbig{stroke:none}
 .btn.ghost{
   background:var(--surface);color:var(--ink);
   box-shadow:var(--e1),var(--edge);
@@ -547,7 +591,7 @@ h2.sec.leise{
   transition:background .3s var(--ease),transform .35s var(--spring);
 }
 .tab svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.tab[aria-current="page"]{color:var(--accent)}
+.tab[aria-current="page"]{color:var(--accent-ink)}
 .tab[aria-current="page"] .ti{background:var(--accent-soft)}
 .tab:active .ti{transform:scale(.92)}
 
@@ -566,7 +610,7 @@ h2.sec.leise{
 }
 .back{
   display:inline-flex;align-items:center;gap:7px;
-  font-size:15.5px;font-weight:600;color:var(--ink);min-height:40px;
+  font-size:15.5px;font-weight:600;color:var(--ink);min-height:44px;
 }
 .back svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2.4}
 .sheet-head .note{margin-left:auto}
@@ -606,6 +650,9 @@ h2.sec.leise{
 .pbtn:hover span{transform:scale(1.06)}
 .pbtn:active span{transform:scale(.94)}
 .pbtn svg{width:24px;height:24px;fill:#fff;margin-left:3px}
+/* Das Schloss ist ein Umriss wie auf den Karten. Mit der Fuellung des
+   Play-Zeichens wurde es ein weisser Klumpen. */
+.pbtn .zu svg{fill:none;stroke:#fff;stroke-width:1.9;stroke-linejoin:round;margin:0;width:26px;height:26px}
 
 /* Leiste und Knoepfe */
 .pctl{
@@ -618,7 +665,7 @@ h2.sec.leise{
   font-variant-numeric:tabular-nums;flex:0 0 auto;
 }
 .mini{
-  width:36px;height:36px;flex:0 0 auto;border-radius:99px;
+  width:44px;height:44px;flex:0 0 auto;border-radius:99px;
   display:flex;align-items:center;justify-content:center;color:var(--on-media);
   transition:background .2s var(--ease);
 }
@@ -664,7 +711,7 @@ h2.sec.leise{
 }
 .kino-titel{font-size:15px;font-weight:700;color:#fff;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rund{
-  width:38px;height:38px;flex:0 0 auto;border-radius:99px;
+  width:44px;height:44px;flex:0 0 auto;border-radius:99px;
   display:flex;align-items:center;justify-content:center;color:#fff;
   background:rgba(3,7,6,.4);
 }
@@ -704,21 +751,24 @@ h2.sec.leise{
 
 .steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;counter-reset:s}
 .steps li{
-  counter-increment:s;display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px;align-items:start;
+  position:relative;counter-increment:s;display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px;align-items:start;
   background:var(--surface);border-radius:var(--r-media);padding:16px 18px;
   font-size:16px;color:var(--ink-body);line-height:1.5;
   box-shadow:var(--e1),var(--edge);
 }
 .steps li::before{
   content:counter(s,decimal-leading-zero);
-  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent-ink);
   font-variant-numeric:tabular-nums;
 }
-/* Die Schritte sind zugleich Kapitelmarken: ein Tipp springt an die Stelle. */
+/* Die Schritte sind zugleich Kapitelmarken: ein Tipp springt an die Stelle.
+   Die unsichtbare Flaeche legt sich ueber die ganze Karte, auch ueber
+   Nummer und Rand — vorher reagierte nur der Text. */
 .steps li button{
   display:flex;align-items:baseline;gap:14px;width:100%;
   font:inherit;color:inherit;text-align:left;
 }
+.steps li button::after{content:"";position:absolute;inset:0;border-radius:inherit}
 .steps li .tx{flex:1 1 auto;min-width:0}
 .steps li .zt{
   flex:0 0 auto;font-family:var(--mono);font-size:12.5px;font-weight:600;
@@ -726,8 +776,8 @@ h2.sec.leise{
   transition:color .2s var(--ease);
 }
 .steps li.jetzt{box-shadow:var(--e1),inset 0 0 0 1.5px var(--accent)}
-.steps li.jetzt .zt{color:var(--accent)}
-.steps li.jetzt::before{color:var(--accent)}
+.steps li.jetzt .zt{color:var(--accent-ink)}
+.steps li.jetzt::before{color:var(--accent-ink)}
 
 /* Der Aufstieg. Selten genug, um eine eigene Seite zu verdienen. */
 .feier{
@@ -738,7 +788,7 @@ h2.sec.leise{
   width:96px;height:96px;border-radius:99px;display:flex;align-items:center;justify-content:center;
   background:var(--c);box-shadow:0 22px 48px -18px var(--c);margin:0 auto 6px;
 }
-.feier .ring svg{width:38px;height:38px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.feier .ring svg{width:38px;height:38px;fill:none;stroke:var(--on-lv);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 .feier .eyebrow{justify-content:center}
 .feier .meta{justify-content:center}
 .feier .btn{margin-top:8px}
@@ -749,7 +799,7 @@ h2.sec.leise{
   box-shadow:inset 0 0 0 1px var(--accent-line);
 }
 .callout.stille{background:var(--surface);box-shadow:var(--e1),var(--edge)}
-.callout .h{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent)}
+.callout .h{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent-ink)}
 .callout.stille .h{color:var(--ink-2)}
 .callout p{margin:0;font-size:15.5px;color:var(--ink-body);line-height:1.5}
 
@@ -779,6 +829,25 @@ h2.sec.leise{
 .lupe.an img{transform:none}
 .coach .n{font-size:15.5px;font-weight:700;line-height:1.3;color:var(--ink)}
 .coach .n span{display:block;color:var(--ink-2);font-size:13px;font-weight:500;margin-top:2px}
+/* Wer kein Foto hat, bekommt seine Anfangsbuchstaben in der Farbe seiner
+   Ebene. Vorher trug jedes Profil Kaders Gesicht, und die Profigaeste
+   in den Profi-Einheiten auch. */
+.avatar{
+  width:52px;height:52px;border-radius:99px;flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--mein,var(--accent));color:var(--on-lv);
+  font-family:var(--display);font-size:21px;letter-spacing:.03em;text-transform:uppercase;
+}
+.avatar.gast{background:var(--surface-3);color:var(--ink-2)}
+.avatar svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+
+/* Verweise im Kleingedruckten und kleine Nebenknoepfe. */
+.verweis{display:inline;padding:0;font:inherit;color:var(--ink-2);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px}
+.nebenknopf{align-self:flex-end;min-height:44px;padding:0 2px;font-size:14px;font-weight:600;color:var(--ink-2)}
+.nebenknopf:hover,.verweis:hover{color:var(--ink)}
+/* Stehen Verweise allein in einer Zeile, brauchen sie eine volle Tippflaeche. */
+.verweise{display:flex;flex-wrap:wrap;gap:0 20px;margin:-10px 0}
+.verweise .verweis{display:inline-flex;align-items:center;min-height:44px}
 
 .marke{display:flex;align-items:center;gap:18px;border-radius:var(--r-card);background:var(--surface);padding:20px;box-shadow:var(--e1),var(--edge)}
 .marke .z{font-family:var(--display);font-size:58px;line-height:.8;color:var(--accent);font-variant-numeric:tabular-nums}
@@ -810,8 +879,10 @@ h2.sec.leise{
 .duchip{
   display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
   font-size:12px;font-weight:700;letter-spacing:.02em;
-  color:#fff;background:var(--c);padding:6px 12px;border-radius:99px;
+  color:var(--on-lv);background:var(--c);padding:6px 12px;border-radius:99px;
 }
+/* Die naechste Ebene nur angedeutet: Rahmen in ihrer Farbe, Schrift normal. */
+.duchip.naechste{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--c)}
 
 /* ---------- Listen ---------- */
 .path{display:flex;flex-direction:column;gap:10px}
@@ -824,24 +895,26 @@ h2.sec.leise{
 }
 .unit:active{transform:scale(.99)}
 .unit .w{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink-3)}
-.unit .t{display:block;font-size:15.5px;font-weight:700;line-height:1.3;margin:0}
+.unit .t{display:block;font-size:15.5px;font-weight:700;line-height:1.3;margin:0;-webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word}
 .unit .s{display:block;font-size:13px;font-weight:500;color:var(--ink-2);margin:3px 0 0}
 .tick{width:26px;height:26px;border-radius:99px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;background:var(--surface-3)}
 .tick.on{background:var(--lv2)}
-.tick svg{width:13px;height:13px;fill:none;stroke:#fff;stroke-width:2.6;display:none}
+.tick svg{width:13px;height:13px;fill:none;stroke:var(--on-lv);stroke-width:2.6;display:none}
 .tick.on svg{display:block}
 
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .stat{
-  padding:15px 13px 13px;display:flex;flex-direction:column;gap:3px;
+  padding:15px 11px 13px;display:flex;flex-direction:column;gap:3px;
   background:var(--surface);border-radius:var(--r-media);
   box-shadow:var(--e1),var(--edge);
 }
 .stat .v{font-family:var(--display);font-size:30px;line-height:.86;font-variant-numeric:tabular-nums;color:var(--mein,var(--ink))}
-.stat .k{
-  font-size:12px;font-weight:600;color:var(--ink-2);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
+.stat .k{font-size:12px;font-weight:600;color:var(--ink-2);line-height:1.3}
+/* Unter 390 Pixeln eine Stufe kleiner, damit „Wochenserie" in einer Zeile
+   bleibt. Auf den ganz kleinen Handys bricht es am Trennstrich um, statt
+   abgeschnitten zu werden. */
+@media (max-width:389px){ .stat .k{font-size:11px} }
+@media (max-width:359px){ .stats{gap:8px} }
 
 /* Gruppierte Listen sind Beiwerk: flach, nur eine Kante. Was Inhalt
    traegt — Videos, Heldenkarte, Abo — behaelt seinen Schatten. So gibt
@@ -856,6 +929,7 @@ h2.sec.leise{
   box-shadow:0 1px 0 var(--line);
   transition:background .25s var(--ease);
 }
+a.lrow{color:inherit;text-decoration:none}
 .lrow:last-child{box-shadow:none}
 .lrow:hover{background:var(--surface-2)}
 .lrow .r{font-size:14px;font-weight:600;color:var(--ink-3);display:inline-flex;align-items:center;gap:10px}
@@ -883,6 +957,15 @@ h2.sec.leise{
   -webkit-appearance:none;appearance:none;
 }
 .field textarea{min-height:100px;resize:vertical}
+/* Ein Auswahlfeld braucht seinen Pfeil. appearance:none nimmt ihn weg,
+   deshalb zeichnet ihn die Huelle neu, in der Farbe der Fassung. */
+.wahl{position:relative;display:block}
+.wahl select{padding-right:46px;cursor:pointer}
+.wahl::after{
+  content:"";position:absolute;right:20px;top:50%;width:8px;height:8px;pointer-events:none;
+  border-right:2px solid var(--ink-2);border-bottom:2px solid var(--ink-2);
+  transform:translateY(-70%) rotate(45deg);border-radius:1px;
+}
 .field input:focus,.field select:focus,.field textarea:focus{outline:none;box-shadow:var(--e1),inset 0 0 0 2px var(--accent)}
 .seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;padding:6px;background:var(--surface-3);border-radius:var(--r-btn)}
 .seg button{
@@ -890,7 +973,10 @@ h2.sec.leise{
   transition:background .25s var(--ease),color .25s var(--ease),box-shadow .25s var(--ease);
 }
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--e1)}
-.seg button.lv[aria-pressed="true"]{background:var(--c);color:#fff}
+/* Im Dunkeln ist die Schiene heller als die Flaeche, da reicht das leise
+   Grau nicht (4,3 : 1). */
+:root[data-theme="dark"] .seg button:not([aria-pressed="true"]){color:var(--ink-body)}
+.seg button.lv[aria-pressed="true"]{background:var(--c);color:var(--on-lv)}
 .drop{
   border-radius:var(--r-card);padding:30px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;
   text-align:center;width:100%;background:var(--surface);
@@ -960,7 +1046,7 @@ a.btn{text-decoration:none}
 .sym .bild img{width:100%;height:100%;object-fit:cover;display:block}
 .sym .nm{font-size:15.5px;font-weight:700;line-height:1.2}
 .sym .zu{font-size:12.5px;font-weight:600;color:var(--ink-2);margin-top:-6px}
-.sym[aria-pressed="true"] .zu{color:var(--accent)}
+.sym[aria-pressed="true"] .zu{color:var(--accent-ink)}
 .sym .schloss{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   background:rgba(3,7,6,.46);border-radius:inherit;
@@ -1060,6 +1146,10 @@ a.btn{text-decoration:none}
 
   /* Der Inhalt bekommt eine Lesebreite statt der ganzen Fensterbreite. */
   .screen{max-width:1180px;margin:0 auto;padding:30px 42px 64px;gap:40px}
+  /* Profil und Pyramide sind Listen, keine Raster. Ueber 1000 Pixel
+     Breite stand der Wert am Zeilenende weit weg von seiner Beschriftung,
+     und der Pro-Knopf war 1040 Pixel breit. */
+  .screen.schmal{max-width:760px}
   .grid{grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:18px}
   .row{
     display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));
@@ -1200,7 +1290,7 @@ a.btn{text-decoration:none}
 
      dom      das Dokument ist gelesen
      logo     das Logo ist da
-     schrift  die Schriften von Google sind da
+     schrift  die Schriften sind da
      app      die App hat zum ersten Mal gezeichnet
 
    Zwei Regeln halten ihn ertraeglich: auf schnellem Netz wird er nie
@@ -1264,10 +1354,10 @@ window.km1Start = (function(){
     document.addEventListener('DOMContentLoaded', function(){ fertig('dom'); });
   else fertig('dom');
 
-  /* Die Schriften: erst wenn das Stylesheet da ist, stehen die
-     Schriftschnitte ueberhaupt fest. Deshalb wird danach ausdruecklich
-     geladen — document.fonts.ready allein waere schon vorher fertig,
-     solange das Stylesheet noch auf media="print" steht. */
+  /* Die Schriften stehen im Stil oben, also sind die Schnitte schon
+     bekannt. Geladen wird trotzdem ausdruecklich: document.fonts.ready
+     wartet nur auf das, was gerade gebraucht wird, und hinter dem
+     Startbildschirm wird noch nichts gebraucht. */
   function schriftLaden(){
     if(!document.fonts || !document.fonts.load || !window.Promise) return fertig('schrift');
     var los = function(){ fertig('schrift'); };
@@ -1279,13 +1369,7 @@ window.km1Start = (function(){
       ]).then(los, los);
     }catch(e){ los(); }
   }
-  var sl = document.getElementById('schriften');
-  if(!sl) fertig('schrift');
-  else if(sl.sheet) schriftLaden();
-  else {
-    sl.addEventListener('load', schriftLaden);
-    sl.addEventListener('error', function(){ fertig('schrift'); });
-  }
+  schriftLaden();
 
   male();
   return {
@@ -1354,6 +1438,9 @@ var KAT = {
   annahme:'Ballannahme', athletik:'Athletik', torwart:'Torwart', taktik:'Taktik'
 };
 
+/* In drei Titeln steht ein weicher Trennstrich (\u00AD). Die Woerter sind
+   breiter als eine Karte, und ohne feste Trennstelle bricht der Browser
+   sie irgendwo um. Die Suche und die Mitteilung nehmen ihn wieder heraus. */
 var VIDEOS = [
   {id:'flanke-innen', t:'Die Flanke mit der Innenseite', k:'flanken', lv:2, d:'7:24', zg:'offen', neu:true, img:'pitch', views:1284,
    be:'Die beste Flanke ist die, die ankommt. Die Innenseite macht den Ball berechenbar: flach am Boden oder halbhoch auf den Elfmeterpunkt, immer mit derselben Bewegung.',
@@ -1380,7 +1467,7 @@ var VIDEOS = [
    st:['Standbein zeigt zum Ziel, Arme raus für die Balance.','Innenseite quer zum Ball, Knöchel bleibt steif.','Durch die Ballmitte spielen und den Fuß bis zum Ziel nachführen.'],
    fe:'Den Pass zu weich spielen. Ein langsamer Ball ist für den Mitspieler schwerer als ein fester.'},
 
-  {id:'leiter', t:'Koordinationsleiter: sechs Basis-Muster', k:'athletik', lv:1, d:'7:15', zg:'offen', img:'ladder', views:980,
+  {id:'leiter', t:'Koordinations\u00ADleiter: sechs Basis-Muster', k:'athletik', lv:1, d:'7:15', zg:'offen', img:'ladder', views:980,
    be:'Sechs Muster, die du überall üben kannst. Sie schulen den schnellen Fuß, den du für den ersten Schritt im Spiel brauchst.',
    st:['Immer auf dem Ballen laufen, die Ferse berührt den Boden nicht.','Arme mitlaufen lassen, sie geben den Takt vor.','Kurze Sätze: 20 Sekunden schnell, 40 Sekunden Pause.'],
    fe:'Schnell und schlampig. Sauber und mittelschnell bringt mehr als hektisch und falsch.'},
@@ -1430,7 +1517,7 @@ var VIDEOS = [
    st:['Unterarmstütz mit Beinheben, drei Sätze zu 30 Sekunden.','Seitstütz mit gestrecktem Arm, beide Seiten gleich lange.','Zum Schluss zwei Minuten Ausfallschritte im Wechsel, ruhig und kontrolliert.'],
    fe:'Ins Hohlkreuz gehen. Lieber kürzer halten und die Spannung behalten.'},
 
-  {id:'schnittstelle', t:'Der Schnittstellenpass', k:'passen', lv:4, d:'11:05', zg:'konto', views:296,
+  {id:'schnittstelle', t:'Der Schnittstellen\u00ADpass', k:'passen', lv:4, d:'11:05', zg:'konto', views:296,
    be:'Der Pass zwischen zwei Verteidiger. Er entsteht nicht im Fuß, sondern im Kopf, zwei Sekunden vorher.',
    st:['Die Kette beobachten, während der Ball noch unterwegs ist.','Den Ball so annehmen, dass der Passweg frei wird.','Flach und fest zwischen die beiden spielen, im Moment des Losgehens.'],
    fe:'Zu lange warten. Die Lücke ist eine halbe Sekunde offen, nicht länger.'},
@@ -1482,7 +1569,7 @@ var VIDEOS = [
    st:['Den Gegner früh spüren lassen: Schulter an Schulter, bevor der Ball da ist.','Immer zwischen Ball und Gegner bleiben, auch wenn das heißt, rückwärts zu laufen.','Den Fuß erst rausstellen, wenn der Ball vom Gegner weggeht, nie davor.'],
    fe:'Mit gestrecktem Bein reingrätschen. Sieht gut aus, kostet Gelb und den Zweikampf.'},
 
-  {id:'profi-torwart', t:'Torwart: Strafraumbeherrschung', k:'torwart', lv:3, d:'13:30', zg:'pro',
+  {id:'profi-torwart', t:'Torwart: Strafraum\u00ADbeherrschung', k:'torwart', lv:3, d:'13:30', zg:'pro',
    gast:'Torwart, 2. Bundesliga', views:0,
    be:'Wann kommt ein Torwart raus und wann bleibt er? Ein Profitorwart zeigt seine Entscheidungsregeln bei Flanken und langen Bällen.',
    st:['Die Ausgangsposition ist keine Linie, sondern ein Bogen: je weiter der Ball außen steht, desto weiter vorn stehst du.','Bei der Flanke früh loslaufen und den höchsten Punkt anpeilen, nicht den Ball.','Rufen, bevor du losläufst. Eine stumme Herausnahme ist ein Eigentor mit Ansage.'],
@@ -1505,8 +1592,10 @@ var PFAD = {
 /* Schlag den Coach. Ansehen, nachmachen, im Training zeigen.
    Bewusst ohne Einsendungen: in der App gibt es keine fremden Videos. */
 var CHALLENGES = [
-  {m:'September', t:'50 Übersteiger in 60 Sekunden', marke:43, eh:'Übersteiger',
-   be:'Eine Minute, ein Ball, so viele saubere Übersteiger wie möglich. Kader hat es an einem Dienstagabend auf 43 gebracht.',
+  /* Das Ziel ist Kaders Marke, keine feste Zahl. Der Titel sagte vorher
+     „50 Übersteiger", obwohl Kader selbst bei 43 steht. */
+  {m:'September', t:'Übersteiger in 60 Sekunden', marke:43, eh:'Übersteiger',
+   be:'Eine Minute, ein Ball, so viele saubere Übersteiger wie möglich. Kader hat es an einem Dienstagabend auf 43 gebracht. Wer 44 schafft, hat ihn geschlagen.',
    rg:['Der Ball bleibt im Kreis, sonst zählt der Durchgang nicht.','Nur Übersteiger mit Richtungswechsel zählen.','Wer stehen bleibt, fängt die Zählung von vorn an.']},
   {m:'August',    t:'Jonglieren ohne Bodenkontakt', marke:78, eh:'Kontakte', be:'', rg:[]},
   {m:'Juli',      t:'Torwand: fünf Schüsse',        marke:4,  eh:'Treffer',  be:'', rg:[]}
@@ -1518,7 +1607,7 @@ var state = {
   pro:false, owner:false,
   meinLv:1, lvSel:1,
   kat:'alle', fltLv:0, suche:'',
-  done:{}, preis:'jahr', nachLogin:null, loginModus:'neu',
+  done:{}, preis:'jahr', abo:null, nachLogin:null, loginModus:'neu',
   tempo:1, symbol:'standard', merk:{}, serieHeute:0, laedt:true,
   gesehen:{}, zuletzt:null,
   erinnerung:{an:true, tage:['mi','sa'], zeit:'17:00'},
@@ -1563,18 +1652,90 @@ function kapitelSek(v, i){
   return Math.round(los + (d - los) * (i / n));
 }
 
-/* Wer alles geschafft hat, was auf seiner Ebene offen steht, steigt auf.
-   Gesperrte Videos zaehlen nicht mit — sonst haengt der Aufstieg am Abo. */
+/* Wer seinen Pfad geschafft hat, steigt auf. Es zaehlt derselbe Pfad,
+   den die Pyramide als 5 / 5 zeigt. Vorher zaehlten alle Videos der
+   Ebene, und wer Pro hatte, hing an der Profi-Einheit fest, obwohl die
+   Pyramide laengst voll war. Gesperrte Videos zaehlen nie mit. */
 function pruefeAufstieg(){
   if(!drin() || state.meinLv >= LEVELS.length) return false;
-  var meine = VIDEOS.filter(function(v){ return v.lv === state.meinLv && !gesperrt(v); });
+  var meine = PFAD[state.meinLv].map(function(u){ return byId(u.id); })
+    .filter(function(v){ return v && !gesperrt(v); });
   if(!meine.length) return false;
   var fertig = meine.every(function(v){ return !!state.done[v.id]; });
   if(!fertig) return false;
   state.meinLv += 1;
   return true;
 }
-function offenFuerMich(){return VIDEOS.filter(function(v){return !gesperrt(v);}).length;}
+/* Was noch zu tun ist: offen fuer mich und nicht abgehakt. Vorher
+   zaehlte hier alles Freigeschaltete, auch das schon Erledigte. */
+function offenFuerMich(){return VIDEOS.filter(function(v){return !gesperrt(v) && !state.done[v.id];}).length;}
+
+/* Abgehakte Uebungen. Die Challenge zaehlt nicht dazu: sie ist ein
+   Wettbewerb, keine Einheit aus dem Pfad. */
+function uebungen(){
+  return Object.keys(state.done).filter(function(k){ return k.indexOf('challenge-') !== 0 && byId(k); });
+}
+/* state.done merkt sich, wann abgehakt wurde. Die Woche beginnt am
+   Montag um null Uhr. */
+var TAG_MS = 864e5;
+function wochenStart(t){
+  var d = new Date(t === undefined ? Date.now() : t);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - (d.getDay() + 6) % 7);
+  return d.getTime();
+}
+function dieseWoche(){
+  var ab = wochenStart();
+  return uebungen().filter(function(k){ return state.done[k] >= ab; }).length;
+}
+/* Die Serie in Wochen: wie viele Wochen am Stueck mindestens eine Uebung
+   hatten. Die laufende Woche bricht sie nicht, solange sie noch laeuft. */
+function serieWochen(){
+  var wochen = {};
+  uebungen().forEach(function(k){ wochen[wochenStart(state.done[k])] = 1; });
+  var ab = wochenStart(), n = 0;
+  if(!wochen[ab]) ab = wochenStart(ab - TAG_MS);
+  while(wochen[ab]){ n++; ab = wochenStart(ab - TAG_MS); }
+  return n;
+}
+/* Das naechste Video auf dem eigenen Pfad, das noch nicht abgehakt ist. */
+function naechstesVideo(){
+  var ebene = drin() ? state.meinLv : 1;
+  var offen = VIDEOS.filter(function(x){ return !gesperrt(x) && !state.done[x.id] && x.lv === ebene; });
+  if(!offen.length) offen = VIDEOS.filter(function(x){ return !gesperrt(x) && !state.done[x.id]; });
+  return offen[0] || null;
+}
+
+var MONATE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+var WOCHENTAGE = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+function datumText(t){ var d = new Date(t); return d.getDate()+'. '+MONATE[d.getMonth()]; }
+function monatText(t){ var d = new Date(t); return MONATE[d.getMonth()]+' '+d.getFullYear(); }
+var ZAHLWORT = ['null','eine','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf'];
+function minutenText(d){
+  var m = Math.max(1, Math.round(sek(d) / 60));
+  return (ZAHLWORT[m] || m) + (m === 1 ? ' Minute' : ' Minuten');
+}
+
+/* Wo gekauft wird. Auf dem iPhone ueber die Apple-ID, auf Android ueber
+   Google Play; am PC gibt es keinen Kauf, dort nennen wir beide Wege. */
+var PLATTFORM = (function(){
+  var ua = navigator.userAgent || '';
+  if(/iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+  if(/Android/i.test(ua)) return 'android';
+  return 'web';
+})();
+var KAUF = {
+  ios:     {laden:'den App Store', konto:'deine Apple-ID', kontoSie:'Ihre Apple-ID',
+            kuendigen:'in den Einstellungen deiner Apple-ID',
+            sperre:'Mit der Kaufanfrage in der Familienfreigabe von Apple'},
+  android: {laden:'Google Play', konto:'dein Google-Konto', kontoSie:'Ihr Google-Konto',
+            kuendigen:'in Google Play unter Abos',
+            sperre:'Mit Google Family Link'},
+  web:     {laden:'den App Store oder Google Play', konto:'deine Apple-ID oder dein Google-Konto',
+            kontoSie:'Ihre Apple-ID oder Ihr Google-Konto',
+            kuendigen:'in den Einstellungen deiner Apple-ID oder in Google Play',
+            sperre:'Mit der Familienfreigabe von Apple oder Google Family Link'}
+}[PLATTFORM];
 
 var ICON = {
   play:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l12 7-12 7z"/></svg>',
@@ -1591,6 +1752,7 @@ var ICON = {
   herz:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.4 4.7 13.1a4.7 4.7 0 0 1 6.6-6.7l.7.7.7-.7a4.7 4.7 0 0 1 6.6 6.7z"/></svg>',
   upl:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M4 16v3h16v-3"/></svg>',
   apple:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.3 12.6c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.6-1.9-1.5-.2-3 .9-3.7.9-.8 0-2-.9-3.2-.8-1.7 0-3.2 1-4 2.5-1.7 2.9-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.6z"/><path d="M14.2 5.4c.7-.8 1.1-1.9 1-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.8-1.3z"/></svg>',
+  google:'<svg class="farbig" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.7z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.3 14.3a7.2 7.2 0 0 1 0-4.6V6.6h-4a12 12 0 0 0 0 10.8l4-3.1z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 1.3 6.6l4 3.1c.9-2.9 3.6-4.9 6.7-4.9z"/></svg>',
   tabStart:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5l3.2 5.3-3.2 2.6-3.2-2.6z"/><path d="M8.8 11.4L7 17.2M15.2 11.4L17 17.2"/></svg>',
   tabTech:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14"/><path d="M10 9.5l5 2.5-5 2.5z"/></svg>',
   tabPyr:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5L21 20H3z"/><path d="M8.2 13h7.6M6.2 16.5h11.6"/></svg>',
@@ -1662,8 +1824,9 @@ function karte(v){
   return '<button class="card" type="button" data-act="video:'+v.id+'">' +
     '<span class="poster">'+posterOf(v)+
       (gesperrt(v) ? '<span class="lock'+(v.zg==='konto'?' konto':'')+'"><span>'+ICON.lock+'</span></span>' : '') +
+      /* „Konto" nur, solange es fehlt. Angemeldet sagt das Schild nichts mehr. */
       (v.zg==='pro' ? '<span class="badge pro">Profi</span>' :
-        (v.zg==='konto' ? '<span class="badge konto">Konto</span>' :
+        ((v.zg==='konto' && gesperrt(v)) ? '<span class="badge konto">Konto</span>' :
           (v.neu ? '<span class="badge neu">Neu</span>' : ''))) +
       '<span class="badge dur">'+v.d+'</span>' +
     '</span>' +
@@ -1686,23 +1849,37 @@ function startKarte(){
       fmtZeit(d - stelle)+' übrig · '+lvOf(v.lv).nm,
       Math.max(3, Math.round(stelle / d * 100)));
   }
-  var ebene = drin() ? state.meinLv : 1;
-  var offen = VIDEOS.filter(function(x){ return !gesperrt(x) && !state.done[x.id] && x.lv === ebene; });
-  if(!offen.length) offen = VIDEOS.filter(function(x){ return !gesperrt(x) && !state.done[x.id]; });
-  var n = offen[0] || VIDEOS[0];
+  var n = naechstesVideo() || VIDEOS[0];
   return heroKarte(n, drin() ? 'Als Nächstes' : 'Fang hier an', n.d+' · '+lvOf(n.lv).nm, 0);
+}
+
+/* Die Zeile ueber der Begruessung. Sie kennt den Wochentag und die Tage,
+   die in der Erinnerung stehen. Vorher stand dort jeden Tag „Mittwoch". */
+function heuteZeile(){
+  var heute = new Date().getDay();
+  var tag = WOCHENTAGE[heute];
+  var e = state.erinnerung;
+  if(!e.an || !e.tage.length) return tag;
+  var nr = function(k){ return (TAGE.map(function(t){ return t[0]; }).indexOf(k) + 1) % 7; };
+  var plan = e.tage.map(nr);
+  if(plan.indexOf(heute) >= 0) return tag+', Trainingstag';
+  for(var i = 1; i < 7; i++){
+    var d = (heute + i) % 7;
+    if(plan.indexOf(d) >= 0) return tag+(i === 1 ? ', morgen Training' : ', Training am '+WOCHENTAGE[d]);
+  }
+  return tag;
 }
 
 function screenStart(){
   var neu = VIDEOS.filter(function(v){return v.neu;});
-  var erledigt = Object.keys(state.done).length;
   var ch = CHALLENGES[0];
 
   var kopfteil, mitte;
   if(drin()){
-    kopfteil = '<div><p class="eyebrow">Mittwoch, Trainingstag</p><h1 class="big">Moin '+h(state.konto.vn)+'.<br>Weiter geht’s.</h1></div>' +
+    kopfteil = '<div><p class="eyebrow">'+h(heuteZeile())+'</p><h1 class="big">Moin '+h(state.konto.vn)+'.<br>Weiter geht’s.</h1></div>' +
       startKarte();
-    var ziel = Math.min(erledigt,5), pips = '';
+    /* Nur was seit Montag abgehakt wurde, und keine Challenge. */
+    var ziel = Math.min(dieseWoche(),5), pips = '';
     for(var i=0;i<5;i++) pips += '<i class="'+(i<ziel?'on':'')+'"></i>';
     mitte = '<div class="panel traegt">' +
       '<p class="note">Dein Wochenziel</p>' +
@@ -1735,7 +1912,7 @@ function screenStart(){
       '<span class="poster">'+dia('dribbling')+'<span class="badge neu">Challenge '+ch.m+'</span></span>' +
       '<span class="body">' +
         '<span class="t">Schlag den Coach</span>' +
-        '<p>'+h(ch.t)+'. Kader steht bei '+ch.marke+'. Zeig es ihm im nächsten Training.</p>' +
+        '<p>'+h(ch.t)+'. Kader steht bei '+ch.marke+'. Schaffst du '+(ch.marke+1)+'?</p>' +
       '</span></button>' +
 
     '<div class="block">' +
@@ -1756,7 +1933,7 @@ function screenStart(){
       '<span class="poster"><img src="img/goal.jpg" alt="" loading="lazy"></span>' +
       '<span class="body">' +
         '<span class="t">Herbstcamp Köln</span>' +
-        '<p>20. bis 24. Oktober, fünf Tage in den Herbstferien.</p>' +
+        '<p>Montag bis Freitag, 19. bis 23. Oktober, in den Herbstferien.</p>' +
       '</span></button>' +
 
   '</section>';
@@ -1767,7 +1944,9 @@ function screenTechnik(){
     if(state.kat==='profi'){ if(v.zg!=='pro') return false; }
     else if(state.kat!=='alle' && v.k!==state.kat) return false;
     if(state.fltLv && v.lv!==state.fltLv) return false;
-    if(state.suche && v.t.toLowerCase().indexOf(state.suche.toLowerCase())<0 && KAT[v.k].toLowerCase().indexOf(state.suche.toLowerCase())<0) return false;
+    /* Die weichen Trennstriche in langen Titeln stoeren die Suche nicht. */
+    var q = state.suche.toLowerCase();
+    if(q && v.t.replace(/\u00AD/g,'').toLowerCase().indexOf(q)<0 && KAT[v.k].toLowerCase().indexOf(q)<0) return false;
     return true;
   });
 
@@ -1795,7 +1974,10 @@ function screenTechnik(){
     (state.laedt ? skelette(6) :
       (liste.length ?
         '<div class="grid">'+liste.map(karte).join('')+'</div>' :
-        '<div class="leer">'+ICON.such+'<p>Dazu haben wir noch nichts.</p></div>')) +
+        '<div class="leer">'+ICON.such+'<p>Dazu haben wir noch nichts.</p>' +
+          ((state.kat!=='alle' || state.fltLv || state.suche)
+            ? '<button class="btn ghost" type="button" data-act="filterweg" style="width:auto">Filter zurücksetzen</button>' : '') +
+        '</div>')) +
   '</section>';
 }
 
@@ -1841,12 +2023,13 @@ function pyramide(){
 
 function screenPyramide(){
   var l = lvOf(state.lvSel), f = lvFortschritt(state.lvSel);
-  var anzahl = VIDEOS.filter(function(v){return v.lv===state.lvSel;}).length;
+  /* Die Zahl ueber der Liste zaehlt die Liste, nicht alle Videos der Ebene. */
+  var anzahl = PFAD[state.lvSel].length;
   var pfad = PFAD[state.lvSel].map(function(u){
     var v = byId(u.id), fertig = !!state.done[v.id];
     return '<button class="unit" type="button" data-act="video:'+v.id+'">' +
       '<span class="w">W'+u.w+'</span>' +
-      '<span><span class="t">'+h(v.t)+'</span><span class="s">'+KAT[v.k]+' · '+v.d+(v.zg==='pro'?' · Profi':(v.zg==='konto'?' · Konto':''))+'</span></span>' +
+      '<span><span class="t">'+h(v.t)+'</span><span class="s">'+KAT[v.k]+' · '+v.d+(v.zg==='pro'?' · Profi':((v.zg==='konto' && gesperrt(v))?' · Konto':''))+'</span></span>' +
       '<span class="tick '+(fertig?'on':'')+'">'+ICON.check+'</span>' +
     '</button>';
   }).join('');
@@ -1854,12 +2037,12 @@ function screenPyramide(){
   var chip = '';
   if(drin() && state.lvSel===state.meinLv) chip = '<span class="duchip">Du bist hier</span>';
   else if(drin() && state.lvSel===state.meinLv+1)
-    chip = '<span class="duchip" style="background:transparent;color:var(--c);box-shadow:inset 0 0 0 1px var(--c)">Deine nächste Ebene</span>';
+    chip = '<span class="duchip naechste">Deine nächste Ebene</span>';
 
   var pips = '';
   for(var i=0;i<f.gesamt;i++) pips += '<i class="'+(i<f.fertig?'on':'')+'"></i>';
 
-  return '<section class="screen">' +
+  return '<section class="screen schmal">' +
     '<div><p class="eyebrow">Vier Ebenen, eine Richtung</p><h1 class="big">Die KM1-<br>Pyramide</h1>' +
     '</div>' +
     pyramide() +
@@ -1890,12 +2073,18 @@ function darstellung(){
   '</div>';
 }
 
+function initialen(name){
+  var teile = String(name || '').replace(/[^\p{L}\s-]/gu, '').trim().split(/[\s-]+/);
+  return ((teile[0] || '?').charAt(0) + (teile[1] ? teile[1].charAt(0) : '')).toUpperCase();
+}
+function preisText(p){ return p === 'monat' ? '6,99 € im Monat' : '59,00 € im Jahr'; }
+var IMPRESSUM = '<a class="lrow" href="https://km1-training.de/impressum/" target="_blank" rel="noopener"><span>Impressum</span><span class="r">km1-training.de</span></a>';
+
 function screenProfil(){
-  var erledigt = Object.keys(state.done).length;
-  var frei = zaehl('offen');
+  var erledigt = uebungen().length;
 
   if(!drin()){
-    return '<section class="screen">' +
+    return '<section class="screen schmal">' +
       '<div><p class="eyebrow">Gast</p><h1 class="big">Du schaust<br>ohne Konto zu.</h1>' +
       '</div>' +
       '<div class="panel">' +
@@ -1905,16 +2094,17 @@ function screenProfil(){
       '</div>' +
       darstellung() +
       '<div class="rows">' +
-        '<button class="lrow" type="button" data-act="erinnerung"><span>Erinnerung ans Training</span><span class="r">'+erinnerungText()+'</span></button>' +
+        '<button class="lrow" type="button" data-act="erinnerung"><span>Erinnerung</span><span class="r">'+erinnerungText()+'</span></button>' +
         '<button class="lrow" type="button" data-act="eltern"><span>Für Eltern</span><span class="r">Lesen</span></button>' +
         '<button class="lrow" type="button" data-act="daten"><span>Datenschutz</span><span class="r">Lesen</span></button>' +
+        IMPRESSUM +
       '</div>' +
     '</section>';
   }
 
   var trainer = state.owner ?
     '<div class="block">' +
-      '<div class="block-head"><h2 class="sec">Trainerbereich</h2><span class="more">Letzte 30 Tage</span></div>' +
+      '<div class="block-head"><h2 class="sec">Trainerbereich</h2><span class="more">Aufrufe insgesamt</span></div>' +
       '<button class="btn" type="button" data-act="upload">'+ICON.upl+' Video hochladen</button>' +
       '<div class="path" style="margin-top:6px">' +
         VIDEOS.slice().sort(function(a,b){return b.views-a.views;}).slice(0,5).map(function(v){
@@ -1923,21 +2113,29 @@ function screenProfil(){
       '</div>' +
     '</div>' : '';
 
-  return '<section class="screen">' +
-    '<div class="coach">' +
-      '<button class="gross" type="button" data-act="portrait" aria-label="Bild vergrößern">' +
-        '<img src="img/coach.jpg" alt=""></button>' +
-      '<span class="n">'+h(state.konto.name)+'<span>'+lvOf(state.meinLv).nm+' · seit März 2026</span></span>' +
+  /* Nur Kader hat ein Foto. Alle anderen bekommen ihre Anfangsbuchstaben. */
+  var bild = state.owner
+    ? '<button class="gross" type="button" data-act="portrait" aria-label="Bild vergrößern">' +
+        '<img src="img/coach.jpg" alt=""></button>'
+    : '<span class="avatar" aria-hidden="true">'+h(initialen(state.konto.name))+'</span>';
+
+  return '<section class="screen schmal">' +
+    '<div class="coach">' + bild +
+      '<span class="n">'+h(state.konto.name)+'<span>'+lvOf(state.meinLv).nm+' · seit '+monatText(state.konto.seit)+'</span></span>' +
     '</div>' +
 
     '<div class="stats">' +
       '<div class="stat"><span class="v">'+erledigt+'</span><span class="k">Übungen</span></div>' +
       '<div class="stat"><span class="v">'+offenFuerMich()+'</span><span class="k">Offen</span></div>' +
-      '<div class="stat"><span class="v">6</span><span class="k">Tage Serie</span></div>' +
+      '<div class="stat"><span class="v">'+serieWochen()+'</span><span class="k">Wochen&shy;serie</span></div>' +
     '</div>' +
 
     (state.pro ?
-      '<div class="panel"><p class="note" style="color:var(--lv2)">KM1 Pro aktiv</p><p class="sub" style="margin:0">Verlängert sich am 18. Oktober.</p></div>' :
+      '<div class="panel"><p class="note" style="color:var(--lv2)">KM1 Pro aktiv</p><p class="sub" style="margin:0">' +
+        (state.abo
+          ? 'Gratis bis '+datumText(state.abo.bis)+', danach '+preisText(state.abo.preis)+'. Kündbar bis 24 Stunden vorher.'
+          : 'Läuft.') +
+      '</p></div>' :
       '<button class="proband" type="button" data-act="paywall">' +
         '<span class="note">KM1 Pro</span>' +
         '<span class="t">Die Profi-Einheiten</span>' +
@@ -1951,9 +2149,11 @@ function screenProfil(){
     '<div class="rows">' +
       '<button class="lrow" type="button" data-act="merkliste"><span>Merkliste</span><span class="r">'+Object.keys(state.merk).length+'</span></button>' +
       '<button class="lrow" type="button" data-act="symbol"><span>App-Symbol</span><span class="r">'+(state.symbol==='pro'?'Flutlicht':'Standard')+'</span></button>' +
-      '<button class="lrow" type="button" data-act="erinnerung"><span>Erinnerung ans Training</span><span class="r">'+erinnerungText()+'</span></button>' +
+      '<button class="lrow" type="button" data-act="erinnerung"><span>Erinnerung</span><span class="r">'+erinnerungText()+'</span></button>' +
       '<button class="lrow" type="button" data-act="eltern"><span>Für Eltern</span><span class="r">Lesen</span></button>' +
       '<button class="lrow" type="button" data-act="daten"><span>Datenschutz</span><span class="r">Lesen</span></button>' +
+      '<button class="lrow" type="button" data-act="bedingungen"><span>Nutzungsbedingungen</span><span class="r">Lesen</span></button>' +
+      IMPRESSUM +
       '<button class="lrow" type="button" data-act="logout"><span>Abmelden</span><span class="r">'+h(state.konto.vn)+'</span></button>' +
     '</div>' +
   '</section>';
@@ -2006,8 +2206,9 @@ function sheetVideo(id){
     '<div class="sheet-body">' +
       (zu ?
         '<div class="player"><div class="poster">'+posterOf(v)+'</div>' +
-          '<button class="pbtn" type="button" data-act="'+(v.zg==='pro'?'paywall':'kontologin:'+v.id)+'">' +
-            '<span>'+ICON.lock+'</span></button></div>'
+          '<button class="pbtn" type="button" data-act="'+(v.zg==='pro'?'paywall':'kontologin:'+v.id)+'"' +
+            ' aria-label="'+(v.zg==='pro'?'Mit KM1 Pro freischalten':'Mit Konto freischalten')+'">' +
+            '<span class="zu">'+ICON.lock+'</span></button></div>'
         :
         playerInline({id:v.id, titel:v.t, poster:posterOf(v), dauer:sek(v.d)})
       ) +
@@ -2021,7 +2222,12 @@ function sheetVideo(id){
         (v.gast ? '<span>Gast · '+h(v.gast)+'</span>' : '') +
       '</div>' +
 
+      /* Gesperrt steht die Beschreibung trotzdem da: ein Vorgeschmack,
+         damit man weiss, wofuer man das Konto oder das Abo anlegt. */
       (zu ?
+        '<p class="prose">'+h(v.be)+'</p>' +
+        '<p class="fine">'+v.st.length+' Schritte zum Nachmachen und der häufigste Fehler, '+
+          (v.zg==='pro' ? 'mit KM1 Pro.' : 'mit einem kostenlosen Konto.')+'</p>' +
         (v.zg==='pro'
           ? '<button class="btn" type="button" data-act="paywall">Mit KM1 Pro ansehen</button>'
           : '<button class="btn" type="button" data-act="kontologin:'+v.id+'">Kostenloses Konto anlegen</button>')
@@ -2044,7 +2250,11 @@ function sheetVideo(id){
             ' aria-pressed="'+gemerkt+'" aria-label="'+(gemerkt?'Aus der Merkliste nehmen':'Auf die Merkliste')+'">' +
             ICON.herz+'</button>' +
         '</div>' +
-        '<div class="coach"><img src="img/coach.jpg" alt=""><span class="n">' +
+        /* Kaders Foto nur bei Kader. Die Gaeste haben noch kein eigenes
+           Bild, solange ihre Namen nicht feststehen. */
+        '<div class="coach">' +
+          (v.gast ? '<span class="avatar gast" aria-hidden="true">'+ICON.tabProf+'</span>' : '<img src="img/coach.jpg" alt="">') +
+          '<span class="n">' +
           (v.gast ? h(v.gast)+'<span>Zu Gast bei KM1</span>' : 'Kader<span>Gründer und Trainer</span>') +
         '</span></div>'
       ) +
@@ -2121,6 +2331,8 @@ function sheetChallenge(){
 
 function sheetLogin(grund){
   var neu = state.loginModus === 'neu';
+  var appleKnopf = '<button class="btn ghost" type="button" data-act="signin">'+ICON.apple+' Mit Apple anmelden</button>';
+  var googleKnopf = '<button class="btn ghost" type="button" data-act="signin">'+ICON.google+' Mit Google anmelden</button>';
   return kopf(neu ? 'Konto anlegen' : 'Anmelden') +
     '<div class="sheet-body">' +
       '<div><p class="eyebrow">'+(neu?'Kostenlos':'Willkommen zurück')+'</p>' +
@@ -2134,13 +2346,22 @@ function sheetLogin(grund){
 
       (neu ? '<div class="field"><label for="lg-name">Vorname</label><input id="lg-name" type="text" placeholder="Luis"></div>' : '') +
       '<div class="field"><label for="lg-mail">E-Mail</label><input id="lg-mail" type="email" placeholder="name@beispiel.de"></div>' +
-      '<div class="field"><label for="lg-pw">Passwort</label><input id="lg-pw" type="password" placeholder="mindestens 8 Zeichen"></div>' +
+      '<div class="field"><label for="lg-pw">Passwort</label><input id="lg-pw" type="password" placeholder="mindestens 8 Zeichen">' +
+        (neu ? '' : '<button class="nebenknopf" type="button" data-act="pwvergessen">Passwort vergessen?</button>') +
+      '</div>' +
 
       '<button class="btn" type="button" data-act="signin">'+(neu?'Konto anlegen':'Anmelden')+'</button>' +
-      '<button class="btn ghost" type="button" data-act="signin">'+ICON.apple+' Mit Apple anmelden</button>' +
+      /* Apple verlangt „Mit Apple anmelden", sobald es einen anderen
+         Anbieter gibt. Auf Android steht Google zuerst. */
+      (PLATTFORM === 'android' ? googleKnopf + appleKnopf : appleKnopf + googleKnopf) +
       '<button class="btn ghost" type="button" data-act="back">Weiter ohne Konto</button>' +
 
-      '<p class="fine">Für Kinder unter 16 Jahren legen die Eltern das Konto an.</p>' +
+      '<p class="fine">' +
+        (neu ? 'Mit dem Anlegen stimmst du den ' +
+          '<button class="verweis" type="button" data-act="bedingungen">Nutzungsbedingungen</button> zu. ' +
+          'Wie wir mit deinen Daten umgehen, steht im ' +
+          '<button class="verweis" type="button" data-act="daten">Datenschutz</button>. ' : '') +
+        'Für Kinder unter 16 Jahren legen die Eltern das Konto an.</p>' +
     '</div>';
 }
 
@@ -2154,8 +2375,29 @@ function erinnerungText(){
 
 /* Der Elternbereich. Andere Leserichtung als der Rest der App:
    hier steht Sie, nicht du, denn hier liest jemand anderes mit. */
+/* Warum eine Kategorie zaehlt, in Worten fuer Eltern. */
+var WARUM = {
+  annahme:'Wer den Ball sauber mitnimmt, hat im Spiel eine halbe Sekunde mehr Zeit. Diese halbe Sekunde ist der Unterschied zwischen abspielen und verlieren.',
+  passen:'Ein fester, flacher Pass ist die Grundlage jedes Zusammenspiels. Wer ihn sicher spielt, wird im Team öfter angespielt.',
+  dribbling:'Wer den Ball eng führt und im richtigen Moment das Tempo wechselt, löst Situationen allein, wenn kein Mitspieler frei ist.',
+  flanken:'Eine Flanke, die ankommt, macht aus einem Angriff über außen eine Torchance. Es kommt auf Genauigkeit an, nicht auf Kraft.',
+  schuss:'Tore entstehen aus sauberer Technik, nicht aus Kraft. Wer den Ball flach und genau trifft, trifft öfter.',
+  athletik:'Schnelle Füße und eine stabile Körpermitte schützen vor Verletzungen und machen jede Technik im Spiel erst möglich.',
+  torwart:'Beim Torwart entscheidet die Grundstellung über fast jeden Ball. Wer sie sicher beherrscht, kommt schneller in die Ecke.',
+  taktik:'Wer versteht, wohin er laufen muss, spart Kraft und hilft der ganzen Mannschaft.'
+};
+/* Woran das Kind gerade arbeitet: das angefangene Video, sonst das
+   naechste offene. Vorher stand hier fest „Die erste Berührung", auch
+   wenn sie laengst abgehakt war. */
+function geradeDran(){
+  if(!drin()) return null;
+  var z = state.zuletzt && byId(state.zuletzt);
+  if(z && state.gesehen[z.id] && !state.done[z.id] && !gesperrt(z)) return z;
+  return naechstesVideo();
+}
+
 function sheetEltern(){
-  var akt = drin() ? byId('erste-beruehrung') : null;
+  var akt = geradeDran();
   return kopf('Für Eltern') +
     '<div class="sheet-body">' +
       '<div><p class="eyebrow">Für Eltern</p><h1 class="big">Was Ihr Kind<br>hier übt.</h1></div>' +
@@ -2165,7 +2407,7 @@ function sheetEltern(){
       '<div class="panel">' +
         '<p class="note">Gerade dran</p>' +
         '<p class="sub" style="margin:0;color:var(--ink);font-size:15px">'+h(akt.t)+'</p>' +
-        '<p class="sub" style="margin:0">Warum das zählt: Wer den Ball sauber mitnimmt, hat im Spiel eine halbe Sekunde mehr Zeit. Diese halbe Sekunde ist der Unterschied zwischen abspielen und verlieren.</p>' +
+        '<p class="sub" style="margin:0">Warum das zählt: '+h(WARUM[akt.k] || '')+'</p>' +
       '</div>' : '') +
 
       '<div class="block"><h2 class="sec">Wie viel Zeit sinnvoll ist</h2>' +
@@ -2194,8 +2436,10 @@ function sheetEltern(){
            'Sonst nichts: kein Tracking, keine Werbung, keine Weitergabe an Dritte.'
           ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
         '</ul>' +
-        '<div class="rows"><button class="lrow" type="button" data-act="loeschen">' +
-          '<span>Konto und alle Daten löschen</span><span class="r">Sofort</span></button></div>' +
+        /* Die Zeile verspricht nichts, was die Rueckmeldung nicht haelt:
+           geloescht wird nach einer Bestaetigung per E-Mail. */
+        (drin() ? '<div class="rows"><button class="lrow" type="button" data-act="loeschen:sie">' +
+          '<span>Konto und alle Daten löschen</span><span class="r"></span></button></div>' : '') +
       '</div>' +
 
       '<div class="block"><h2 class="sec">Was kostet was</h2>' +
@@ -2203,27 +2447,31 @@ function sheetEltern(){
           ['Ohne Anmeldung: '+zaehl('offen')+' Videos, sofort, ohne E-Mail.',
            'Mit kostenlosem Konto: '+zaehl('konto')+' weitere Videos und der gespeicherte Fortschritt.',
            'KM1 PRO, 6,99 € im Monat: die '+zaehl('pro')+' Einheiten mit Profispielern. Sonst nichts kostenpflichtig.',
-           'Abrechnung über den App Store, kündbar mit einem Tipp.'
+           'Abrechnung über '+KAUF.laden+', jederzeit kündbar.'
           ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
         '</ul>' +
-        '<p class="fine">Der Kauf läuft über Ihre Apple-ID. Ihr Kind kann nichts kaufen, ohne dass Sie es freigeben. Für Kinder unter 16 Jahren legen Sie das Konto an.</p>' +
+        '<p class="fine">Der Kauf läuft über '+KAUF.kontoSie+'. '+KAUF.sperre+' kann Ihr Kind nichts kaufen, ohne dass Sie zustimmen. Für Kinder unter 16 Jahren legen Sie das Konto an.</p>' +
       '</div>' +
     '</div>';
 }
 
-/* Erinnerung. Zwei Mitteilungen in der Woche, an den Trainingstagen. */
+/* Erinnerung an den Trainingstagen. Die Zeile oben zaehlt die Tage,
+   die gerade gewaehlt sind. */
+var WIE_OFT = ['Kein Tag gewählt','Einmal die Woche','Zweimal die Woche','Dreimal die Woche',
+  'Viermal die Woche','Fünfmal die Woche','Sechsmal die Woche','Jeden Tag'];
 function sheetErinnerung(){
   var e = state.erinnerung;
   var zeiten = ['15:00','16:00','16:30','17:00','17:30','18:00','19:00'];
+  var n = naechstesVideo() || VIDEOS[0];
   return kopf('Erinnerung') +
     '<div class="sheet-body">' +
-      '<div><p class="eyebrow">Zwei mal die Woche</p><h1 class="big">Erinnerung<br>ans Training</h1>' +
+      '<div><p class="eyebrow">'+(e.an ? WIE_OFT[e.tage.length] : 'Ausgeschaltet')+'</p><h1 class="big">Erinnerung<br>ans Training</h1>' +
       '</div>' +
 
       '<div class="push">' +
         '<span class="ic"><img src="'+symbolDatei()+'" alt=""></span>' +
         '<span class="tx"><span class="h"><span>KM1 Training</span><span>'+h(e.zeit)+'</span></span>' +
-        '<span class="b">Heute ist Trainingstag. Die erste Berührung wartet, vier Minuten.</span></span>' +
+        '<span class="b">Heute ist Trainingstag. Als Nächstes: '+h(n.t.replace(/\u00AD/g,''))+', '+minutenText(n.d)+'.</span></span>' +
       '</div>' +
 
       '<div class="field"><label>Erinnerung</label>' +
@@ -2238,9 +2486,9 @@ function sheetErinnerung(){
         }).join('')+'</div></div>' +
 
       '<div class="field"><label for="er-zeit">Uhrzeit</label>' +
-        '<select id="er-zeit">'+zeiten.map(function(z){
+        '<span class="wahl"><select id="er-zeit">'+zeiten.map(function(z){
           return '<option value="'+z+'"'+(z===e.zeit?' selected':'')+'>'+z+'</option>';
-        }).join('')+'</select></div>' +
+        }).join('')+'</select></span></div>' +
 
       '<button class="btn" type="button" data-act="ersave">Erinnerung speichern</button>' +
     '</div>';
@@ -2253,7 +2501,7 @@ function sheetMerk(){
       '<div><p class="eyebrow">Für später</p><h1 class="big">Merkliste</h1></div>' +
       (liste.length
         ? '<div class="grid">'+liste.map(karte).join('')+'</div>'
-        : '<div class="leer">'+ICON.herz+'<p>Noch nichts gemerkt.</p></div>') +
+        : '<div class="leer">'+ICON.herz+'<p>Noch nichts gemerkt. Tipp bei einem Video auf das Herz, dann landet es hier.</p></div>') +
     '</div>';
 }
 
@@ -2262,7 +2510,7 @@ function sheetCamp(){
     '<div class="sheet-body">' +
       '<div class="player"><div class="poster"><img src="img/goal.jpg" alt=""></div></div>' +
       '<div><p class="eyebrow">Herbstferien</p><h1 class="big">Herbstcamp<br>Köln</h1></div>' +
-      '<div class="meta"><span>20. bis 24. Oktober</span><span>U8 bis U15</span><span>9 bis 16 Uhr</span></div>' +
+      '<div class="meta"><span>Mo 19. bis Fr 23. Oktober</span><span>U8 bis U15</span><span>9 bis 16 Uhr</span></div>' +
       '<p class="prose">Fünf Tage am Stück auf dem Platz. Vormittags Technik in kleinen Gruppen, nachmittags Spielformen, am letzten Tag ein Turnier mit allen Eltern an der Linie.</p>' +
       '<div class="block"><h2 class="sec">Was dabei ist</h2>' +
         '<ul class="ticks">' +
@@ -2294,9 +2542,9 @@ function sheetDaten(){
            'Keine Auswertung, wer wie oft welches Video schaut'
           ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
         '</ul></div>' +
-      '<div class="rows"><button class="lrow" type="button" data-act="loeschen">' +
-        '<span>Konto und alle Daten löschen</span><span class="r">Sofort</span></button></div>' +
-      '<p class="fine">Die vollständige Datenschutzerklärung steht auf km1-training.de.</p>' +
+      (drin() ? '<div class="rows"><button class="lrow" type="button" data-act="loeschen:du">' +
+        '<span>Konto und alle Daten löschen</span><span class="r"></span></button></div>' : '') +
+      '<p class="fine">Die vollständige <a class="verweis" href="https://km1-training.de/datenschutz/" target="_blank" rel="noopener">Datenschutzerklärung</a> steht auf km1-training.de.</p>' +
     '</div>';
 }
 
@@ -2344,12 +2592,57 @@ function sheetPaywall(){
         '<button class="price" type="button" data-act="preis:monat" aria-pressed="'+(!jahr)+'">' +
           '<span class="k">Monatlich</span><span class="p">6,99 €</span><span class="k">pro Monat</span></button>' +
         '<button class="price" type="button" data-act="preis:jahr" aria-pressed="'+jahr+'">' +
-          '<span class="k">Jährlich</span><span class="p">59,00 €</span><span class="x">2 Monate geschenkt</span></button>' +
+          '<span class="k">Jährlich</span><span class="p">59,00 €</span><span class="k">4,92 € im Monat</span>' +
+          /* 59 € statt zwoelfmal 6,99 € sind 3,56 Monate umsonst, nicht 2. */
+          '<span class="x">3,5 Monate gratis</span></button>' +
       '</div>' +
       '<button class="btn" type="button" data-act="buy">'+(drin()?'7 Tage gratis testen':'Konto anlegen und testen')+'</button>' +
-      '<p class="fine">Abrechnung über deine Apple-ID, jederzeit kündbar.</p>' +
+      /* Was Apple unter 3.1.2 auf dieser Seite verlangt: Preis nach der
+         Probezeit, automatische Verlaengerung, Kuendigung, und die Wege
+         zu Nutzungsbedingungen und Datenschutz. */
+      '<p class="fine">Sieben Tage gratis, danach '+preisText(state.preis)+'. Das Abo verlängert sich automatisch, ' +
+        'wenn du es nicht spätestens 24 Stunden vor Ablauf kündigst. Abrechnung über '+KAUF.konto+', ' +
+        'kündbar '+KAUF.kuendigen+'.</p>' +
+      '<p class="fine verweise"><button class="verweis" type="button" data-act="bedingungen">Nutzungsbedingungen</button>' +
+        '<button class="verweis" type="button" data-act="daten">Datenschutz</button></p>' +
       '<button class="btn ghost" type="button" data-act="eltern">Für Eltern</button>' +
       '<button class="btn ghost" type="button" data-act="restore">Kauf wiederherstellen</button>' +
+    '</div>';
+}
+
+/* Die Nutzungsbedingungen in Kurzform. Sie wiederholen, was die App an
+   anderer Stelle verspricht, und ergaenzen das, was ein Laden verlangt.
+   Vor dem Start im Laden gehoeren sie einmal juristisch geprueft. */
+function sheetBedingungen(){
+  var liste = function(zeilen){
+    return '<ul class="ticks">'+zeilen.map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('')+'</ul>';
+  };
+  return kopf('Nutzungsbedingungen') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Das Wichtigste in Kürze</p><h1 class="big">Nutzungs&shy;bedingungen</h1></div>' +
+      '<div class="block"><h2 class="sec">Das Abo</h2>' + liste([
+        'KM1 Pro kostet 6,99 € im Monat oder 59,00 € im Jahr.',
+        'Die ersten sieben Tage sind gratis. Wer in dieser Zeit kündigt, zahlt nichts.',
+        'Danach verlängert sich das Abo automatisch um denselben Zeitraum, wenn es nicht spätestens 24 Stunden vor Ablauf gekündigt wird.',
+        'Gekündigt wird '+KAUF.kuendigen+'. Das Abo läuft dann bis zum Ende des bezahlten Zeitraums.',
+        'Bezahlt wird über '+KAUF.laden+'. Auch Erstattungen laufen darüber.'
+      ]) + '</div>' +
+      '<div class="block"><h2 class="sec">Die Videos</h2>' + liste([
+        'Die Videos sind für den privaten Gebrauch. Herunterladen, weitergeben oder öffentlich zeigen ist nicht erlaubt.',
+        'Die Rechte an den Videos liegen bei KM1 und den Spielern darin.'
+      ]) + '</div>' +
+      '<div class="block"><h2 class="sec">Beim Üben</h2>' + liste([
+        'Geübt wird auf eigene Verantwortung. Kinder üben am besten dort, wo ein Erwachsener in der Nähe ist, und nie auf der Straße.',
+        'Wer Schmerzen hat, hört auf. Keine Übung ist wichtiger als die Gesundheit.'
+      ]) + '</div>' +
+      '<div class="block"><h2 class="sec">Das Konto</h2>' + liste([
+        'Für Kinder unter 16 Jahren legen die Eltern das Konto an.',
+        'Das Konto lässt sich jederzeit löschen, unter Datenschutz.'
+      ]) + '</div>' +
+      '<p class="fine">' +
+        (PLATTFORM !== 'android' ? 'Für Käufe im App Store gilt zusätzlich der ' +
+          '<a class="verweis" href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener">Lizenzvertrag von Apple</a>. ' : '') +
+        'Wer hinter KM1 steht, steht im <a class="verweis" href="https://km1-training.de/impressum/" target="_blank" rel="noopener">Impressum</a>.</p>' +
     '</div>';
 }
 
@@ -2370,7 +2663,7 @@ function sheetUpload(){
         '<input id="up-titel" type="text" placeholder="z. B. Die Flanke mit der Innenseite"></div>' +
 
       '<div class="field"><label for="up-kat">Kategorie</label>' +
-        '<select id="up-kat">'+Object.keys(KAT).map(function(k){return '<option value="'+k+'">'+KAT[k]+'</option>';}).join('')+'</select></div>' +
+        '<span class="wahl"><select id="up-kat">'+Object.keys(KAT).map(function(k){return '<option value="'+k+'">'+KAT[k]+'</option>';}).join('')+'</select></span></div>' +
 
       '<div class="field"><label>Ebene</label>' +
         '<div class="seg">'+LEVELS.map(function(l){
@@ -2856,9 +3149,13 @@ function toast(msg){
   toastT = setTimeout(function(){ t.classList.remove('on'); }, 2300);
 }
 function anmelden(name){
-  state.konto = {name: name || 'Luis M.', vn: (name || 'Luis M.').split(' ')[0]};
+  state.konto = {name: name || 'Luis M.', vn: (name || 'Luis M.').split(' ')[0], seit: Date.now()};
+  /* Beispieldaten fuer den Entwurf: zwei Uebungen in der letzten Woche,
+     zwei in dieser. So zeigen Wochenziel und Serie echte Werte. */
   if(!Object.keys(state.done).length){
-    state.done = {'erste-beruehrung':1, 'flacher-pass':1, 'abstoppen':1, 'flanke-innen':1};
+    var jetzt = Date.now(), vorige = wochenStart() - 3 * TAG_MS;
+    state.done = {'erste-beruehrung':vorige, 'flacher-pass':vorige + 3600e3,
+                  'abstoppen':jetzt - 60e3, 'flanke-innen':jetzt - 30e3};
   }
 }
 
@@ -2898,7 +3195,7 @@ document.addEventListener('click', function(e){
        es gibt einen Impuls, und zwar den fuer das, was der Nutzer wollte. */
     if(n && n.indexOf('check:')===0){
       var cid = n.slice(6);
-      state.done[cid] = 1;
+      state.done[cid] = Date.now();
       var aufL = pruefeAufstieg();
       haptik(aufL ? 'aufstieg' : (state.serieHeute ? 'erfolg' : 'serie'));
       state.serieHeute = 1;
@@ -2917,13 +3214,14 @@ document.addEventListener('click', function(e){
     else { haptik('erfolg'); toast('Angemeldet'); }
   }
   else if(k==='logout'){
-    state.konto = null; state.pro = false; state.owner = false; state.done = {};
+    state.konto = null; state.pro = false; state.abo = null; state.owner = false; state.done = {};
     state.symbol = 'standard'; state.merk = {};
     render(); toast('Abgemeldet');
   }
   else if(k==='buy'){
     if(!drin()){ haptik('wand'); state.nachLogin = 'pro'; state.loginModus='neu'; openSheet(sheetLogin('Für ein Abo braucht es ein Konto, sonst weiß niemand, wem PRO gehört.')); return; }
     state.pro = true;
+    state.abo = {preis: state.preis, bis: Date.now() + 7 * TAG_MS};
     haptik('aufstieg');          /* Ein Kauf muss ankommen */
     while(stack.length) closeSheet();
     render(); toast('KM1 Pro ist aktiv');
@@ -2940,7 +3238,7 @@ document.addEventListener('click', function(e){
       delete state.done[v];
       haptik('leicht');          /* Rueckgaengig ist keine Belohnung */
     } else {
-      state.done[v] = 1;
+      state.done[v] = Date.now();
       auf = pruefeAufstieg();
       /* Der groessere Impuls gewinnt: wer durch den Haken aufsteigt,
          spuert den Aufstieg, nicht den Haken. Der erste Haken des Tages
@@ -3000,7 +3298,14 @@ document.addEventListener('click', function(e){
     toast(state.merk[v] ? 'Gemerkt' : 'Aus der Merkliste genommen');
   }
   else if(k==='daten'){ openSheet(sheetDaten()); }
-  else if(k==='loeschen'){ toast('Wir schicken dir eine E-Mail zur Bestätigung'); }
+  /* Auf der Elternseite heisst es Sie, sonst du. */
+  else if(k==='loeschen'){ toast(v==='sie' ? 'Wir schicken Ihnen eine E-Mail zur Bestätigung' : 'Wir schicken dir eine E-Mail zur Bestätigung'); }
+  else if(k==='bedingungen'){ openSheet(sheetBedingungen()); }
+  else if(k==='pwvergessen'){
+    var pm = ((document.getElementById('lg-mail')||{}).value || '').trim();
+    if(pm.indexOf('@') < 1){ haptik('fehler'); toast('Trag zuerst deine E-Mail-Adresse ein'); return; }
+    haptik('leicht'); toast('Der Link zum Zurücksetzen ist unterwegs');
+  }
   else if(k==='restore'){ toast('Keine früheren Käufe gefunden'); }
   else if(k==='sym'){
     if(v==='pro' && !state.pro){ haptik('wand'); openSheet(sheetPaywall()); return; }
@@ -3030,6 +3335,7 @@ document.addEventListener('click', function(e){
   else if(k==='kat'){ state.kat = v; render(); }
   else if(k==='ebwahl'){ openSheet(sheetEbene()); }
   else if(k==='fltlv'){ state.fltLv = +v; if(stack.length) closeSheet(); render(); }
+  else if(k==='filterweg'){ state.kat = 'alle'; state.fltLv = 0; state.suche = ''; haptik('leicht'); render(); }
   else if(k==='theme'){ state.theme = v; haptik('leicht'); applyTheme(); render(); }
   else if(k==='upload'){ openSheet(sheetUpload()); }
   else if(k==='pickfile'){ state.up.datei = 'flanke-innenseite-2026.mp4'; refreshSheet(sheetUpload()); }
