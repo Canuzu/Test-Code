@@ -37,6 +37,9 @@ auf.
   ansehen, nicht nur den Code lesen.
 - `app/sw.js`: bei jeder Änderung an der App die Zahl in `VERSION` erhöhen.
   Sonst behalten installierte Geräte die alte Fassung aus dem Zwischenspeicher.
+- Geänderte echte App (`mobile/`): `npm run pruefen` dort, und die Regeln der
+  Datenbank mit `npm test` in `supabase/tests/`. Beides läuft auch in der CI
+  (`.github/workflows/km1-app.yml`).
 
 ## Sprache
 
@@ -53,3 +56,6 @@ Commit-Nachrichten werden umschrieben (ae, oe, ue), im übrigen Text nicht.
 | `artefakt.py` | Macht aus `app/index.html` die Fassung für die Vorschau auf claude.ai |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, Weg ins App Store |
 | `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
+| `mobile/` | Die echte App für iPhone und Android (Expo), siehe `mobile/README.md` |
+| `supabase/` | Datenbank, Regeln, Startdaten und ihr Test, siehe `supabase/README.md` |
+| `STORE.md`, `store/` | Texte, Angaben und Bildentwürfe für App Store und Google Play |

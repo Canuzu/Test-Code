@@ -762,6 +762,36 @@ Behoben ist alles außer drei Fragen, die Can beantworten muss (unten).
 - Drei Fragen an Can: „Moin" in Köln, die Altersstufen U16 und U18, und
   Preis und Anmeldeweg des Camps.
 
+### Die echte App und der Server
+
+Seit dem 23. September gibt es neben dem Prototyp die echte App in
+`mobile/` (Expo SDK 57, Expo Router) und die Datenbank in `supabase/`. Der
+Prototyp bleibt die Vorlage für Aussehen und Texte; die echte App übernimmt
+Farben, Schriften, Abstände und Wortlaut.
+
+- **Zwei Modi.** Ohne die beiden Umgebungsvariablen für Supabase läuft die App
+  im Vorschau-Modus: alles bleibt auf dem Gerät. Mit ihnen gehören Konten,
+  Fortschritt und Merkliste der Datenbank.
+- **Die Regeln sitzen in der Datenbank.** Drei Zugangsstufen, die Einwilligung
+  der Eltern unter 16, Aufstieg, Konto löschen. Ein Test prüft sie in einer
+  echten Postgres-Datenbank (PGlite), ohne Supabase-Konto.
+- **Unter 16 legen die Eltern das Konto an.** Die App fragt zuerst den
+  Jahrgang. Darunter trägt ein Elternteil die eigene E-Mail ein und willigt
+  ausdrücklich ein; die Bestätigungsmail geht an die Eltern. Google und Apple
+  als Anmeldung gibt es erst ab 16. Die Datenbank lehnt ein Konto unter 16
+  ohne Einwilligung ab, auch wenn jemand an der App vorbei anlegt.
+- **Der Player** ist der des Systems (Spulen, Vollbild quer, Bild im Bild),
+  dazu Kapitel aus den Schritten, Zeitlupe und die gemerkte Stelle. Die Stelle
+  wird beim Anhalten, beim Verlassen und alle fünf Sekunden gespeichert, aber
+  erst, nachdem der Player an der alten Stelle angesetzt hat — sonst löscht
+  die erste Zeitmeldung (0 Sekunden) die gemerkte Stelle.
+- **Erinnerungen** plant das Handy selbst, wöchentlich pro gewähltem Tag,
+  ohne Server. Der Text nennt das nächste Video und wird neu geplant, wenn
+  sich der Fortschritt ändert.
+- **Die Datenschutzseite** sagt jetzt ehrlich, wer hilft (Supabase für Konto
+  und Fortschritt, Apple und Google für das Abo), statt „keine Weitergabe an
+  Dritte".
+
 ## 12. Vorschläge, noch offen
 
 Sortiert nach Verhältnis von Nutzen zu Aufwand. Keiner davon ist beschlossen.
