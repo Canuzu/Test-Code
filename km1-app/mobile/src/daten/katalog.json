@@ -1,0 +1,865 @@
+[
+ {
+  "slug": "flanke-innen",
+  "titel": "Die Flanke mit der Innenseite",
+  "beschreibung": "Die beste Flanke ist die, die ankommt. Die Innenseite macht den Ball berechenbar: flach am Boden oder halbhoch auf den Elfmeterpunkt, immer mit derselben Bewegung.",
+  "fehler": "Zu nah am Ball stehen. Dann kommt der Fuß nicht durch und die Flanke rutscht hinter das Tor.",
+  "kategorie": "flanken",
+  "ebene": 2,
+  "woche": 1,
+  "dauer_sek": 444,
+  "zugang": "offen",
+  "gast": null,
+  "neu": true,
+  "bild": "pitch",
+  "pfad": null,
+  "reihenfolge": 1,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Standbein neben den Ball, die Fußspitze zeigt dorthin, wo der Ball hin soll.",
+    "sekunde": 27
+   },
+   {
+    "nr": 2,
+    "text": "Vor dem Schuss einmal kurz den Kopf heben: Wo läuft der Mitspieler hin, nicht wo steht er.",
+    "sekunde": 131
+   },
+   {
+    "nr": 3,
+    "text": "Knöchel fest, mit der Innenseite durch die Ballmitte streichen, nicht darunter.",
+    "sekunde": 236
+   },
+   {
+    "nr": 4,
+    "text": "In die Laufrichtung nachziehen statt abzustoppen.",
+    "sekunde": 340
+   }
+  ]
+ },
+ {
+  "slug": "uebersteiger",
+  "titel": "Übersteiger mit Tempowechsel",
+  "beschreibung": "Der Übersteiger allein schlägt keinen Gegner. Was ihn gefährlich macht, ist das, was danach passiert: der Antritt in die andere Richtung.",
+  "fehler": "Zwei oder drei Übersteiger hintereinander. Der Gegner steht dann ruhig, weil nichts passiert.",
+  "kategorie": "dribbling",
+  "ebene": 2,
+  "woche": 2,
+  "dauer_sek": 348,
+  "zugang": "offen",
+  "gast": null,
+  "neu": true,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 2,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Mit Tempo auf den Gegner zu, aber zwei Meter vorher langsamer werden.",
+    "sekunde": 21
+   },
+   {
+    "nr": 2,
+    "text": "Den Fuß außen um den Ball führen, die Schulter geht mit.",
+    "sekunde": 130
+   },
+   {
+    "nr": 3,
+    "text": "Sofort mit dem Außenrist des anderen Fußes wegdrücken und drei Meter sprinten.",
+    "sekunde": 239
+   }
+  ]
+ },
+ {
+  "slug": "kopfball",
+  "titel": "Kopfball: das Timing im Anlauf",
+  "beschreibung": "Kopfball ist kein Mut, sondern Timing. Wer zu früh springt, verliert den Ball an den, der später kommt.",
+  "fehler": "Mit dem Kopf auf den Ball warten statt dem Ball entgegenzugehen.",
+  "kategorie": "schuss",
+  "ebene": 2,
+  "woche": 5,
+  "dauer_sek": 305,
+  "zugang": "offen",
+  "gast": null,
+  "neu": true,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 3,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Zwei Schritte Anlauf, den letzten kurz und schnell.",
+    "sekunde": 18
+   },
+   {
+    "nr": 2,
+    "text": "Mit dem Absprung warten, bis der Ball auf Höhe des Sechzehners ist.",
+    "sekunde": 114
+   },
+   {
+    "nr": 3,
+    "text": "Die Stirn trifft, der Oberkörper klappt nach vorn, Augen bleiben offen.",
+    "sekunde": 209
+   }
+  ]
+ },
+ {
+  "slug": "erste-beruehrung",
+  "titel": "Die erste Berührung aus dem Körper heraus",
+  "beschreibung": "Die erste Berührung entscheidet, ob du Zeit hast oder nicht. Wir nehmen den Ball nicht an, wir nehmen ihn mit.",
+  "fehler": "Den Ball stoppen. Damit schenkst du dem Gegner die halbe Sekunde, die du gebraucht hättest.",
+  "kategorie": "annahme",
+  "ebene": 1,
+  "woche": 1,
+  "dauer_sek": 295,
+  "zugang": "offen",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 4,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Vor der Annahme über die Schulter schauen: Wo ist Platz?",
+    "sekunde": 18
+   },
+   {
+    "nr": 2,
+    "text": "Den Ball mit der Innenseite in den freien Raum legen, nicht vor die eigenen Füße.",
+    "sekunde": 110
+   },
+   {
+    "nr": 3,
+    "text": "Nach der Berührung sofort zwei Schritte machen.",
+    "sekunde": 203
+   }
+  ]
+ },
+ {
+  "slug": "flacher-pass",
+  "titel": "Flacher Pass über 20 Meter",
+  "beschreibung": "Der Pass, den du in jedem Spiel hundertmal brauchst. Flach, fest, auf den richtigen Fuß.",
+  "fehler": "Den Pass zu weich spielen. Ein langsamer Ball ist für den Mitspieler schwerer als ein fester.",
+  "kategorie": "passen",
+  "ebene": 1,
+  "woche": 2,
+  "dauer_sek": 362,
+  "zugang": "offen",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 5,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Standbein zeigt zum Ziel, Arme raus für die Balance.",
+    "sekunde": 22
+   },
+   {
+    "nr": 2,
+    "text": "Innenseite quer zum Ball, Knöchel bleibt steif.",
+    "sekunde": 135
+   },
+   {
+    "nr": 3,
+    "text": "Durch die Ballmitte spielen und den Fuß bis zum Ziel nachführen.",
+    "sekunde": 249
+   }
+  ]
+ },
+ {
+  "slug": "leiter",
+  "titel": "Koordinations­leiter: sechs Basis-Muster",
+  "beschreibung": "Sechs Muster, die du überall üben kannst. Sie schulen den schnellen Fuß, den du für den ersten Schritt im Spiel brauchst.",
+  "fehler": "Schnell und schlampig. Sauber und mittelschnell bringt mehr als hektisch und falsch.",
+  "kategorie": "athletik",
+  "ebene": 1,
+  "woche": 4,
+  "dauer_sek": 435,
+  "zugang": "offen",
+  "gast": null,
+  "neu": false,
+  "bild": "ladder",
+  "pfad": null,
+  "reihenfolge": 6,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Immer auf dem Ballen laufen, die Ferse berührt den Boden nicht.",
+    "sekunde": 26
+   },
+   {
+    "nr": 2,
+    "text": "Arme mitlaufen lassen, sie geben den Takt vor.",
+    "sekunde": 162
+   },
+   {
+    "nr": 3,
+    "text": "Kurze Sätze: 20 Sekunden schnell, 40 Sekunden Pause.",
+    "sekunde": 299
+   }
+  ]
+ },
+ {
+  "slug": "torwart-grund",
+  "titel": "Torwart: Grundstellung und erster Schritt",
+  "beschreibung": "Der erste Schritt entscheidet über die meisten Bälle. Er beginnt in der Grundstellung, lange bevor geschossen wird.",
+  "fehler": "Zu tief stehen. Aus der tiefen Hocke kommt kein Torwart schnell in die Ecke.",
+  "kategorie": "torwart",
+  "ebene": 1,
+  "woche": 5,
+  "dauer_sek": 390,
+  "zugang": "offen",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 7,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Füße etwa schulterbreit, Gewicht auf den Ballen, Hände offen vor dem Körper.",
+    "sekunde": 23
+   },
+   {
+    "nr": 2,
+    "text": "Kurz vor dem Schuss ein kleiner Hüpfer, damit die Beine geladen sind.",
+    "sekunde": 145
+   },
+   {
+    "nr": 3,
+    "text": "Der erste Schritt geht seitlich zum Ball, nicht nach hinten.",
+    "sekunde": 268
+   }
+  ]
+ },
+ {
+  "slug": "abstoppen",
+  "titel": "Abstoppen und sofort andribbeln",
+  "beschreibung": "Anhalten und wieder losfahren, das ist der einfachste Weg, einen Gegner loszuwerden. Ohne Trick, nur mit Tempo.",
+  "fehler": "Zu früh antreten. Der Gegner muss erst stehen, sonst läuft er einfach mit.",
+  "kategorie": "dribbling",
+  "ebene": 1,
+  "woche": 3,
+  "dauer_sek": 270,
+  "zugang": "offen",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 8,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Mit der Sohle abstoppen, der Körper geht leicht über den Ball.",
+    "sekunde": 16
+   },
+   {
+    "nr": 2,
+    "text": "Eine Sekunde Ruhe, den Gegner herankommen lassen.",
+    "sekunde": 101
+   },
+   {
+    "nr": 3,
+    "text": "Mit dem Außenrist antreten und nicht mehr hinschauen.",
+    "sekunde": 185
+   }
+  ]
+ },
+ {
+  "slug": "vollspann",
+  "titel": "Torschuss: den Vollspann flach halten",
+  "beschreibung": "Der harte Schuss nützt nichts über dem Tor. Drei Details halten ihn unten.",
+  "fehler": "Sich beim Schuss zurücklehnen. Der Ball geht dann zwangsläufig hoch.",
+  "kategorie": "schuss",
+  "ebene": 2,
+  "woche": 3,
+  "dauer_sek": 400,
+  "zugang": "offen",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 9,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Standbein neben den Ball, Knie über dem Ball.",
+    "sekunde": 24
+   },
+   {
+    "nr": 2,
+    "text": "Fußspitze nach unten strecken, mit dem Schnürsenkel treffen.",
+    "sekunde": 149
+   },
+   {
+    "nr": 3,
+    "text": "Oberkörper über den Ball beugen und nach vorn nachziehen.",
+    "sekunde": 275
+   }
+  ]
+ },
+ {
+  "slug": "ballmitnahme",
+  "titel": "Ballmitnahme im Sprint",
+  "beschreibung": "Den Ball im vollen Lauf mitnehmen, ohne das Tempo zu verlieren. Für Außenspieler die wichtigste Bewegung überhaupt.",
+  "fehler": "Den Ball zu weit vorlegen und dann hinterherlaufen müssen.",
+  "kategorie": "annahme",
+  "ebene": 2,
+  "woche": 4,
+  "dauer_sek": 320,
+  "zugang": "konto",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 10,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Den Ball früh anschauen und das Tempo schon vor der Berührung anpassen.",
+    "sekunde": 19
+   },
+   {
+    "nr": 2,
+    "text": "Mit dem Außenrist nach vorn schieben, nicht anhalten.",
+    "sekunde": 119
+   },
+   {
+    "nr": 3,
+    "text": "Der nächste Schritt ist ein Sprintschritt, kein Bremsschritt.",
+    "sekunde": 220
+   }
+  ]
+ },
+ {
+  "slug": "doppelpass",
+  "titel": "Der Doppelpass im Halbraum",
+  "beschreibung": "Zwei Pässe, ein Gegner weniger. Der Doppelpass lebt vom Timing des Mitspielers, nicht von der Härte des Passes.",
+  "fehler": "Nach dem Pass stehen bleiben und auf den Ball warten.",
+  "kategorie": "passen",
+  "ebene": 3,
+  "woche": 1,
+  "dauer_sek": 490,
+  "zugang": "konto",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 11,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Den Gegner anlaufen, damit er auf den Ball geht.",
+    "sekunde": 29
+   },
+   {
+    "nr": 2,
+    "text": "Fest in den Fuß des Mitspielers spielen und sofort in den Rücken des Gegners starten.",
+    "sekunde": 183
+   },
+   {
+    "nr": 3,
+    "text": "Der Mitspieler klatscht mit einem Kontakt in den Lauf, nie in die Füße.",
+    "sekunde": 336
+   }
+  ]
+ },
+ {
+  "slug": "innenrist-flanke",
+  "titel": "Innenrist-Flanke aus dem Halbfeld",
+  "beschreibung": "Die Flanke mit Drall, die vom Tor wegdreht. Sie ist schwerer zu verteidigen als jede gerade Hereingabe.",
+  "fehler": "Zu viel Kraft. Der Drall macht die Flanke gefährlich, nicht das Tempo.",
+  "kategorie": "flanken",
+  "ebene": 3,
+  "woche": 2,
+  "dauer_sek": 570,
+  "zugang": "konto",
+  "gast": null,
+  "neu": false,
+  "bild": "goal",
+  "pfad": null,
+  "reihenfolge": 12,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Den Ball seitlich vorlegen, damit du im Bogen anlaufen kannst.",
+    "sekunde": 34
+   },
+   {
+    "nr": 2,
+    "text": "Mit dem Innenrist unter die Ballhälfte treffen, nicht durch die Mitte.",
+    "sekunde": 213
+   },
+   {
+    "nr": 3,
+    "text": "Den Fuß über die Körperachse hinaus nachziehen, das erzeugt den Drall.",
+    "sekunde": 391
+   }
+  ]
+ },
+ {
+  "slug": "eins-gegen-eins",
+  "titel": "1 gegen 1: Tempowechsel statt Tricks",
+  "beschreibung": "Profis schlagen ihren Gegner mit Rhythmus, nicht mit Tricks. Drei Muster, die fast immer funktionieren.",
+  "fehler": "Den Trick vorbereiten wollen. Der Gegner liest die Absicht und stellt sich hin.",
+  "kategorie": "dribbling",
+  "ebene": 3,
+  "woche": 3,
+  "dauer_sek": 620,
+  "zugang": "offen",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 13,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Aus dem Lauf verlangsamen und den Gegner zum Stehen bringen.",
+    "sekunde": 37
+   },
+   {
+    "nr": 2,
+    "text": "Den Ball zeigen, damit er den Fuß ausstreckt.",
+    "sekunde": 231
+   },
+   {
+    "nr": 3,
+    "text": "Im Moment der Gewichtsverlagerung antreten, auf die offene Seite.",
+    "sekunde": 426
+   }
+  ]
+ },
+ {
+  "slug": "diagonalball",
+  "titel": "Der Diagonalball auf die zweite Spitze",
+  "beschreibung": "Der lange Ball, der die Seite verlagert. Er gewinnt Raum, weil die gegnerische Kette die ganze Breite verschieben muss.",
+  "fehler": "Den Ball in den Lauf statt in den Fuß spielen, wenn der Außenverteidiger schon schiebt.",
+  "kategorie": "passen",
+  "ebene": 3,
+  "woche": 4,
+  "dauer_sek": 470,
+  "zugang": "konto",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 14,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Kopf hoch, bevor der Ball kommt: Wer steht auf der anderen Seite frei?",
+    "sekunde": 28
+   },
+   {
+    "nr": 2,
+    "text": "Den Ball aus dem Körper heraus vorlegen, damit du Anlauf hast.",
+    "sekunde": 175
+   },
+   {
+    "nr": 3,
+    "text": "Mit dem Innenrist unter den Ball, Ziel ist die Brust des Mitspielers.",
+    "sekunde": 323
+   }
+  ]
+ },
+ {
+  "slug": "rumpf",
+  "titel": "Rumpfstabilität für Zweikämpfe",
+  "beschreibung": "Wer im Zweikampf umfällt, hat selten zu wenig Kraft in den Beinen. Meistens fehlt die Mitte.",
+  "fehler": "Ins Hohlkreuz gehen. Lieber kürzer halten und die Spannung behalten.",
+  "kategorie": "athletik",
+  "ebene": 3,
+  "woche": 5,
+  "dauer_sek": 720,
+  "zugang": "konto",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 15,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Unterarmstütz mit Beinheben, drei Sätze zu 30 Sekunden.",
+    "sekunde": 43
+   },
+   {
+    "nr": 2,
+    "text": "Seitstütz mit gestrecktem Arm, beide Seiten gleich lange.",
+    "sekunde": 269
+   },
+   {
+    "nr": 3,
+    "text": "Zum Schluss zwei Minuten Ausfallschritte im Wechsel, ruhig und kontrolliert.",
+    "sekunde": 494
+   }
+  ]
+ },
+ {
+  "slug": "schnittstelle",
+  "titel": "Der Schnittstellen­pass",
+  "beschreibung": "Der Pass zwischen zwei Verteidiger. Er entsteht nicht im Fuß, sondern im Kopf, zwei Sekunden vorher.",
+  "fehler": "Zu lange warten. Die Lücke ist eine halbe Sekunde offen, nicht länger.",
+  "kategorie": "passen",
+  "ebene": 4,
+  "woche": 2,
+  "dauer_sek": 665,
+  "zugang": "konto",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 16,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Die Kette beobachten, während der Ball noch unterwegs ist.",
+    "sekunde": 40
+   },
+   {
+    "nr": 2,
+    "text": "Den Ball so annehmen, dass der Passweg frei wird.",
+    "sekunde": 248
+   },
+   {
+    "nr": 3,
+    "text": "Flach und fest zwischen die beiden spielen, im Moment des Losgehens.",
+    "sekunde": 457
+   }
+  ]
+ },
+ {
+  "slug": "anlaufen",
+  "titel": "Anlaufen im 4-3-3: der erste Schritt",
+  "beschreibung": "Pressing beginnt mit einem einzigen Laufweg. Wer falsch anläuft, öffnet die Seite für die ganze Mannschaft.",
+  "fehler": "Allein anlaufen. Ohne die Mannschaft dahinter ist jeder Pressingversuch ein Loch.",
+  "kategorie": "taktik",
+  "ebene": 4,
+  "woche": 1,
+  "dauer_sek": 580,
+  "zugang": "konto",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 17,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Bogenlauf, damit der Rückpass zum Torwart zugestellt ist.",
+    "sekunde": 35
+   },
+   {
+    "nr": 2,
+    "text": "Den Gegner auf die schwächere Seite lenken, nicht frontal anlaufen.",
+    "sekunde": 217
+   },
+   {
+    "nr": 3,
+    "text": "Das Signal geben, damit die Kette zeitgleich nachschiebt.",
+    "sekunde": 398
+   }
+  ]
+ },
+ {
+  "slug": "standard-ecke",
+  "titel": "Standard: die kurz ausgespielte Ecke",
+  "beschreibung": "Kurz ausgespielt zieht die Verteidigung aus der Ordnung. Zwei Varianten, die im Spiel immer wieder funktionieren.",
+  "fehler": "Zu früh in den Strafraum starten. Dann steht die Mannschaft, wenn die Flanke kommt.",
+  "kategorie": "schuss",
+  "ebene": 4,
+  "woche": 3,
+  "dauer_sek": 375,
+  "zugang": "konto",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 18,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Der zweite Mann geht an, der Gegner muss mit herausrücken.",
+    "sekunde": 23
+   },
+   {
+    "nr": 2,
+    "text": "Zurücklegen und sofort mit dem ersten Kontakt flanken.",
+    "sekunde": 140
+   },
+   {
+    "nr": 3,
+    "text": "Die Spitzen starten erst, wenn der Ball zurückgelegt ist.",
+    "sekunde": 258
+   }
+  ]
+ },
+ {
+  "slug": "finishing-mued",
+  "titel": "Abschluss unter Müdigkeit",
+  "beschreibung": "In der 85. Minute entscheidet sich der Abschluss. Wir trainieren ihn deshalb am Ende der Einheit, nicht am Anfang.",
+  "fehler": "Ausruhen zwischen den Wiederholungen. Der Reiz entsteht genau in der Erschöpfung.",
+  "kategorie": "schuss",
+  "ebene": 4,
+  "woche": 4,
+  "dauer_sek": 525,
+  "zugang": "konto",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 19,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Zwei Sprints über 30 Meter, direkt danach der Abschluss.",
+    "sekunde": 32
+   },
+   {
+    "nr": 2,
+    "text": "Die Technik nicht verkürzen, auch wenn die Beine schwer sind.",
+    "sekunde": 196
+   },
+   {
+    "nr": 3,
+    "text": "Immer den Nachschuss mitgehen.",
+    "sekunde": 361
+   }
+  ]
+ },
+ {
+  "slug": "regeneration",
+  "titel": "Regeneration zwischen zwei Spielen",
+  "beschreibung": "Englische Woche heißt nicht weniger trainieren, sondern anders. Ein Ablauf für die 48 Stunden nach dem Spiel.",
+  "fehler": "Zwei Tage gar nichts machen. Der Körper wird dadurch träger, nicht frischer.",
+  "kategorie": "athletik",
+  "ebene": 4,
+  "woche": 5,
+  "dauer_sek": 560,
+  "zugang": "konto",
+  "gast": null,
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 20,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Direkt nach dem Spiel zehn Minuten locker ausradeln.",
+    "sekunde": 34
+   },
+   {
+    "nr": 2,
+    "text": "Am Folgetag Mobilisation und ein kurzer Aktivierungsblock.",
+    "sekunde": 209
+   },
+   {
+    "nr": 3,
+    "text": "48 Stunden vorher wieder Intensität, sonst fehlt am Spieltag die Spritzigkeit.",
+    "sekunde": 385
+   }
+  ]
+ },
+ {
+  "slug": "profi-freistoss",
+  "titel": "Der Freistoß über die Mauer",
+  "beschreibung": "Der Freistoß aus 20 Metern, erklärt von jemandem, der ihn im Ligabetrieb schießt. Anlauf, Treffpunkt, Nachziehen, und was er sich vorher im Kopf zurechtlegt.",
+  "fehler": "Zu viel Kraft. Ein Freistoß wird durch den Drall gefährlich, nicht durch das Tempo.",
+  "kategorie": "schuss",
+  "ebene": 3,
+  "woche": null,
+  "dauer_sek": 860,
+  "zugang": "pro",
+  "gast": "Profi, 2. Bundesliga",
+  "neu": true,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 21,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Den Ball so hinlegen, dass das Ventil zum Tor zeigt. Klingt nach Aberglaube, gibt dir aber jedes Mal denselben Anhaltspunkt.",
+    "sekunde": 52
+   },
+   {
+    "nr": 2,
+    "text": "Drei Schritte Anlauf, leicht seitlich, der letzte Schritt ist der längste.",
+    "sekunde": 321
+   },
+   {
+    "nr": 3,
+    "text": "Mit dem Innenrist unter die untere Ballhälfte, den Fuß über die Körperachse hinaus nachziehen.",
+    "sekunde": 591
+   }
+  ]
+ },
+ {
+  "slug": "profi-flanke-druck",
+  "titel": "Flanken unter Gegnerdruck",
+  "beschreibung": "Flanken im leeren Training kann jeder. Hier geht es um die Flanke, wenn ein Gegner am Trikot zieht und die Grundlinie zwei Meter entfernt ist.",
+  "fehler": "Warten, bis die Situation perfekt ist. Im Spiel wird sie das nie.",
+  "kategorie": "flanken",
+  "ebene": 3,
+  "woche": null,
+  "dauer_sek": 760,
+  "zugang": "pro",
+  "gast": "Profi, 3. Liga",
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 22,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Den Ball mit dem Körper abschirmen, bevor du überhaupt hochschaust.",
+    "sekunde": 46
+   },
+   {
+    "nr": 2,
+    "text": "Einen halben Schritt weg vom Gegner, damit der Fuß Platz zum Durchschwingen hat.",
+    "sekunde": 284
+   },
+   {
+    "nr": 3,
+    "text": "Den ersten Anlauf antäuschen, dann flanken. Der Verteidiger streckt das Bein, und du hast die Lücke.",
+    "sekunde": 522
+   }
+  ]
+ },
+ {
+  "slug": "profi-strafraum",
+  "titel": "Der erste Kontakt im Strafraum",
+  "beschreibung": "Im Strafraum entscheidet die erste Berührung über Tor oder Abstoß. Ein Stürmer aus dem Profibereich zeigt, wohin er den Ball legt und warum.",
+  "fehler": "Den Ball breit annehmen und sich den Winkel selbst zumachen.",
+  "kategorie": "annahme",
+  "ebene": 3,
+  "woche": null,
+  "dauer_sek": 675,
+  "zugang": "pro",
+  "gast": "Stürmer, 2. Bundesliga",
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 23,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Vor der Flanke einmal über die Schulter: Wo steht der Verteidiger, wo der Torwart?",
+    "sekunde": 41
+   },
+   {
+    "nr": 2,
+    "text": "Den Ball nie zum Tor hin annehmen, sondern quer, weg vom Verteidiger.",
+    "sekunde": 252
+   },
+   {
+    "nr": 3,
+    "text": "Nach der Annahme sofort schießen, auch aus unbequemer Lage. Der zweite Kontakt kommt meistens zu spät.",
+    "sekunde": 464
+   }
+  ]
+ },
+ {
+  "slug": "profi-zweikampf",
+  "titel": "Körper vor Ball: der saubere Zweikampf",
+  "beschreibung": "Zweikämpfe gewinnt selten der Stärkere, meistens der, der früher steht. Ein Innenverteidiger erklärt, wie er den Körper einsetzt, ohne zu foulen.",
+  "fehler": "Mit gestrecktem Bein reingrätschen. Sieht gut aus, kostet Gelb und den Zweikampf.",
+  "kategorie": "taktik",
+  "ebene": 2,
+  "woche": null,
+  "dauer_sek": 605,
+  "zugang": "pro",
+  "gast": "Innenverteidiger, 3. Liga",
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 24,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Den Gegner früh spüren lassen: Schulter an Schulter, bevor der Ball da ist.",
+    "sekunde": 36
+   },
+   {
+    "nr": 2,
+    "text": "Immer zwischen Ball und Gegner bleiben, auch wenn das heißt, rückwärts zu laufen.",
+    "sekunde": 226
+   },
+   {
+    "nr": 3,
+    "text": "Den Fuß erst rausstellen, wenn der Ball vom Gegner weggeht, nie davor.",
+    "sekunde": 415
+   }
+  ]
+ },
+ {
+  "slug": "profi-torwart",
+  "titel": "Torwart: Strafraum­beherrschung",
+  "beschreibung": "Wann kommt ein Torwart raus und wann bleibt er? Ein Profitorwart zeigt seine Entscheidungsregeln bei Flanken und langen Bällen.",
+  "fehler": "Halb rauskommen. Entweder ganz oder gar nicht, alles dazwischen ist der Fehler.",
+  "kategorie": "torwart",
+  "ebene": 3,
+  "woche": null,
+  "dauer_sek": 810,
+  "zugang": "pro",
+  "gast": "Torwart, 2. Bundesliga",
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 25,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Die Ausgangsposition ist keine Linie, sondern ein Bogen: je weiter der Ball außen steht, desto weiter vorn stehst du.",
+    "sekunde": 49
+   },
+   {
+    "nr": 2,
+    "text": "Bei der Flanke früh loslaufen und den höchsten Punkt anpeilen, nicht den Ball.",
+    "sekunde": 303
+   },
+   {
+    "nr": 3,
+    "text": "Rufen, bevor du losläufst. Eine stumme Herausnahme ist ein Eigentor mit Ansage.",
+    "sekunde": 556
+   }
+  ]
+ },
+ {
+  "slug": "profi-alltag",
+  "titel": "Ein Tag im Profialltag",
+  "beschreibung": "Kein Techniktraining, sondern ein ganzer Tag: Frühstück, Videoanalyse, Einheit, Regeneration, Abendessen. Damit klar wird, wie viel neben dem Platz passiert.",
+  "fehler": "Denken, Profi sein heißt zweimal am Tag Fußball spielen. Der größere Teil ist alles drumherum.",
+  "kategorie": "athletik",
+  "ebene": 1,
+  "woche": null,
+  "dauer_sek": 1010,
+  "zugang": "pro",
+  "gast": "Profi, 2. Bundesliga",
+  "neu": false,
+  "bild": null,
+  "pfad": null,
+  "reihenfolge": 26,
+  "schritte": [
+   {
+    "nr": 1,
+    "text": "Der Tag beginnt mit Wiegen und einem kurzen Gespräch über den Schlaf.",
+    "sekunde": 61
+   },
+   {
+    "nr": 2,
+    "text": "Zwischen den Einheiten sind Essen und Schlafen Teil des Trainings, nicht Pause davon.",
+    "sekunde": 377
+   },
+   {
+    "nr": 3,
+    "text": "Nach dem Abschlusstraining kommt die Videoanalyse des nächsten Gegners.",
+    "sekunde": 694
+   }
+  ]
+ }
+]

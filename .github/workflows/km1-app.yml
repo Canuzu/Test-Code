@@ -1,0 +1,49 @@
+name: KM1 App
+
+# Prüft die KM1-App bei jeder Änderung unter km1-app/: die Regeln der
+# Datenbank in einer echten Postgres-Datenbank (PGlite) und die Expo-App
+# mit Typprüfung, Linter und Tests. Getrennt von ci.yml, das zu einem
+# anderen Projekt im selben Repository gehört.
+on:
+  push:
+    paths: ['km1-app/**', '.github/workflows/km1-app.yml']
+  pull_request:
+    paths: ['km1-app/**', '.github/workflows/km1-app.yml']
+
+jobs:
+  datenbank:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: km1-app/supabase/tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: km1-app/supabase/tests/package-lock.json
+      - run: npm ci
+      - name: Regeln der Datenbank
+        run: npm test
+
+  app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: km1-app/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: km1-app/mobile/package-lock.json
+      - run: npm ci
+      - name: Typen, Linter, Tests
+        run: npm run pruefen
+      - name: Startdaten passen zum Prototyp
+        working-directory: km1-app
+        run: |
+          node supabase/werkzeug/startdaten.mjs
+          git diff --exit-code -- supabase/seed.sql mobile/src/daten/katalog.json
