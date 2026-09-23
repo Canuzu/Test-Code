@@ -55,6 +55,13 @@ erste.
 Dazu ein Apple-Entwicklerkonto (99 € im Jahr) und, falls Android gleichzeitig
 kommt, ein Google-Play-Konto (einmalig 25 $).
 
+**Stand 23. September:** Gebaut ist die Expo-App (`mobile/`) und der Server
+(`supabase/`): Konten mit Elternfreigabe unter 16, Fortschritt, Merkliste,
+Konto löschen, geschützte Videolinks, Erinnerungen als Mitteilung, der
+Player mit Kapiteln und Zeitlupe. Die Datenbank muss noch eingespielt
+werden (`supabase/README.md`). Offen sind die Teile, die an den Store-Konten
+hängen: echte Käufe über RevenueCat und „Mit Apple anmelden".
+
 ### 1.3 Rechtliches
 
 Daran scheitert die Store-Freigabe zuerst, und daran kann man nachträglich
