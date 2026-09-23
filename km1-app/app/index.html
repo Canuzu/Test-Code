@@ -2582,10 +2582,13 @@ function sheetPaywall(){
     '<div class="sheet-body">' +
       '<div><p class="eyebrow">Sieben Tage gratis</p><h1 class="big">Die Profis.<br>Aus der Nähe.</h1></div>' +
       '<ul class="ticks">' +
+        /* Nur, was schon stimmt. „Jeden Monat ein neuer Gast" war ein
+           Vertrag, den ein ausgefallener Monat bricht, und der „frühe
+           Zugang zu Camps" hatte nichts dahinter. */
         ['Alle '+zaehl('pro')+' Einheiten mit Profispielern',
-         'Jeden Monat eine neue Einheit mit einem neuen Gast',
+         'Regelmäßig neue Einheiten mit neuen Gästen',
          'Jede Übung Schritt für Schritt, in Zeitlupe zum Nachmachen',
-         'Früher Zugang zu Camps und Challenges'
+         'Das Flutlicht-Symbol für deinen Startbildschirm'
         ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
       '</ul>' +
       '<div class="prices">' +
