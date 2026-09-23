@@ -314,12 +314,19 @@ ihr Handy abends umstellen.
 
 | Token | Hell | Dunkel |
 | --- | --- | --- |
-| Grund | `#EEF2ED` | `#060C0A` |
-| Fläche | `#FFFFFF` | `#101C18` |
+| Grund | `#EEF2ED` | `#070D0B` |
+| Fläche | `#FFFFFF` | `#1E2E28` |
 | Schrift | `#0A1411` | `#F2F5F1` |
 | Schrift, leiser | `#53645D` | `#94A79E` |
+| Schrift, am leisesten | `#5F6E68` | `#84968E` |
 | Akzent | `#C81E14` | `#DE2F25` |
-| Ebene 1 bis 4 | `#0D7C75` `#3C8329` `#A9630A` `#C81E14` | `#2FA8A0` `#5FB04A` `#E8952F` `#E0342A` |
+| Akzent als Schrift | `#C81E14` | `#FF5A4F` |
+| Ebene 1 bis 4 | `#0D7C75` `#3C8329` `#A9630A` `#C81E14` | `#2FA8A0` `#5FB04A` `#E8952F` `#E24036` |
+| Schrift auf Ebenenfarbe | `#FFFFFF` | `#07100D` |
+
+Jede Schrift erreicht mindestens 4,5 : 1 gegen ihren Hintergrund. Im Dunkeln
+heißt das zweierlei: Rot als Schrift ist heller als Rot als Fläche, und auf den
+hellen Ebenenfarben steht dunkle Schrift statt weißer.
 
 Rot ist der einzige Akzent und wird sparsam eingesetzt: ein Hauptknopf pro
 Bildschirm, der aktive Reiter, die Schrittnummern. Die vier Ebenenfarben
@@ -627,6 +634,133 @@ Aufbau, nur daran, wie die App wirkt.
 Dabei behoben: das Bildfeld der Heldenkarte ist ein `<span>`. Auf einer
 Zeilenbox greifen weder `aspect-ratio` noch `max-height`, deshalb war die Karte
 am PC 600 statt der vorgesehenen 360 Pixel hoch. Als Block greifen beide.
+
+### Der Startbildschirm
+
+Bis hierher hing die Seite an den Schriften: das Stylesheet von Google stand
+im Kopf und blockierte die Ausgabe, also blieb der Bildschirm leer, solange es
+unterwegs war. Gemessen mit einer künstlich auf 2,5 Sekunden verzögerten
+Auslieferung:
+
+| | erste Ausgabe auf dem Bildschirm |
+| --- | --- |
+| vorher | 2568 ms (leer) |
+| jetzt | 72 ms (Logo und Balken) |
+
+Zwei Dinge zusammen bewirken das:
+
+- Das Schrift-Stylesheet lädt mit `media="print"` nebenher und wird erst beim
+  `onload` scharf geschaltet. Damit hält es nichts mehr auf.
+- Ein Startbildschirm liegt im Dokument, direkt hinter den Logo-Filtern. Er
+  braucht nur den Kopf, keine Bilder, keine Schriften.
+
+**Der Balken zeigt echte Schritte, keine erfundene Zahl.** Vier Ereignisse mit
+festen Gewichten:
+
+| Schritt | Gewicht | fertig, wenn |
+| --- | --- | --- |
+| `dom` | 20 | das Dokument gelesen ist |
+| `logo` | 20 | `img/logo.png` da ist |
+| `schrift` | 35 | die Schriften geladen sind |
+| `app` | 25 | `render()` zum ersten Mal durch ist |
+
+Die Breite sagt, wie weit es ist. Der Schimmer darüber sagt, dass überhaupt
+noch etwas passiert — sonst sähe ein Balken, der zwei Sekunden auf 65 % steht,
+kaputt aus.
+
+Drei Regeln halten ihn ertäglich:
+
+- **Auf schnellem Netz wird er nie sichtbar.** Er blendet sich erst nach 150
+  Millisekunden ein; wer vorher fertig ist, sieht ihn gar nicht. Gemessen:
+  höchste Deckkraft 0,00, nach 380 ms aus dem Dokument entfernt.
+- **Er bleibt nie hängen.** Schriften geben nach 2,2 Sekunden auf, der ganze
+  Bildschirm nach 6. Fehlen die Schriften ganz, ist er nach einer halben
+  Sekunde weg und die App läuft in der Ersatzschrift.
+- **Er übergibt, statt abzulösen.** Kurz bevor er abblendet, setzt er die
+  echten Karten (`state.laedt = false`). Sonst sähe man zwei Ladezustände
+  hintereinander: erst den Startbildschirm, dann die Platzhalterkarten aus
+  Punkt 11. Die Platzhalter bleiben im Code — sie werden gebraucht, sobald die
+  Videoliste vom Server kommt statt aus dem Dokument.
+
+Nebenbei: `img/logo.png` lag als RGB-Bild vor, obwohl es rein grau ist. Als
+Graustufenbild ist es Pixel für Pixel dasselbe und halb so groß, 34 kB → 18 kB.
+Das Logo ist das erste, was auf dem Startbildschirm erscheinen soll, deshalb
+zählt seine Größe doppelt.
+
+Seit der Prüfung unten liegen die Schriften neben der App, nicht mehr bei
+Google. Der Startbildschirm lädt sie direkt über `document.fonts.load`; das
+Stylesheet mit `media="print"` gibt es nicht mehr.
+
+### Die Prüfung vom 23. September
+
+29 Bildschirme in fünf Fassungen, jeder automatisch auf Überlauf, abgeschnittenen
+Text, Kontrast, Tippflächen und fehlende Bilder geprüft und von Hand angesehen.
+Behoben ist alles außer drei Fragen, die Can beantworten muss (unten).
+
+**Was man sah**
+
+| Fehler | Ursache und Lösung |
+| --- | --- |
+| Erste Karte klebte am Bildschirmrand | Das Einrasten der Reihe kannte den Seitenabstand nicht. `scroll-padding-inline:18px`. |
+| Vorschaubilder im Raster bis zu 20 px versetzt | Ein `<button>` setzt seinen Inhalt senkrecht in die Mitte. Die Karte ist jetzt eine Flex-Spalte. |
+| Lange Wörter liefen aus der Karte | Drei Titel tragen einen weichen Trennstrich (`\u00AD`), dazu `hyphens:auto`. Suche und Mitteilung nehmen ihn heraus. |
+| Schloss im Player ein weißer Klumpen | Es erbte die Füllung des Play-Zeichens. Jetzt ein Umriss. |
+| Jedes Profil trug Kaders Foto, die Profigäste auch | Anfangsbuchstaben in der Farbe der eigenen Ebene. Gäste bekommen ein neutrales Zeichen, bis ihre Namen feststehen. |
+| Auswahlfelder ohne Pfeil | Die Hülle `.wahl` zeichnet ihn neu, in der Farbe der Fassung. |
+
+**Was nicht stimmte**
+
+| Fehler | Jetzt |
+| --- | --- |
+| Camp 20. bis 24. Oktober ist Dienstag bis Samstag, Turnier „am Freitag" | Montag 19. bis Freitag 23. Oktober. Die Daten waren ein Platzhalter. |
+| „2 Monate geschenkt" | 59 € statt 83,88 € sind 3,56 Monate. Dort steht „3,5 Monate gratis" und „4,92 € im Monat". |
+| „Dein Pfad · 6 Videos", darunter 5 | Die Zahl zählt den Pfad, nicht alle Videos der Ebene. |
+| „Offen" zählte auch Erledigtes | Freigeschaltet und nicht abgehakt. |
+| Wochenziel zählte alles jemals Abgehakte, auch die Challenge | `state.done` merkt sich den Zeitpunkt. Gezählt wird ab Montag null Uhr, ohne Challenge. |
+| „Mittwoch", „6 Tage Serie", „seit März 2026", „18. Oktober" standen fest | Wochentag und nächster Trainingstag aus der Erinnerung, Serie in Wochen, Monat der Anmeldung, Ende der Probezeit. |
+| „Gerade dran" zeigte ein erledigtes Video | Das angefangene Video, sonst das nächste offene. „Warum das zählt" passt zur Kategorie. |
+| „Zwei mal die Woche", egal wie viele Tage | Zählt die gewählten Tage, „Einmal" bis „Jeden Tag". |
+| Konto löschen: „Sofort", Rückmeldung per E-Mail, auf der Sie-Seite „dir" | Kein „Sofort" mehr, Sie auf der Elternseite. Ohne Konto fehlt die Zeile. |
+| Pro-Nutzer stiegen nicht auf | Der Aufstieg zählt denselben Pfad wie die Pyramide. |
+| „Konto"-Schild blieb nach der Anmeldung | Nur solange das Konto fehlt. |
+| Challenge „50 Übersteiger", Kader steht bei 43 | „Übersteiger in 60 Sekunden", Ziel ist 44. |
+| Trainerbereich „Letzte 30 Tage" über allen Aufrufen | „Aufrufe insgesamt". |
+| „4 Videos" und „Mit Pro" in Rot, aber ohne Ziel | Grau, als Angabe. |
+| Mitteilung „vier Minuten" für 4:55 | Nennt das nächste Video und rundet seine Dauer. |
+
+**Vor dem Store-Start**
+
+- **Die Schriften liegen in `app/fonts/`**, sechs Dateien, Lizenz in
+  `fonts/OFL.txt`. Vorher schickte jeder Aufruf die IP-Adresse an Google, was
+  dem Satz „keine Weitergabe an Dritte" widersprach. Chivo und JetBrains Mono
+  sind variable Schriften, stehen aber in genau den Stufen im Stil, die vorher
+  von Google kamen, damit keine Stärke anders aussieht.
+- **Der Kaufweg richtet sich nach dem Gerät** (`PLATTFORM`, `KAUF`): Apple-ID auf
+  dem iPhone, Google-Konto auf Android, am PC beide.
+- **Die Abo-Seite nennt, was Apple unter 3.1.2 verlangt:** Preis nach der
+  Probezeit, automatische Verlängerung, Kündigung bis 24 Stunden vorher, und
+  die Wege zu Nutzungsbedingungen und Datenschutz.
+- **Nutzungsbedingungen in Kurzform** als eigenes Blatt, dazu das Impressum im
+  Profil. Die Bedingungen wiederholen nur, was die App an anderer Stelle
+  verspricht. Vor dem Start gehören sie einmal juristisch geprüft.
+- **Anmeldung:** „Passwort vergessen?", „Mit Google anmelden" neben Apple, und
+  beim Anlegen der Hinweis auf Bedingungen und Datenschutz.
+
+**Lesbarkeit und Größen**
+
+- Die leiseste Schrift war mit 3,1 : 1 zu blass, jetzt mindestens 4,6 : 1. Die
+  neuen Werte stehen in der Farbtabelle oben.
+- Chips sind 40 Pixel hoch und 44 antippbar, Player-Knöpfe 44, eine
+  Kapitelkarte reagiert bis zum Rand.
+- Unter 360 Pixeln Breite eine Spalte statt zwei.
+- Am PC haben Profil und Pyramide eine Lesebreite von 760 Pixeln.
+
+**Was offen bleibt**
+
+- Die Wochentage der Erinnerung sind auf 320 Pixeln 35 statt 44 Pixel breit.
+  Sieben nebeneinander passen dort nicht anders.
+- Drei Fragen an Can: „Moin" in Köln, die Altersstufen U16 und U18, und
+  Preis und Anmeldeweg des Camps.
 
 ## 12. Vorschläge, noch offen
 
