@@ -1,0 +1,8 @@
+{
+  "name": "km1-regeln-test",
+  "private": true,
+  "type": "module",
+  "description": "Prueft die Regeln der Datenbank in einer echten Postgres-Datenbank (PGlite), ohne Supabase-Konto.",
+  "scripts": { "test": "node --test regeln.test.mjs" },
+  "devDependencies": { "@electric-sql/pglite": "0.5.8" }
+}
