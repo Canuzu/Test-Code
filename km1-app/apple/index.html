@@ -1,0 +1,3538 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>KM1 Training · Apple-Stil</title>
+<meta name="description" content="Designstudie der KM1-App im Stil von Apple. Dieselbe App, nur anders gestaltet, zum Testen.">
+<!-- Eine Designstudie, kein Produkt: nicht in Suchmaschinen. -->
+<meta name="robots" content="noindex, nofollow">
+
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#F5F5F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KM1 Apple">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192">
+
+<link rel="preload" as="image" href="img/logo.png">
+
+<style>
+/* ============================================================
+   KM1 Training im Stil von Apple — eine Designstudie.
+
+   Dieselbe App wie in ../app/, dieselben Inhalte und dieselbe
+   Logik. Nur das Kleid ist ein anderes: die Seiten von apple.com
+   und die Apps auf dem iPhone.
+
+   Woran man Apple erkennt:
+   - Die Systemschrift. Auf iPhone und Mac ist das SF Pro, sie
+     kommt vom Geraet selbst. Ueberall sonst springt Inter ein, die
+     ihr am naechsten kommt und frei verwendet werden darf.
+   - Grosse, fette Ueberschriften mit enger Laufweite, darunter
+     ruhiger grauer Text.
+   - Grau als Grund, weisse Karten ohne Rahmen, Haarlinien statt
+     Kanten.
+   - Blau fuer alles, was man antippen kann. Kapselfoermige Knoepfe
+     und der Verweis „Mehr erfahren ›".
+   - Glas: die schwebende Tableiste, die Knoepfe ueber dem Video und
+     die Kopfleiste lassen durchscheinen, was darunter liegt.
+   - Listen wie in den Einstellungen, mit farbigen Symbolen.
+
+   Das Rot der Marke bleibt fuer das Logo und fuer KM1 Pro.
+   ============================================================ */
+
+/* Inter als Ersatz fuer SF Pro. Eine variable Datei mit optischer
+   Groesse: kleine Schrift ist offener, grosse enger — genau wie bei
+   SF Pro Text und SF Pro Display. Auf Apple-Geraeten wird sie nie
+   geladen, weil -apple-system vorher greift. */
+@font-face{font-family:'Inter';font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/inter-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Inter';font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/inter-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+:root{
+  color-scheme:light;
+
+  /* Flaechen. Das Grau ist das der Baender auf apple.com. */
+  --seite:#F5F5F7;
+  --flaeche:#FFFFFF;
+  --flaeche-2:#F5F5F7;
+  --fuell:rgba(118,118,128,.12);
+  --fuell-2:rgba(118,118,128,.2);
+  --seg-an:#FFFFFF;
+  --trenn:rgba(60,60,67,.29);
+  --rand:#D2D2D7;
+  --leiste:rgba(245,245,247,.8);
+  /* Der weiche Rand oben und unten, wenn Inhalt darunter wegrollt. */
+  --kante:rgba(245,245,247,.9);
+
+  /* Schrift. --text-2 haelt auf jeder Flaeche mindestens 4,6 : 1.
+     --text-3 ist zu blass fuer Text und traegt nur Pfeile und Ringe. */
+  --text:#1D1D1F;
+  --text-2:#6E6E73;
+  --text-3:#AEAEB2;
+
+  /* Blau fuer alles Antippbare. Die Knoepfe tragen das Blau von
+     apple.com, weisse Schrift darauf kommt auf 4,6 : 1. */
+  --blau:#0071E3;
+  --blau-hover:#0077ED;
+  --link:#0066CC;
+  --fokus:rgba(0,125,250,.6);
+  --gruen:#248A3D;
+  --gruen-voll:#34C759;
+  --orange:#B64400;
+  --orange-voll:#FF9500;
+  --rot:#D70015;
+  --rot-voll:#FF3B30;
+
+  /* Die Ebenen behalten ihre Farben aus der Hauptfassung. */
+  --lv1:#0D7C75;
+  --lv2:#3C8329;
+  --lv3:#A9630A;
+  --lv4:#C81E14;
+  --on-lv:#FFFFFF;
+
+  /* KM1 Pro: das Rot der Marke, das in Orange auslaeuft. */
+  --pro:linear-gradient(90deg,#E8433A 0%,#F2622E 55%,#FF9F0A 100%);
+  --pro-dunkel:linear-gradient(90deg,#C81E14,#C2410C);
+
+  /* Glas. Hell durchscheinend, mit einer Lichtkante oben. */
+  --glas:rgba(255,255,255,.72);
+  --glas-kante:inset 0 0 0 .5px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.9);
+  --glas-schatten:0 10px 30px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.05);
+
+  --schatten-1:0 2px 10px rgba(0,0,0,.07);
+  --schatten-2:0 14px 40px rgba(0,0,0,.16);
+
+  --r-gross:28px;
+  --r-karte:22px;
+  --r-bild:14px;
+  --r-feld:12px;
+
+  --schrift:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  /* SF Pro Rounded fuer Zahlen, wie in Fitness und Health. Wo es sie
+     nicht gibt, bleibt die normale Schrift. */
+  --rund:ui-rounded,-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;
+
+  /* Die Kurve von apple.com, und die weiche Feder der Blaetter in iOS. */
+  --ease:cubic-bezier(.28,.11,.32,1);
+  --feder:cubic-bezier(.32,.72,0,1);
+
+  --kopf:52px;
+  --oben:env(safe-area-inset-top,0px);
+  --unten:env(safe-area-inset-bottom,0px);
+
+  --dia-acc:#E8433A;
+}
+
+/* Die dunkle Fassung zweimal: einmal fuer „Automatisch", bevor das
+   Skript entschieden hat, und einmal, wenn es entschieden hat. */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --seite:#000000;
+    --flaeche:#1C1C1E;
+    --flaeche-2:#2C2C2E;
+    --fuell:rgba(118,118,128,.24);
+    --fuell-2:rgba(118,118,128,.36);
+    --seg-an:#636366;
+    --trenn:rgba(84,84,88,.65);
+    --rand:#424245;
+    --leiste:rgba(0,0,0,.72);
+    --kante:rgba(0,0,0,.84);
+    --text:#F5F5F7;
+    --text-2:#A1A1A6;
+    --text-3:#636366;
+    --link:#2997FF;
+    --gruen:#30D158;
+    --gruen-voll:#30D158;
+    --orange:#FF9F0A;
+    --orange-voll:#FF9F0A;
+    --rot:#FF453A;
+    --rot-voll:#FF453A;
+    --lv1:#2FA8A0;
+    --lv2:#5FB04A;
+    --lv3:#E8952F;
+    --lv4:#E24036;
+    --on-lv:#07100D;
+    --glas:rgba(44,44,48,.68);
+    --glas-kante:inset 0 0 0 .5px rgba(255,255,255,.1),inset 0 1px 0 rgba(255,255,255,.14);
+    --glas-schatten:0 10px 30px rgba(0,0,0,.55);
+    --schatten-1:none;
+    --schatten-2:0 14px 40px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --seite:#000000;
+  --flaeche:#1C1C1E;
+  --flaeche-2:#2C2C2E;
+  --fuell:rgba(118,118,128,.24);
+  --fuell-2:rgba(118,118,128,.36);
+  --seg-an:#636366;
+  --trenn:rgba(84,84,88,.65);
+  --rand:#424245;
+  --leiste:rgba(0,0,0,.72);
+  --kante:rgba(0,0,0,.84);
+  --text:#F5F5F7;
+  --text-2:#A1A1A6;
+  --text-3:#636366;
+  --link:#2997FF;
+  --gruen:#30D158;
+  --gruen-voll:#30D158;
+  --orange:#FF9F0A;
+  --orange-voll:#FF9F0A;
+  --rot:#FF453A;
+  --rot-voll:#FF453A;
+  --lv1:#2FA8A0;
+  --lv2:#5FB04A;
+  --lv3:#E8952F;
+  --lv4:#E24036;
+  --on-lv:#07100D;
+  --glas:rgba(44,44,48,.68);
+  --glas-kante:inset 0 0 0 .5px rgba(255,255,255,.1),inset 0 1px 0 rgba(255,255,255,.14);
+  --glas-schatten:0 10px 30px rgba(0,0,0,.55);
+  --schatten-1:none;
+  --schatten-2:0 14px 40px rgba(0,0,0,.6);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;height:100dvh;overflow:hidden;
+  background:var(--seite);color:var(--text);
+  font-family:var(--schrift);font-size:17px;line-height:1.47;letter-spacing:-.022em;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  -webkit-text-size-adjust:100%;text-size-adjust:100%;
+}
+img{max-width:100%;display:block}
+[hidden]{display:none !important}
+button{font:inherit;letter-spacing:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+a{-webkit-tap-highlight-color:transparent}
+svg{display:block;flex:0 0 auto}
+:focus-visible{outline:3px solid var(--fokus);outline-offset:2px;border-radius:8px}
+::selection{background:rgba(0,113,227,.25)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Auf iPhone, iPad und Mac steht SF Pro da, und Safari setzt ihre
+   Laufweite je nach Groesse selbst: eng im Text, weiter in den grossen
+   Titeln. Die engen Werte oben gelten deshalb nur fuer Inter. Kaeme SF
+   noch einmal enger dazu, klebten die Buchstaben der Ueberschriften
+   aneinander. Die Klasse setzt das Skript ganz oben im Koerper. */
+:root.sf,:root.sf *,:root.sf *::before,:root.sf *::after{letter-spacing:normal !important}
+
+/* Die Haarlinie zwischen zwei Zeilen einer Liste. Sie beginnt dort,
+   wo der Text beginnt, nicht am Rand — so wie in iOS. */
+.lrow+.lrow::before,.dwahlen+.lrow::before,.ebzeile+.ebzeile::before,
+.unit+.unit::before,.vid-admin+.vid-admin::before,.steps li+li::after{
+  content:"";position:absolute;top:0;right:0;left:var(--einzug,16px);
+  height:1px;background:var(--trenn);transform:scaleY(.5);transform-origin:top;pointer-events:none;
+}
+
+/* ---------- Der Rahmen ---------- */
+.stage{position:relative;height:100%}
+.device{position:relative;width:100%;height:100%;overflow:hidden;background:var(--seite)}
+.app{position:absolute;inset:0}
+
+/* ---------- Die Kopfleiste ----------
+   Liegt ueber dem Inhalt und ist zuerst unsichtbar. Sobald etwas
+   darunter wegrollt, legt sich ein weicher Rand aus Milchglas darueber,
+   der nach unten ausblendet, statt an einer harten Linie zu enden — so
+   wie in iOS 26. Dazu uebernimmt die Leiste den Titel. */
+.appbar{
+  position:absolute;top:0;left:0;right:0;z-index:5;
+  /* Logo und Ebene stehen buendig mit dem Inhalt darunter, auch auf dem
+     Tablet, wo der Inhalt hoechstens 720 Pixel breit ist. */
+  height:calc(var(--kopf) + var(--oben));padding:var(--oben) max(16px,calc((100% - 688px) / 2)) 0;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  isolation:isolate;
+}
+.appbar::before{
+  content:"";position:absolute;left:0;right:0;top:0;bottom:-26px;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,var(--kante) 0%,var(--kante) 58%,transparent 100%);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);
+  -webkit-mask-image:linear-gradient(180deg,#000 58%,transparent 100%);mask-image:linear-gradient(180deg,#000 58%,transparent 100%);
+  opacity:0;transition:opacity .3s var(--ease);
+}
+.appbar.scrolled::before{opacity:1}
+
+/* Dasselbe unten: der Inhalt laeuft vor der Tableiste in die Flaeche aus,
+   statt scharf unter dem Glas weiterzulaufen. */
+.app::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;z-index:4;pointer-events:none;
+  height:calc(104px + var(--unten));
+  background:linear-gradient(0deg,var(--kante) 0%,var(--kante) 28%,transparent 100%);
+}
+.mark{height:23px;width:auto;filter:url(#logoDark);transition:opacity .2s var(--ease)}
+:root[data-theme="dark"] .mark{filter:url(#logoLight)}
+.kopftitel{
+  position:absolute;left:50%;top:calc(var(--oben) + var(--kopf) / 2);
+  transform:translate(-50%,-50%) translateY(6px);
+  font-size:17px;font-weight:600;letter-spacing:-.02em;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity .22s var(--ease),transform .3s var(--feder);
+}
+.appbar.tief .kopftitel{opacity:1;transform:translate(-50%,-50%)}
+.appbar.tief .mark{opacity:0}
+.lvchip{
+  display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 13px 0 11px;border-radius:999px;
+  font-size:13px;font-weight:600;letter-spacing:-.01em;color:var(--text);
+  background:var(--glas);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+  box-shadow:var(--glas-kante),0 2px 8px rgba(0,0,0,.06);
+}
+.lvchip i{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+
+/* ---------- Die Seiten ---------- */
+.screens{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.screen{
+  display:flex;flex-direction:column;gap:30px;
+  max-width:720px;margin:0 auto;
+  padding:calc(var(--kopf) + var(--oben) + 6px) 16px calc(118px + var(--unten));
+}
+
+/* ---------- Schrift ---------- */
+.eyebrow{
+  margin:0;font-size:13px;line-height:1.3;font-weight:600;letter-spacing:.01em;
+  text-transform:uppercase;color:var(--text-2);
+}
+/* Das „Neu" von apple.com: orange ueber dem Namen. */
+.eyebrow.neu{color:var(--orange);text-transform:none;font-size:15px;letter-spacing:-.01em}
+h1.big{
+  margin:4px 0 0;font-size:34px;line-height:1.12;font-weight:700;letter-spacing:-.022em;
+  text-wrap:balance;-webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word;
+}
+h1.big.vtitel{font-size:28px;line-height:1.14}
+h2.sec{margin:0;font-size:22px;line-height:1.2;font-weight:700;letter-spacing:-.02em}
+/* Die Ueberschrift ueber einer Liste, wie in den Einstellungen. */
+h2.sec.leise{
+  margin:0 0 -4px 16px;font-size:13px;line-height:1.3;font-weight:400;letter-spacing:0;
+  text-transform:uppercase;color:var(--text-2);
+}
+.sub{margin:10px 0 0;font-size:17px;line-height:1.47;color:var(--text-2);max-width:40ch}
+.block{display:flex;flex-direction:column;gap:14px}
+.block-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.block-head .more{font-size:15px;color:var(--text-2);white-space:nowrap;letter-spacing:-.01em}
+.note{margin:0;font-size:13px;line-height:1.3;font-weight:600;letter-spacing:.01em;text-transform:uppercase;color:var(--text-2)}
+.prose{margin:0;font-size:17px;line-height:1.5;color:var(--text)}
+.fine{margin:0;font-size:13px;line-height:1.45;letter-spacing:-.01em;color:var(--text-2)}
+/* „Mehr erfahren ›" */
+.los{display:inline-flex;align-items:center;gap:1px;font-size:17px;color:var(--link);letter-spacing:-.022em}
+.los::after{
+  content:"";width:7px;height:7px;margin-left:5px;
+  border-top:1.7px solid currentColor;border-right:1.7px solid currentColor;
+  transform:rotate(45deg);border-radius:1px;
+}
+
+/* ---------- Bilder ---------- */
+.poster{
+  display:block;position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;
+  background:var(--fuell);border-radius:var(--r-bild);isolation:isolate;
+}
+.poster>img,.poster>svg{width:100%;height:100%;object-fit:cover;display:block}
+.poster::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.08)}
+/* Die Zeichnungen: weisse Linien auf der Farbe ihrer Ebene, wie die
+   Kacheln der Trainingsarten in Fitness+. */
+svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in srgb,var(--dia-acc) 88%,#fff) 0%,var(--dia-acc) 45%,color-mix(in srgb,var(--dia-acc) 62%,#000) 100%)}
+.dia .bg{fill:none}
+.dia .c{fill:none;stroke:rgba(255,255,255,.5);stroke-width:1.5}
+.dia .a{fill:none;stroke:#fff;stroke-width:2.2}
+.dia .f{fill:#fff;stroke:none}
+
+.badge{
+  position:absolute;z-index:2;
+  font-size:11px;line-height:1;font-weight:600;letter-spacing:.03em;text-transform:uppercase;
+  padding:6px 9px;border-radius:999px;color:#fff;
+  background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6);
+}
+.badge.dur{right:8px;bottom:8px;text-transform:none;letter-spacing:0;font-variant-numeric:tabular-nums}
+.badge.pro{left:8px;top:8px;background:var(--pro-dunkel)}
+.badge.konto{left:8px;top:8px}
+.badge.neu{left:8px;top:8px;background:rgba(255,255,255,.92);color:#1D1D1F}
+.lock{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.26)}
+.lock.konto{background:rgba(0,0,0,.14)}
+.lock span{
+  width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.3),inset 0 1px 0 rgba(255,255,255,.25);
+}
+.lock svg{width:18px;height:18px}
+
+/* ---------- Kacheln wie in der TV-App ----------
+   Keine Karte drumherum: das Bild mit runden Ecken, der Titel darunter. */
+.card{display:flex;flex-direction:column;gap:10px;width:100%;text-align:left;background:none}
+.card .poster{box-shadow:var(--schatten-1);transition:transform .45s var(--ease),box-shadow .45s var(--ease)}
+.card:active .poster{transform:scale(.97)}
+@media (hover:hover){ .card:hover .poster{transform:scale(1.03);box-shadow:var(--schatten-2)} }
+.card .body{display:flex;flex-direction:column;gap:3px;padding:0 2px}
+.card .t{
+  display:block;font-size:15px;line-height:1.3;font-weight:600;letter-spacing:-.015em;color:var(--text);
+  -webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word;
+}
+.card .m{display:block;font-size:13px;line-height:1.35;letter-spacing:-.005em;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;display:inline-block;vertical-align:middle}
+.card .m .dot{margin:-2px 6px 0 0}
+
+/* ---------- Die grosse Karte oben ----------
+   Wie die Karten im Heute-Tab des App Store: Bild ueber die ganze
+   Flaeche, oben die kleine Zeile, unten Titel und der weisse Knopf
+   aus der TV-App. */
+.hero{
+  position:relative;display:block;width:100%;text-align:left;isolation:isolate;
+  border-radius:var(--r-gross);overflow:hidden;background:#000;
+  box-shadow:var(--schatten-2);transition:transform .45s var(--ease);
+}
+.hero:active{transform:scale(.98)}
+.hero .hm{position:relative;display:block;width:100%;aspect-ratio:1/1;max-height:62svh;overflow:hidden}
+/* Auf dem Tablet waere das Quadrat hoeher als der halbe Bildschirm. */
+@media (min-width:600px){ .hero .hm{aspect-ratio:4/3} }
+.hero .hm>img,.hero .hm>svg{width:100%;height:100%;object-fit:cover;display:block}
+.hero .hm::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.34) 0%,rgba(0,0,0,0) 24%,rgba(0,0,0,0) 38%,rgba(0,0,0,.55) 62%,rgba(0,0,0,.86) 100%);
+}
+.hero .hc{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;gap:6px;padding:20px 20px 22px;color:#fff}
+.hero .hk{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:rgba(255,255,255,.86)}
+.hero .ht{
+  margin-top:auto;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.025em;
+  /* Kein Textschatten: der Zeilenschnitt (line-clamp) schneidet ihn an der
+     Kante der Box ab, und hinter dem Titel stand ein dunkles Rechteck. Den
+     Kontrast traegt der Verlauf darunter. */
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word;
+}
+.hero .ht.mittel{font-size:27px}
+.hero .ht.eng{font-size:23px;line-height:1.14}
+.hero .hmeta{font-size:15px;color:rgba(255,255,255,.82);letter-spacing:-.01em}
+.hero .hfuss{display:flex;align-items:center;gap:14px;margin-top:10px}
+.hero .hplay{
+  display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;
+  height:44px;padding:0 20px 0 17px;border-radius:999px;
+  background:#fff;color:#1D1D1F;font-size:17px;font-weight:600;letter-spacing:-.02em;
+  transition:transform .3s var(--ease);
+}
+.hero .hplay svg{width:15px;height:15px}
+@media (hover:hover){ .hero:hover .hplay{transform:scale(1.04)} }
+.hero .hbar{flex:1 1 auto;height:4px;border-radius:999px;background:rgba(255,255,255,.3);overflow:hidden}
+.hero .hbar i{display:block;height:100%;border-radius:inherit;background:#fff}
+
+/* ---------- Reihen und Raster ---------- */
+.row{
+  display:flex;gap:14px;overflow-x:auto;padding:2px 16px 10px;margin:0 -16px;
+  scroll-snap-type:x mandatory;scroll-padding-inline:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.row::-webkit-scrollbar,.chips::-webkit-scrollbar{display:none}
+.row>*{flex:0 0 min(72%,300px);scroll-snap-align:start}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 14px}
+@media (max-width:359px){ .grid{grid-template-columns:minmax(0,1fr)} }
+
+/* ---------- Chips ---------- */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 16px 4px;margin:0 -16px;scrollbar-width:none}
+.chip{
+  position:relative;flex:0 0 auto;height:36px;padding:0 16px;border-radius:999px;white-space:nowrap;
+  font-size:15px;font-weight:500;letter-spacing:-.015em;
+  background:var(--fuell);color:var(--text);
+  transition:background .2s var(--ease),color .2s var(--ease),transform .25s var(--feder);
+}
+.chip::after{content:"";position:absolute;left:0;right:0;top:-4px;bottom:-4px}
+.chip:active{transform:scale(.95)}
+.chip[aria-pressed="true"]{background:var(--text);color:var(--seite)}
+
+/* ---------- Suche ---------- */
+.suchzeile{display:flex;align-items:stretch;gap:10px}
+.search{
+  flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:8px;
+  height:44px;padding:0 14px;border-radius:999px;background:var(--fuell);
+  transition:box-shadow .2s var(--ease);
+}
+.search:focus-within{box-shadow:0 0 0 3px var(--fokus)}
+.search svg{width:18px;height:18px;color:var(--text-2)}
+.search input{
+  flex:1;min-width:0;border:0;background:none;color:var(--text);border-radius:0;
+  font:inherit;font-size:17px;letter-spacing:-.022em;-webkit-appearance:none;appearance:none;
+}
+.search input::placeholder{color:var(--text-2)}
+.search input:focus{outline:none}
+.ebfilter{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;height:44px;padding:0 14px 0 13px;
+  border-radius:999px;background:var(--fuell);
+  font-size:15px;font-weight:500;letter-spacing:-.015em;color:var(--text);white-space:nowrap;
+}
+.ebfilter .pkt{width:8px;height:8px;border-radius:50%;background:var(--c,var(--text-3))}
+.ebfilter svg{width:13px;height:13px;color:var(--text-2)}
+
+/* Die Ebenenwahl als Liste mit Haken, wie eine Auswahl in iOS. */
+.ebliste{display:flex;flex-direction:column;background:var(--flaeche);border-radius:var(--r-karte);overflow:hidden;--einzug:42px}
+.ebzeile{
+  position:relative;display:flex;align-items:center;gap:14px;width:100%;min-height:52px;padding:12px 16px;
+  text-align:left;font-size:17px;color:var(--text);
+}
+.ebzeile:active{background:var(--fuell)}
+.ebzeile .pkt{width:12px;height:12px;border-radius:50%;flex:0 0 auto;background:var(--c,var(--text-3))}
+.ebzeile span{flex:1;min-width:0}
+.ebzeile svg{width:18px;height:18px;color:var(--link)}
+
+/* ---------- Karten und Flaechen ---------- */
+.panel{
+  background:var(--flaeche);border-radius:var(--r-karte);padding:20px;
+  display:flex;flex-direction:column;gap:12px;
+}
+/* Die Anmeldung als ruhige Mitte, wie die Karte „Mit Apple-ID
+   anmelden" in den Einstellungen. */
+.panel.mitte{align-items:center;text-align:center;padding:28px 20px 20px}
+.panel.mitte .bild-kreis{
+  width:60px;height:60px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(180deg,#A5ABB8,#858B97);margin-bottom:2px;
+}
+.panel.mitte .bild-kreis svg{width:34px;height:34px}
+.panel.mitte .sub{margin:0;max-width:30ch}
+
+/* Das Wochenziel als Ring, wie die Ringe in Fitness. */
+.panel.ziel{flex-direction:row;align-items:center;gap:18px}
+.ring{width:78px;height:78px;flex:0 0 auto}
+.ring circle{fill:none;stroke-width:9;stroke-linecap:round}
+.ring .spur{stroke:var(--mein,var(--blau));opacity:.18}
+.ring .voll{stroke:var(--mein,var(--blau))}
+.ziel .zt{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ziel .zahl{margin:4px 0 0;font-family:var(--rund);font-size:28px;line-height:1.1;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.ziel .zahl span{font-family:var(--schrift);font-size:17px;font-weight:500;letter-spacing:-.02em;color:var(--text-2)}
+.ziel .rest{margin:0;font-size:15px;color:var(--text-2);letter-spacing:-.01em}
+
+/* Die Kacheln von apple.com: Ueberschrift und Verweis mittig oben,
+   das Bild darunter bis an den Rand. */
+.wide{
+  position:relative;display:flex;flex-direction:column;width:100%;text-align:center;overflow:hidden;
+  background:var(--flaeche);border-radius:var(--r-gross);isolation:isolate;
+  transition:transform .45s var(--ease);
+}
+.wide:active{transform:scale(.985)}
+.wide .body{order:-1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:34px 24px 24px}
+.wide .t{display:block;margin:0;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.025em}
+.wide .p{display:block;margin:2px 0 0;font-size:17px;line-height:1.45;color:var(--text-2);max-width:32ch}
+.wide .los{margin-top:10px}
+.wide .poster{aspect-ratio:16/10;border-radius:0}
+.wide .poster::after{box-shadow:none}
+
+/* KM1 Pro wie eine Produktkachel: schwarz, der Name im Verlauf der
+   Marke, darunter das Flutlicht-Symbol. */
+.proband{
+  position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;
+  text-align:center;overflow:hidden;isolation:isolate;
+  border-radius:var(--r-gross);padding:38px 24px 0;color:#F5F5F7;
+  background:radial-gradient(120% 62% at 50% 108%,rgba(232,67,58,.62) 0%,rgba(232,67,58,0) 62%),#000;
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12);
+  transition:transform .45s var(--ease);
+}
+.proband:active{transform:scale(.985)}
+.pro-name{
+  display:inline-block;font-size:19px;line-height:1.2;font-weight:700;letter-spacing:-.02em;
+  background:var(--pro);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.proband .t{display:block;margin:0;font-size:32px;line-height:1.1;font-weight:700;letter-spacing:-.025em}
+.proband .p{display:block;margin:4px 0 0;font-size:17px;line-height:1.45;color:#A1A1A6;max-width:30ch}
+.proband .paar{display:flex;align-items:center;justify-content:center;gap:10px 22px;margin-top:14px;flex-wrap:wrap}
+.proband .los{color:#2997FF}
+.proband .symbolbild{
+  width:118px;height:118px;border-radius:22.37%;margin:30px 0 -22px;
+  box-shadow:0 24px 60px -8px rgba(232,67,58,.6),inset 0 0 0 .5px rgba(255,255,255,.2);
+}
+/* Im Profil dieselbe Kachel, nur kleiner. */
+.proband.klein{padding:28px 22px 26px}
+.proband.klein .t{font-size:26px}
+.proband.klein .paar{margin-top:10px}
+
+/* ---------- Knoepfe ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;min-height:50px;padding:12px 22px;border-radius:999px;
+  background:var(--blau);color:#fff;
+  font-size:17px;line-height:1.2;font-weight:600;letter-spacing:-.022em;text-align:center;text-decoration:none;
+  transition:background .2s var(--ease),transform .25s var(--feder),opacity .2s var(--ease);
+}
+.btn:hover{background:var(--blau-hover)}
+.btn:active{transform:scale(.97);opacity:.88}
+.btn svg{width:18px;height:18px}
+/* Der kleine Knopf von apple.com, neben „Mehr erfahren ›". */
+.btn.klein{width:auto;min-height:36px;padding:8px 18px;font-size:15px;font-weight:500;letter-spacing:-.015em}
+/* Grau mit blauer Schrift: der zweite Knopf in iOS. */
+.btn.ghost{background:var(--fuell);color:var(--link)}
+.btn.ghost:hover{background:var(--fuell-2)}
+/* Nur Schrift, fuer „Weiter ohne Konto" und Aehnliches. */
+.btn.text{background:none;color:var(--link);font-weight:400;min-height:44px;padding:8px 12px}
+.btn.text:hover{background:none;text-decoration:underline}
+/* „Mit Apple anmelden" so, wie Apple es vorgibt: schwarz im Hellen,
+   weiss im Dunkeln. */
+.btn.apple{background:var(--text);color:var(--seite)}
+.btn.apple:hover{background:var(--text);opacity:.88}
+.btn.google{background:var(--flaeche);color:var(--text);box-shadow:inset 0 0 0 1px var(--rand)}
+.btn.google:hover{background:var(--flaeche-2)}
+.btn.done{background:rgba(52,199,89,.16);color:var(--gruen)}
+.btn.done:hover{background:rgba(52,199,89,.22)}
+
+/* ---------- Die Tableiste aus Glas ----------
+   Schwebt ueber dem Inhalt, eine Kapsel mit Luft zum Rand. Der
+   gewaehlte Bereich liegt in einer eigenen, etwas dichteren Kapsel. */
+.tabs{
+  position:absolute;z-index:5;left:50%;bottom:calc(10px + var(--unten));transform:translateX(-50%);
+  width:min(calc(100% - 28px),420px);
+  display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:4px;border-radius:999px;
+  background:var(--glas);-webkit-backdrop-filter:blur(26px) saturate(1.9);backdrop-filter:blur(26px) saturate(1.9);
+  box-shadow:var(--glas-kante),var(--glas-schatten);
+}
+.tab{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  height:56px;border-radius:999px;
+  font-size:10.5px;font-weight:600;letter-spacing:0;color:var(--text);
+  transition:color .2s var(--ease),background .25s var(--ease),transform .25s var(--feder);
+}
+.tab .ti{display:grid;place-items:center;height:28px}
+.tab svg{width:25px;height:25px}
+.tab[aria-current="page"]{color:var(--link);background:var(--fuell)}
+.tab:active{transform:scale(.94)}
+
+/* ---------- Blaetter ----------
+   Schieben sich von rechts herein, wie eine Seite in iOS. */
+.sheet{
+  position:absolute;inset:0;z-index:6;background:var(--seite);
+  overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  transform:translateX(100%);transition:transform .5s var(--feder);
+  box-shadow:-24px 0 40px rgba(0,0,0,.06);
+}
+.sheet.on{transform:none}
+.sheet:not(.on){pointer-events:none}
+/* Die Seite darunter weicht ein Stueck nach links aus, waehrend das Blatt
+   hereinkommt, und kehrt zurueck, wenn es geht. */
+.screens,.appbar{transition:transform .5s var(--feder)}
+.app.blatt .screens,.app.blatt .appbar{transform:translateX(-24%)}
+.sheet-head{
+  position:sticky;top:0;z-index:4;display:flex;align-items:center;
+  min-height:calc(56px + var(--oben));padding:var(--oben) 12px 0;
+  background:var(--leiste);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  box-shadow:0 .5px 0 var(--trenn);
+}
+.back{
+  position:relative;z-index:1;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--text);
+  background:var(--glas);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+  box-shadow:var(--glas-kante),0 2px 10px rgba(0,0,0,.08);
+  transition:transform .25s var(--feder);
+}
+.back:active{transform:scale(.92)}
+.back svg{width:20px;height:20px;margin-left:-2px}
+.kopf-t{
+  position:absolute;left:68px;right:68px;bottom:0;height:56px;display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:600;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sheet-body{
+  display:flex;flex-direction:column;gap:28px;max-width:720px;margin:0 auto;
+  padding:20px 16px calc(48px + var(--unten));
+}
+
+/* ---------- Der Spieler ---------- */
+.player{position:relative;margin:-20px -16px 0;background:#000;overflow:hidden}
+.player .poster{aspect-ratio:16/9;border-radius:0}
+.player .poster::after{box-shadow:none;background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,.45) 100%)}
+
+.zone{position:absolute;top:0;bottom:62px;width:40%;z-index:2}
+.zone.links{left:0}
+.zone.rechts{right:0}
+.sprung{
+  position:absolute;top:calc(50% - 31px);transform:translateY(-50%);z-index:5;
+  display:flex;align-items:center;gap:7px;padding:12px 18px;border-radius:999px;
+  background:rgba(0,0,0,.35);-webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.2);
+  color:#fff;font-size:15px;font-weight:600;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity .2s var(--ease);
+}
+.sprung.links{left:7%}
+.sprung.rechts{right:7%}
+.sprung.rechts svg{transform:scaleX(-1)}
+.sprung svg{width:17px;height:17px}
+.sprung.an{opacity:1}
+
+/* Der grosse Knopf in der Mitte: Glas statt Farbe. */
+.pbtn{position:absolute;top:0;bottom:62px;left:40%;right:40%;z-index:3;display:flex;align-items:center;justify-content:center}
+.player .pbtn[data-act$="login"],.player .pbtn[data-act="paywall"],.player .pbtn[data-act^="kontologin"]{left:0;right:0}
+.pbtn span{
+  width:72px;height:72px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:rgba(255,255,255,.18);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.35),inset 0 1px 0 rgba(255,255,255,.35),0 10px 30px rgba(0,0,0,.25);
+  transition:transform .3s var(--feder);
+}
+@media (hover:hover){ .pbtn:hover span{transform:scale(1.06)} }
+.pbtn:active span{transform:scale(.92)}
+.pbtn svg{width:26px;height:26px;margin-left:3px}
+.pbtn .zu svg{width:24px;height:24px;margin:0}
+
+/* Die Leiste als schwebende Glaskapsel, wie der Player in iOS 26. */
+.pctl{
+  position:absolute;left:10px;right:10px;bottom:10px;z-index:6;height:46px;padding:0 6px;
+  display:flex;align-items:center;gap:6px;border-radius:999px;
+  background:rgba(30,30,32,.4);-webkit-backdrop-filter:blur(22px) saturate(1.8);backdrop-filter:blur(22px) saturate(1.8);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.18),inset 0 1px 0 rgba(255,255,255,.14);
+  color:#fff;
+}
+.pctl .tm{font-size:12px;font-weight:600;letter-spacing:0;color:rgba(255,255,255,.86);font-variant-numeric:tabular-nums;flex:0 0 auto}
+.mini{
+  width:40px;height:40px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;color:#fff;
+  transition:background .2s var(--ease);
+}
+.mini:hover{background:rgba(255,255,255,.14)}
+.mini svg{width:18px;height:18px}
+.mini.tempo{width:auto;padding:0 12px;border-radius:999px;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+
+.scrub{position:relative;flex:1;min-width:0;padding-block:14px;touch-action:none;cursor:pointer}
+.scrub .spur{display:block;position:relative;height:5px;border-radius:999px;background:rgba(255,255,255,.3);transition:height .2s var(--ease)}
+.scrub .spur i{position:absolute;left:0;top:0;bottom:0;display:block;border-radius:999px;background:#fff}
+.scrub .griff{
+  position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:#fff;
+  transform:translate(-50%,-50%) scale(0);box-shadow:0 2px 8px rgba(0,0,0,.35);
+  transition:transform .2s var(--feder);
+}
+.scrub:hover .griff,.scrub:active .griff{transform:translate(-50%,-50%) scale(1)}
+.scrub:active .spur{height:8px}
+
+/* ---------- Vollbild ---------- */
+.kino{
+  position:absolute;inset:0;z-index:60;background:#000;
+  opacity:0;transition:opacity .3s var(--ease);
+  display:flex;align-items:center;justify-content:center;
+}
+.kino.an{opacity:1}
+.dreh{position:absolute;inset:0}
+.dreh.quer{inset:auto;left:50%;top:50%;transform-origin:center;transform:translate(-50%,-50%) rotate(90deg)}
+.kino-bild{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.kino-bild .poster{width:100%;max-height:100%;aspect-ratio:16/9;border-radius:0;background:#000}
+.kino-bild .poster::after{box-shadow:none;background:linear-gradient(180deg,rgba(0,0,0,.3) 0%,rgba(0,0,0,0) 36%,rgba(0,0,0,.5) 100%)}
+.kino .zone{bottom:72px}
+.kino-oben{
+  position:absolute;left:0;right:0;top:0;z-index:6;display:flex;align-items:center;gap:12px;padding:14px;
+  transition:opacity .25s var(--ease);
+}
+.kino-titel{font-size:17px;font-weight:600;color:#fff;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 10px rgba(0,0,0,.5)}
+.rund{
+  width:44px;height:44px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.3),inset 0 1px 0 rgba(255,255,255,.25);
+}
+.rund svg{width:17px;height:17px}
+.kino-play{position:absolute;top:0;bottom:72px;left:40%;right:40%;z-index:4;display:flex;align-items:center;justify-content:center}
+.kino-play span{
+  width:84px;height:84px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:rgba(255,255,255,.18);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.35),inset 0 1px 0 rgba(255,255,255,.35);
+  transition:transform .3s var(--feder);
+}
+.kino-play:active span{transform:scale(.92)}
+.kino-play svg{width:30px;height:30px;margin-left:4px}
+.kino .pctl{left:16px;right:16px;bottom:16px}
+.kino.ruhe .kino-oben,.kino.ruhe .pctl{opacity:0;pointer-events:none}
+
+/* Das Tempo als Menue aus Glas, der gewaehlte Eintrag mit Haken. */
+.tempoliste{
+  position:absolute;right:16px;bottom:72px;z-index:8;min-width:150px;
+  display:flex;flex-direction:column;padding:6px;border-radius:18px;
+  background:rgba(40,40,44,.72);-webkit-backdrop-filter:blur(30px) saturate(1.8);backdrop-filter:blur(30px) saturate(1.8);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.14),0 20px 50px rgba(0,0,0,.5);
+}
+.tempoliste button{
+  position:relative;display:flex;align-items:center;min-height:42px;padding:0 14px 0 36px;border-radius:12px;
+  color:#fff;font-size:15px;font-weight:500;font-variant-numeric:tabular-nums;text-align:left;
+}
+.tempoliste button:hover{background:rgba(255,255,255,.1)}
+.tempoliste button[aria-pressed="true"]{font-weight:600}
+.tempoliste button[aria-pressed="true"]::before{
+  content:"";position:absolute;left:15px;top:50%;width:11px;height:6px;
+  border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translateY(-70%) rotate(-45deg);
+}
+
+.bar{display:block;height:5px;background:var(--fuell-2);border-radius:999px;position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--blau);display:block;border-radius:999px}
+
+/* ---------- Text im Blatt ---------- */
+/* Eine Zeile Angaben wie in der TV-App, mit Punkten dazwischen. */
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:2px 0;margin-top:-16px;font-size:15px;letter-spacing:-.01em;color:var(--text-2)}
+.meta span{display:inline-flex;align-items:center;gap:6px}
+.meta span+span::before{content:"·";margin:0 2px 0 8px;color:var(--text-2)}
+
+/* Die Schritte als Liste mit Nummern im Kreis. Der laufende Schritt
+   bekommt das Blau. */
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;background:var(--flaeche);border-radius:var(--r-karte);overflow:hidden;counter-reset:s;--einzug:58px}
+.steps li{
+  position:relative;counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:14px;align-items:start;
+  padding:14px 16px;font-size:17px;line-height:1.42;color:var(--text);
+  transition:background .2s var(--ease);
+}
+.steps li::before{
+  content:counter(s);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;margin-top:-2px;
+  background:var(--fuell);font-size:15px;font-weight:600;letter-spacing:0;font-variant-numeric:tabular-nums;color:var(--text);
+  transition:background .2s var(--ease),color .2s var(--ease);
+}
+.steps li button{display:flex;align-items:baseline;gap:12px;width:100%;font:inherit;color:inherit;text-align:left}
+.steps li button::after{content:"";position:absolute;inset:0}
+.steps li:has(button):active{background:var(--fuell)}
+.steps li .tx{flex:1 1 auto;min-width:0}
+.steps li .zt{flex:0 0 auto;font-size:15px;color:var(--text-2);font-variant-numeric:tabular-nums;letter-spacing:0;transition:color .2s var(--ease)}
+.steps li.jetzt::before{background:var(--blau);color:#fff}
+.steps li.jetzt .zt{color:var(--link);font-weight:600}
+
+/* Der Aufstieg: eine Auszeichnung wie in Fitness. */
+.feier{
+  text-align:center;align-items:center;justify-content:center;
+  min-height:100%;gap:14px;padding-top:calc(48px + var(--oben));
+}
+.feier .ring-orden{
+  width:128px;height:128px;border-radius:50%;display:grid;place-items:center;margin:0 auto 10px;color:var(--on-lv);
+  background:var(--c);
+  background:radial-gradient(circle at 32% 26%,color-mix(in srgb,var(--c) 55%,#fff) 0%,var(--c) 58%,color-mix(in srgb,var(--c) 70%,#000) 100%);
+  box-shadow:0 26px 60px -16px var(--c),inset 0 2px 0 rgba(255,255,255,.35);
+}
+.feier .ring-orden svg{width:54px;height:54px}
+.feier h1.big{font-size:40px}
+.feier .meta{justify-content:center;margin-top:0}
+.feier .btn{margin-top:14px;max-width:360px}
+
+/* Hinweiskaesten mit Zeichen davor, wie die Tipps in iOS. */
+.callout{
+  position:relative;display:flex;flex-direction:column;gap:3px;
+  padding:16px 18px 16px 54px;border-radius:var(--r-karte);background:var(--flaeche);
+}
+.callout::before{
+  content:"";position:absolute;left:18px;top:17px;width:22px;height:22px;background:var(--orange-voll);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M10.3 3.4a2 2 0 0 1 3.4 0l8.3 14.3a2 2 0 0 1-1.7 3H3.7a2 2 0 0 1-1.7-3zM12 8.1c-.7 0-1.2.6-1.1 1.2l.3 4.8a.8.8 0 0 0 1.6 0l.3-4.8c.1-.6-.4-1.2-1.1-1.2zm0 8.4a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z'/%3E%3C/svg%3E") center/contain no-repeat;
+          mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M10.3 3.4a2 2 0 0 1 3.4 0l8.3 14.3a2 2 0 0 1-1.7 3H3.7a2 2 0 0 1-1.7-3zM12 8.1c-.7 0-1.2.6-1.1 1.2l.3 4.8a.8.8 0 0 0 1.6 0l.3-4.8c.1-.6-.4-1.2-1.1-1.2zm0 8.4a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.callout.stille::before{
+  background:var(--blau);
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 4.4a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8zm-1.6 4.3a.9.9 0 0 0 0 1.8h.7v4.4h-1a.9.9 0 0 0 0 1.8h3.8a.9.9 0 0 0 0-1.8h-.9v-5.3a.9.9 0 0 0-.9-.9z'/%3E%3C/svg%3E");
+          mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 4.4a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8zm-1.6 4.3a.9.9 0 0 0 0 1.8h.7v4.4h-1a.9.9 0 0 0 0 1.8h3.8a.9.9 0 0 0 0-1.8h-.9v-5.3a.9.9 0 0 0-.9-.9z'/%3E%3C/svg%3E");
+}
+.callout .h{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--orange)}
+.callout.stille .h{color:var(--text)}
+.callout p{margin:0;font-size:17px;line-height:1.45;color:var(--text)}
+
+/* Trainer und Gaeste als Zelle mit rundem Bild. */
+.coach{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:var(--r-karte);background:var(--flaeche)}
+.coach img{width:48px;height:48px;border-radius:50%;object-fit:cover;flex:0 0 auto}
+.coach .gross{flex:0 0 auto;border-radius:50%;display:block;transition:transform .3s var(--feder)}
+.coach .gross:active{transform:scale(.95)}
+.coach .n{font-size:17px;font-weight:600;line-height:1.3;letter-spacing:-.02em;color:var(--text)}
+.coach .n span{display:block;margin-top:1px;font-size:15px;font-weight:400;letter-spacing:-.01em;color:var(--text-2)}
+/* Oben im Profil: gross und mittig, wie der Kopf der Einstellungen. */
+.coach.ich{flex-direction:column;gap:12px;padding:6px 0 0;background:none;text-align:center}
+.coach.ich img,.coach.ich .avatar{width:96px;height:96px}
+.coach.ich .avatar{font-size:38px}
+.coach.ich .n{font-size:26px;font-weight:700;letter-spacing:-.025em}
+.coach.ich .n span{font-size:15px;font-weight:400;margin-top:2px}
+
+/* Wer kein Foto hat, bekommt seine Anfangsbuchstaben im grauen Kreis
+   der Kontakte-App. */
+.avatar{
+  width:48px;height:48px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  background:linear-gradient(180deg,#A5ABB8,#858B97);color:#fff;
+  font-family:var(--rund);font-size:19px;font-weight:600;letter-spacing:.01em;
+}
+.avatar svg{width:28px;height:28px}
+
+.lupe{
+  position:absolute;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:32px;
+  background:rgba(0,0,0,.6);-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);
+  opacity:0;transition:opacity .25s var(--ease);
+}
+.lupe.an{opacity:1}
+.lupe img{
+  max-width:min(560px,86%);max-height:78%;object-fit:contain;border-radius:var(--r-karte);
+  box-shadow:0 30px 70px -20px rgba(0,0,0,.8);transform:scale(.94);transition:transform .45s var(--feder);
+}
+.lupe.an img{transform:none}
+
+/* Verweise im Kleingedruckten und kleine Nebenknoepfe. */
+.verweis{display:inline;padding:0;font:inherit;color:var(--link);text-decoration:none}
+.verweis:hover{text-decoration:underline}
+.nebenknopf{align-self:flex-end;min-height:44px;padding:0 4px;font-size:15px;color:var(--link)}
+.verweise{display:flex;flex-wrap:wrap;justify-content:center;gap:0 22px;margin:-10px 0}
+.verweise .verweis{display:inline-flex;align-items:center;min-height:44px}
+
+/* Kaders Marke gross, wie eine Zahl auf einer Produktseite. */
+.marke{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:30px 20px 24px;border-radius:var(--r-karte);background:var(--flaeche)}
+.marke .z{
+  font-family:var(--rund);font-size:88px;line-height:1;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+  background:linear-gradient(180deg,#FF9F0A 0%,#E8433A 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.marke .w{font-size:15px;line-height:1.4;color:var(--text-2)}
+.marke .w b{display:block;margin-bottom:2px;font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--text)}
+
+/* ---------- Pyramide ---------- */
+.pyr{width:100%;max-width:100%;aspect-ratio:100/78;display:block;overflow:visible}
+.pyr .edge{fill:none;stroke:var(--trenn);stroke-width:.4;stroke-linecap:round}
+.pyr .plate{cursor:pointer}
+.pyr .plate:focus{outline:none}
+.pyr .plate:focus-visible{outline:.4px solid var(--blau);outline-offset:.55px;border-radius:.8px}
+.pyr .plate polygon{transition:fill-opacity .4s var(--ease),stroke-opacity .4s var(--ease)}
+.pyr .nm{font-family:var(--schrift);font-size:4.6px;font-weight:700;letter-spacing:-.06px;fill:var(--text);text-anchor:middle}
+.pyr .ag{font-family:var(--schrift);font-size:3.3px;font-weight:500;letter-spacing:-.02px;fill:var(--text-2);text-anchor:middle}
+.pyr .fz{font-family:var(--rund);font-size:3.1px;font-weight:700;fill:var(--text-2);text-anchor:middle;font-variant-numeric:tabular-nums}
+.pyr polygon{stroke-linejoin:round}
+.lvpanel{background:var(--flaeche);border-radius:var(--r-karte);padding:20px;display:flex;flex-direction:column;gap:8px}
+.lvpanel .t{margin:0;font-size:28px;line-height:1.14;font-weight:700;letter-spacing:-.025em;color:var(--c)}
+.lvpanel .sub{font-size:17px}
+.duchip{
+  align-self:flex-start;display:inline-flex;align-items:center;height:26px;padding:0 11px;border-radius:999px;
+  font-size:13px;font-weight:600;letter-spacing:-.01em;color:var(--on-lv);background:var(--c);
+}
+.duchip.naechste{background:none;color:var(--text);box-shadow:inset 0 0 0 1.5px var(--c)}
+.pips{display:flex;gap:6px}
+.pips i{flex:1 1 auto;height:6px;border-radius:999px;background:var(--fuell-2)}
+.pips i.on{background:var(--c,var(--mein,var(--blau)))}
+
+/* ---------- Listen ---------- */
+/* Der Pfad wie eine Liste in Erinnerungen: rechts der Kreis zum Abhaken. */
+.path{display:flex;flex-direction:column;background:var(--flaeche);border-radius:var(--r-karte);overflow:hidden;--einzug:62px}
+.unit{
+  position:relative;display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:12px;
+  width:100%;min-height:62px;padding:12px 16px;text-align:left;
+  transition:background .2s var(--ease);
+}
+button.unit:active{background:var(--fuell)}
+.unit .w{font-size:13px;font-weight:600;letter-spacing:0;color:var(--text-2);font-variant-numeric:tabular-nums}
+.unit .t{display:block;margin:0;font-size:17px;line-height:1.3;font-weight:500;letter-spacing:-.02em;-webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word}
+.unit .s{display:block;margin:2px 0 0;font-size:15px;line-height:1.35;letter-spacing:-.01em;color:var(--text-2)}
+.tick{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;box-shadow:inset 0 0 0 1.6px var(--text-3);transition:background .2s var(--ease)}
+.tick svg{width:13px;height:13px;color:#fff;display:none}
+.tick.on{background:var(--gruen-voll);box-shadow:none}
+.tick.on svg{display:block}
+
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:18px 0;background:var(--flaeche);border-radius:var(--r-karte)}
+.stat{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:0 6px;text-align:center}
+.stat+.stat::before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:1px;background:var(--trenn);transform:scaleX(.5)}
+.stat .v{font-family:var(--rund);font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--mein,var(--text))}
+.stat .k{font-size:13px;line-height:1.3;letter-spacing:-.005em;color:var(--text-2);-webkit-hyphens:manual;hyphens:manual}
+
+/* Die Listen der Einstellungen: weisse Gruppe, farbige Symbole,
+   Wert und Pfeil rechts. */
+.rows{display:flex;flex-direction:column;background:var(--flaeche);border-radius:var(--r-karte);overflow:hidden}
+.rows.mit-symbol{--einzug:58px}
+.lrow{
+  position:relative;display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:10px 16px;
+  text-align:left;font-size:17px;letter-spacing:-.022em;color:var(--text);text-decoration:none;
+  transition:background .2s var(--ease);
+}
+a.lrow{color:var(--text)}
+.lrow:active{background:var(--fuell)}
+.lrow>span:not(.ico):not(.r):not(.schalter){flex:1 1 auto;min-width:0}
+.lrow .ico{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex:0 0 auto;background:var(--i,var(--text-2));color:#fff}
+.lrow .ico svg{width:18px;height:18px}
+.lrow .r{display:inline-flex;align-items:center;gap:10px;flex:0 1 auto;min-width:0;font-size:17px;color:var(--text-2);white-space:nowrap}
+.lrow .r::after{
+  content:"";width:8px;height:8px;flex:0 0 auto;margin-right:3px;
+  border-top:2px solid var(--text-3);border-right:2px solid var(--text-3);transform:rotate(45deg);border-radius:1px;
+}
+/* Eine Zeile, die etwas loescht oder abmeldet: rot und mittig. */
+.lrow.rot{justify-content:center;text-align:center;color:var(--rot)}
+.lrow.rot .r{display:none}
+.vid-admin{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:14px 16px}
+.vid-admin .t{display:block;margin:0;font-size:17px;line-height:1.3;letter-spacing:-.02em}
+.vid-admin .n{font-family:var(--rund);font-size:17px;font-weight:600;color:var(--text-2);font-variant-numeric:tabular-nums}
+
+/* Der Schalter aus iOS. */
+.schalter{
+  position:relative;flex:0 0 auto;width:51px;height:31px;border-radius:999px;background:var(--fuell-2);
+  transition:background .25s var(--ease);
+}
+.schalter::after{
+  content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;
+  box-shadow:0 3px 8px rgba(0,0,0,.15),0 1px 1px rgba(0,0,0,.16);transition:transform .35s var(--feder);
+}
+[aria-checked="true"]>.schalter{background:var(--gruen-voll)}
+[aria-checked="true"]>.schalter::after{transform:translateX(20px)}
+
+/* Hell oder dunkel: zwei kleine Telefone mit Kreis darunter, wie unter
+   „Anzeige & Helligkeit". */
+.dwahlen{display:flex;justify-content:center;gap:52px;padding:22px 16px 18px}
+.dwahl{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:15px;letter-spacing:-.01em}
+.dvorschau{
+  display:flex;flex-direction:column;gap:6px;width:62px;height:112px;padding:14px 8px;border-radius:13px;
+  box-shadow:0 0 0 1px var(--rand),0 4px 14px rgba(0,0,0,.08);
+}
+.dvorschau.hell{background:#F5F5F7}
+.dvorschau.dunkel{background:#000}
+.dvorschau i{display:block;height:16px;border-radius:5px;background:#fff}
+.dvorschau.dunkel i{background:#2C2C2E}
+.dvorschau i:first-child{height:6px;width:62%;border-radius:3px;background:#C7C7CC}
+.dvorschau.dunkel i:first-child{background:#48484A}
+.dkreis{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.6px var(--text-3)}
+.dwahl[aria-pressed="true"] .dkreis,.price[aria-pressed="true"]::after,.sym[aria-pressed="true"]::after{
+  background:var(--blau) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat;
+  box-shadow:none;
+}
+
+/* ---------- Formulare ---------- */
+.field{display:flex;flex-direction:column;gap:8px}
+.field label{padding-left:16px;font-size:13px;line-height:1.3;font-weight:400;letter-spacing:0;text-transform:uppercase;color:var(--text-2)}
+.field input,.field select,.field textarea{
+  width:100%;height:52px;padding:0 16px;border:0;border-radius:var(--r-feld);
+  background:var(--flaeche);color:var(--text);
+  font:inherit;font-size:17px;letter-spacing:-.022em;
+  box-shadow:inset 0 0 0 1px var(--rand);-webkit-appearance:none;appearance:none;
+  transition:box-shadow .2s var(--ease);
+}
+.field textarea{height:auto;min-height:112px;padding:14px 16px;line-height:1.4;resize:vertical}
+.field input::placeholder,.field textarea::placeholder{color:var(--text-2)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;box-shadow:inset 0 0 0 1px var(--blau),0 0 0 4px rgba(0,125,250,.22)}
+/* Das Auswahlfeld mit dem Doppelpfeil der Menues in iOS. */
+.wahl{position:relative;display:block}
+.wahl select{padding-right:44px;cursor:pointer}
+.wahl::before,.wahl::after{
+  content:"";position:absolute;right:20px;width:6px;height:6px;pointer-events:none;
+  border-left:1.8px solid var(--text-2);border-top:1.8px solid var(--text-2);border-radius:1px;
+}
+.wahl::before{top:calc(50% - 6px);transform:rotate(45deg)}
+.wahl::after{top:calc(50% + 1px);transform:rotate(225deg)}
+
+/* Der Segmentschalter: eine Kapsel mit einer helleren Kapsel darin. */
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;padding:3px;border-radius:999px;background:var(--fuell)}
+.seg button{
+  min-height:38px;padding:8px 6px;border-radius:999px;font-size:15px;font-weight:500;letter-spacing:-.015em;color:var(--text);
+  transition:background .25s var(--ease),box-shadow .25s var(--ease);
+}
+.seg button[aria-pressed="true"]{background:var(--seg-an);font-weight:600;box-shadow:0 3px 8px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.04)}
+.seg button.lv[aria-pressed="true"]{background:var(--c);color:var(--on-lv)}
+
+.drop{
+  width:100%;display:flex;flex-direction:column;align-items:center;gap:8px;padding:32px 20px;text-align:center;
+  border-radius:var(--r-karte);background:var(--flaeche);border:1.5px dashed var(--rand);
+  transition:border-color .2s var(--ease);
+}
+.drop svg{width:34px;height:34px;color:var(--blau)}
+.drop .h{font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--text)}
+.drop .s{font-size:15px;color:var(--text-2)}
+.drop.has{border-style:solid;border-color:var(--gruen-voll)}
+
+/* ---------- Preise ---------- */
+.prices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.price{
+  position:relative;display:flex;flex-direction:column;gap:1px;padding:16px 16px 16px;text-align:left;
+  border-radius:20px;background:var(--flaeche);box-shadow:inset 0 0 0 1px var(--rand);
+  transition:box-shadow .2s var(--ease),transform .25s var(--feder);
+}
+.price:active{transform:scale(.98)}
+.price[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--blau)}
+.price::after{content:"";position:absolute;top:14px;right:14px;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.6px var(--text-3)}
+.price .k{font-size:15px;letter-spacing:-.01em;color:var(--text-2)}
+.price .k:first-child{font-weight:600;color:var(--text)}
+.price .p{margin-top:8px;font-size:28px;line-height:1.1;font-weight:700;letter-spacing:-.025em;font-variant-numeric:tabular-nums}
+.price .x{margin-top:6px;font-size:13px;font-weight:600;color:var(--gruen)}
+.ticks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.ticks li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;align-items:start;font-size:17px;line-height:1.42;color:var(--text)}
+/* Der Haken im blauen Kreis. */
+.ticks svg{width:22px;height:22px;padding:5px;margin-top:1px;border-radius:50%;background:var(--blau);color:#fff}
+
+/* Die Abo-Seite als Produktseite: Symbol, Name im Verlauf, grosse Zeile. */
+.pay-kopf{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding-top:8px}
+.pay-symbol{width:96px;height:96px;border-radius:22.37%;margin-bottom:10px;box-shadow:0 18px 44px -10px rgba(232,67,58,.55),inset 0 0 0 .5px rgba(255,255,255,.2)}
+.pay-kopf h1.big{margin:0;font-size:36px}
+.pay-kopf .sub{margin:4px 0 0}
+.pay .ticks{padding:20px;background:var(--flaeche);border-radius:var(--r-karte)}
+.pay .fine{text-align:center}
+.pay-fuss{display:flex;flex-wrap:wrap;justify-content:center;gap:0 8px;margin-top:-14px}
+.pay-fuss .btn{width:auto}
+/* Das laufende Abo im Profil: Name links, gruenes „Aktiv" rechts. */
+.pro-zeile{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pro-aktiv{display:inline-flex;align-items:center;height:26px;padding:0 11px;border-radius:999px;font-size:13px;font-weight:600;color:var(--gruen);background:rgba(52,199,89,.16)}
+
+/* ---------- Mitteilung ---------- */
+/* Die Vorschau liegt auf einem Sperrbildschirm, damit das Glas wirkt. */
+.sperrbild{
+  padding:26px 14px;border-radius:var(--r-gross);overflow:hidden;
+  background:radial-gradient(90% 90% at 0% 0%,#5B8CFF 0%,rgba(91,140,255,0) 60%),radial-gradient(90% 100% at 100% 100%,#FF7A59 0%,rgba(255,122,89,0) 60%),linear-gradient(135deg,#6C5CE7,#C06BD8);
+}
+.push{
+  display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:22px;
+  background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(30px) saturate(1.9);backdrop-filter:blur(30px) saturate(1.9);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.5),inset 0 1px 0 rgba(255,255,255,.7),0 10px 30px rgba(0,0,0,.18);
+  color:#1D1D1F;
+}
+:root[data-theme="dark"] .push{background:rgba(30,30,32,.55);color:#F5F5F7;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.14),inset 0 1px 0 rgba(255,255,255,.14),0 10px 30px rgba(0,0,0,.35)}
+.push .ic{width:38px;height:38px;flex:0 0 auto;border-radius:9px;overflow:hidden}
+.push .ic img{width:100%;height:100%;object-fit:cover}
+.push .tx{min-width:0;flex:1}
+.push .h{display:flex;justify-content:space-between;gap:10px;font-size:15px;font-weight:600;letter-spacing:-.015em}
+.push .h span+span{font-weight:400;opacity:.62;font-size:13px}
+.push .b{display:block;margin:2px 0 0;font-size:15px;line-height:1.35;letter-spacing:-.015em}
+
+/* Die Aktionen unter dem Video: blauer Knopf und das Herz daneben. */
+.aktionen{display:grid;grid-template-columns:minmax(0,1fr) 50px;gap:10px}
+.aktionen .btn{width:100%}
+.btn.merk{padding:0;min-height:50px;width:50px;border-radius:50%;color:var(--text)}
+.btn.merk svg{width:22px;height:22px}
+.btn.merk.an{color:#FF2D55}
+.btn.merk.an svg path{fill:currentColor}
+a.btn{text-decoration:none}
+
+/* Leere Liste: grosses, blasses Zeichen und ein Satz darunter. */
+.leer{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:48px 24px}
+.leer svg{width:46px;height:46px;color:var(--text-3)}
+.leer p{margin:0;font-size:17px;line-height:1.45;color:var(--text-2);max-width:30ch}
+.leer .btn{margin-top:6px}
+
+/* Die Symbolwahl: zwei App-Symbole, das gewaehlte mit blauem Haken. */
+.symwahl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.sym{
+  position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px 14px 20px;
+  border-radius:var(--r-karte);background:var(--flaeche);box-shadow:inset 0 0 0 1px transparent;
+  transition:box-shadow .2s var(--ease),transform .25s var(--feder);
+}
+.sym:active{transform:scale(.98)}
+.sym[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--blau)}
+.sym::after{content:"";position:absolute;top:12px;right:12px;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.6px var(--text-3)}
+.sym .bild{position:relative;width:84px;height:84px;border-radius:22.37%;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.14),inset 0 0 0 .5px rgba(0,0,0,.08)}
+.sym .bild img{width:100%;height:100%;object-fit:cover;display:block}
+.sym .nm{font-size:17px;font-weight:600;line-height:1.2;letter-spacing:-.02em}
+.sym .zu{margin-top:-6px;font-size:15px;color:var(--text-2)}
+.sym .schloss{position:absolute;inset:0;display:grid;place-items:center;color:#fff;background:rgba(0,0,0,.36);border-radius:inherit}
+.sym .schloss svg{width:22px;height:22px}
+
+/* Die Wochentage als Kreise. */
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.day{
+  aspect-ratio:1;min-height:44px;border-radius:50%;background:var(--fuell);color:var(--text);
+  font-size:15px;font-weight:600;letter-spacing:-.01em;
+  transition:background .2s var(--ease),color .2s var(--ease),transform .25s var(--feder);
+}
+.day:active{transform:scale(.92)}
+.day[aria-pressed="true"]{background:var(--blau);color:#fff}
+
+/* ---------- Hinweis ----------
+   Eine dunkle Kapsel ueber der Tableiste. Oben lag sie ueber der Kopfleiste
+   oder, darunter, ueber der grossen Ueberschrift. */
+.toast{
+  position:absolute;z-index:40;left:50%;bottom:calc(86px + var(--unten));
+  transform:translate(-50%,16px) scale(.94);max-width:min(88%,420px);
+  padding:12px 20px;border-radius:999px;text-align:center;
+  background:rgba(22,22,24,.86);color:#fff;font-size:15px;font-weight:600;letter-spacing:-.015em;
+  -webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+  box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12),0 12px 30px rgba(0,0,0,.25);
+  opacity:0;pointer-events:none;transition:opacity .25s var(--ease),transform .5s var(--feder);
+}
+.toast.on{opacity:1;transform:translate(-50%,0) scale(1)}
+
+/* ============================================================
+   Am Schreibtisch: wie apple.com.
+   Oben eine Leiste aus Milchglas mit Logo, den vier Bereichen in
+   der Mitte und der Ebene rechts. Der Inhalt steht mittig in
+   hoechstens 1024 Pixeln, die Ueberschriften werden groesser.
+   ============================================================ */
+@media (min-width:1000px){
+  .appbar{
+    height:var(--kopf);padding:0 max(28px,calc((100% - 960px) / 2));
+    background:var(--leiste);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+    box-shadow:0 .5px 0 var(--trenn);
+  }
+  .appbar::before,.app::after{display:none}
+  .appbar.tief .mark{opacity:1}
+  .kopftitel{display:none}
+  .mark{height:20px}
+
+  .tabs{
+    top:0;bottom:auto;left:50%;transform:translateX(-50%);z-index:6;
+    width:auto;height:var(--kopf);display:flex;gap:6px;padding:0;border-radius:0;
+    background:none;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;
+  }
+  .tab{flex-direction:row;height:var(--kopf);padding:0 14px;border-radius:0;font-size:14px;font-weight:400;letter-spacing:-.01em;opacity:.8}
+  .tab .ti{display:none}
+  .tab:hover{opacity:1}
+  .tab[aria-current="page"]{background:none;color:var(--text);opacity:1;font-weight:600}
+  .tab:active{transform:none}
+
+  .screen{max-width:1024px;padding:calc(var(--kopf) + 44px) 32px 96px;gap:52px}
+  .screen.schmal{max-width:760px}
+  h1.big{font-size:48px;line-height:1.08;letter-spacing:-.025em}
+  h1.big.vtitel{font-size:40px}
+  h2.sec{font-size:28px}
+  .eyebrow.neu{font-size:17px}
+
+  .hero .hm{aspect-ratio:21/9;max-height:460px}
+  .hero .hc{padding:34px 40px 36px}
+  .hero .ht{font-size:44px;max-width:18ch}
+  .hero .ht.mittel{font-size:40px}
+  .hero .ht.eng{font-size:34px}
+  .hero .hmeta{font-size:17px}
+  .hero .hfuss{max-width:520px}
+
+  .grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:34px 20px}
+  .row{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:34px 20px;overflow:visible;margin:0;padding:0}
+  .row>*{flex:none}
+  .chips{flex-wrap:wrap;overflow:visible;margin:0;padding:0}
+
+  .wide .body{padding:48px 32px 30px}
+  .wide .t{font-size:40px}
+  .wide .p{font-size:19px}
+  .wide .poster{aspect-ratio:21/8}
+  .proband{padding:56px 32px 0}
+  .proband .t{font-size:48px}
+  .proband .p{font-size:19px}
+  .proband.klein{padding:36px 28px 32px}
+  .proband.klein .t{font-size:32px}
+
+  .pyr{max-width:660px;margin:0 auto}
+  .lvpanel{max-width:660px;margin:0 auto;width:100%}
+
+  .sheet{inset:var(--kopf) 0 0 0;transform:translateX(3%);opacity:0;transition:transform .4s var(--feder),opacity .3s var(--ease);box-shadow:none}
+  .app.blatt .screens,.app.blatt .appbar{transform:none}
+  .sheet.on{opacity:1}
+  .sheet-head{min-height:56px;padding:0 max(24px,calc((100% - 820px) / 2 + 20px))}
+  .kopf-t{left:84px;right:84px}
+  .sheet-body{max-width:820px;padding:24px 32px 80px;gap:32px}
+  .player{position:sticky;top:56px;z-index:3;margin:-24px -32px 8px}
+  .player .poster{max-height:50svh}
+  .steps li button{cursor:pointer}
+  .steps li:hover{background:var(--fuell)}
+  .feier{padding-top:60px}
+
+  .kino .pctl{left:28px;right:28px;bottom:28px;max-width:900px;margin:0 auto}
+  .kino-oben{padding:22px 28px}
+  /* Am PC gibt es unten keine Leiste: der Hinweis sitzt unter der oberen. */
+  .toast{top:calc(var(--kopf) + 12px);bottom:auto;transform:translate(-50%,-16px) scale(.94)}
+}
+
+/* Blockweise aufblenden beim Wechsel der Seite. */
+@keyframes auf{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:none}
+}
+.screen.frisch>*{animation:auf .5s var(--ease) both}
+
+/* Platzhalter, solange die Liste laedt. */
+@keyframes pulsen{
+  0%,100%{opacity:.5}
+  50%{opacity:1}
+}
+.skelett{display:flex;flex-direction:column;gap:10px;animation:pulsen 1.4s ease-in-out infinite}
+.skelett .bild{display:block;aspect-ratio:16/9;border-radius:var(--r-bild);background:var(--fuell)}
+.skelett .zeile{display:block;height:12px;width:86%;border-radius:999px;background:var(--fuell)}
+.skelett .zeile.kurz{width:54%;height:10px;margin-top:-2px}
+.skelett:nth-child(2){animation-delay:.18s}
+.skelett:nth-child(3){animation-delay:.36s}
+.skelett:nth-child(4){animation-delay:.54s}
+
+/* ---------- Der Startbildschirm ----------
+   Logo in der Mitte, darunter der duenne Balken, wie beim Einschalten
+   eines Mac. */
+.start{
+  position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;
+  background:var(--seite);opacity:0;transition:opacity .3s var(--ease);
+}
+.start.sichtbar{opacity:1}
+.start.weg{opacity:0;pointer-events:none}
+.start-mitte{display:flex;flex-direction:column;align-items:center;gap:30px;padding:0 32px}
+.start-logo{height:44px;width:auto;filter:url(#logoDark);opacity:0;transition:opacity .3s var(--ease)}
+:root[data-theme="dark"] .start-logo{filter:url(#logoLight)}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .start-logo{filter:url(#logoLight)} }
+.start-logo.da{opacity:1}
+.start-bahn{display:block;width:min(150px,40vw);height:4px;border-radius:999px;background:var(--fuell-2);overflow:hidden}
+.start-bahn i{display:block;height:100%;width:6%;border-radius:999px;background:var(--text);transition:width .35s var(--ease)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+<svg class="vh" aria-hidden="true" focusable="false" width="0" height="0">
+  <filter id="logoLight" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  -0.33 -0.34 -0.33 0 1" result="k"/>
+    <feComposite in="k" in2="SourceGraphic" operator="in"/>
+  </filter>
+  <filter id="logoDark" color-interpolation-filters="sRGB">
+    <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.33 -0.34 -0.33 0 1" result="k"/>
+    <feComposite in="k" in2="SourceGraphic" operator="in"/>
+  </filter>
+</svg>
+
+<!-- Der Startbildschirm. Steht so weit oben, dass er gezeichnet werden
+     kann, sobald der Kopf gelesen ist — also lange bevor Bilder oder
+     Schriften da sind. Er braucht die Filter oben drueber, deshalb steht
+     er dahinter. -->
+<div class="start" id="start" lang="de">
+  <div class="start-mitte">
+    <img class="start-logo" id="startlogo" src="img/logo.png" alt="KM1 Training" width="487" height="181">
+    <span class="start-bahn" id="startbahn" role="progressbar" aria-label="Ladefortschritt"
+          aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="startbalken"></i></span>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Der Startbildschirm.
+
+   Vier Schritte tragen den Balken, jeder mit seinem Gewicht. Alle vier
+   sind echte Ereignisse, nichts ist geschaetzt:
+
+     dom      das Dokument ist gelesen
+     logo     das Logo ist da
+     schrift  die Schriften sind da
+     app      die App hat zum ersten Mal gezeichnet
+
+   Zwei Regeln halten ihn ertraeglich: auf schnellem Netz wird er nie
+   sichtbar, weil er sich erst nach 150 Millisekunden einblendet; und er
+   bleibt nie haengen, weil Schriften nach 2,2 Sekunden und der ganze
+   Bildschirm nach 6 Sekunden aufgeben.
+   ============================================================ */
+/* Auf Apple-Geraeten ist die Schrift SF Pro vom Geraet. Die Klasse
+   schaltet im Stil die Laufweite fuer Inter ab und steht vor allem
+   anderen, damit schon der erste gezeichnete Bildschirm stimmt. */
+if(/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent || '')) document.documentElement.classList.add('sf');
+
+window.km1Start = (function(){
+  var el = document.getElementById('start');
+  var bahn = document.getElementById('startbahn');
+  var balken = document.getElementById('startbalken');
+  if(!el || !balken) return null;
+
+  var GEWICHT = {dom:20, logo:20, schrift:35, app:25};
+  var erledigt = {}, vorbei = false, sichtbar = false, davor = null;
+
+  function male(){
+    var summe = 0;
+    for(var k in GEWICHT) if(erledigt[k]) summe += GEWICHT[k];
+    var p = Math.max(6, summe);
+    balken.style.width = p + '%';
+    if(bahn) bahn.setAttribute('aria-valuenow', p);
+  }
+  function fertig(name){
+    if(vorbei || erledigt[name] || !GEWICHT[name]) return;
+    erledigt[name] = true;
+    male();
+    for(var k in GEWICHT) if(!erledigt[k]) return;
+    schliessen();
+  }
+  function schliessen(){
+    if(vorbei) return;
+    vorbei = true;
+    balken.style.width = '100%';
+    if(bahn) bahn.setAttribute('aria-valuenow', 100);
+    /* Erst die echten Inhalte setzen, dann abblenden. Sonst sieht man
+       zwei Ladezustaende hintereinander. */
+    if(davor){ try{ davor(); }catch(e){} davor = null; }
+    setTimeout(function(){
+      el.classList.remove('sichtbar');
+      el.classList.add('weg');
+      setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 400);
+    }, sichtbar ? 200 : 0);
+  }
+
+  /* Wer schnelles Netz hat, soll kein Aufblitzen sehen. */
+  setTimeout(function(){ if(!vorbei){ sichtbar = true; el.classList.add('sichtbar'); } }, 150);
+  setTimeout(function(){ fertig('schrift'); }, 2200);
+  setTimeout(schliessen, 6000);
+
+  var logo = document.getElementById('startlogo');
+  if(logo){
+    if(logo.complete){ logo.classList.add('da'); fertig('logo'); }
+    else {
+      logo.addEventListener('load', function(){ logo.classList.add('da'); fertig('logo'); });
+      logo.addEventListener('error', function(){ fertig('logo'); });
+    }
+  } else fertig('logo');
+
+  if(document.readyState === 'loading')
+    document.addEventListener('DOMContentLoaded', function(){ fertig('dom'); });
+  else fertig('dom');
+
+  /* Auf iPhone, iPad und Mac steht die Schrift schon auf dem Geraet:
+     SF Pro. Nur ueberall sonst wird Inter geladen, und nur dort wird
+     darauf gewartet. */
+  function schriftLaden(){
+    var apple = document.documentElement.classList.contains('sf');
+    if(apple || !document.fonts || !document.fonts.load || !window.Promise) return fertig('schrift');
+    var los = function(){ fertig('schrift'); };
+    try{
+      Promise.all([
+        document.fonts.load('400 1em Inter'),
+        document.fonts.load('700 1em Inter')
+      ]).then(los, los);
+    }catch(e){ los(); }
+  }
+  schriftLaden();
+
+  male();
+  return {
+    fertig: fertig,
+    /* Was die App tun will, kurz bevor abgeblendet wird. */
+    kurzVorSchluss: function(f){ if(vorbei) f(); else davor = f; }
+  };
+})();
+</script>
+
+<div class="stage" lang="de">
+  <div class="device">
+    <div class="app">
+      <!-- Die Kopfleiste steht vorn, damit Vorleseprogramme sie zuerst
+           finden. Gezeichnet wird sie trotzdem ueber dem Inhalt. -->
+      <header class="appbar">
+        <img class="mark" src="img/logo.png" alt="KM1 Training">
+        <span class="kopftitel" id="kopftitel" aria-hidden="true"></span>
+        <span class="lvchip" id="lvchip"></span>
+      </header>
+
+      <div class="screens" id="screens"></div>
+
+      <nav class="tabs" id="tabs" aria-label="Hauptbereiche"></nav>
+
+      <div class="sheet" id="sheet" hidden></div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Daten. Bewusst schon die Form, die spaeter in der Datenbank
+   steht: ein Video kennt Kategorie, Ebene, Dauer und ob es frei
+   oder PRO ist. Die Schritte sind der Kern, denn danach sucht
+   ein Kind, wenn es etwas ueben will.
+   ============================================================ */
+var LEVELS = [
+  {n:1, nm:'Foundational', md:'Gruppentraining',    ag:'U6 bis U13',  c:'var(--lv1)',
+   tx:'Grundlagen, Teamgeist und die Begeisterung für Fußball.'},
+  {n:2, nm:'Development',  md:'Fördertraining',     ag:'U8 bis U15',  c:'var(--lv2)',
+   tx:'Gezielte Weiterentwicklung, vorbereitet auf höhere Leistungsniveaus.'},
+  {n:3, nm:'Performance',  md:'Individualtraining', ag:'U17 und U19', c:'var(--lv3)',
+   tx:'Fortgeschrittene Fähigkeiten und taktisches Bewusstsein für den Wettkampf auf Profiniveau.'},
+  {n:4, nm:'Professional', md:'Individualtraining', ag:'Profis',      c:'var(--lv4)',
+   tx:'Leistung, taktisches Verständnis und Fitness für nationale und internationale Profispieler.'}
+];
+
+var KAT = {
+  dribbling:'Dribbling', passen:'Passen', flanken:'Flanken', schuss:'Torschuss',
+  annahme:'Ballannahme', athletik:'Athletik', torwart:'Torwart', taktik:'Taktik'
+};
+
+/* In drei Titeln steht ein weicher Trennstrich (\u00AD). Die Woerter sind
+   breiter als eine Karte, und ohne feste Trennstelle bricht der Browser
+   sie irgendwo um. Die Suche und die Mitteilung nehmen ihn wieder heraus. */
+var VIDEOS = [
+  {id:'flanke-innen', t:'Die Flanke mit der Innenseite', k:'flanken', lv:2, d:'7:24', zg:'offen', neu:true, img:'pitch', views:1284,
+   be:'Die beste Flanke ist die, die ankommt. Die Innenseite macht den Ball berechenbar: flach am Boden oder halbhoch auf den Elfmeterpunkt, immer mit derselben Bewegung.',
+   st:['Standbein neben den Ball, die Fußspitze zeigt dorthin, wo der Ball hin soll.','Vor dem Schuss einmal kurz den Kopf heben: Wo läuft der Mitspieler hin, nicht wo steht er.','Knöchel fest, mit der Innenseite durch die Ballmitte streichen, nicht darunter.','In die Laufrichtung nachziehen statt abzustoppen.'],
+   fe:'Zu nah am Ball stehen. Dann kommt der Fuß nicht durch und die Flanke rutscht hinter das Tor.'},
+
+  {id:'uebersteiger', t:'Übersteiger mit Tempowechsel', k:'dribbling', lv:2, d:'5:48', zg:'offen', neu:true, views:2140,
+   be:'Der Übersteiger allein schlägt keinen Gegner. Was ihn gefährlich macht, ist das, was danach passiert: der Antritt in die andere Richtung.',
+   st:['Mit Tempo auf den Gegner zu, aber zwei Meter vorher langsamer werden.','Den Fuß außen um den Ball führen, die Schulter geht mit.','Sofort mit dem Außenrist des anderen Fußes wegdrücken und drei Meter sprinten.'],
+   fe:'Zwei oder drei Übersteiger hintereinander. Der Gegner steht dann ruhig, weil nichts passiert.'},
+
+  {id:'kopfball', t:'Kopfball: das Timing im Anlauf', k:'schuss', lv:2, d:'5:05', zg:'offen', neu:true, views:756,
+   be:'Kopfball ist kein Mut, sondern Timing. Wer zu früh springt, verliert den Ball an den, der später kommt.',
+   st:['Zwei Schritte Anlauf, den letzten kurz und schnell.','Mit dem Absprung warten, bis der Ball auf Höhe des Sechzehners ist.','Die Stirn trifft, der Oberkörper klappt nach vorn, Augen bleiben offen.'],
+   fe:'Mit dem Kopf auf den Ball warten statt dem Ball entgegenzugehen.'},
+
+  {id:'erste-beruehrung', t:'Die erste Berührung aus dem Körper heraus', k:'annahme', lv:1, d:'4:55', zg:'offen', views:1902,
+   be:'Die erste Berührung entscheidet, ob du Zeit hast oder nicht. Wir nehmen den Ball nicht an, wir nehmen ihn mit.',
+   st:['Vor der Annahme über die Schulter schauen: Wo ist Platz?','Den Ball mit der Innenseite in den freien Raum legen, nicht vor die eigenen Füße.','Nach der Berührung sofort zwei Schritte machen.'],
+   fe:'Den Ball stoppen. Damit schenkst du dem Gegner die halbe Sekunde, die du gebraucht hättest.'},
+
+  {id:'flacher-pass', t:'Flacher Pass über 20 Meter', k:'passen', lv:1, d:'6:02', zg:'offen', views:1655,
+   be:'Der Pass, den du in jedem Spiel hundertmal brauchst. Flach, fest, auf den richtigen Fuß.',
+   st:['Standbein zeigt zum Ziel, Arme raus für die Balance.','Innenseite quer zum Ball, Knöchel bleibt steif.','Durch die Ballmitte spielen und den Fuß bis zum Ziel nachführen.'],
+   fe:'Den Pass zu weich spielen. Ein langsamer Ball ist für den Mitspieler schwerer als ein fester.'},
+
+  {id:'leiter', t:'Koordinations\u00ADleiter: sechs Basis-Muster', k:'athletik', lv:1, d:'7:15', zg:'offen', img:'ladder', views:980,
+   be:'Sechs Muster, die du überall üben kannst. Sie schulen den schnellen Fuß, den du für den ersten Schritt im Spiel brauchst.',
+   st:['Immer auf dem Ballen laufen, die Ferse berührt den Boden nicht.','Arme mitlaufen lassen, sie geben den Takt vor.','Kurze Sätze: 20 Sekunden schnell, 40 Sekunden Pause.'],
+   fe:'Schnell und schlampig. Sauber und mittelschnell bringt mehr als hektisch und falsch.'},
+
+  {id:'torwart-grund', t:'Torwart: Grundstellung und erster Schritt', k:'torwart', lv:1, d:'6:30', zg:'offen', views:412,
+   be:'Der erste Schritt entscheidet über die meisten Bälle. Er beginnt in der Grundstellung, lange bevor geschossen wird.',
+   st:['Füße etwa schulterbreit, Gewicht auf den Ballen, Hände offen vor dem Körper.','Kurz vor dem Schuss ein kleiner Hüpfer, damit die Beine geladen sind.','Der erste Schritt geht seitlich zum Ball, nicht nach hinten.'],
+   fe:'Zu tief stehen. Aus der tiefen Hocke kommt kein Torwart schnell in die Ecke.'},
+
+  {id:'abstoppen', t:'Abstoppen und sofort andribbeln', k:'dribbling', lv:1, d:'4:30', zg:'offen', views:1120,
+   be:'Anhalten und wieder losfahren, das ist der einfachste Weg, einen Gegner loszuwerden. Ohne Trick, nur mit Tempo.',
+   st:['Mit der Sohle abstoppen, der Körper geht leicht über den Ball.','Eine Sekunde Ruhe, den Gegner herankommen lassen.','Mit dem Außenrist antreten und nicht mehr hinschauen.'],
+   fe:'Zu früh antreten. Der Gegner muss erst stehen, sonst läuft er einfach mit.'},
+
+  {id:'vollspann', t:'Torschuss: den Vollspann flach halten', k:'schuss', lv:2, d:'6:40', zg:'offen', views:2310,
+   be:'Der harte Schuss nützt nichts über dem Tor. Drei Details halten ihn unten.',
+   st:['Standbein neben den Ball, Knie über dem Ball.','Fußspitze nach unten strecken, mit dem Schnürsenkel treffen.','Oberkörper über den Ball beugen und nach vorn nachziehen.'],
+   fe:'Sich beim Schuss zurücklehnen. Der Ball geht dann zwangsläufig hoch.'},
+
+  {id:'ballmitnahme', t:'Ballmitnahme im Sprint', k:'annahme', lv:2, d:'5:20', zg:'konto', views:640,
+   be:'Den Ball im vollen Lauf mitnehmen, ohne das Tempo zu verlieren. Für Außenspieler die wichtigste Bewegung überhaupt.',
+   st:['Den Ball früh anschauen und das Tempo schon vor der Berührung anpassen.','Mit dem Außenrist nach vorn schieben, nicht anhalten.','Der nächste Schritt ist ein Sprintschritt, kein Bremsschritt.'],
+   fe:'Den Ball zu weit vorlegen und dann hinterherlaufen müssen.'},
+
+  {id:'doppelpass', t:'Der Doppelpass im Halbraum', k:'passen', lv:3, d:'8:10', zg:'konto', views:534,
+   be:'Zwei Pässe, ein Gegner weniger. Der Doppelpass lebt vom Timing des Mitspielers, nicht von der Härte des Passes.',
+   st:['Den Gegner anlaufen, damit er auf den Ball geht.','Fest in den Fuß des Mitspielers spielen und sofort in den Rücken des Gegners starten.','Der Mitspieler klatscht mit einem Kontakt in den Lauf, nie in die Füße.'],
+   fe:'Nach dem Pass stehen bleiben und auf den Ball warten.'},
+
+  {id:'innenrist-flanke', t:'Innenrist-Flanke aus dem Halbfeld', k:'flanken', lv:3, d:'9:30', zg:'konto', img:'goal', views:488,
+   be:'Die Flanke mit Drall, die vom Tor wegdreht. Sie ist schwerer zu verteidigen als jede gerade Hereingabe.',
+   st:['Den Ball seitlich vorlegen, damit du im Bogen anlaufen kannst.','Mit dem Innenrist unter die Ballhälfte treffen, nicht durch die Mitte.','Den Fuß über die Körperachse hinaus nachziehen, das erzeugt den Drall.'],
+   fe:'Zu viel Kraft. Der Drall macht die Flanke gefährlich, nicht das Tempo.'},
+
+  {id:'eins-gegen-eins', t:'1 gegen 1: Tempowechsel statt Tricks', k:'dribbling', lv:3, d:'10:20', zg:'offen', views:1290,
+   be:'Profis schlagen ihren Gegner mit Rhythmus, nicht mit Tricks. Drei Muster, die fast immer funktionieren.',
+   st:['Aus dem Lauf verlangsamen und den Gegner zum Stehen bringen.','Den Ball zeigen, damit er den Fuß ausstreckt.','Im Moment der Gewichtsverlagerung antreten, auf die offene Seite.'],
+   fe:'Den Trick vorbereiten wollen. Der Gegner liest die Absicht und stellt sich hin.'},
+
+  {id:'diagonalball', t:'Der Diagonalball auf die zweite Spitze', k:'passen', lv:3, d:'7:50', zg:'konto', views:377,
+   be:'Der lange Ball, der die Seite verlagert. Er gewinnt Raum, weil die gegnerische Kette die ganze Breite verschieben muss.',
+   st:['Kopf hoch, bevor der Ball kommt: Wer steht auf der anderen Seite frei?','Den Ball aus dem Körper heraus vorlegen, damit du Anlauf hast.','Mit dem Innenrist unter den Ball, Ziel ist die Brust des Mitspielers.'],
+   fe:'Den Ball in den Lauf statt in den Fuß spielen, wenn der Außenverteidiger schon schiebt.'},
+
+  {id:'rumpf', t:'Rumpfstabilität für Zweikämpfe', k:'athletik', lv:3, d:'12:00', zg:'konto', views:702,
+   be:'Wer im Zweikampf umfällt, hat selten zu wenig Kraft in den Beinen. Meistens fehlt die Mitte.',
+   st:['Unterarmstütz mit Beinheben, drei Sätze zu 30 Sekunden.','Seitstütz mit gestrecktem Arm, beide Seiten gleich lange.','Zum Schluss zwei Minuten Ausfallschritte im Wechsel, ruhig und kontrolliert.'],
+   fe:'Ins Hohlkreuz gehen. Lieber kürzer halten und die Spannung behalten.'},
+
+  {id:'schnittstelle', t:'Der Schnittstellen\u00ADpass', k:'passen', lv:4, d:'11:05', zg:'konto', views:296,
+   be:'Der Pass zwischen zwei Verteidiger. Er entsteht nicht im Fuß, sondern im Kopf, zwei Sekunden vorher.',
+   st:['Die Kette beobachten, während der Ball noch unterwegs ist.','Den Ball so annehmen, dass der Passweg frei wird.','Flach und fest zwischen die beiden spielen, im Moment des Losgehens.'],
+   fe:'Zu lange warten. Die Lücke ist eine halbe Sekunde offen, nicht länger.'},
+
+  {id:'anlaufen', t:'Anlaufen im 4-3-3: der erste Schritt', k:'taktik', lv:4, d:'9:40', zg:'konto', views:184,
+   be:'Pressing beginnt mit einem einzigen Laufweg. Wer falsch anläuft, öffnet die Seite für die ganze Mannschaft.',
+   st:['Bogenlauf, damit der Rückpass zum Torwart zugestellt ist.','Den Gegner auf die schwächere Seite lenken, nicht frontal anlaufen.','Das Signal geben, damit die Kette zeitgleich nachschiebt.'],
+   fe:'Allein anlaufen. Ohne die Mannschaft dahinter ist jeder Pressingversuch ein Loch.'},
+
+  {id:'standard-ecke', t:'Standard: die kurz ausgespielte Ecke', k:'schuss', lv:4, d:'6:15', zg:'konto', views:221,
+   be:'Kurz ausgespielt zieht die Verteidigung aus der Ordnung. Zwei Varianten, die im Spiel immer wieder funktionieren.',
+   st:['Der zweite Mann geht an, der Gegner muss mit herausrücken.','Zurücklegen und sofort mit dem ersten Kontakt flanken.','Die Spitzen starten erst, wenn der Ball zurückgelegt ist.'],
+   fe:'Zu früh in den Strafraum starten. Dann steht die Mannschaft, wenn die Flanke kommt.'},
+
+  {id:'finishing-mued', t:'Abschluss unter Müdigkeit', k:'schuss', lv:4, d:'8:45', zg:'konto', views:315,
+   be:'In der 85. Minute entscheidet sich der Abschluss. Wir trainieren ihn deshalb am Ende der Einheit, nicht am Anfang.',
+   st:['Zwei Sprints über 30 Meter, direkt danach der Abschluss.','Die Technik nicht verkürzen, auch wenn die Beine schwer sind.','Immer den Nachschuss mitgehen.'],
+   fe:'Ausruhen zwischen den Wiederholungen. Der Reiz entsteht genau in der Erschöpfung.'},
+
+  {id:'regeneration', t:'Regeneration zwischen zwei Spielen', k:'athletik', lv:4, d:'9:20', zg:'konto', views:268,
+   be:'Englische Woche heißt nicht weniger trainieren, sondern anders. Ein Ablauf für die 48 Stunden nach dem Spiel.',
+   st:['Direkt nach dem Spiel zehn Minuten locker ausradeln.','Am Folgetag Mobilisation und ein kurzer Aktivierungsblock.','48 Stunden vorher wieder Intensität, sonst fehlt am Spieltag die Spritzigkeit.'],
+   fe:'Zwei Tage gar nichts machen. Der Körper wird dadurch träger, nicht frischer.'},
+
+  /* Die Profi-Einheiten. Gedreht mit aktiven Profispielern, und als
+     einzige Inhalte im Abo. Die Namen der Gäste stehen erst fest, wenn
+     die Einverständniserklärungen unterschrieben sind. */
+  {id:'profi-freistoss', t:'Der Freistoß über die Mauer', k:'schuss', lv:3, d:'14:20', zg:'pro', neu:true,
+   gast:'Profi, 2. Bundesliga', views:0,
+   be:'Der Freistoß aus 20 Metern, erklärt von jemandem, der ihn im Ligabetrieb schießt. Anlauf, Treffpunkt, Nachziehen, und was er sich vorher im Kopf zurechtlegt.',
+   st:['Den Ball so hinlegen, dass das Ventil zum Tor zeigt. Klingt nach Aberglaube, gibt dir aber jedes Mal denselben Anhaltspunkt.','Drei Schritte Anlauf, leicht seitlich, der letzte Schritt ist der längste.','Mit dem Innenrist unter die untere Ballhälfte, den Fuß über die Körperachse hinaus nachziehen.'],
+   fe:'Zu viel Kraft. Ein Freistoß wird durch den Drall gefährlich, nicht durch das Tempo.'},
+
+  {id:'profi-flanke-druck', t:'Flanken unter Gegnerdruck', k:'flanken', lv:3, d:'12:40', zg:'pro',
+   gast:'Profi, 3. Liga', views:0,
+   be:'Flanken im leeren Training kann jeder. Hier geht es um die Flanke, wenn ein Gegner am Trikot zieht und die Grundlinie zwei Meter entfernt ist.',
+   st:['Den Ball mit dem Körper abschirmen, bevor du überhaupt hochschaust.','Einen halben Schritt weg vom Gegner, damit der Fuß Platz zum Durchschwingen hat.','Den ersten Anlauf antäuschen, dann flanken. Der Verteidiger streckt das Bein, und du hast die Lücke.'],
+   fe:'Warten, bis die Situation perfekt ist. Im Spiel wird sie das nie.'},
+
+  {id:'profi-strafraum', t:'Der erste Kontakt im Strafraum', k:'annahme', lv:3, d:'11:15', zg:'pro',
+   gast:'Stürmer, 2. Bundesliga', views:0,
+   be:'Im Strafraum entscheidet die erste Berührung über Tor oder Abstoß. Ein Stürmer aus dem Profibereich zeigt, wohin er den Ball legt und warum.',
+   st:['Vor der Flanke einmal über die Schulter: Wo steht der Verteidiger, wo der Torwart?','Den Ball nie zum Tor hin annehmen, sondern quer, weg vom Verteidiger.','Nach der Annahme sofort schießen, auch aus unbequemer Lage. Der zweite Kontakt kommt meistens zu spät.'],
+   fe:'Den Ball breit annehmen und sich den Winkel selbst zumachen.'},
+
+  {id:'profi-zweikampf', t:'Körper vor Ball: der saubere Zweikampf', k:'taktik', lv:2, d:'10:05', zg:'pro',
+   gast:'Innenverteidiger, 3. Liga', views:0,
+   be:'Zweikämpfe gewinnt selten der Stärkere, meistens der, der früher steht. Ein Innenverteidiger erklärt, wie er den Körper einsetzt, ohne zu foulen.',
+   st:['Den Gegner früh spüren lassen: Schulter an Schulter, bevor der Ball da ist.','Immer zwischen Ball und Gegner bleiben, auch wenn das heißt, rückwärts zu laufen.','Den Fuß erst rausstellen, wenn der Ball vom Gegner weggeht, nie davor.'],
+   fe:'Mit gestrecktem Bein reingrätschen. Sieht gut aus, kostet Gelb und den Zweikampf.'},
+
+  {id:'profi-torwart', t:'Torwart: Strafraum\u00ADbeherrschung', k:'torwart', lv:3, d:'13:30', zg:'pro',
+   gast:'Torwart, 2. Bundesliga', views:0,
+   be:'Wann kommt ein Torwart raus und wann bleibt er? Ein Profitorwart zeigt seine Entscheidungsregeln bei Flanken und langen Bällen.',
+   st:['Die Ausgangsposition ist keine Linie, sondern ein Bogen: je weiter der Ball außen steht, desto weiter vorn stehst du.','Bei der Flanke früh loslaufen und den höchsten Punkt anpeilen, nicht den Ball.','Rufen, bevor du losläufst. Eine stumme Herausnahme ist ein Eigentor mit Ansage.'],
+   fe:'Halb rauskommen. Entweder ganz oder gar nicht, alles dazwischen ist der Fehler.'},
+
+  {id:'profi-alltag', t:'Ein Tag im Profialltag', k:'athletik', lv:1, d:'16:50', zg:'pro',
+   gast:'Profi, 2. Bundesliga', views:0,
+   be:'Kein Techniktraining, sondern ein ganzer Tag: Frühstück, Videoanalyse, Einheit, Regeneration, Abendessen. Damit klar wird, wie viel neben dem Platz passiert.',
+   st:['Der Tag beginnt mit Wiegen und einem kurzen Gespräch über den Schlaf.','Zwischen den Einheiten sind Essen und Schlafen Teil des Trainings, nicht Pause davon.','Nach dem Abschlusstraining kommt die Videoanalyse des nächsten Gegners.'],
+   fe:'Denken, Profi sein heißt zweimal am Tag Fußball spielen. Der größere Teil ist alles drumherum.'}
+];
+
+var PFAD = {
+  1:[{w:1,id:'erste-beruehrung'},{w:2,id:'flacher-pass'},{w:3,id:'abstoppen'},{w:4,id:'leiter'},{w:5,id:'torwart-grund'}],
+  2:[{w:1,id:'flanke-innen'},{w:2,id:'uebersteiger'},{w:3,id:'vollspann'},{w:4,id:'ballmitnahme'},{w:5,id:'kopfball'}],
+  3:[{w:1,id:'doppelpass'},{w:2,id:'innenrist-flanke'},{w:3,id:'eins-gegen-eins'},{w:4,id:'diagonalball'},{w:5,id:'rumpf'}],
+  4:[{w:1,id:'anlaufen'},{w:2,id:'schnittstelle'},{w:3,id:'standard-ecke'},{w:4,id:'finishing-mued'},{w:5,id:'regeneration'}]
+};
+
+/* Schlag den Coach. Ansehen, nachmachen, im Training zeigen.
+   Bewusst ohne Einsendungen: in der App gibt es keine fremden Videos. */
+var CHALLENGES = [
+  /* Das Ziel ist Kaders Marke, keine feste Zahl. Der Titel sagte vorher
+     „50 Übersteiger", obwohl Kader selbst bei 43 steht. */
+  {m:'September', t:'Übersteiger in 60 Sekunden', marke:43, eh:'Übersteiger',
+   be:'Eine Minute, ein Ball, so viele saubere Übersteiger wie möglich. Kader hat es an einem Dienstagabend auf 43 gebracht. Wer 44 schafft, hat ihn geschlagen.',
+   rg:['Der Ball bleibt im Kreis, sonst zählt der Durchgang nicht.','Nur Übersteiger mit Richtungswechsel zählen.','Wer stehen bleibt, fängt die Zählung von vorn an.']},
+  {m:'August',    t:'Jonglieren ohne Bodenkontakt', marke:78, eh:'Kontakte', be:'', rg:[]},
+  {m:'Juli',      t:'Torwand: fünf Schüsse',        marke:4,  eh:'Treffer',  be:'', rg:[]}
+];
+
+/* Die Darstellung folgt dem Geraet, wie jede App auf dem iPhone. */
+var state = {
+  tab:'start', theme:'auto',
+  konto:null,                 /* null = Gast. Freie Videos laufen trotzdem. */
+  pro:false, owner:false,
+  meinLv:1, lvSel:1,
+  kat:'alle', fltLv:0, suche:'',
+  done:{}, preis:'jahr', abo:null, nachLogin:null, loginModus:'neu',
+  tempo:1, symbol:'standard', merk:{}, serieHeute:0, laedt:true,
+  gesehen:{}, zuletzt:null,
+  erinnerung:{an:true, tage:['mi','sa'], zeit:'17:00'},
+  up:{datei:null, lv:1, vis:'offen', busy:false}
+};
+
+/* ============================================================
+   Werkzeug
+   ============================================================ */
+function h(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function byId(id){return VIDEOS.filter(function(v){return v.id===id;})[0];}
+function lvOf(n){return LEVELS[n-1];}
+function drin(){return !!state.konto;}
+function sek(d){var t=String(d).split(':');return (+t[0])*60 + (+t[1]||0);}
+function fmtZeit(s){var g=Math.floor(s), m=Math.floor(g/60), r=g%60;return m+':'+(r<10?'0':'')+r;}
+var TEMPI = [0.25, 0.5, 0.75, 1, 1.5];
+function tempoText(t){ return String(t).replace('.', ',') + '\u00d7'; }
+function tempoLabel(){ return tempoText(state.tempo); }
+function lvFortschritt(nr){
+  var u = PFAD[nr];
+  return {fertig: u.filter(function(x){return state.done[x.id];}).length, gesamt: u.length};
+}
+/* Drei Stufen: offen fuer jeden, mit kostenlosem Konto, und die
+   Profi-Einheiten im Abo. Was gesperrt ist, entscheidet die Stufe. */
+function gesperrt(v){
+  if(v.zg==='pro') return !state.pro;
+  if(v.zg==='konto') return !drin();
+  return false;
+}
+function zugangName(zg){
+  return zg==='pro' ? 'Profi-Einheit' : (zg==='konto' ? 'Mit Konto' : 'Ohne Anmeldung');
+}
+function zaehl(zg){return VIDEOS.filter(function(v){return v.zg===zg;}).length;}
+
+/* Kapitelmarken. Bis die Videos geschnitten sind, verteilen wir die
+   Schritte gleichmaessig ueber die Laufzeit; beim Hochladen traegt Kader
+   die echte Sekunde ein, das Feld dafuer steht im Datenmodell. */
+function kapitelSek(v, i){
+  if(v.sk && v.sk[i] != null) return v.sk[i];
+  var d = sek(v.d), n = (v.st || []).length || 1;
+  var los = Math.round(d * 0.06);
+  return Math.round(los + (d - los) * (i / n));
+}
+
+/* Wer seinen Pfad geschafft hat, steigt auf. Es zaehlt derselbe Pfad,
+   den die Pyramide als 5 / 5 zeigt. Vorher zaehlten alle Videos der
+   Ebene, und wer Pro hatte, hing an der Profi-Einheit fest, obwohl die
+   Pyramide laengst voll war. Gesperrte Videos zaehlen nie mit. */
+function pruefeAufstieg(){
+  if(!drin() || state.meinLv >= LEVELS.length) return false;
+  var meine = PFAD[state.meinLv].map(function(u){ return byId(u.id); })
+    .filter(function(v){ return v && !gesperrt(v); });
+  if(!meine.length) return false;
+  var fertig = meine.every(function(v){ return !!state.done[v.id]; });
+  if(!fertig) return false;
+  state.meinLv += 1;
+  return true;
+}
+/* Was noch zu tun ist: offen fuer mich und nicht abgehakt. Vorher
+   zaehlte hier alles Freigeschaltete, auch das schon Erledigte. */
+function offenFuerMich(){return VIDEOS.filter(function(v){return !gesperrt(v) && !state.done[v.id];}).length;}
+
+/* Abgehakte Uebungen. Die Challenge zaehlt nicht dazu: sie ist ein
+   Wettbewerb, keine Einheit aus dem Pfad. */
+function uebungen(){
+  return Object.keys(state.done).filter(function(k){ return k.indexOf('challenge-') !== 0 && byId(k); });
+}
+/* state.done merkt sich, wann abgehakt wurde. Die Woche beginnt am
+   Montag um null Uhr. */
+var TAG_MS = 864e5;
+function wochenStart(t){
+  var d = new Date(t === undefined ? Date.now() : t);
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - (d.getDay() + 6) % 7);
+  return d.getTime();
+}
+function dieseWoche(){
+  var ab = wochenStart();
+  return uebungen().filter(function(k){ return state.done[k] >= ab; }).length;
+}
+/* Die Serie in Wochen: wie viele Wochen am Stueck mindestens eine Uebung
+   hatten. Die laufende Woche bricht sie nicht, solange sie noch laeuft. */
+function serieWochen(){
+  var wochen = {};
+  uebungen().forEach(function(k){ wochen[wochenStart(state.done[k])] = 1; });
+  var ab = wochenStart(), n = 0;
+  if(!wochen[ab]) ab = wochenStart(ab - TAG_MS);
+  while(wochen[ab]){ n++; ab = wochenStart(ab - TAG_MS); }
+  return n;
+}
+/* Das naechste Video auf dem eigenen Pfad, das noch nicht abgehakt ist. */
+function naechstesVideo(){
+  var ebene = drin() ? state.meinLv : 1;
+  var offen = VIDEOS.filter(function(x){ return !gesperrt(x) && !state.done[x.id] && x.lv === ebene; });
+  if(!offen.length) offen = VIDEOS.filter(function(x){ return !gesperrt(x) && !state.done[x.id]; });
+  return offen[0] || null;
+}
+
+var MONATE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+var WOCHENTAGE = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+function datumText(t){ var d = new Date(t); return d.getDate()+'. '+MONATE[d.getMonth()]; }
+function monatText(t){ var d = new Date(t); return MONATE[d.getMonth()]+' '+d.getFullYear(); }
+var ZAHLWORT = ['null','eine','zwei','drei','vier','fünf','sechs','sieben','acht','neun','zehn','elf','zwölf'];
+function minutenText(d){
+  var m = Math.max(1, Math.round(sek(d) / 60));
+  return (ZAHLWORT[m] || m) + (m === 1 ? ' Minute' : ' Minuten');
+}
+
+/* Wo gekauft wird. Auf dem iPhone ueber die Apple-ID, auf Android ueber
+   Google Play; am PC gibt es keinen Kauf, dort nennen wir beide Wege. */
+var PLATTFORM = (function(){
+  var ua = navigator.userAgent || '';
+  if(/iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+  if(/Android/i.test(ua)) return 'android';
+  return 'web';
+})();
+var KAUF = {
+  ios:     {laden:'den App Store', konto:'deine Apple-ID', kontoSie:'Ihre Apple-ID',
+            kuendigen:'in den Einstellungen deiner Apple-ID',
+            sperre:'Mit der Kaufanfrage in der Familienfreigabe von Apple'},
+  android: {laden:'Google Play', konto:'dein Google-Konto', kontoSie:'Ihr Google-Konto',
+            kuendigen:'in Google Play unter Abos',
+            sperre:'Mit Google Family Link'},
+  web:     {laden:'den App Store oder Google Play', konto:'deine Apple-ID oder dein Google-Konto',
+            kontoSie:'Ihre Apple-ID oder Ihr Google-Konto',
+            kuendigen:'in den Einstellungen deiner Apple-ID oder in Google Play',
+            sperre:'Mit der Familienfreigabe von Apple oder Google Family Link'}
+}[PLATTFORM];
+
+/* Die Zeichen. Gezeichnet in der Art der Symbole von iOS: gefuellte
+   Flaechen, runde Enden, eine Strichstaerke. Jedes Zeichen bringt Farbe
+   und Fuellung selbst mit (currentColor), der Stil setzt nur Groesse
+   und Farbe. */
+var ICON = {
+  play:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.5 4.9c0-1 1.1-1.6 1.9-1.1l10.4 6.9c.8.5.8 1.7 0 2.2L9.4 19.8c-.8.5-1.9-.1-1.9-1.1z"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect fill="currentColor" x="6" y="4.5" width="4.3" height="15" rx="1.3"/><rect fill="currentColor" x="13.7" y="4.5" width="4.3" height="15" rx="1.3"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.6 10.5V7.8a4.4 4.4 0 0 1 8.8 0v2.7" fill="none" stroke="currentColor" stroke-width="2.2"/><rect fill="currentColor" x="4.8" y="10" width="14.4" height="11" rx="2.6"/></svg>',
+  check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.6l4.4 4.4L19 7.4" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  back:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4.8L7.8 12l7.2 7.2" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  such:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.6" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.4 15.4l4.8 4.8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>',
+  runter:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 9l6.5 6.5L18.5 9" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  voll:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M10 20H4v-6M20 4l-6.4 6.4M4 20l6.4-6.4" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  klein:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10h-6V4M4 14h6v6M14 10l6.4-6.4M10 14l-6.4 6.4" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  x:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>',
+  rew:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.6 6v5.2h5.2"/><path d="M4.4 11.2a8 8 0 1 0 2.4-5.4L3.6 8.9"/></g></svg>',
+  herz:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2 4.8 13a4.7 4.7 0 0 1 6.6-6.7l.6.6.6-.6a4.7 4.7 0 0 1 6.6 6.7z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/></svg>',
+  herzVoll:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 20.6 4.3 13.3a5 5 0 0 1 7-7.1l.7.7.7-.7a5 5 0 0 1 7 7.1z"/></svg>',
+  upl:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/><path d="M5 13.5v5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5v-5"/></g></svg>',
+  apple:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><path d="M16.3 12.6c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.6-1.9-1.5-.2-3 .9-3.7.9-.8 0-2-.9-3.2-.8-1.7 0-3.2 1-4 2.5-1.7 2.9-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.6z"/><path d="M14.2 5.4c.7-.8 1.1-1.9 1-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.8-1.3z"/></g></svg>',
+  google:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.7z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.3 14.3a7.2 7.2 0 0 1 0-4.6V6.6h-4a12 12 0 0 0 0 10.8l4-3.1z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 1.3 6.6l4 3.1c.9-2.9 3.6-4.9 6.7-4.9z"/></svg>',
+  /* Die Tableiste */
+  tabStart:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11.2 3.1a1.3 1.3 0 0 1 1.6 0l8.4 6.7c.6.5.3 1.4-.5 1.4H19.2v8.1a1.7 1.7 0 0 1-1.7 1.7h-3v-5.3a1.2 1.2 0 0 0-1.2-1.2h-2.6a1.2 1.2 0 0 0-1.2 1.2V21h-3a1.7 1.7 0 0 1-1.7-1.7v-8.1H3.3c-.8 0-1.1-.9-.5-1.4z"/></svg>',
+  tabTech:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M5.2 4.5h13.6a2.7 2.7 0 0 1 2.7 2.7v9.6a2.7 2.7 0 0 1-2.7 2.7H5.2a2.7 2.7 0 0 1-2.7-2.7V7.2a2.7 2.7 0 0 1 2.7-2.7zm4.8 4.4v6.2c0 .6.6 1 1.1.7l5-3.1a.8.8 0 0 0 0-1.4l-5-3.1c-.5-.3-1.1.1-1.1.7z"/></svg>',
+  tabPyr:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><path d="M11.1 3.6a1 1 0 0 1 1.8 0l2.6 4.8H8.5z"/><path d="M7.7 10h8.6l2.3 4.3H5.4z"/><path d="M4.6 15.9h14.8l1.9 3.5a1 1 0 0 1-.9 1.5H3.6a1 1 0 0 1-.9-1.5z"/></g></svg>',
+  tabProf:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M12 2.3a9.7 9.7 0 1 1 0 19.4 9.7 9.7 0 0 1 0-19.4zm0 4a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8zm0 8.4c-2.6 0-4.9 1.2-6 3.1a7.7 7.7 0 0 0 12 0c-1.1-1.9-3.4-3.1-6-3.1z"/></svg>',
+  /* Die Zeichen in den Listen der Einstellungen */
+  raster:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></g></svg>',
+  glocke:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.8a5.6 5.6 0 0 0-5.6 5.6v3.7l-1.6 3.1c-.3.7.1 1.4.9 1.4h12.6c.8 0 1.2-.7.9-1.4l-1.6-3.1V8.4A5.6 5.6 0 0 0 12 2.8zM9.6 18.2a2.5 2.5 0 0 0 4.8 0z"/></svg>',
+  familie:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="9" cy="8" r="3.3"/><path d="M2.8 18.6c0-3.1 2.8-5.4 6.2-5.4s6.2 2.3 6.2 5.4c0 .6-.4 1-1 1H3.8c-.6 0-1-.4-1-1z"/><circle cx="16.8" cy="9.2" r="2.6"/><path d="M16.8 13.4c2.6 0 4.5 1.8 4.5 4.3 0 .5-.4.9-.9.9h-3.7c.1-.3.1-.6.1-.9 0-1.6-.6-3-1.7-4.1.5-.1 1.1-.2 1.7-.2z"/></g></svg>',
+  schild:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.6l7 2.8v5.8c0 4.4-2.9 8.3-7 9.9-4.1-1.6-7-5.5-7-9.9V5.4z"/></svg>',
+  dok:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M7 2.5h6.3l5.7 5.7V19a2.5 2.5 0 0 1-2.5 2.5h-9.5A2.5 2.5 0 0 1 4.5 19V5A2.5 2.5 0 0 1 7 2.5zm1 10v1.6h8v-1.6zm0 3.4v1.6h6v-1.6z"/></svg>',
+  info:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 4.4a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8zm-1.6 4.3a.9.9 0 0 0 0 1.8h.7v4.4h-1a.9.9 0 0 0 0 1.8h3.8a.9.9 0 0 0 0-1.8h-.9v-5.3a.9.9 0 0 0-.9-.9z"/></svg>',
+  pinsel:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><path d="M20.3 3.7a1.6 1.6 0 0 0-2.2 0l-7.6 7.6 2.2 2.2 7.6-7.6a1.6 1.6 0 0 0 0-2.2z"/><path d="M9.3 12.6c-1.9 0-3.4 1.5-3.4 3.4 0 1.4-.8 2.4-2.1 2.8 1 1.2 2.5 1.8 4.1 1.8 2.9 0 4.7-2 4.7-4.6z"/></g></svg>'
+};
+
+/* Zeichnungen als Vorschaubild: weisse Linien auf einem Verlauf in der
+   Farbe der Ebene, wie die Kacheln der Trainingsarten in Fitness+. Den
+   Verlauf malt der Stil hinter das Bild, deshalb darf die Zeichnung
+   ganz hineinpassen („meet") und wird nie angeschnitten, auch nicht in
+   der quadratischen Karte oben auf der Startseite. */
+function dia(k, lv, held){
+  var d = {
+    flanken:'<path class="c" d="M112 12V88"/><path class="c" d="M112 26h40v48h-40"/><path class="c" d="M152 40v20"/><path class="a" d="M22 82C54 40 96 30 128 44" stroke-dasharray="5 4"/><path class="a" d="M120 40l9 4-7 6"/><circle class="f" cx="22" cy="82" r="3.4"/><circle class="f" cx="130" cy="45" r="3.4"/>',
+    dribbling:'<path class="a" d="M10 50c10-24 26-24 33 0s23 24 30 0 26-24 33 0 23 24 30 0"/><g class="c"><path d="M25 44l6 12H19z"/><path d="M55 44l6 12H49z"/><path d="M85 44l6 12H79z"/><path d="M115 44l6 12h-12z"/></g>',
+    passen:'<circle class="f" cx="28" cy="78" r="3.6"/><circle class="f" cx="80" cy="24" r="3.6"/><circle class="f" cx="134" cy="72" r="3.6"/><path class="a" d="M33 74L74 29" stroke-dasharray="5 4"/><path class="a" d="M68 31l8-4 1 8"/><path class="a" d="M86 28l42 40" stroke-dasharray="5 4"/><path class="a" d="M122 66l8 4-2-8"/>',
+    schuss:'<path class="c" d="M40 30V14h80v16"/><path class="c" d="M40 14v16M120 14v16"/><g class="c" opacity=".5"><path d="M52 14v16M64 14v16M76 14v16M88 14v16M100 14v16M108 14v16"/></g><circle class="f" cx="80" cy="84" r="3.6"/><path class="a" d="M77 80L48 32" stroke-dasharray="5 4"/><path class="a" d="M83 80l29-48" stroke-dasharray="5 4"/>',
+    annahme:'<path class="a" d="M14 14l52 36" stroke-dasharray="5 4"/><path class="a" d="M58 48l9 3-3-8"/><circle class="f" cx="70" cy="52" r="4"/><path class="c" d="M70 40v-8M70 64v8"/><path class="a" d="M76 56l52 22"/><path class="a" d="M120 72l9 6-9 3"/>',
+    athletik:'<path class="c" d="M50 94L66 18M110 94L94 18"/><g class="a"><path d="M52 84h56M56 70h48M60 57h40M64 45h32M68 34h24M71 25h18"/></g>',
+    torwart:'<path class="c" d="M40 26V12h80v14"/><path class="c" d="M40 12v14M120 12v14"/><path class="c" d="M28 26h104v34H28z" opacity=".55"/><circle class="f" cx="80" cy="36" r="3.6"/><path class="a" d="M80 82L44 28" stroke-dasharray="5 4"/><path class="a" d="M80 82l36-54" stroke-dasharray="5 4"/><circle class="f" cx="80" cy="84" r="3"/>',
+    taktik:'<path class="c" d="M56 8v84M104 8v84" opacity=".55"/><circle class="f" cx="30" cy="50" r="3.6"/><circle class="f" cx="80" cy="26" r="3.6"/><circle class="f" cx="80" cy="74" r="3.6"/><path class="a" d="M36 48c18-10 30-14 40-18"/><path class="a" d="M70 28l9-2-4 8"/><path class="a" d="M36 54c18 10 30 14 40 18"/><path class="a" d="M70 72l9 2-4-8"/><path class="a" d="M110 50h26"/><path class="a" d="M130 45l8 5-8 5"/>'
+  }[k] || '';
+  /* Die Zeichnung traegt die Farbe ihrer Ebene. Vorher war alles rot,
+     und eine Liste aus zwoelf Karten sah aus wie zwoelfmal dasselbe. */
+  var ton = lv ? ' style="--dia-acc:var(--lv'+lv+')"' : '';
+  /* In der grossen Karte stehen unten Titel und Knopf. Dort bekommt die
+     Zeichnung einen quadratischen Rahmen mit Luft nach unten und bleibt
+     in der oberen Haelfte, statt durch den Titel zu laufen. */
+  /* Sonst ein Rand rundherum, damit die Linien nicht unter die Schilder
+     „Neu" und die Dauer laufen. */
+  var rahmen = held ? '-40 -30 240 240' : '-16 -12 192 124';
+  return '<svg class="dia" viewBox="'+rahmen+'" preserveAspectRatio="xMidYMid meet" aria-hidden="true"'+ton+'>' +
+    '<rect class="bg" width="160" height="100"/>' +
+    '<g stroke-linecap="round" stroke-linejoin="round">' + d + '</g></svg>';
+}
+
+function posterOf(v, held){
+  return v.img ? '<img src="img/'+v.img+'.jpg" alt="" loading="lazy">' : dia(v.k, v.lv, held);
+}
+
+/* Die grosse Karte oben auf der Startseite, gebaut wie eine Karte im
+   Heute-Tab des App Store: oben die kleine Zeile, unten der Titel und
+   der weisse Knopf aus der TV-App, daneben der Fortschritt. */
+/* Waehlt die Schriftstufe fuer den Titel der grossen Karte: ein sehr
+   langes Wort oder ein sehr langer Titel bekommt die kleinste Stufe. */
+function titelKlasse(titel){
+  var lang = titel.split(/\s+/).some(function(w){ return w.length > 15; });
+  if(lang || titel.length > 34) return ' eng';
+  if(titel.length > 24) return ' mittel';
+  return '';
+}
+
+function heroKarte(v, kicker, meta, pct){
+  return '<button class="hero" type="button" data-act="video:'+v.id+'">' +
+    '<span class="hm">'+posterOf(v, true)+'</span>' +
+    '<span class="hc">' +
+      '<span class="hk">'+h(kicker)+'</span>' +
+      '<span class="ht'+titelKlasse(v.t)+'">'+h(v.t)+'</span>' +
+      '<span class="hmeta">'+h(meta)+'</span>' +
+      '<span class="hfuss">' +
+        '<span class="hplay">'+ICON.play+(pct ? 'Fortsetzen' : 'Abspielen')+'</span>' +
+        (pct ? '<span class="hbar"><i style="width:'+pct+'%"></i></span>' : '') +
+      '</span>' +
+    '</span>' +
+  '</button>';
+}
+
+/* Punkt 11: vier Platzhalterkarten, solange nichts da ist. */
+function skelette(anzahl){
+  var out = '';
+  for(var i = 0; i < (anzahl || 4); i++){
+    out += '<div class="skelett"><span class="bild"></span>' +
+      '<span class="zeile"></span><span class="zeile kurz"></span></div>';
+  }
+  return '<div class="grid">'+out+'</div>';
+}
+
+function karte(v){
+  return '<button class="card" type="button" data-act="video:'+v.id+'">' +
+    '<span class="poster">'+posterOf(v)+
+      (gesperrt(v) ? '<span class="lock'+(v.zg==='konto'?' konto':'')+'"><span>'+ICON.lock+'</span></span>' : '') +
+      /* „Konto" nur, solange es fehlt. Angemeldet sagt das Schild nichts mehr. */
+      (v.zg==='pro' ? '<span class="badge pro">Profi</span>' :
+        ((v.zg==='konto' && gesperrt(v)) ? '<span class="badge konto">Konto</span>' :
+          (v.neu ? '<span class="badge neu">Neu</span>' : ''))) +
+      '<span class="badge dur">'+v.d+'</span>' +
+    '</span>' +
+    '<span class="body">' +
+      '<span class="t">'+h(v.t)+'</span>' +
+      /* Eine Zeile wie unter den Kacheln der TV-App. Mit dem Namen der
+         Ebene brach sie im Raster um, und der Punkt blieb am Zeilenende
+         haengen. Der farbige Punkt nennt die Ebene trotzdem. */
+      '<span class="m"><i class="dot" style="background:'+lvOf(v.lv).c+'"></i>'+KAT[v.k]+' · Ebene '+v.lv+'</span>' +
+    '</span></button>';
+}
+
+/* ============================================================
+   Die vier Bereiche
+   ============================================================ */
+/* Die Karte oben auf der Startseite: das angefangene Video, sonst das
+   naechste offene der eigenen Ebene. */
+function startKarte(){
+  var id = state.zuletzt, stelle = id && state.gesehen[id], v = id && byId(id);
+  if(v && stelle && !gesperrt(v)){
+    var d = sek(v.d);
+    return heroKarte(v, 'Weitertrainieren',
+      fmtZeit(d - stelle)+' übrig · '+lvOf(v.lv).nm,
+      Math.max(3, Math.round(stelle / d * 100)));
+  }
+  var n = naechstesVideo() || VIDEOS[0];
+  return heroKarte(n, drin() ? 'Als Nächstes' : 'Fang hier an', n.d+' · '+lvOf(n.lv).nm, 0);
+}
+
+/* Die Zeile ueber der Begruessung. Sie kennt den Wochentag und die Tage,
+   die in der Erinnerung stehen. Vorher stand dort jeden Tag „Mittwoch". */
+function heuteZeile(){
+  var heute = new Date().getDay();
+  var tag = WOCHENTAGE[heute];
+  var e = state.erinnerung;
+  if(!e.an || !e.tage.length) return tag;
+  var nr = function(k){ return (TAGE.map(function(t){ return t[0]; }).indexOf(k) + 1) % 7; };
+  var plan = e.tage.map(nr);
+  if(plan.indexOf(heute) >= 0) return tag+', Trainingstag';
+  for(var i = 1; i < 7; i++){
+    var d = (heute + i) % 7;
+    if(plan.indexOf(d) >= 0) return tag+(i === 1 ? ', morgen Training' : ', Training am '+WOCHENTAGE[d]);
+  }
+  return tag;
+}
+
+/* Ein Ring wie in Fitness. q ist der Anteil zwischen 0 und 1. Bei null
+   bleibt nur die Spur stehen: ein Ring aus einem einzigen runden Ende
+   saehe aus wie ein Fleck. */
+function ring(q){
+  var p = Math.round(Math.max(0, Math.min(1, q)) * 100);
+  return '<svg class="ring" viewBox="0 0 64 64" aria-hidden="true">' +
+    '<circle class="spur" cx="32" cy="32" r="26"/>' +
+    (p > 0 ? '<circle class="voll" cx="32" cy="32" r="26" pathLength="100" stroke-dasharray="'+p+' 100" transform="rotate(-90 32 32)"/>' : '') +
+  '</svg>';
+}
+
+/* Die Kachel fuer KM1 Pro, schwarz wie eine Produktkachel auf apple.com.
+   Beide Verweise darin fuehren auf dieselbe Abo-Seite. */
+function proKachel(klein){
+  return '<button class="proband'+(klein ? ' klein' : '')+'" type="button" data-act="paywall">' +
+    '<span class="pro-name">KM1 Pro</span>' +
+    '<span class="t">'+(klein ? 'Die Profi-Einheiten' : 'Die Profis.<br>Aus der Nähe.')+'</span>' +
+    '<span class="p">'+(klein ? 'Ab 6,99 € im Monat.' : zaehl('pro')+' Einheiten mit aktiven Profispielern.')+'</span>' +
+    '<span class="paar"><span class="btn klein">Mehr erfahren</span><span class="los">Sieben Tage gratis</span></span>' +
+    (klein ? '' : '<img class="symbolbild" src="img/app-symbol-pro.png" alt="">') +
+  '</button>';
+}
+
+function screenStart(){
+  var neu = VIDEOS.filter(function(v){return v.neu;});
+  var ch = CHALLENGES[0];
+
+  var kopfteil, mitte;
+  if(drin()){
+    kopfteil = '<div><p class="eyebrow">'+h(heuteZeile())+'</p><h1 class="big">Moin '+h(state.konto.vn)+'.<br>Weiter geht’s.</h1></div>' +
+      startKarte();
+    /* Nur was seit Montag abgehakt wurde, und keine Challenge. */
+    var ziel = Math.min(dieseWoche(),5);
+    mitte = '<div class="panel ziel">' + ring(ziel / 5) +
+      '<div class="zt">' +
+        '<p class="note">Dein Wochenziel</p>' +
+        '<p class="zahl">'+ziel+' <span>von 5 Einheiten</span></p>' +
+        '<p class="rest">'+(ziel >= 5 ? 'Geschafft. Stark.' : 'Noch '+(5 - ziel)+' bis zum Ziel')+'</p>' +
+      '</div>' +
+    '</div>';
+  } else {
+    kopfteil = '<div><p class="eyebrow">Ohne Anmeldung</p><h1 class="big">Moin.<br>Fang einfach an.</h1>' +
+      '</div>' +
+      startKarte();
+    mitte = '<div class="panel mitte">' +
+      '<span class="bild-kreis">'+ICON.tabProf+'</span>' +
+      '<p class="note">Kostenlos</p>' +
+      '<h2 class="sec">Fortschritt sichern</h2>' +
+      '<button class="btn" type="button" data-act="login:neu">Konto anlegen</button>' +
+      '<button class="btn text" type="button" data-act="login:alt">Ich habe schon eins</button>' +
+    '</div>';
+  }
+
+  return '<section class="screen">' +
+    kopfteil +
+
+    '<div class="block">' +
+      '<div class="block-head"><h2 class="sec">Neu diese Woche</h2><span class="more">'+neu.length+' Videos</span></div>' +
+      '<div class="row">'+neu.map(karte).join('')+'</div>' +
+    '</div>' +
+
+    mitte +
+
+    '<button class="wide" type="button" data-act="challenge">' +
+      '<span class="poster">'+dia('dribbling')+'</span>' +
+      '<span class="body">' +
+        '<span class="eyebrow neu">Challenge im '+ch.m+'</span>' +
+        '<span class="t">Schlag den Coach</span>' +
+        '<span class="p">'+h(ch.t)+'. Kader steht bei '+ch.marke+'. Schaffst du '+(ch.marke+1)+'?</span>' +
+        '<span class="los">Mitmachen</span>' +
+      '</span></button>' +
+
+    '<div class="block">' +
+      '<div class="block-head"><h2 class="sec">Profi-Einheiten</h2>' +
+        '<span class="more">'+(state.pro?'Freigeschaltet':'Mit Pro')+'</span></div>' +
+      '<div class="row">'+VIDEOS.filter(function(v){return v.zg==='pro';}).map(karte).join('')+'</div>' +
+    '</div>' +
+
+    (state.pro ? '' : proKachel(false)) +
+
+    '<button class="wide" type="button" data-act="camps">' +
+      '<span class="poster"><img src="img/goal.jpg" alt="" loading="lazy"></span>' +
+      '<span class="body">' +
+        '<span class="eyebrow neu">In den Herbstferien</span>' +
+        '<span class="t">Herbstcamp Köln</span>' +
+        '<span class="p">Montag bis Freitag, 19. bis 23. Oktober.</span>' +
+        '<span class="los">Mehr erfahren</span>' +
+      '</span></button>' +
+
+  '</section>';
+}
+
+function screenTechnik(){
+  var liste = VIDEOS.filter(function(v){
+    if(state.kat==='profi'){ if(v.zg!=='pro') return false; }
+    else if(state.kat!=='alle' && v.k!==state.kat) return false;
+    if(state.fltLv && v.lv!==state.fltLv) return false;
+    /* Die weichen Trennstriche in langen Titeln stoeren die Suche nicht. */
+    var q = state.suche.toLowerCase();
+    if(q && v.t.replace(/\u00AD/g,'').toLowerCase().indexOf(q)<0 && KAT[v.k].toLowerCase().indexOf(q)<0) return false;
+    return true;
+  });
+
+  var katChips = '<button class="chip" type="button" data-act="kat:alle" aria-pressed="'+(state.kat==='alle')+'">Alle</button>' +
+    '<button class="chip" type="button" data-act="kat:profi" aria-pressed="'+(state.kat==='profi')+'">Profi-Einheiten</button>' +
+    Object.keys(KAT).map(function(k){
+      return '<button class="chip" type="button" data-act="kat:'+k+'" aria-pressed="'+(state.kat===k)+'">'+KAT[k]+'</button>';
+    }).join('');
+
+  var eb = state.fltLv ? lvOf(state.fltLv) : null;
+
+  return '<section class="screen">' +
+    '<div><p class="eyebrow">Videothek</p><h1 class="big">Technik</h1>' +
+    '</div>' +
+
+    '<div class="suchzeile">' +
+      '<label class="search"><span class="vh">Videos durchsuchen</span>'+ICON.such+
+        '<input id="suche" type="search" placeholder="Suchen" value="'+h(state.suche)+'"></label>' +
+      '<button class="ebfilter" type="button" data-act="ebwahl"'+(eb?' style="--c:'+eb.c+'"':'')+'>' +
+        '<i class="pkt"></i>'+(eb ? h(eb.nm) : 'Ebene')+ICON.runter+'</button>' +
+    '</div>' +
+
+    '<div class="chips">'+katChips+'</div>' +
+
+    (state.laedt ? skelette(6) :
+      (liste.length ?
+        '<div class="grid">'+liste.map(karte).join('')+'</div>' :
+        '<div class="leer">'+ICON.such+'<p>Dazu haben wir noch nichts.</p>' +
+          ((state.kat!=='alle' || state.fltLv || state.suche)
+            ? '<button class="btn ghost" type="button" data-act="filterweg" style="width:auto">Filter zurücksetzen</button>' : '') +
+        '</div>')) +
+  '</section>';
+}
+
+function pyramide(){
+  var geo = [
+    {n:4, y0:0.78,  y1:17.94, x0a:33.67, x1a:66.33, x0b:26.41, x1b:73.59},
+    {n:3, y0:19.89, y1:37.05, x0a:25.58, x1a:74.42, x0b:18.32, x1b:81.68},
+    {n:2, y0:39.00, y1:56.16, x0a:17.50, x1a:82.50, x0b:10.24, x1b:89.76},
+    {n:1, y0:58.11, y1:75.27, x0a:9.41,  x1a:90.59, x0b:2.16,  x1b:97.84}
+  ];
+  /* Jede Ebene fuellt sich von unten, so weit ihr Pfad abgehakt ist.
+     Die eigene Ebene steht in voller Linie, die naechste gestrichelt:
+     angedeutet, aber noch nicht deins. */
+  var defs = '', plates = '';
+  geo.forEach(function(g){
+    var l = lvOf(g.n);
+    var an = state.lvSel===g.n, mein = drin() && state.meinLv===g.n, naechste = drin() && (state.meinLv+1)===g.n;
+    var pts = g.x0a+','+g.y0+' '+g.x1a+','+g.y0+' '+g.x1b+','+g.y1+' '+g.x0b+','+g.y1;
+    var my = g.y0 + (g.y1-g.y0)/2;
+    var f = lvFortschritt(g.n), q = drin() ? f.fertig/f.gesamt : 0;
+    var hoehe = (g.y1-g.y0)*q;
+    var yNm = drin() ? my-1.4 : my+0.2;
+    var yAg = drin() ? my+2.9 : my+4.6;
+    defs += '<clipPath id="cp'+g.n+'"><polygon points="'+pts+'"/></clipPath>';
+    plates += '<g class="plate" data-act="lv:'+g.n+'" role="button" tabindex="0" aria-label="'+l.nm+', '+l.ag+
+        (drin() ? ', '+f.fertig+' von '+f.gesamt+' Einheiten' : '')+'">' +
+      '<polygon points="'+pts+'" fill="'+l.c+'" fill-opacity="'+(an?.16:.07)+'"/>' +
+      (q>0 ? '<g clip-path="url(#cp'+g.n+')"><rect x="0" y="'+(g.y1-hoehe).toFixed(2)+
+             '" width="100" height="'+hoehe.toFixed(2)+'" fill="'+l.c+'" fill-opacity=".42"/></g>' : '') +
+      '<polygon points="'+pts+'" fill="none" stroke="'+l.c+
+        '" stroke-opacity="'+(mein?1:(an?.85:(naechste?.5:.3)))+
+        '" stroke-width="'+((mein||an)?.75:.4)+'"'+((naechste&&!an)?' stroke-dasharray="2.2 1.8"':'')+'/>' +
+      '<text class="nm" x="50" y="'+yNm+'">'+l.nm+'</text>' +
+      '<text class="ag" x="50" y="'+yAg+'">'+l.ag+'</text>' +
+      (drin() ? '<text class="fz" x="50" y="'+(my+6.6)+'">'+f.fertig+' / '+f.gesamt+'</text>' : '') +
+    '</g>';
+  });
+
+  return '<svg class="pyr" viewBox="0 0 100 78" role="img" aria-label="Die KM1-Pyramide mit vier Ebenen">' +
+    '<defs>'+defs+'</defs>' +
+    '<path class="edge" d="M33.3 0.4L1.8 76.2M66.7 0.4L98.2 76.2M1.8 76.2h96.4"/>' + plates + '</svg>';
+}
+
+function screenPyramide(){
+  var l = lvOf(state.lvSel), f = lvFortschritt(state.lvSel);
+  /* Die Zahl ueber der Liste zaehlt die Liste, nicht alle Videos der Ebene. */
+  var anzahl = PFAD[state.lvSel].length;
+  var pfad = PFAD[state.lvSel].map(function(u){
+    var v = byId(u.id), fertig = !!state.done[v.id];
+    return '<button class="unit" type="button" data-act="video:'+v.id+'">' +
+      '<span class="w">W'+u.w+'</span>' +
+      '<span><span class="t">'+h(v.t)+'</span><span class="s">'+KAT[v.k]+' · '+v.d+(v.zg==='pro'?' · Profi':((v.zg==='konto' && gesperrt(v))?' · Konto':''))+'</span></span>' +
+      '<span class="tick '+(fertig?'on':'')+'">'+ICON.check+'</span>' +
+    '</button>';
+  }).join('');
+
+  var chip = '';
+  if(drin() && state.lvSel===state.meinLv) chip = '<span class="duchip">Du bist hier</span>';
+  else if(drin() && state.lvSel===state.meinLv+1)
+    chip = '<span class="duchip naechste">Deine nächste Ebene</span>';
+
+  var pips = '';
+  for(var i=0;i<f.gesamt;i++) pips += '<i class="'+(i<f.fertig?'on':'')+'"></i>';
+
+  return '<section class="screen schmal">' +
+    '<div><p class="eyebrow">Vier Ebenen, eine Richtung</p><h1 class="big">Die KM1-<br>Pyramide</h1>' +
+    '</div>' +
+    pyramide() +
+    '<div class="lvpanel" style="--c:'+l.c+'">' +
+      chip +
+      '<p class="note">'+l.md+' · '+l.ag+'</p>' +
+      '<p class="t">'+l.nm+' Area</p>' +
+      '<p class="sub" style="margin:0">'+l.tx+'</p>' +
+      (drin() ? '<span class="pips lvp" style="--c:'+l.c+';margin-top:4px">'+pips+'</span>' +
+                '<p class="note">'+f.fertig+' von '+f.gesamt+' Einheiten</p>' : '') +
+    '</div>' +
+    '<div class="block">' +
+      '<div class="block-head"><h2 class="sec">Dein Pfad</h2><span class="more">'+anzahl+' Videos</span></div>' +
+      '<div class="path">'+pfad+'</div>' +
+    '</div>' +
+  '</section>';
+}
+
+/* Hell oder dunkel wie unter „Anzeige & Helligkeit": zwei kleine
+   Telefone zum Antippen und darunter der Schalter „Automatisch". Wer
+   ein Telefon waehlt, schaltet „Automatisch" damit aus — genau wie in
+   iOS. Wer „Automatisch" ausschaltet, behaelt, was gerade zu sehen ist. */
+function darstellung(){
+  var auto = state.theme === 'auto';
+  var jetzt = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dunkel' : 'hell';
+  var aktiv = auto ? jetzt : state.theme;
+  var wahl = function(t, nm){
+    return '<button class="dwahl" type="button" data-act="theme:'+t+'" aria-pressed="'+(aktiv===t)+'">' +
+      '<span class="dvorschau '+t+'" aria-hidden="true"><i></i><i></i><i></i><i></i></span>' +
+      '<span>'+nm+'</span><span class="dkreis" aria-hidden="true"></span></button>';
+  };
+  return '<div class="block">' +
+    '<h2 class="sec leise">Darstellung</h2>' +
+    '<div class="rows">' +
+      '<div class="dwahlen">'+wahl('hell','Hell')+wahl('dunkel','Dunkel')+'</div>' +
+      '<button class="lrow" type="button" role="switch" aria-checked="'+auto+'" data-act="theme:'+(auto ? aktiv : 'auto')+'">' +
+        '<span>Automatisch</span><span class="schalter" aria-hidden="true"></span></button>' +
+    '</div>' +
+  '</div>';
+}
+
+function initialen(name){
+  var teile = String(name || '').replace(/[^\p{L}\s-]/gu, '').trim().split(/[\s-]+/);
+  return ((teile[0] || '?').charAt(0) + (teile[1] ? teile[1].charAt(0) : '')).toUpperCase();
+}
+function preisText(p){ return p === 'monat' ? '6,99 € im Monat' : '59,00 € im Jahr'; }
+
+/* Eine Zeile wie in den Einstellungen: farbiges Symbol, Name, rechts
+   der Wert und der Pfeil. */
+function zeile(act, symbol, farbe, text, rechts){
+  return '<button class="lrow" type="button" data-act="'+act+'">' +
+    '<span class="ico" style="--i:'+farbe+'">'+symbol+'</span>' +
+    '<span>'+text+'</span><span class="r">'+(rechts || '')+'</span></button>';
+}
+var IMPRESSUM = '<a class="lrow" href="https://km1-training.de/impressum/" target="_blank" rel="noopener">' +
+  '<span class="ico" style="--i:#8E8E93">'+ICON.info+'</span><span>Impressum</span><span class="r">km1-training.de</span></a>';
+
+/* Der Weg zurueck zur Hauptfassung. Nur dort, wo die Studie neben ihr
+   liegt, also unter …/km1-app/apple/. In der Vorschau auf claude.ai
+   gibt es kein Daneben, dort fehlt die Zeile. */
+var ORIGINAL = /\/apple\/(index\.html)?$/.test(location.pathname) ? '../' : '';
+function originalZeile(){
+  if(!ORIGINAL) return '';
+  return '<div class="rows mit-symbol"><a class="lrow" href="'+ORIGINAL+'">' +
+    '<span class="ico" style="--i:#FF9500">'+ICON.pinsel+'</span><span>Zum Originaldesign</span><span class="r"></span></a></div>';
+}
+
+function screenProfil(){
+  var erledigt = uebungen().length;
+
+  if(!drin()){
+    return '<section class="screen schmal">' +
+      '<div><p class="eyebrow">Gast</p><h1 class="big">Du schaust<br>ohne Konto zu.</h1>' +
+      '</div>' +
+      '<div class="panel mitte">' +
+        '<span class="bild-kreis">'+ICON.tabProf+'</span>' +
+        '<p class="note">Kostenlos</p>' +
+        '<button class="btn" type="button" data-act="login:neu">Konto anlegen</button>' +
+        '<button class="btn text" type="button" data-act="login:alt">Anmelden</button>' +
+      '</div>' +
+      darstellung() +
+      '<div class="rows mit-symbol">' +
+        zeile('erinnerung', ICON.glocke, '#FF3B30', 'Erinnerung', erinnerungText()) +
+      '</div>' +
+      '<div class="rows mit-symbol">' +
+        zeile('eltern', ICON.familie, '#34C759', 'Für Eltern') +
+        zeile('daten', ICON.schild, '#007AFF', 'Datenschutz') +
+        IMPRESSUM +
+      '</div>' +
+      originalZeile() +
+    '</section>';
+  }
+
+  var trainer = state.owner ?
+    '<div class="block">' +
+      '<div class="block-head"><h2 class="sec">Trainerbereich</h2><span class="more">Aufrufe insgesamt</span></div>' +
+      '<button class="btn" type="button" data-act="upload">'+ICON.upl+' Video hochladen</button>' +
+      '<div class="path">' +
+        VIDEOS.slice().sort(function(a,b){return b.views-a.views;}).slice(0,5).map(function(v){
+          return '<div class="vid-admin"><span class="t">'+h(v.t)+'</span><span class="n">'+v.views.toLocaleString('de-DE')+'</span></div>';
+        }).join('') +
+      '</div>' +
+    '</div>' : '';
+
+  /* Nur Kader hat ein Foto. Alle anderen bekommen ihre Anfangsbuchstaben. */
+  var bild = state.owner
+    ? '<button class="gross" type="button" data-act="portrait" aria-label="Bild vergrößern">' +
+        '<img src="img/coach.jpg" alt=""></button>'
+    : '<span class="avatar" aria-hidden="true">'+h(initialen(state.konto.name))+'</span>';
+
+  return '<section class="screen schmal">' +
+    '<div class="coach ich">' + bild +
+      '<span class="n">'+h(state.konto.name)+'<span>'+lvOf(state.meinLv).nm+' · seit '+monatText(state.konto.seit)+'</span></span>' +
+    '</div>' +
+
+    '<div class="stats">' +
+      '<div class="stat"><span class="v">'+erledigt+'</span><span class="k">Übungen</span></div>' +
+      '<div class="stat"><span class="v">'+offenFuerMich()+'</span><span class="k">Offen</span></div>' +
+      '<div class="stat"><span class="v">'+serieWochen()+'</span><span class="k">Wochen&shy;serie</span></div>' +
+    '</div>' +
+
+    (state.pro ?
+      '<div class="panel">' +
+        '<div class="pro-zeile"><span class="pro-name">KM1 Pro</span><span class="pro-aktiv">Aktiv</span></div>' +
+        '<p class="sub" style="margin:0">' +
+        (state.abo
+          ? 'Gratis bis '+datumText(state.abo.bis)+', danach '+preisText(state.abo.preis)+'. Kündbar bis 24 Stunden vorher.'
+          : 'Läuft.') +
+      '</p></div>' :
+      proKachel(true)) +
+
+    trainer +
+    darstellung() +
+
+    '<div class="rows mit-symbol">' +
+      zeile('merkliste', ICON.herzVoll, '#FF2D55', 'Merkliste', Object.keys(state.merk).length) +
+      zeile('symbol', ICON.raster, '#AF52DE', 'App-Symbol', state.symbol==='pro'?'Flutlicht':'Standard') +
+      zeile('erinnerung', ICON.glocke, '#FF3B30', 'Erinnerung', erinnerungText()) +
+    '</div>' +
+    '<div class="rows mit-symbol">' +
+      zeile('eltern', ICON.familie, '#34C759', 'Für Eltern') +
+      zeile('daten', ICON.schild, '#007AFF', 'Datenschutz') +
+      zeile('bedingungen', ICON.dok, '#8E8E93', 'Nutzungsbedingungen') +
+      IMPRESSUM +
+    '</div>' +
+    originalZeile() +
+    '<div class="rows">' +
+      '<button class="lrow rot" type="button" data-act="logout"><span>Abmelden</span><span class="r"></span></button>' +
+    '</div>' +
+  '</section>';
+}
+
+/* ============================================================
+   Schiebeblaetter
+   ============================================================ */
+var stack = [];
+
+var app = document.querySelector('.app');
+function openSheet(html){
+  stack.push(html);
+  var s = document.getElementById('sheet');
+  clearTimeout(s._weg);
+  s.innerHTML = html; s.hidden = false; s.scrollTop = 0;
+  s.classList.remove('on');
+  /* Die Ausgangslage einmal berechnen lassen, sonst springt das Blatt
+     ohne Bewegung an seinen Platz. */
+  void s.offsetWidth;
+  requestAnimationFrame(function(){ s.classList.add('on'); app.classList.add('blatt'); });
+}
+function closeSheet(){
+  if(P.kino) kinoZu();
+  stopPlayer();
+  stack.pop();
+  var s = document.getElementById('sheet');
+  if(!stack.length){
+    /* Erst hinausschieben, dann leeren — wie der Schritt zurueck in iOS. */
+    s.classList.remove('on');
+    app.classList.remove('blatt');
+    render();          /* damit die Karte oben die neue Stelle zeigt */
+    clearTimeout(s._weg);
+    s._weg = setTimeout(function(){
+      if(stack.length) return;
+      s.hidden = true; s.innerHTML = '';
+    }, 460);
+    return;
+  }
+  s.innerHTML = stack[stack.length-1];
+  s.scrollTop = 0;
+}
+function refreshSheet(html){
+  stack[stack.length-1] = html;
+  var s = document.getElementById('sheet');
+  var y = s.scrollTop;
+  s.innerHTML = html;
+  s.scrollTop = y;
+}
+/* Oben im Blatt: der runde Zurueck-Knopf aus Glas und der Titel in der
+   Mitte, wie in iOS 26. */
+function kopf(titel){
+  return '<div class="sheet-head"><button class="back" type="button" data-act="back" aria-label="Zurück">'+ICON.back+'</button>' +
+    '<span class="kopf-t">'+h(titel)+'</span></div>';
+}
+
+function sheetVideo(id){
+  var v = byId(id), l = lvOf(v.lv), zu = gesperrt(v), fertig = !!state.done[v.id];
+  var gemerkt = !!state.merk[v.id];
+  var verwandt = VIDEOS.filter(function(x){return x.k===v.k && x.id!==v.id;}).slice(0,4);
+  if(!verwandt.length) verwandt = VIDEOS.filter(function(x){return x.lv===v.lv && x.id!==v.id;}).slice(0,4);
+
+  return kopf(KAT[v.k]) +
+    '<div class="sheet-body">' +
+      (zu ?
+        '<div class="player"><div class="poster">'+posterOf(v)+'</div>' +
+          '<button class="pbtn" type="button" data-act="'+(v.zg==='pro'?'paywall':'kontologin:'+v.id)+'"' +
+            ' aria-label="'+(v.zg==='pro'?'Mit KM1 Pro freischalten':'Mit Konto freischalten')+'">' +
+            '<span class="zu">'+ICON.lock+'</span></button></div>'
+        :
+        playerInline({id:v.id, titel:v.t, poster:posterOf(v), dauer:sek(v.d)})
+      ) +
+
+      '<div><p class="eyebrow">'+l.nm+' · '+l.ag+'</p><h1 class="big vtitel">'+h(v.t)+'</h1></div>' +
+
+      '<div class="meta">' +
+        '<span><i class="dot" style="background:'+l.c+'"></i>Ebene '+v.lv+'</span>' +
+        '<span>'+v.d+'</span>' +
+        '<span>'+zugangName(v.zg)+'</span>' +
+        (v.gast ? '<span>Gast · '+h(v.gast)+'</span>' : '') +
+      '</div>' +
+
+      /* Gesperrt steht die Beschreibung trotzdem da: ein Vorgeschmack,
+         damit man weiss, wofuer man das Konto oder das Abo anlegt. */
+      (zu ?
+        '<p class="prose">'+h(v.be)+'</p>' +
+        '<p class="fine">'+v.st.length+' Schritte zum Nachmachen und der häufigste Fehler, '+
+          (v.zg==='pro' ? 'mit KM1 Pro.' : 'mit einem kostenlosen Konto.')+'</p>' +
+        (v.zg==='pro'
+          ? '<button class="btn" type="button" data-act="paywall">Mit KM1 Pro ansehen</button>'
+          : '<button class="btn" type="button" data-act="kontologin:'+v.id+'">Kostenloses Konto anlegen</button>')
+        :
+        '<p class="prose">'+h(v.be)+'</p>' +
+        '<div class="block"><h2 class="sec">So geht’s</h2>' +
+          '<ol class="steps">'+v.st.map(function(s, i){
+            if(zu) return '<li>'+h(s)+'</li>';
+            var t = kapitelSek(v, i);
+            return '<li><button type="button" data-act="kapitel:'+t+'">' +
+              '<span class="tx">'+h(s)+'</span><span class="zt">'+fmtZeit(t)+'</span></button></li>';
+          }).join('')+'</ol>' +
+        '</div>' +
+        '<div class="callout"><span class="h">Häufiger Fehler</span><p>'+h(v.fe)+'</p></div>' +
+        '<div class="aktionen">' +
+          '<button class="btn '+(fertig?'done':'')+'" type="button" data-act="check:'+v.id+'">' +
+            (fertig ? ICON.check+' Auf dem Platz geschafft' : 'Übung abhaken') +
+          '</button>' +
+          '<button class="btn ghost merk'+(gemerkt?' an':'')+'" type="button" data-act="merk:'+v.id+'"' +
+            ' aria-pressed="'+gemerkt+'" aria-label="'+(gemerkt?'Aus der Merkliste nehmen':'Auf die Merkliste')+'">' +
+            ICON.herz+'</button>' +
+        '</div>' +
+        /* Kaders Foto nur bei Kader. Die Gaeste haben noch kein eigenes
+           Bild, solange ihre Namen nicht feststehen. */
+        '<div class="coach">' +
+          (v.gast ? '<span class="avatar gast" aria-hidden="true">'+ICON.tabProf+'</span>' : '<img src="img/coach.jpg" alt="">') +
+          '<span class="n">' +
+          (v.gast ? h(v.gast)+'<span>Zu Gast bei KM1</span>' : 'Kader<span>Gründer und Trainer</span>') +
+        '</span></div>'
+      ) +
+
+      '<div class="block">' +
+        '<div class="block-head"><h2 class="sec">Passt dazu</h2></div>' +
+        '<div class="row">'+verwandt.map(karte).join('')+'</div>' +
+      '</div>' +
+    '</div>';
+}
+
+/* Der Aufstieg bekommt eine eigene Seite. Er passiert dreimal im Leben
+   eines Nutzers — dafuer darf er den Bildschirm haben. */
+function sheetAufstieg(){
+  var l = lvOf(state.meinLv);
+  return '<div class="sheet-body feier">' +
+    '<span class="ring-orden" style="--c:'+l.c+'">'+ICON.check+'</span>' +
+    '<p class="eyebrow">Neue Ebene</p>' +
+    '<h1 class="big">'+h(l.nm)+'</h1>' +
+    '<p class="prose">'+h(l.tx)+'</p>' +
+    '<div class="meta"><span>'+h(l.md)+'</span><span>'+h(l.ag)+'</span></div>' +
+    '<button class="btn" type="button" data-act="back">Weiter</button>' +
+  '</div>';
+}
+
+/* Die Ebenenwahl als kleines Blatt statt als zweite Chipreihe. */
+function sheetEbene(){
+  var zeile = function(n, nm, farbe){
+    return '<button class="ebzeile" type="button" data-act="fltlv:'+n+'"'+
+      (farbe ? ' style="--c:'+farbe+'"' : '')+' aria-pressed="'+(state.fltLv===n)+'">' +
+      '<i class="pkt"></i><span>'+h(nm)+'</span>'+(state.fltLv===n ? ICON.check : '')+'</button>';
+  };
+  return kopf('Ebene') +
+    '<div class="sheet-body">' +
+      '<div><h1 class="big">Welche Ebene?</h1></div>' +
+      '<div class="ebliste">' +
+        zeile(0, 'Jede Ebene', '') +
+        LEVELS.map(function(l){ return zeile(l.n, l.nm + ' · ' + l.ag, l.c); }).join('') +
+      '</div>' +
+    '</div>';
+}
+
+function sheetChallenge(){
+  var c = CHALLENGES[0], fertig = !!state.done['challenge-'+c.m];
+  return kopf('Challenge') +
+    '<div class="sheet-body">' +
+      playerInline({id:'challenge', titel:'Schlag den Coach', poster:dia('dribbling'), dauer:72}) +
+
+      '<div><p class="eyebrow">Challenge im '+c.m+'</p><h1 class="big">Schlag den Coach</h1></div>' +
+      '<p class="prose">'+h(c.be)+'</p>' +
+
+      '<div class="marke">' +
+        '<span class="z">'+c.marke+'</span>' +
+        '<span class="w"><b>'+h(c.t)+'</b>Kaders Marke · '+c.eh+'</span>' +
+      '</div>' +
+
+      '<div class="block"><h2 class="sec">So zählt es</h2>' +
+        '<ol class="steps">'+c.rg.map(function(r){return '<li>'+h(r)+'</li>';}).join('')+'</ol>' +
+      '</div>' +
+
+      '<button class="btn '+(fertig?'done':'')+'" type="button" data-act="check:challenge-'+c.m+'">' +
+        (fertig ? ICON.check+' Geschafft, zeig es im Training' : 'Ich hab’s geschafft') +
+      '</button>' +
+
+      '<div class="block">' +
+        '<div class="block-head"><h2 class="sec">Frühere Challenges</h2></div>' +
+        '<div class="path">' + CHALLENGES.slice(1).map(function(x){
+          return '<div class="unit"><span class="w">'+x.m.slice(0,3)+'</span>' +
+            '<span><span class="t">'+h(x.t)+'</span><span class="s">Kader: '+x.marke+' '+x.eh+'</span></span><span></span></div>';
+        }).join('') + '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function sheetLogin(grund){
+  var neu = state.loginModus === 'neu';
+  /* Beide Knoepfe so, wie Apple und Google sie vorgeben: Apple schwarz
+     (im Dunkeln weiss), Google weiss mit Rand. */
+  var appleKnopf = '<button class="btn apple" type="button" data-act="signin">'+ICON.apple+' Mit Apple anmelden</button>';
+  var googleKnopf = '<button class="btn google" type="button" data-act="signin">'+ICON.google+' Mit Google anmelden</button>';
+  return kopf(neu ? 'Konto anlegen' : 'Anmelden') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">'+(neu?'Kostenlos':'Willkommen zurück')+'</p>' +
+      '<h1 class="big">'+(neu?'Konto anlegen':'Anmelden')+'</h1>' +
+      '</div>' +
+
+      '<div class="seg">' +
+        '<button type="button" data-act="lmodus:neu" aria-pressed="'+neu+'">Neu hier</button>' +
+        '<button type="button" data-act="lmodus:alt" aria-pressed="'+(!neu)+'">Ich habe ein Konto</button>' +
+      '</div>' +
+
+      (neu ? '<div class="field"><label for="lg-name">Vorname</label><input id="lg-name" type="text" placeholder="Luis"></div>' : '') +
+      '<div class="field"><label for="lg-mail">E-Mail</label><input id="lg-mail" type="email" placeholder="name@beispiel.de"></div>' +
+      '<div class="field"><label for="lg-pw">Passwort</label><input id="lg-pw" type="password" placeholder="mindestens 8 Zeichen">' +
+        (neu ? '' : '<button class="nebenknopf" type="button" data-act="pwvergessen">Passwort vergessen?</button>') +
+      '</div>' +
+
+      '<button class="btn" type="button" data-act="signin">'+(neu?'Konto anlegen':'Anmelden')+'</button>' +
+      /* Apple verlangt „Mit Apple anmelden", sobald es einen anderen
+         Anbieter gibt. Auf Android steht Google zuerst. */
+      (PLATTFORM === 'android' ? googleKnopf + appleKnopf : appleKnopf + googleKnopf) +
+      '<button class="btn text" type="button" data-act="back">Weiter ohne Konto</button>' +
+
+      '<p class="fine">' +
+        (neu ? 'Mit dem Anlegen stimmst du den ' +
+          '<button class="verweis" type="button" data-act="bedingungen">Nutzungsbedingungen</button> zu. ' +
+          'Wie wir mit deinen Daten umgehen, steht im ' +
+          '<button class="verweis" type="button" data-act="daten">Datenschutz</button>. ' : '') +
+        'Für Kinder unter 16 Jahren legen die Eltern das Konto an.</p>' +
+    '</div>';
+}
+
+var TAGE = [['mo','Mo'],['di','Di'],['mi','Mi'],['do','Do'],['fr','Fr'],['sa','Sa'],['so','So']];
+function tagName(k){var t=TAGE.filter(function(x){return x[0]===k;})[0];return t?t[1]:k;}
+function erinnerungText(){
+  var e = state.erinnerung;
+  if(!e.an || !e.tage.length) return 'Aus';
+  return e.tage.map(tagName).join(' + ')+', '+e.zeit;
+}
+
+/* Der Elternbereich. Andere Leserichtung als der Rest der App:
+   hier steht Sie, nicht du, denn hier liest jemand anderes mit. */
+/* Warum eine Kategorie zaehlt, in Worten fuer Eltern. */
+var WARUM = {
+  annahme:'Wer den Ball sauber mitnimmt, hat im Spiel eine halbe Sekunde mehr Zeit. Diese halbe Sekunde ist der Unterschied zwischen abspielen und verlieren.',
+  passen:'Ein fester, flacher Pass ist die Grundlage jedes Zusammenspiels. Wer ihn sicher spielt, wird im Team öfter angespielt.',
+  dribbling:'Wer den Ball eng führt und im richtigen Moment das Tempo wechselt, löst Situationen allein, wenn kein Mitspieler frei ist.',
+  flanken:'Eine Flanke, die ankommt, macht aus einem Angriff über außen eine Torchance. Es kommt auf Genauigkeit an, nicht auf Kraft.',
+  schuss:'Tore entstehen aus sauberer Technik, nicht aus Kraft. Wer den Ball flach und genau trifft, trifft öfter.',
+  athletik:'Schnelle Füße und eine stabile Körpermitte schützen vor Verletzungen und machen jede Technik im Spiel erst möglich.',
+  torwart:'Beim Torwart entscheidet die Grundstellung über fast jeden Ball. Wer sie sicher beherrscht, kommt schneller in die Ecke.',
+  taktik:'Wer versteht, wohin er laufen muss, spart Kraft und hilft der ganzen Mannschaft.'
+};
+/* Woran das Kind gerade arbeitet: das angefangene Video, sonst das
+   naechste offene. Vorher stand hier fest „Die erste Berührung", auch
+   wenn sie laengst abgehakt war. */
+function geradeDran(){
+  if(!drin()) return null;
+  var z = state.zuletzt && byId(state.zuletzt);
+  if(z && state.gesehen[z.id] && !state.done[z.id] && !gesperrt(z)) return z;
+  return naechstesVideo();
+}
+
+function sheetEltern(){
+  var akt = geradeDran();
+  return kopf('Für Eltern') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Für Eltern</p><h1 class="big">Was Ihr Kind<br>hier übt.</h1></div>' +
+      '<p class="prose">KM1 ersetzt kein Vereinstraining. Die App füllt die Lücke dazwischen: die zwanzig Minuten am Mittwoch im Hof, nach denen eine Sache sitzt, für die im Mannschaftstraining keine Zeit war.</p>' +
+
+      (akt ?
+      '<div class="panel">' +
+        '<p class="note">Gerade dran</p>' +
+        '<p class="prose" style="font-weight:600">'+h(akt.t)+'</p>' +
+        '<p class="sub" style="margin:0">Warum das zählt: '+h(WARUM[akt.k] || '')+'</p>' +
+      '</div>' : '') +
+
+      '<div class="block"><h2 class="sec">Wie viel Zeit sinnvoll ist</h2>' +
+        '<ul class="ticks">' +
+          ['15 bis 20 Minuten am Stück, zwei- bis dreimal die Woche.',
+           'Lieber kurz und regelmäßig als einmal eine Stunde am Sonntag.',
+           'Ein Ball und zehn Quadratmeter reichen. Ein Hinterhof tut es.'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+
+      '<div class="block"><h2 class="sec">Wobei Sie helfen können</h2>' +
+        '<ul class="ticks">' +
+          ['Zählen lassen statt korrigieren. Ihr Kind merkt selbst, wann es sitzt.',
+           'Einmal zuschauen, wenn es etwas zeigen will. Mehr Motivation gibt es nicht.',
+           'Hinterher fragen, was geklappt hat, nicht was schiefging.'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+
+      '<div class="callout stille"><span class="h">Kein Ort zum Verweilen</span>' +
+        '<p>Die App hat keine Endlosliste und kein Video, das von allein weiterläuft. Wer eine Übung gesehen hat, soll rausgehen, nicht weiterscrollen.</p></div>' +
+
+      '<div class="block"><h2 class="sec">Was wir speichern</h2>' +
+        '<ul class="ticks">' +
+          ['E-Mail und Vorname, damit das Konto existiert.',
+           'Welche Übungen abgehakt sind, und wo ein Video stehen geblieben ist.',
+           'Sonst nichts: kein Tracking, keine Werbung, keine Weitergabe an Dritte.'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul>' +
+        /* Die Zeile verspricht nichts, was die Rueckmeldung nicht haelt:
+           geloescht wird nach einer Bestaetigung per E-Mail. */
+        (drin() ? '<div class="rows"><button class="lrow rot" type="button" data-act="loeschen:sie">' +
+          '<span>Konto und alle Daten löschen</span><span class="r"></span></button></div>' : '') +
+      '</div>' +
+
+      '<div class="block"><h2 class="sec">Was kostet was</h2>' +
+        '<ul class="ticks">' +
+          ['Ohne Anmeldung: '+zaehl('offen')+' Videos, sofort, ohne E-Mail.',
+           'Mit kostenlosem Konto: '+zaehl('konto')+' weitere Videos und der gespeicherte Fortschritt.',
+           'KM1 PRO, 6,99 € im Monat: die '+zaehl('pro')+' Einheiten mit Profispielern. Sonst nichts kostenpflichtig.',
+           'Abrechnung über '+KAUF.laden+', jederzeit kündbar.'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul>' +
+        '<p class="fine">Der Kauf läuft über '+KAUF.kontoSie+'. '+KAUF.sperre+' kann Ihr Kind nichts kaufen, ohne dass Sie zustimmen. Für Kinder unter 16 Jahren legen Sie das Konto an.</p>' +
+      '</div>' +
+    '</div>';
+}
+
+/* Erinnerung an den Trainingstagen. Die Zeile oben zaehlt die Tage,
+   die gerade gewaehlt sind. */
+var WIE_OFT = ['Kein Tag gewählt','Einmal die Woche','Zweimal die Woche','Dreimal die Woche',
+  'Viermal die Woche','Fünfmal die Woche','Sechsmal die Woche','Jeden Tag'];
+function sheetErinnerung(){
+  var e = state.erinnerung;
+  var zeiten = ['15:00','16:00','16:30','17:00','17:30','18:00','19:00'];
+  var n = naechstesVideo() || VIDEOS[0];
+  return kopf('Erinnerung') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">'+(e.an ? WIE_OFT[e.tage.length] : 'Ausgeschaltet')+'</p><h1 class="big">Erinnerung<br>ans Training</h1>' +
+      '</div>' +
+
+      /* Die Vorschau liegt auf einem Sperrbildschirm, damit man sieht,
+         wie die Mitteilung wirklich ankommt. */
+      '<div class="sperrbild"><div class="push">' +
+        '<span class="ic"><img src="'+symbolDatei()+'" alt=""></span>' +
+        '<span class="tx"><span class="h"><span>KM1 Training</span><span>'+h(e.zeit)+'</span></span>' +
+        '<span class="b">Heute ist Trainingstag. Als Nächstes: '+h(n.t.replace(/\u00AD/g,''))+', '+minutenText(n.d)+'.</span></span>' +
+      '</div></div>' +
+
+      /* An und aus als Schalter, wie in den Einstellungen. */
+      '<div class="rows">' +
+        '<button class="lrow" type="button" role="switch" aria-checked="'+e.an+'" data-act="eran:'+(e.an ? 0 : 1)+'">' +
+          '<span>Erinnerung</span><span class="schalter" aria-hidden="true"></span></button>' +
+      '</div>' +
+
+      '<div class="field"><label>An diesen Tagen</label>' +
+        '<div class="days">'+TAGE.map(function(t){
+          return '<button class="day" type="button" data-act="ertag:'+t[0]+'" aria-pressed="'+(e.tage.indexOf(t[0])>=0)+'">'+t[1]+'</button>';
+        }).join('')+'</div></div>' +
+
+      '<div class="field"><label for="er-zeit">Uhrzeit</label>' +
+        '<span class="wahl"><select id="er-zeit">'+zeiten.map(function(z){
+          return '<option value="'+z+'"'+(z===e.zeit?' selected':'')+'>'+z+'</option>';
+        }).join('')+'</select></span></div>' +
+
+      '<button class="btn" type="button" data-act="ersave">Erinnerung speichern</button>' +
+    '</div>';
+}
+
+function sheetMerk(){
+  var liste = VIDEOS.filter(function(v){return state.merk[v.id];});
+  return kopf('Merkliste') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Für später</p><h1 class="big">Merkliste</h1></div>' +
+      (liste.length
+        ? '<div class="grid">'+liste.map(karte).join('')+'</div>'
+        : '<div class="leer">'+ICON.herz+'<p>Noch nichts gemerkt. Tipp bei einem Video auf das Herz, dann landet es hier.</p></div>') +
+    '</div>';
+}
+
+function sheetCamp(){
+  return kopf('Camp') +
+    '<div class="sheet-body">' +
+      '<div class="player"><div class="poster"><img src="img/goal.jpg" alt=""></div></div>' +
+      '<div><p class="eyebrow">Herbstferien</p><h1 class="big">Herbstcamp<br>Köln</h1></div>' +
+      '<div class="meta"><span>Mo 19. bis Fr 23. Oktober</span><span>U8 bis U15</span><span>9 bis 16 Uhr</span></div>' +
+      '<p class="prose">Fünf Tage am Stück auf dem Platz. Vormittags Technik in kleinen Gruppen, nachmittags Spielformen, am letzten Tag ein Turnier mit allen Eltern an der Linie.</p>' +
+      '<div class="block"><h2 class="sec">Was dabei ist</h2>' +
+        '<ul class="ticks">' +
+          ['Training in Gruppen von höchstens zehn Kindern',
+           'Mittagessen und Getränke an allen fünf Tagen',
+           'Ein KM1-Trikot, das bleibt',
+           'Abschlussturnier am Freitag mit Urkunde'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+      '<a class="btn" href="https://km1-training.de" target="_blank" rel="noopener">Auf die Warteliste</a>' +
+    '</div>';
+}
+
+function sheetDaten(){
+  return kopf('Datenschutz') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Ohne Juristendeutsch</p><h1 class="big">Deine Daten</h1></div>' +
+      '<div class="block"><h2 class="sec">Was wir speichern</h2>' +
+        '<ul class="ticks">' +
+          ['E-Mail und Vorname, damit dein Konto existiert',
+           'Welche Übungen du abgehakt hast und wo ein Video stehen geblieben ist',
+           'Ob dein Abo läuft'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+      '<div class="block"><h2 class="sec">Was wir nicht tun</h2>' +
+        '<ul class="ticks">' +
+          ['Kein Tracking, keine Werbenetzwerke',
+           'Keine Weitergabe an Dritte',
+           'Keine Auswertung, wer wie oft welches Video schaut'
+          ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+        '</ul></div>' +
+      (drin() ? '<div class="rows"><button class="lrow rot" type="button" data-act="loeschen:du">' +
+        '<span>Konto und alle Daten löschen</span><span class="r"></span></button></div>' : '') +
+      '<p class="fine">Die vollständige <a class="verweis" href="https://km1-training.de/datenschutz/" target="_blank" rel="noopener">Datenschutzerklärung</a> steht auf km1-training.de.</p>' +
+    '</div>';
+}
+
+function symbolDatei(){
+  return state.symbol==='pro' ? 'img/app-symbol-pro.png' : 'img/app-symbol.png';
+}
+function sheetSymbol(){
+  var zu = !state.pro;
+  function wahl(id, datei, nm, unter, gesperrt){
+    return '<button class="sym" type="button" data-act="sym:'+id+'" aria-pressed="'+(state.symbol===id)+'">' +
+      '<span class="bild"><img src="'+datei+'" alt="">' +
+        (gesperrt ? '<span class="schloss">'+ICON.lock+'</span>' : '') +
+      '</span>' +
+      '<span class="nm">'+nm+'</span><span class="zu">'+unter+'</span>' +
+    '</button>';
+  }
+  return kopf('App-Symbol') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Auf dem Startbildschirm</p><h1 class="big">Dein Symbol</h1>' +
+      '</div>' +
+
+      '<div class="symwahl">' +
+        wahl('standard','img/app-symbol.png','Standard','Für alle', false) +
+        wahl('pro','img/app-symbol-pro.png','Flutlicht', zu ? 'Mit KM1 Pro' : 'Freigeschaltet', zu) +
+      '</div>' +
+
+      (zu ? '<button class="btn" type="button" data-act="paywall">Pro ansehen</button>' : '') +
+
+    '</div>';
+}
+
+function sheetPaywall(){
+  var jahr = state.preis==='jahr';
+  /* Gebaut wie eine Produktseite: Symbol, Name im Verlauf der Marke,
+     die grosse Zeile, darunter was drin ist und die beiden Preise. */
+  return kopf('KM1 Pro') +
+    '<div class="sheet-body pay">' +
+      '<div class="pay-kopf">' +
+        '<img class="pay-symbol" src="img/app-symbol-pro.png" alt="">' +
+        '<span class="pro-name">KM1 Pro</span>' +
+        '<h1 class="big">Die Profis.<br>Aus der Nähe.</h1>' +
+        '<p class="sub">Sieben Tage gratis</p>' +
+      '</div>' +
+      '<ul class="ticks">' +
+        /* Nur, was schon stimmt. „Jeden Monat ein neuer Gast" war ein
+           Vertrag, den ein ausgefallener Monat bricht, und der „frühe
+           Zugang zu Camps" hatte nichts dahinter. */
+        ['Alle '+zaehl('pro')+' Einheiten mit Profispielern',
+         'Regelmäßig neue Einheiten mit neuen Gästen',
+         'Jede Übung Schritt für Schritt, in Zeitlupe zum Nachmachen',
+         'Das Flutlicht-Symbol für deinen Startbildschirm'
+        ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
+      '</ul>' +
+      '<div class="prices">' +
+        '<button class="price" type="button" data-act="preis:monat" aria-pressed="'+(!jahr)+'">' +
+          '<span class="k">Monatlich</span><span class="p">6,99 €</span><span class="k">pro Monat</span></button>' +
+        '<button class="price" type="button" data-act="preis:jahr" aria-pressed="'+jahr+'">' +
+          '<span class="k">Jährlich</span><span class="p">59,00 €</span><span class="k">4,92 € im Monat</span>' +
+          /* 59 € statt zwoelfmal 6,99 € sind 3,56 Monate umsonst, nicht 2. */
+          '<span class="x">3,5 Monate gratis</span></button>' +
+      '</div>' +
+      '<button class="btn" type="button" data-act="buy">'+(drin()?'7 Tage gratis testen':'Konto anlegen und testen')+'</button>' +
+      /* Was Apple unter 3.1.2 auf dieser Seite verlangt: Preis nach der
+         Probezeit, automatische Verlaengerung, Kuendigung, und die Wege
+         zu Nutzungsbedingungen und Datenschutz. */
+      '<p class="fine">Sieben Tage gratis, danach '+preisText(state.preis)+'. Das Abo verlängert sich automatisch, ' +
+        'wenn du es nicht spätestens 24 Stunden vor Ablauf kündigst. Abrechnung über '+KAUF.konto+', ' +
+        'kündbar '+KAUF.kuendigen+'.</p>' +
+      '<p class="fine verweise"><button class="verweis" type="button" data-act="bedingungen">Nutzungsbedingungen</button>' +
+        '<button class="verweis" type="button" data-act="daten">Datenschutz</button></p>' +
+      '<div class="pay-fuss">' +
+        '<button class="btn text" type="button" data-act="eltern">Für Eltern</button>' +
+        '<button class="btn text" type="button" data-act="restore">Kauf wiederherstellen</button>' +
+      '</div>' +
+    '</div>';
+}
+
+/* Die Nutzungsbedingungen in Kurzform. Sie wiederholen, was die App an
+   anderer Stelle verspricht, und ergaenzen das, was ein Laden verlangt.
+   Vor dem Start im Laden gehoeren sie einmal juristisch geprueft. */
+function sheetBedingungen(){
+  var liste = function(zeilen){
+    return '<ul class="ticks">'+zeilen.map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('')+'</ul>';
+  };
+  return kopf('Nutzungsbedingungen') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Das Wichtigste in Kürze</p><h1 class="big">Nutzungs&shy;bedingungen</h1></div>' +
+      '<div class="block"><h2 class="sec">Das Abo</h2>' + liste([
+        'KM1 Pro kostet 6,99 € im Monat oder 59,00 € im Jahr.',
+        'Die ersten sieben Tage sind gratis. Wer in dieser Zeit kündigt, zahlt nichts.',
+        'Danach verlängert sich das Abo automatisch um denselben Zeitraum, wenn es nicht spätestens 24 Stunden vor Ablauf gekündigt wird.',
+        'Gekündigt wird '+KAUF.kuendigen+'. Das Abo läuft dann bis zum Ende des bezahlten Zeitraums.',
+        'Bezahlt wird über '+KAUF.laden+'. Auch Erstattungen laufen darüber.'
+      ]) + '</div>' +
+      '<div class="block"><h2 class="sec">Die Videos</h2>' + liste([
+        'Die Videos sind für den privaten Gebrauch. Herunterladen, weitergeben oder öffentlich zeigen ist nicht erlaubt.',
+        'Die Rechte an den Videos liegen bei KM1 und den Spielern darin.'
+      ]) + '</div>' +
+      '<div class="block"><h2 class="sec">Beim Üben</h2>' + liste([
+        'Geübt wird auf eigene Verantwortung. Kinder üben am besten dort, wo ein Erwachsener in der Nähe ist, und nie auf der Straße.',
+        'Wer Schmerzen hat, hört auf. Keine Übung ist wichtiger als die Gesundheit.'
+      ]) + '</div>' +
+      '<div class="block"><h2 class="sec">Das Konto</h2>' + liste([
+        'Für Kinder unter 16 Jahren legen die Eltern das Konto an.',
+        'Das Konto lässt sich jederzeit löschen, unter Datenschutz.'
+      ]) + '</div>' +
+      '<p class="fine">' +
+        (PLATTFORM !== 'android' ? 'Für Käufe im App Store gilt zusätzlich der ' +
+          '<a class="verweis" href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/" target="_blank" rel="noopener">Lizenzvertrag von Apple</a>. ' : '') +
+        'Wer hinter KM1 steht, steht im <a class="verweis" href="https://km1-training.de/impressum/" target="_blank" rel="noopener">Impressum</a>.</p>' +
+    '</div>';
+}
+
+function sheetUpload(){
+  var u = state.up;
+  return kopf('Nur KM1') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Trainerbereich</p><h1 class="big">Neues Video</h1>' +
+      '</div>' +
+
+      '<button class="drop '+(u.datei?'has':'')+'" type="button" data-act="pickfile">' +
+        ICON.upl +
+        '<span class="h">'+(u.datei ? h(u.datei) : 'Video auswählen')+'</span>' +
+        '<span class="s">'+(u.datei ? '248 MB · 1080p · bereit' : 'MP4 oder MOV, bis 2 GB')+'</span>' +
+      '</button>' +
+
+      '<div class="field"><label for="up-titel">Titel</label>' +
+        '<input id="up-titel" type="text" placeholder="z. B. Die Flanke mit der Innenseite"></div>' +
+
+      '<div class="field"><label for="up-kat">Kategorie</label>' +
+        '<span class="wahl"><select id="up-kat">'+Object.keys(KAT).map(function(k){return '<option value="'+k+'">'+KAT[k]+'</option>';}).join('')+'</select></span></div>' +
+
+      '<div class="field"><label>Ebene</label>' +
+        '<div class="seg">'+LEVELS.map(function(l){
+          return '<button class="lv" type="button" data-act="uplv:'+l.n+'" style="--c:'+l.c+'" aria-pressed="'+(u.lv===l.n)+'">'+l.n+'</button>';
+        }).join('')+'</div></div>' +
+
+      '<div class="field"><label>Sichtbar für</label>' +
+        '<div class="seg">' +
+          '<button type="button" data-act="upvis:offen" aria-pressed="'+(u.vis==='offen')+'">Alle</button>' +
+          '<button type="button" data-act="upvis:konto" aria-pressed="'+(u.vis==='konto')+'">Mit Konto</button>' +
+          '<button type="button" data-act="upvis:pro" aria-pressed="'+(u.vis==='pro')+'">Profi (Abo)</button>' +
+        '</div></div>' +
+
+      (u.vis==='pro' ?
+      '<div class="field"><label for="up-gast">Gast vor der Kamera</label>' +
+        '<input id="up-gast" type="text" placeholder="z. B. Profi, 2. Bundesliga"></div>' : '') +
+
+      '<div class="field"><label for="up-be">Worum geht es</label>' +
+        '<textarea id="up-be" placeholder="Zwei Sätze, die ein Kind versteht."></textarea></div>' +
+
+      '<div class="bar" id="up-bar" hidden><i style="width:0%"></i></div>' +
+      '<button class="btn" type="button" data-act="publish" id="up-go">Veröffentlichen</button>' +
+    '</div>';
+}
+
+/* ============================================================
+   Haptik.
+   Ein Impuls bestaetigt, was passiert ist — er schmueckt nicht.
+   Was oefter als ein paarmal pro Minute vorkommt, schweigt: Tabs,
+   Blaetter, Filter, Play. Und nie zwei Impulse fuer eine Handlung.
+
+   Im Web laeuft das nur auf Android: navigator.vibrate hat WebKit nie
+   eingebaut, und damit kennt es kein Browser auf dem iPhone. Unten
+   steht ein Versuch ueber einen versteckten Schalter — der greift auf
+   iOS 17.4 bis 26.4 und gibt auch dort nur einen einzelnen Tick her.
+   Seit iOS 26.5 klopft nur noch ein echter Fingertipp auf den Schalter
+   selbst, nicht mehr ein click() aus dem Skript.
+
+   Verloren ist der Entwurf deshalb nicht, im Gegenteil: die echte App
+   nimmt expo-haptics und spricht die Taptic Engine direkt an, und die
+   ist praeziser als jeder Vibrationsmotor in einem Android-Geraet.
+   Welches Muster auf welchen Aufruf geht, steht in KONZEPT.md.
+   ============================================================ */
+var MUSTER = {
+  tick:     [7],                  /* rasten, wie ein Schieberegler */
+  leicht:   [14],                 /* verstanden */
+  mittel:   [24],                 /* Zustand gewechselt */
+  wand:     [30],                 /* hier geht es nicht weiter */
+  erfolg:   [16, 45, 26],         /* geschafft */
+  serie:    [14, 40, 14, 40, 28], /* erster Haken des Tages */
+  aufstieg: [14, 55, 14, 55, 40], /* leicht, leicht, kraeftig */
+  fehler:   [22, 70, 22]          /* so nicht */
+};
+var letzterImpuls = 0;
+function haptik(name){
+  var m = MUSTER[name];
+  if(!m) return;
+  var jetzt = Date.now();
+  if(jetzt - letzterImpuls < 60) return;   /* zwei Impulse stapeln sich nicht */
+  letzterImpuls = jetzt;
+  try{
+    if(navigator.vibrate){ navigator.vibrate(m); return; }
+  }catch(e){}
+  iosImpuls();
+}
+/* Safari 17.4 bis 26.4 laesst den Schalter im Formular klopfen, wenn
+   der Klick ueber sein Label laeuft. Ab 26.5 hat Apple das zugemacht.
+   Der Aufruf bleibt trotzdem stehen: er kostet nichts, schadet nichts
+   und hilft auf aelteren Geraeten. Gibt es ihn nicht, bleibt es still —
+   ohne Ersatzanzeige, denn ein Impuls, den man sieht, ist keiner. */
+var iosSchalter;
+function iosImpuls(){
+  if(iosSchalter === false) return;
+  if(!iosSchalter){
+    var feld = document.createElement('input');
+    feld.type = 'checkbox';
+    if(!('switch' in feld)){ iosSchalter = false; return; }
+    feld.setAttribute('switch', '');
+    var huelle = document.createElement('label');
+    huelle.setAttribute('aria-hidden', 'true');
+    huelle.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden';
+    huelle.appendChild(feld);
+    document.body.appendChild(huelle);
+    iosSchalter = huelle;
+  }
+  try{ iosSchalter.click(); }catch(e){}
+}
+
+/* ============================================================
+   Der Player.
+   Noch ohne echte Datei: die Leiste laeuft, das Standbild bleibt
+   stehen. Bedient wird er wie gewohnt — Doppeltipp links und rechts
+   springt fuenf Sekunden, die Leiste laesst sich ziehen, und das
+   Tempo sitzt im Vollbild, wo es niemandem im Weg steht.
+   ============================================================ */
+var P = {id:null, titel:'', poster:'', dauer:0, sek:0, laeuft:false, takt:null,
+         kino:false, zieht:null, tippZeit:0, tippSeite:'', ruhe:null};
+
+function stopPlayer(){
+  merkeStelle();
+  if(P.takt){ clearInterval(P.takt); P.takt = null; }
+  P.laeuft = false;
+}
+
+/* Wo jemand stehen geblieben ist. Ganz am Anfang und fast am Ende
+   zaehlt nicht — sonst steht auf der Startseite ein Video, das man
+   schon gesehen hat. */
+function merkeStelle(){
+  if(!P.id || P.id === 'challenge' || !P.dauer) return;
+  if(P.sek < 5 || P.sek / P.dauer > 0.95){ delete state.gesehen[P.id]; return; }
+  state.gesehen[P.id] = P.sek;
+  state.zuletzt = P.id;
+}
+
+/* Die beiden Haelften zum Doppeltippen, dazu die Anzeige, die
+   kurz aufblitzt, damit man den Sprung auch sieht. */
+function zonen(){
+  return '<div class="zone links" data-zone="links"></div>' +
+    '<div class="zone rechts" data-zone="rechts"></div>' +
+    '<span class="sprung links" data-sprung="links">'+ICON.rew+'5 s</span>' +
+    '<span class="sprung rechts" data-sprung="rechts">'+ICON.rew+'5 s</span>';
+}
+
+function steuerung(gross){
+  var pr = P.dauer ? (P.sek / P.dauer * 100) : 0;
+  return '<div class="pctl'+(gross ? ' gross' : '')+'">' +
+    '<button class="mini" type="button" data-act="play" aria-label="Abspielen oder anhalten">' +
+      (P.laeuft ? ICON.pause : ICON.play) + '</button>' +
+    '<span class="tm zeit">'+fmtZeit(P.sek)+'</span>' +
+    '<span class="scrub" data-scrub><span class="spur">' +
+      '<i style="width:'+pr+'%"></i><b class="griff" style="left:'+pr+'%"></b></span></span>' +
+    '<span class="tm">'+fmtZeit(P.dauer)+'</span>' +
+    (gross
+      ? '<button class="mini tempo" type="button" data-act="tempo">'+tempoLabel()+'</button>' +
+        '<button class="mini" type="button" data-act="kinozu" aria-label="Vollbild beenden">'+ICON.klein+'</button>'
+      : '<button class="mini" type="button" data-act="kino" aria-label="Vollbild">'+ICON.voll+'</button>') +
+  '</div>';
+}
+
+/* o = {id, titel, poster, dauer}. Ein anderes Video faengt vorne an,
+   dasselbe behaelt seine Stelle, auch wenn das Blatt neu gebaut wird. */
+function playerInline(o){
+  /* Ein anderes Video steigt da ein, wo man aufgehoert hat. */
+  if(P.id !== o.id){ stopPlayer(); P.id = o.id; P.sek = state.gesehen[o.id] || 0; }
+  P.titel = o.titel; P.poster = o.poster; P.dauer = o.dauer;
+  return '<div class="player" id="player">' +
+    '<div class="poster">'+o.poster+'</div>' +
+    zonen() +
+    '<button class="pbtn" type="button" data-act="play" aria-label="Abspielen"'+(P.laeuft ? ' hidden' : '')+'>' +
+      '<span>'+ICON.play+'</span></button>' +
+    steuerung(false) +
+  '</div>';
+}
+
+/* Alle sichtbaren Leisten nachfuehren, drinnen wie im Vollbild. */
+function zeichnePlayer(){
+  var pr = P.dauer ? (P.sek / P.dauer * 100) : 0, zt = fmtZeit(P.sek);
+  [].forEach.call(document.querySelectorAll('.pctl'), function(c){
+    var i = c.querySelector('.spur i');   if(i) i.style.width = pr+'%';
+    var g = c.querySelector('.griff');    if(g) g.style.left  = pr+'%';
+    var z = c.querySelector('.zeit');     if(z) z.textContent = zt;
+    var m = c.querySelector('.mini');     if(m) m.innerHTML   = P.laeuft ? ICON.pause : ICON.play;
+    var t = c.querySelector('.tempo');    if(t) t.textContent = tempoLabel();
+  });
+  var kap = document.querySelectorAll('[data-act^="kapitel:"]');
+  if(kap.length){
+    var jetzt = -1;
+    for(var i = 0; i < kap.length; i++){
+      if(P.sek + 0.5 >= parseFloat(kap[i].getAttribute('data-act').split(':')[1])) jetzt = i;
+    }
+    for(var j = 0; j < kap.length; j++) kap[j].parentNode.classList.toggle('jetzt', j === jetzt);
+  }
+  var pb = document.querySelector('#player .pbtn[data-act="play"]');
+  if(pb) pb.hidden = P.laeuft;
+  var kp = document.querySelector('.kino-play');
+  if(kp){
+    kp.hidden = P.laeuft;
+    var sp = kp.querySelector('span'); if(sp) sp.innerHTML = ICON.play;
+  }
+}
+
+function spiele(an){
+  if(!P.id) return;
+  var neu = (an === undefined) ? !P.laeuft : an;
+  if(P.takt){ clearInterval(P.takt); P.takt = null; }
+  if(neu && P.sek >= P.dauer) P.sek = 0;
+  P.laeuft = neu;
+  if(neu){
+    P.takt = setInterval(function(){
+      P.sek = Math.min(P.dauer, P.sek + 0.25 * state.tempo);
+      merkeStelle();
+      if(P.sek >= P.dauer){ stopPlayer(); }
+      zeichnePlayer();
+    }, 250);
+    if(P.kino) ruhePlanen();
+  } else if(P.kino){ steuerungZeigen(); }
+  zeichnePlayer();
+}
+
+function springe(sek){
+  if(!P.id) return;
+  var vorher = P.sek;
+  P.sek = Math.max(0, Math.min(P.dauer, P.sek + sek));
+  /* Steht die Zeit schon am Rand, spuert man die Wand statt des Sprungs. */
+  haptik(P.sek === vorher ? 'wand' : 'leicht');
+  zeigeSprung(sek < 0 ? 'links' : 'rechts');
+  zeichnePlayer();
+}
+function zeigeSprung(seite){
+  var feld = document.getElementById('kino') || document.getElementById('player');
+  if(!feld) return;
+  var el = feld.querySelector('[data-sprung="'+seite+'"]');
+  if(!el) return;
+  el.classList.add('an');
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.classList.remove('an'); }, 520);
+}
+
+/* Ein Tipp macht Pause, zwei springen. Deshalb wartet der erste Tipp
+   kurz ab, ob ein zweiter kommt. */
+function zonenTipp(seite){
+  var jetzt = Date.now();
+  if(P.tippSeite === seite && jetzt - P.tippZeit < 340){
+    P.tippZeit = 0;
+    springe(seite === 'links' ? -5 : 5);
+    return;
+  }
+  P.tippZeit = jetzt; P.tippSeite = seite;
+  setTimeout(function(){
+    if(P.tippZeit !== jetzt) return;
+    P.tippZeit = 0;
+    if(P.kino && P.laeuft && !document.getElementById('kino').classList.contains('ruhe')) ruheSofort();
+    else if(P.kino) steuerungZeigen();
+    else spiele();
+  }, 340);
+}
+
+/* Die Leiste ziehen. Waehrend des Ziehens laeuft die Zeit weiter,
+   aber der Griff gehoert dem Finger. */
+function scrubZu(e, sc){
+  var spur = sc.querySelector('.spur'), r = spur.getBoundingClientRect();
+  /* Im gedrehten Vollbild laeuft die Leiste von oben nach unten. */
+  var quer = !!(sc.closest && sc.closest('.dreh.quer'));
+  var roh = quer ? (e.clientY - r.top) / r.height : (e.clientX - r.left) / r.width;
+  var pr = Math.max(0, Math.min(1, roh));
+  /* Am Anfang und am Ende einmal anstossen, nicht dauernd. */
+  if(pr === 0 || pr === 1){ if(P.rand !== pr){ P.rand = pr; haptik('wand'); } }
+  else P.rand = null;
+  P.sek = pr * P.dauer;
+  zeichnePlayer();
+}
+
+/* ---------- Vollbild ---------- */
+function kinoAuf(){
+  if(!P.id || P.kino) return;
+  P.kino = true;
+  haptik('mittel');
+  var el = document.createElement('div');
+  el.className = 'kino'; el.id = 'kino';
+  el.innerHTML =
+    '<div class="dreh" id="dreh">' +
+    '<div class="kino-bild"><div class="poster">'+P.poster+'</div></div>' +
+    zonen() +
+    '<div class="kino-oben">' +
+      '<button class="rund" type="button" data-act="kinozu" aria-label="Vollbild beenden">'+ICON.x+'</button>' +
+      '<span class="kino-titel">'+h(P.titel)+'</span></div>' +
+    '<button class="kino-play" type="button" data-act="play" aria-label="Abspielen"'+(P.laeuft ? ' hidden' : '')+'>' +
+      '<span>'+ICON.play+'</span></button>' +
+    steuerung(true) +
+    '<div class="tempoliste" id="tempoliste" hidden>' +
+      TEMPI.map(function(t){
+        return '<button type="button" data-act="tempowahl:'+t+'"'+(state.tempo===t ? ' aria-pressed="true"' : '')+'>' +
+          tempoText(t)+'</button>';
+      }).join('') +
+    '</div></div>';
+  document.querySelector('.device').appendChild(el);
+  if(echtesVollbild()){ try{ el.requestFullscreen().catch(function(){}); }catch(e){} }
+  drehAnpassen();
+  window.addEventListener('resize', drehAnpassen);
+  requestAnimationFrame(function(){ el.classList.add('an'); });
+  try{ if(screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(function(){}); }catch(e){}
+  steuerungZeigen();
+}
+/* Am Schreibtisch heisst Vollbild wirklich Vollbild: das Fenster gibt
+   seine Leisten ab. Auf dem Handy gibt es das nicht — dort bleibt es
+   die gedrehte Flaeche aus drehAnpassen. */
+function amSchreibtisch(){
+  /* Dieselbe Schwelle wie im Stil. Absichtlich ohne pointer:fine:
+     ein Tablet im Querformat soll die grosse Fassung bekommen. */
+  return window.matchMedia('(min-width:1000px)').matches;
+}
+function echtesVollbild(){
+  return amSchreibtisch() && !!document.fullscreenEnabled;
+}
+document.addEventListener('fullscreenchange', function(){
+  /* Wer mit Escape aus dem Vollbild geht, will auch aus dem Kino. */
+  if(!document.fullscreenElement && P.kino && amSchreibtisch()) kinoZu();
+});
+
+function drehAnpassen(){
+  var el = document.getElementById('kino'), d = document.getElementById('dreh');
+  if(!el || !d) return;
+  var r = el.getBoundingClientRect();
+  if(r.height > r.width){
+    d.classList.add('quer');
+    d.style.width = r.height+'px'; d.style.height = r.width+'px';
+  } else {
+    d.classList.remove('quer');
+    d.style.width = ''; d.style.height = '';
+  }
+}
+function kinoZu(){
+  if(P.kino) haptik('mittel');
+  try{ if(document.fullscreenElement) document.exitFullscreen().catch(function(){}); }catch(e){}
+  window.removeEventListener('resize', drehAnpassen);
+  var el = document.getElementById('kino');
+  if(el){ el.classList.remove('an'); setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 240); }
+  P.kino = false;
+  clearTimeout(P.ruhe);
+  try{ if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); }catch(e){}
+  zeichnePlayer();
+}
+/* Im Vollbild zieht sich die Bedienung zurueck, sobald das Video laeuft. */
+function steuerungZeigen(){
+  var el = document.getElementById('kino');
+  if(!el) return;
+  el.classList.remove('ruhe');
+  ruhePlanen();
+}
+function ruhePlanen(){
+  clearTimeout(P.ruhe);
+  if(!P.laeuft) return;
+  P.ruhe = setTimeout(ruheSofort, 2600);
+}
+function ruheSofort(){
+  var el = document.getElementById('kino');
+  if(!el || !P.laeuft) return;
+  el.classList.add('ruhe');
+  var li = document.getElementById('tempoliste');
+  if(li) li.hidden = true;
+}
+
+document.addEventListener('pointerdown', function(e){
+  var sc = e.target.closest && e.target.closest('[data-scrub]');
+  if(!sc) return;
+  P.zieht = sc;
+  P.rand = null;
+  haptik('tick');
+  try{ sc.setPointerCapture(e.pointerId); }catch(err){}
+  scrubZu(e, sc);
+  steuerungZeigen();
+  e.preventDefault();
+});
+document.addEventListener('pointermove', function(e){
+  if(P.zieht) scrubZu(e, P.zieht);
+});
+document.addEventListener('pointerup', function(e){
+  if(P.zieht){ P.zieht = null; haptik('tick'); ruhePlanen(); return; }
+  var z = e.target.closest && e.target.closest('[data-zone]');
+  if(z) zonenTipp(z.getAttribute('data-zone'));
+});
+document.addEventListener('pointercancel', function(){ P.zieht = null; });
+
+/* Das Portrait in gross. Liegt ueber allem, geht bei jedem Klick und
+   mit Escape wieder zu. */
+function portraitAuf(){
+  if(document.getElementById('lupe')) return;
+  var el = document.createElement('div');
+  el.className = 'lupe'; el.id = 'lupe';
+  el.innerHTML = '<img src="img/coach.jpg" alt="">';
+  el.addEventListener('click', portraitZu);
+  document.querySelector('.device').appendChild(el);
+  requestAnimationFrame(function(){ el.classList.add('an'); });
+}
+function portraitZu(){
+  var el = document.getElementById('lupe');
+  if(!el) return;
+  el.classList.remove('an');
+  setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 240);
+}
+
+/* Tastatur am Schreibtisch: was man von einem Videoplayer erwartet.
+   Leertaste und K halten an, die Pfeile springen fuenf Sekunden, F
+   schaltet das Vollbild, Escape geht zurueck. */
+document.addEventListener('keydown', function(e){
+  var feld = e.target && e.target.tagName;
+  if(feld === 'INPUT' || feld === 'TEXTAREA' || feld === 'SELECT') return;
+  if(e.metaKey || e.ctrlKey || e.altKey) return;
+  var k = e.key;
+
+  if(k === 'Escape'){
+    if(document.getElementById('lupe')) portraitZu();
+    else if(P.kino) kinoZu();
+    else if(stack.length) closeSheet();
+    return;
+  }
+  /* Nur wenn ein Player wirklich zu sehen ist. */
+  if(!P.id || !(P.kino || document.getElementById('player'))) return;
+
+  if(k === ' ' || k === 'k' || k === 'K'){ e.preventDefault(); spiele(); }
+  else if(k === 'ArrowLeft' || k === 'j' || k === 'J'){ e.preventDefault(); springe(-5); }
+  else if(k === 'ArrowRight' || k === 'l' || k === 'L'){ e.preventDefault(); springe(5); }
+  else if(k === 'f' || k === 'F'){ e.preventDefault(); if(P.kino) kinoZu(); else kinoAuf(); }
+});
+
+/* ============================================================
+   Zeichnen
+   ============================================================ */
+function applyTheme(){
+  var t = state.theme, dunkel;
+  if(t === 'auto'){
+    dunkel = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  } else {
+    dunkel = (t === 'dunkel');
+  }
+  document.documentElement.setAttribute('data-theme', dunkel ? 'dark' : 'light');
+}
+function renderTabs(){
+  var t = [
+    ['start','Start',ICON.tabStart],['technik','Technik',ICON.tabTech],
+    ['pyramide','Pyramide',ICON.tabPyr],['profil','Profil',ICON.tabProf]
+  ];
+  document.getElementById('tabs').innerHTML = t.map(function(x){
+    return '<button class="tab" type="button" data-act="tab:'+x[0]+'"'+(state.tab===x[0]?' aria-current="page"':'')+'>' +
+      '<span class="ti">'+x[2]+'</span><span>'+x[1]+'</span></button>';
+  }).join('');
+}
+var letzterTab = null;
+function render(){
+  var s = {start:screenStart, technik:screenTechnik, pyramide:screenPyramide, profil:screenProfil}[state.tab];
+  var flaeche = document.getElementById('screens');
+  /* Beim Neuzeichnen derselben Seite bleibt die Liste stehen, wo sie stand;
+     ein Tabwechsel faengt oben an. */
+  var tabWechsel = state.tab !== letzterTab;
+  var y = tabWechsel ? 0 : flaeche.scrollTop;
+  /* Auch die waagerechten Leisten bleiben stehen, wo sie standen. Sonst
+     springt die gerade angetippte Schaltflaeche aus dem Bild, weil die
+     Leiste beim Neuzeichnen wieder von vorne anfaengt. */
+  var x = (!tabWechsel)
+    ? [].map.call(flaeche.querySelectorAll('.chips,.row'), function(l){ return l.scrollLeft; })
+    : [];
+  flaeche.innerHTML = s();
+  flaeche.scrollTop = y;
+  [].forEach.call(flaeche.querySelectorAll('.chips,.row'), function(l, i){
+    if(x[i]) l.scrollLeft = x[i];
+  });
+  letzterTab = state.tab;
+  /* Der Titel in der Kopfzeile, der beim Scrollen einblendet. */
+  var kt = document.getElementById('kopftitel');
+  if(kt) kt.textContent = {start:'Start', technik:'Technik', pyramide:'Pyramide', profil:'Profil'}[state.tab] || '';
+  var ab = document.querySelector('.appbar');
+  if(ab && y === 0) ab.classList.remove('tief', 'scrolled');
+
+  /* Punkt 12: die Farbe der eigenen Ebene als Leitfarbe. Ohne Konto
+     bleibt es beim Blau. */
+  document.documentElement.style.setProperty('--mein',
+    drin() ? lvOf(state.meinLv).c : 'var(--blau)');
+
+  /* Punkt 10: nur beim Wechsel der Seite blenden die Bloecke auf. */
+  if(tabWechsel){
+    var sec = flaeche.querySelector('.screen');
+    if(sec){
+      sec.classList.add('frisch');
+      [].forEach.call(sec.children, function(kind, i){
+        kind.style.animationDelay = Math.min(i * 45, 200) + 'ms';
+      });
+    }
+  }
+  renderTabs();
+  var chip = document.getElementById('lvchip');
+  if(drin()){
+    var l = lvOf(state.meinLv);
+    chip.innerHTML = '<i style="background:'+l.c+'"></i>'+l.nm;
+  } else {
+    chip.innerHTML = '<i style="background:var(--text-3)"></i>Gast';
+  }
+}
+var toastT = null;
+function toast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ t.classList.remove('on'); }, 2300);
+}
+function anmelden(name){
+  state.konto = {name: name || 'Luis M.', vn: (name || 'Luis M.').split(' ')[0], seit: Date.now()};
+  /* Beispieldaten fuer den Entwurf: zwei Uebungen in der letzten Woche,
+     zwei in dieser. So zeigen Wochenziel und Serie echte Werte. */
+  if(!Object.keys(state.done).length){
+    var jetzt = Date.now(), vorige = wochenStart() - 3 * TAG_MS;
+    state.done = {'erste-beruehrung':vorige, 'flacher-pass':vorige + 3600e3,
+                  'abstoppen':jetzt - 60e3, 'flanke-innen':jetzt - 30e3};
+  }
+}
+
+/* ============================================================
+   Ein Klickfaenger fuer alles
+   ============================================================ */
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-act]');
+  if(!b) return;
+  var a = b.getAttribute('data-act'), i = a.indexOf(':');
+  var k = i<0 ? a : a.slice(0,i), v = i<0 ? '' : a.slice(i+1);
+
+  if(k==='tab'){ state.tab = v; while(stack.length) closeSheet(); render(); }
+  else if(k==='video'){ openSheet(sheetVideo(v)); }
+  else if(k==='back'){ closeSheet(); }
+  else if(k==='challenge'){ openSheet(sheetChallenge()); }
+  else if(k==='paywall'){ haptik('wand'); openSheet(sheetPaywall()); }
+  else if(k==='preis'){ state.preis = v; refreshSheet(sheetPaywall()); }
+  else if(k==='login'){ state.loginModus = (v==='alt') ? 'alt' : 'neu'; openSheet(sheetLogin()); }
+  else if(k==='kontologin'){
+    haptik('wand');
+    state.nachLogin = 'video:'+v; state.loginModus = 'neu';
+    openSheet(sheetLogin('Dieses Video gehört zu den '+zaehl('konto')+', für die ein kostenloses Konto reicht.'));
+  }
+  else if(k==='lmodus'){ state.loginModus = v; refreshSheet(sheetLogin()); }
+  else if(k==='signin'){
+    var nm = (document.getElementById('lg-name')||{}).value;
+    var mail = (document.getElementById('lg-mail')||{}).value || '';
+    /* Die Trainerrolle haengt am Konto, nicht an einem Schalter. */
+    var trainer = /kader|km1-training/i.test(mail);
+    state.owner = trainer;
+    anmelden(trainer ? 'Kader' : (nm && nm.trim() ? nm.trim() : 'Luis M.'));
+    closeSheet();
+    var n = state.nachLogin; state.nachLogin = null;
+    render();
+    /* Anmelden und der aufgeschobene Haken sind ein Vorgang, nicht zwei:
+       es gibt einen Impuls, und zwar den fuer das, was der Nutzer wollte. */
+    if(n && n.indexOf('check:')===0){
+      var cid = n.slice(6);
+      state.done[cid] = Date.now();
+      var aufL = pruefeAufstieg();
+      haptik(aufL ? 'aufstieg' : (state.serieHeute ? 'erfolg' : 'serie'));
+      state.serieHeute = 1;
+      render();
+      if(aufL){ openSheet(sheetAufstieg()); toast('Angemeldet. Abgehakt.'); return; }
+      if(stack.length) refreshSheet(cid.indexOf('challenge-')===0 ? sheetChallenge() : sheetVideo(cid));
+      toast('Angemeldet. Abgehakt.');
+    }
+    else if(n && n.indexOf('video:')===0){
+      haptik('erfolg');
+      var vid = n.slice(6);
+      if(stack.length) refreshSheet(sheetVideo(vid)); else openSheet(sheetVideo(vid));
+      toast('Angemeldet, Video ist offen');
+    }
+    else if(n === 'pro'){ haptik('erfolg'); openSheet(sheetPaywall()); toast('Angemeldet'); }
+    else { haptik('erfolg'); toast('Angemeldet'); }
+  }
+  else if(k==='logout'){
+    state.konto = null; state.pro = false; state.abo = null; state.owner = false; state.done = {};
+    state.symbol = 'standard'; state.merk = {};
+    render(); toast('Abgemeldet');
+  }
+  else if(k==='buy'){
+    if(!drin()){ haptik('wand'); state.nachLogin = 'pro'; state.loginModus='neu'; openSheet(sheetLogin('Für ein Abo braucht es ein Konto, sonst weiß niemand, wem PRO gehört.')); return; }
+    state.pro = true;
+    state.abo = {preis: state.preis, bis: Date.now() + 7 * TAG_MS};
+    haptik('aufstieg');          /* Ein Kauf muss ankommen */
+    while(stack.length) closeSheet();
+    render(); toast('KM1 Pro ist aktiv');
+  }
+  else if(k==='check'){
+    if(!drin()){
+      haptik('wand');
+      state.nachLogin = 'check:'+v; state.loginModus='neu';
+      openSheet(sheetLogin('Damit dein Fortschritt gespeichert wird, brauchst du ein Konto.'));
+      return;
+    }
+    var auf = false;
+    if(state.done[v]){
+      delete state.done[v];
+      haptik('leicht');          /* Rueckgaengig ist keine Belohnung */
+    } else {
+      state.done[v] = Date.now();
+      auf = pruefeAufstieg();
+      /* Der groessere Impuls gewinnt: wer durch den Haken aufsteigt,
+         spuert den Aufstieg, nicht den Haken. Der erste Haken des Tages
+         traegt die Serie — hier im Entwurf der erste seit dem Start,
+         spaeter der erste im Kalendertag. */
+      haptik(auf ? 'aufstieg' : (state.serieHeute ? 'erfolg' : 'serie'));
+      state.serieHeute = 1;
+    }
+    var istCh = v.indexOf('challenge-')===0;
+    refreshSheet(istCh ? sheetChallenge() : sheetVideo(v));
+    if(auf){ render(); openSheet(sheetAufstieg()); return; }
+    toast(state.done[v] ? 'Abgehakt. Stark.' : 'Haken entfernt');
+  }
+  else if(k==='play'){ spiele(); }
+  else if(k==='kapitel'){
+    if(!P.id) return;
+    P.sek = Math.max(0, Math.min(P.dauer, parseFloat(v)));
+    haptik('leicht');
+    zeichnePlayer();
+    var pl = document.getElementById('player');
+    if(pl) pl.scrollIntoView({block:'start', behavior:'smooth'});
+  }
+  else if(k==='kino'){ kinoAuf(); }
+  else if(k==='kinozu'){ kinoZu(); }
+  else if(k==='tempo'){
+    var li = document.getElementById('tempoliste');
+    if(li){ li.hidden = !li.hidden; steuerungZeigen(); }
+  }
+  else if(k==='tempowahl'){
+    state.tempo = parseFloat(v);
+    haptik('tick');              /* rastet wie ein Rad */
+    var li2 = document.getElementById('tempoliste');
+    if(li2){
+      li2.hidden = true;
+      [].forEach.call(li2.children, function(kn){
+        if(parseFloat(kn.getAttribute('data-act').split(':')[1]) === state.tempo) kn.setAttribute('aria-pressed','true');
+        else kn.removeAttribute('aria-pressed');
+      });
+    }
+    if(P.laeuft) spiele(true); else zeichnePlayer();
+    steuerungZeigen();
+  }
+  else if(k==='portrait'){ portraitAuf(); }
+  else if(k==='eltern'){ openSheet(sheetEltern()); }
+  else if(k==='symbol'){ openSheet(sheetSymbol()); }
+  else if(k==='merkliste'){ openSheet(sheetMerk()); }
+  else if(k==='merk'){
+    if(!drin()){
+      haptik('wand');
+      state.nachLogin = 'video:'+v; state.loginModus = 'neu';
+      openSheet(sheetLogin('Damit deine Merkliste erhalten bleibt, brauchst du ein Konto.'));
+      return;
+    }
+    if(state.merk[v]) delete state.merk[v]; else state.merk[v] = 1;
+    haptik('leicht');
+    refreshSheet(sheetVideo(v));
+    toast(state.merk[v] ? 'Gemerkt' : 'Aus der Merkliste genommen');
+  }
+  else if(k==='daten'){ openSheet(sheetDaten()); }
+  /* Auf der Elternseite heisst es Sie, sonst du. */
+  else if(k==='loeschen'){ toast(v==='sie' ? 'Wir schicken Ihnen eine E-Mail zur Bestätigung' : 'Wir schicken dir eine E-Mail zur Bestätigung'); }
+  else if(k==='bedingungen'){ openSheet(sheetBedingungen()); }
+  else if(k==='pwvergessen'){
+    var pm = ((document.getElementById('lg-mail')||{}).value || '').trim();
+    if(pm.indexOf('@') < 1){ haptik('fehler'); toast('Trag zuerst deine E-Mail-Adresse ein'); return; }
+    haptik('leicht'); toast('Der Link zum Zurücksetzen ist unterwegs');
+  }
+  else if(k==='restore'){ toast('Keine früheren Käufe gefunden'); }
+  else if(k==='sym'){
+    if(v==='pro' && !state.pro){ haptik('wand'); openSheet(sheetPaywall()); return; }
+    state.symbol = v;
+    haptik('leicht');
+    refreshSheet(sheetSymbol());
+    toast(v==='pro' ? 'Symbol: Flutlicht' : 'Symbol: Standard');
+  }
+  else if(k==='erinnerung'){ openSheet(sheetErinnerung()); }
+  else if(k==='eran'){ state.erinnerung.an = (v==='1'); haptik('leicht'); refreshSheet(sheetErinnerung()); }
+  else if(k==='ertag'){
+    var ix = state.erinnerung.tage.indexOf(v);
+    if(ix>=0) state.erinnerung.tage.splice(ix,1); else state.erinnerung.tage.push(v);
+    state.erinnerung.tage.sort(function(x,y){
+      return TAGE.map(function(t){return t[0];}).indexOf(x) - TAGE.map(function(t){return t[0];}).indexOf(y);
+    });
+    refreshSheet(sheetErinnerung());
+  }
+  else if(k==='ersave'){
+    var z = document.getElementById('er-zeit');
+    if(z) state.erinnerung.zeit = z.value;
+    if(state.erinnerung.an && !state.erinnerung.tage.length){ haptik('fehler'); toast('Wähl mindestens einen Tag'); return; }
+    closeSheet(); render();
+    toast(state.erinnerung.an ? 'Erinnerung: '+erinnerungText() : 'Erinnerung aus');
+  }
+  else if(k==='lv'){ state.lvSel = +v; render(); }
+  else if(k==='kat'){ state.kat = v; render(); }
+  else if(k==='ebwahl'){ openSheet(sheetEbene()); }
+  else if(k==='fltlv'){ state.fltLv = +v; if(stack.length) closeSheet(); render(); }
+  else if(k==='filterweg'){ state.kat = 'alle'; state.fltLv = 0; state.suche = ''; haptik('leicht'); render(); }
+  else if(k==='theme'){ state.theme = v; haptik('leicht'); applyTheme(); render(); }
+  else if(k==='upload'){ openSheet(sheetUpload()); }
+  else if(k==='pickfile'){ state.up.datei = 'flanke-innenseite-2026.mp4'; refreshSheet(sheetUpload()); }
+  else if(k==='uplv'){ state.up.lv = +v; refreshSheet(sheetUpload()); }
+  else if(k==='upvis'){ state.up.vis = v; refreshSheet(sheetUpload()); }
+  else if(k==='publish'){ publish(); }
+  else if(k==='camps'){ openSheet(sheetCamp()); }
+});
+
+document.addEventListener('keydown', function(e){
+  var g = e.target.closest && e.target.closest('.plate');
+  if(g && (e.key==='Enter' || e.key===' ')){ e.preventDefault(); g.click(); }
+});
+
+document.addEventListener('input', function(e){
+  if(e.target.id==='suche'){
+    state.suche = e.target.value;
+    var pos = e.target.selectionStart;
+    render();
+    var f = document.getElementById('suche');
+    if(f){ f.focus(); try{ f.setSelectionRange(pos,pos); }catch(err){} }
+  }
+});
+
+if(window.matchMedia){
+  try{
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){
+      /* Neu zeichnen, damit unter „Darstellung" das richtige Telefon
+         gewaehlt ist. */
+      if(state.theme==='auto'){ applyTheme(); render(); }
+    });
+  }catch(err){}
+}
+
+function publish(){
+  var u = state.up;
+  var titel = (document.getElementById('up-titel')||{}).value || '';
+  if(!u.datei){ haptik('fehler'); toast('Erst ein Video auswählen'); return; }
+  if(!titel.trim()){ haptik('fehler'); toast('Der Titel fehlt'); return; }
+  if(u.busy) return;
+  u.busy = true;
+
+  var bar = document.getElementById('up-bar'), go = document.getElementById('up-go');
+  bar.hidden = false;
+  go.textContent = 'Lädt hoch …';
+  var p = 0;
+  var t = setInterval(function(){
+    p += 7;
+    if(p >= 100){
+      clearInterval(t); u.busy = false;
+      VIDEOS.unshift({
+        id:'neu-'+Date.now(), t:titel.trim(),
+        k:(document.getElementById('up-kat')||{}).value || 'dribbling',
+        lv:u.lv, d:'0:00', zg:u.vis, neu:true, views:0,
+        gast:(u.vis==='pro' ? ((document.getElementById('up-gast')||{}).value || 'Gastspieler') : null),
+        be:(document.getElementById('up-be')||{}).value || 'Noch keine Beschreibung.',
+        st:['Schritte ergänzt Kader nach dem Upload.'],
+        fe:'Wird nachgetragen.'
+      });
+      var war = u.vis;
+      haptik('erfolg');
+      state.up = {datei:null, lv:1, vis:'offen', busy:false};
+      state.tab = 'technik'; state.kat = 'alle'; state.fltLv = 0; state.suche = '';
+      while(stack.length) closeSheet();
+      render();
+      toast(war==='pro' ? 'Veröffentlicht als Profi-Einheit' :
+            (war==='konto' ? 'Veröffentlicht, sichtbar mit Konto' : 'Veröffentlicht, sichtbar für alle'));
+      return;
+    }
+    bar.firstElementChild.style.width = p+'%';
+  }, 120);
+}
+
+/* Die Kopfzeile legt sich erst in den Schatten, wenn etwas darunter
+   weggescrollt ist. Kleinigkeit, aber genau daran erkennt das Auge
+   eine App und keine Webseite. */
+(function(){
+  var sc = document.getElementById('screens'), ab = document.querySelector('.appbar');
+  if(!sc || !ab) return;
+  sc.addEventListener('scroll', function(){
+    ab.classList.toggle('scrolled', sc.scrollTop > 4);
+    /* Ist die grosse Ueberschrift weggescrollt, uebernimmt die Kopfzeile. */
+    ab.classList.toggle('tief', sc.scrollTop > 46);
+  }, {passive:true});
+})();
+
+applyTheme();
+render();
+if(window.km1Start) window.km1Start.fertig('app');
+
+/* Punkt 11: die Platzhalterkarten. Den Zeitpunkt gibt jetzt der
+   Startbildschirm vor — kurz bevor er abblendet, stehen die echten
+   Karten schon da. So gibt es einen Uebergang statt zweier
+   Ladezustaende hintereinander. Der Zeitgeber faengt den Fall ab,
+   dass es den Startbildschirm nicht gibt.
+
+   In der fertigen App endet der Zustand, wenn die Videoliste vom
+   Server da ist; heute liegt sie im Dokument. */
+(function(){
+  var fertig = function(){
+    if(!state.laedt) return;
+    state.laedt = false;
+    letzterTab = null;      /* damit die Bloecke einmal aufblenden */
+    render();
+  };
+  if(window.km1Start) window.km1Start.kurzVorSchluss(fertig);
+  setTimeout(fertig, 2600);
+})();
+</script>
+</body>
+</html>

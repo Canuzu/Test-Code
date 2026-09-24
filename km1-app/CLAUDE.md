@@ -41,6 +41,21 @@ auf.
   Datenbank mit `npm test` in `supabase/tests/`. Beides läuft auch in der CI
   (`.github/workflows/km1-app.yml`).
 
+## Die Designstudie in `apple/`
+
+`apple/` ist eine Kopie der App mit einem Design im Stil von Apple, zum
+Vergleichen. Sie ersetzt nichts: `app/` bleibt die Hauptfassung, und eine
+Änderung an `app/` wird nicht automatisch in `apple/` nachgezogen.
+
+- Logik und Texte sind dieselben wie in `app/index.html`. Neu sind der Stil,
+  die Zeichen und der Aufbau einiger Bildschirme.
+- Kein Service Worker. So kommt sich die Studie nicht mit dem Speicher der
+  Hauptfassung in die Quere, und `VERSION` in `app/sw.js` bleibt unberührt.
+- Die Schrift ist auf Apple-Geräten SF Pro vom Gerät, sonst Inter aus
+  `apple/fonts/`.
+- Vorschau auf claude.ai: `python3 artefakt.py apple`, veröffentlicht als
+  eigenes Artefakt mit den Dateien aus `apple/fonts/` und `apple/img/`.
+
 ## Sprache
 
 Code-Kommentare, Commits, Pull Requests und die Dokumentation sind auf
@@ -53,7 +68,8 @@ Commit-Nachrichten werden umschrieben (ae, oe, ue), im übrigen Text nicht.
 | --- | --- |
 | `app/index.html` | Die ganze App: Aufbau, Gestaltung, Verhalten in einem Dokument |
 | `app/sw.js` | Service Worker, `VERSION` bei jeder Änderung erhöhen |
-| `artefakt.py` | Macht aus `app/index.html` die Fassung für die Vorschau auf claude.ai |
+| `apple/index.html` | Designstudie im Stil von Apple: dieselbe App, anderes Design, liegt unter `…/km1-app/apple/` |
+| `artefakt.py` | Macht aus `app/index.html` die Fassung für die Vorschau auf claude.ai, mit `apple` aus der Designstudie |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, Weg ins App Store |
 | `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
 | `mobile/` | Die echte App für iPhone und Android (Expo), siehe `mobile/README.md` |
