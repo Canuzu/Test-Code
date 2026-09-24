@@ -12,6 +12,7 @@ Hochladen darf ausschließlich der KM1-Account, alle anderen sehen nur zu.
 | `icon/` | App-Symbol und Markenbilder, dazu `bauen.py`, das sie aus dem Logo erzeugt |
 | `apple/` | Dieselbe App im Stil von Apple, als Designstudie zum Vergleichen |
 | `mischung/` | Die Mischung: der Aufbau von Apple mit dem Charakter von KM1 |
+| `mischung2/` | Die Mischung 2: farbige Vorschaubilder wie bei Apple, Anton nur für die großen Titel |
 | `artefakt.py` | Macht aus `app/` (oder mit `apple` aus `apple/`) die Fassung für die Vorschau auf claude.ai |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, App Store |
 | `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
@@ -47,6 +48,13 @@ Fassung: achtzig Teile Apple, zwanzig Teile KM1. Aufbau und Bedienung wie in der
 Apple-Studie, dazu die großen Titel in Anton, Köln-Rot als Akzent, die rote
 Zeile über den Überschriften und die Kreidezeichnungen auf dem grünen Brett.
 Im Profil führen zwei Zeilen zu den anderen beiden Fassungen.
+
+### Die Mischung 2
+
+Unter **<https://canuzu.github.io/Test-Code/km1-app/mischung2/>** liegt die vierte
+Fassung: die Mischung, farbiger und ruhiger. Die Vorschaubilder tragen wieder die
+Farbe ihrer Ebene, Anton steht nur noch in den großen Titeln, Zahlen stehen in
+der runden Systemschrift. Im Profil führen Zeilen zu allen anderen Fassungen.
 
 ## Was drin ist
 

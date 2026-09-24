@@ -168,15 +168,15 @@ jobs:
         run: |
           mkdir -p dist/km1-app
           cp -r km1-app/app/. dist/km1-app/
-          # Die Designstudie im Stil von Apple liegt daneben unter
-          # <pages>/km1-app/apple/. Sie ersetzt nichts an der Hauptfassung.
-          mkdir -p dist/km1-app/apple
-          cp -r km1-app/apple/. dist/km1-app/apple/
-          # Die Mischung aus beiden liegt unter <pages>/km1-app/mischung/.
-          mkdir -p dist/km1-app/mischung
-          cp -r km1-app/mischung/. dist/km1-app/mischung/
+          # Die Designstudien liegen daneben, jede in ihrem Unterordner:
+          # <pages>/km1-app/apple/, …/mischung/ und …/mischung2/. Sie
+          # ersetzen nichts an der Hauptfassung.
+          for fassung in apple mischung mischung2; do
+            mkdir -p "dist/km1-app/$fassung"
+            cp -r "km1-app/$fassung/." "dist/km1-app/$fassung/"
+          done
           echo "===== km1-app ausgeliefert ====="
-          ls -la dist/km1-app dist/km1-app/apple dist/km1-app/mischung
+          ls -la dist/km1-app dist/km1-app/apple dist/km1-app/mischung dist/km1-app/mischung2
       - uses: actions/configure-pages@v5
         with:
           enablement: true
