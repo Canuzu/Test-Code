@@ -3,92 +3,98 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>KM1 Training · Apple-Stil</title>
-<meta name="description" content="Designstudie der KM1-App im Stil von Apple. Dieselbe App, nur anders gestaltet, zum Testen.">
+<title>KM1 Training · Mischung 2</title>
+<meta name="description" content="Designstudie der KM1-App: die Mischung, farbiger und ruhiger. Dieselbe App, nur anders gestaltet, zum Testen.">
 <!-- Eine Designstudie, kein Produkt: nicht in Suchmaschinen. -->
 <meta name="robots" content="noindex, nofollow">
 
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#F5F5F7" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F1F4F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#050907" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="KM1 Apple">
+<meta name="apple-mobile-web-app-title" content="KM1 Mix 2">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png">
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32">
 <link rel="icon" href="icons/icon-192.png" sizes="192x192">
 
 <link rel="preload" as="image" href="img/logo.png">
+<!-- Anton steht auf keinem Geraet, auch nicht auf dem iPhone. Sie traegt
+     die grossen Titel des ersten Bildschirms und laedt deshalb sofort mit. -->
+<link rel="preload" as="font" type="font/woff2" href="fonts/anton-latin.woff2" crossorigin>
 
 <style>
 /* ============================================================
-   KM1 Training im Stil von Apple — eine Designstudie.
+   KM1 Training — die Mischung 2.
 
-   Dieselbe App wie in ../app/, dieselben Inhalte und dieselbe
-   Logik. Nur das Kleid ist ein anderes: die Seiten von apple.com
-   und die Apps auf dem iPhone.
+   Die Mischung (../mischung/), farbiger und ruhiger. Rund
+   fuenfundachtzig Teile Apple, fuenfzehn Teile KM1.
 
-   Woran man Apple erkennt:
-   - Die Systemschrift. Auf iPhone und Mac ist das SF Pro, sie
-     kommt vom Geraet selbst. Ueberall sonst springt Inter ein, die
-     ihr am naechsten kommt und frei verwendet werden darf.
-   - Grosse, fette Ueberschriften mit enger Laufweite, darunter
-     ruhiger grauer Text.
-   - Grau als Grund, weisse Karten ohne Rahmen, Haarlinien statt
-     Kanten.
-   - Blau fuer alles, was man antippen kann. Kapselfoermige Knoepfe
-     und der Verweis „Mehr erfahren ›".
-   - Glas: die schwebende Tableiste, die Knoepfe ueber dem Video und
-     die Kopfleiste lassen durchscheinen, was darunter liegt.
-   - Listen wie in den Einstellungen, mit farbigen Symbolen.
+   Aus der Studie im Stil von Apple (../apple/) kommen jetzt auch:
+   - die Vorschaubilder in der Farbe ihrer Ebene, mit weissen
+     Linien darauf, wie die Kacheln der Trainingsarten in Fitness+,
+   - die runde Systemschrift fuer Zahlen,
+   - die ruhigen kleinen Beschriftungen in Grau.
 
-   Das Rot der Marke bleibt fuer das Logo und fuer KM1 Pro.
+   Von KM1 bleiben:
+   - Anton in Versalien, aber nur noch fuer die grossen Titel:
+     Seiten, grosse Karte, Kacheln, Videos.
+   - Koeln-Rot fuer alles, was man antippen kann, ohne Leuchten.
+   - Die rote Zeile mit dem kurzen Strich, nur ueber den Titeln
+     einer Seite.
+   - Die Linien der Zeichnungen, leicht aufgeraut wie Kreide.
+   - Grautoene mit einem Hauch Rasengruen, und der Ball fuer den
+     Start.
    ============================================================ */
 
-/* Inter als Ersatz fuer SF Pro. Eine variable Datei mit optischer
-   Groesse: kleine Schrift ist offener, grosse enger — genau wie bei
-   SF Pro Text und SF Pro Display. Auf Apple-Geraeten wird sie nie
+/* Inter als Ersatz fuer SF Pro. Auf Apple-Geraeten wird sie nie
    geladen, weil -apple-system vorher greift. */
 @font-face{font-family:'Inter';font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/inter-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 @font-face{font-family:'Inter';font-style:normal;font-weight:100 900;font-display:swap;src:url(fonts/inter-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+/* Die beiden Schriften der Marke, dieselben Dateien wie in ../app/. */
+@font-face{font-family:'Anton';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/anton-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Anton';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/anton-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:100 800;font-display:swap;src:url(fonts/jetbrains-mono-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:100 800;font-display:swap;src:url(fonts/jetbrains-mono-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
 
 :root{
   color-scheme:light;
 
-  /* Flaechen. Das Grau ist das der Baender auf apple.com. */
-  --seite:#F5F5F7;
+  /* Flaechen. Das Grau hat einen Hauch Rasengruen, wie in der
+     Hauptfassung, nur heller und ruhiger. */
+  --seite:#F1F4F0;
   --flaeche:#FFFFFF;
-  --flaeche-2:#F5F5F7;
-  --fuell:rgba(118,118,128,.12);
-  --fuell-2:rgba(118,118,128,.2);
+  --flaeche-2:#F1F4F0;
+  --fuell:rgba(96,118,106,.12);
+  --fuell-2:rgba(96,118,106,.2);
   --seg-an:#FFFFFF;
-  --trenn:rgba(60,60,67,.29);
-  --rand:#D2D2D7;
-  --leiste:rgba(245,245,247,.8);
+  --trenn:rgba(40,64,52,.24);
+  --rand:#CFD8D2;
+  --leiste:rgba(241,244,240,.8);
   /* Der weiche Rand oben und unten, wenn Inhalt darunter wegrollt. */
-  --kante:rgba(245,245,247,.9);
+  --kante:rgba(241,244,240,.9);
 
-  /* Schrift. --text-2 haelt auf jeder Flaeche mindestens 4,6 : 1.
+  /* Schrift. --text-2 haelt auf jeder Flaeche mindestens 5,5 : 1.
      --text-3 ist zu blass fuer Text und traegt nur Pfeile und Ringe. */
-  --text:#1D1D1F;
-  --text-2:#6E6E73;
-  --text-3:#AEAEB2;
+  --text:#0B1511;
+  --text-2:#57655F;
+  --text-3:#A9B4AE;
 
-  /* Blau fuer alles Antippbare. Die Knoepfe tragen das Blau von
-     apple.com, weisse Schrift darauf kommt auf 4,6 : 1. */
-  --blau:#0071E3;
-  --blau-hover:#0077ED;
-  --link:#0066CC;
-  --fokus:rgba(0,125,250,.6);
+  /* Koeln-Rot fuer alles Antippbare. Weisse Schrift darauf kommt auf
+     5,8 : 1, rote Schrift auf der Flaeche auf 5,2 : 1. */
+  --akzent:#C81E14;
+  --akzent-hover:#B3180F;
+  --link:#C81E14;
+  --fokus:rgba(200,30,20,.45);
   --gruen:#248A3D;
   --gruen-voll:#34C759;
   --orange:#B64400;
   --orange-voll:#FF9500;
-  --rot:#D70015;
-  --rot-voll:#FF3B30;
+  --rot:#C81E14;
+  --rot-voll:#E8433A;
 
   /* Die Ebenen behalten ihre Farben aus der Hauptfassung. */
   --lv1:#0D7C75;
@@ -102,22 +108,23 @@
   --pro-dunkel:linear-gradient(90deg,#C81E14,#C2410C);
 
   /* Glas. Hell durchscheinend, mit einer Lichtkante oben. */
-  --glas:rgba(255,255,255,.72);
-  --glas-kante:inset 0 0 0 .5px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.9);
-  --glas-schatten:0 10px 30px rgba(0,0,0,.12),0 2px 6px rgba(0,0,0,.05);
+  --glas:rgba(255,255,255,.74);
+  --glas-kante:inset 0 0 0 .5px rgba(10,30,20,.08),inset 0 1px 0 rgba(255,255,255,.9);
+  --glas-schatten:0 10px 30px rgba(10,30,20,.14),0 2px 6px rgba(10,30,20,.06);
 
-  --schatten-1:0 2px 10px rgba(0,0,0,.07);
-  --schatten-2:0 14px 40px rgba(0,0,0,.16);
+  --schatten-1:0 2px 10px rgba(10,30,20,.08);
+  --schatten-2:0 14px 40px rgba(10,30,20,.18);
 
-  --r-gross:28px;
-  --r-karte:22px;
+
+  --r-gross:26px;
+  --r-karte:20px;
   --r-bild:14px;
   --r-feld:12px;
 
   --schrift:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
-  /* SF Pro Rounded fuer Zahlen, wie in Fitness und Health. Wo es sie
-     nicht gibt, bleibt die normale Schrift. */
   --rund:ui-rounded,-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,sans-serif;
+  --display:'Anton','Arial Narrow',Impact,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
 
   /* Die Kurve von apple.com, und die weiche Feder der Blaetter in iOS. */
   --ease:cubic-bezier(.28,.11,.32,1);
@@ -131,72 +138,79 @@
 }
 
 /* Die dunkle Fassung zweimal: einmal fuer „Automatisch", bevor das
-   Skript entschieden hat, und einmal, wenn es entschieden hat. */
+   Skript entschieden hat, und einmal, wenn es entschieden hat. Fast
+   schwarz mit gruenem Unterton, wie das Flutlicht in der Nacht. */
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
-    --seite:#000000;
-    --flaeche:#1C1C1E;
-    --flaeche-2:#2C2C2E;
-    --fuell:rgba(118,118,128,.24);
-    --fuell-2:rgba(118,118,128,.36);
-    --seg-an:#636366;
-    --trenn:rgba(84,84,88,.65);
-    --rand:#424245;
-    --leiste:rgba(0,0,0,.72);
-    --kante:rgba(0,0,0,.84);
-    --text:#F5F5F7;
-    --text-2:#A1A1A6;
-    --text-3:#636366;
-    --link:#2997FF;
+    --seite:#050907;
+    --flaeche:#131B18;
+    --flaeche-2:#1E2824;
+    --fuell:rgba(130,160,145,.16);
+    --fuell-2:rgba(130,160,145,.26);
+    --seg-an:#4A5852;
+    --trenn:rgba(150,180,165,.2);
+    --rand:#2F3C36;
+    --leiste:rgba(5,9,7,.72);
+    --kante:rgba(5,9,7,.84);
+    --text:#F2F5F1;
+    --text-2:#9DAEA6;
+    --text-3:#5B6A63;
+    --akzent:#D22A20;
+    --akzent-hover:#DE3A2F;
+    --link:#FF5A4F;
+    --fokus:rgba(255,90,79,.5);
     --gruen:#30D158;
     --gruen-voll:#30D158;
     --orange:#FF9F0A;
     --orange-voll:#FF9F0A;
-    --rot:#FF453A;
-    --rot-voll:#FF453A;
+    --rot:#FF5A4F;
+    --rot-voll:#FF5A4F;
     --lv1:#2FA8A0;
     --lv2:#5FB04A;
     --lv3:#E8952F;
     --lv4:#E24036;
     --on-lv:#07100D;
-    --glas:rgba(44,44,48,.68);
-    --glas-kante:inset 0 0 0 .5px rgba(255,255,255,.1),inset 0 1px 0 rgba(255,255,255,.14);
-    --glas-schatten:0 10px 30px rgba(0,0,0,.55);
+    --glas:rgba(30,40,36,.7);
+    --glas-kante:inset 0 0 0 .5px rgba(255,255,255,.1),inset 0 1px 0 rgba(255,255,255,.12);
+    --glas-schatten:0 10px 30px rgba(0,0,0,.6);
     --schatten-1:none;
     --schatten-2:0 14px 40px rgba(0,0,0,.6);
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --seite:#000000;
-  --flaeche:#1C1C1E;
-  --flaeche-2:#2C2C2E;
-  --fuell:rgba(118,118,128,.24);
-  --fuell-2:rgba(118,118,128,.36);
-  --seg-an:#636366;
-  --trenn:rgba(84,84,88,.65);
-  --rand:#424245;
-  --leiste:rgba(0,0,0,.72);
-  --kante:rgba(0,0,0,.84);
-  --text:#F5F5F7;
-  --text-2:#A1A1A6;
-  --text-3:#636366;
-  --link:#2997FF;
+  --seite:#050907;
+  --flaeche:#131B18;
+  --flaeche-2:#1E2824;
+  --fuell:rgba(130,160,145,.16);
+  --fuell-2:rgba(130,160,145,.26);
+  --seg-an:#4A5852;
+  --trenn:rgba(150,180,165,.2);
+  --rand:#2F3C36;
+  --leiste:rgba(5,9,7,.72);
+  --kante:rgba(5,9,7,.84);
+  --text:#F2F5F1;
+  --text-2:#9DAEA6;
+  --text-3:#5B6A63;
+  --akzent:#D22A20;
+  --akzent-hover:#DE3A2F;
+  --link:#FF5A4F;
+  --fokus:rgba(255,90,79,.5);
   --gruen:#30D158;
   --gruen-voll:#30D158;
   --orange:#FF9F0A;
   --orange-voll:#FF9F0A;
-  --rot:#FF453A;
-  --rot-voll:#FF453A;
+  --rot:#FF5A4F;
+  --rot-voll:#FF5A4F;
   --lv1:#2FA8A0;
   --lv2:#5FB04A;
   --lv3:#E8952F;
   --lv4:#E24036;
   --on-lv:#07100D;
-  --glas:rgba(44,44,48,.68);
-  --glas-kante:inset 0 0 0 .5px rgba(255,255,255,.1),inset 0 1px 0 rgba(255,255,255,.14);
-  --glas-schatten:0 10px 30px rgba(0,0,0,.55);
+  --glas:rgba(30,40,36,.7);
+  --glas-kante:inset 0 0 0 .5px rgba(255,255,255,.1),inset 0 1px 0 rgba(255,255,255,.12);
+  --glas-schatten:0 10px 30px rgba(0,0,0,.6);
   --schatten-1:none;
   --schatten-2:0 14px 40px rgba(0,0,0,.6);
 }
@@ -217,15 +231,16 @@ button{font:inherit;letter-spacing:inherit;color:inherit;background:none;border:
 a{-webkit-tap-highlight-color:transparent}
 svg{display:block;flex:0 0 auto}
 :focus-visible{outline:3px solid var(--fokus);outline-offset:2px;border-radius:8px}
-::selection{background:rgba(0,113,227,.25)}
+::selection{background:rgba(200,30,20,.2)}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* Auf iPhone, iPad und Mac steht SF Pro da, und Safari setzt ihre
-   Laufweite je nach Groesse selbst: eng im Text, weiter in den grossen
-   Titeln. Die engen Werte oben gelten deshalb nur fuer Inter. Kaeme SF
-   noch einmal enger dazu, klebten die Buchstaben der Ueberschriften
-   aneinander. Die Klasse setzt das Skript ganz oben im Koerper. */
+   Laufweite je nach Groesse selbst. Die engen Werte gelten deshalb nur
+   fuer Inter. Anton und JetBrains Mono kommen nicht vom Geraet: ihre
+   Laufweite bleibt ueberall, wie sie im Stil steht (siehe .anton und
+   .mono weiter unten). Die Klasse setzt das Skript ganz oben im Koerper. */
 :root.sf,:root.sf *,:root.sf *::before,:root.sf *::after{letter-spacing:normal !important}
+:root.sf .eyebrow:not(.neu){letter-spacing:.09em !important}
 
 /* Die Haarlinie zwischen zwei Zeilen einer Liste. Sie beginnt dort,
    wo der Text beginnt, nicht am Rand — so wie in iOS. */
@@ -295,18 +310,29 @@ svg{display:block;flex:0 0 auto}
   padding:calc(var(--kopf) + var(--oben) + 6px) 16px calc(118px + var(--unten));
 }
 
-/* ---------- Schrift ---------- */
+/* ---------- Schrift ----------
+   Zwei Stimmen. Die Systemschrift fuer alles, was man liest und
+   bedient, wie bei Apple. Anton in Versalien fuer die grossen Momente,
+   wie auf der Website von KM1. Dazu die rote Zeile in JetBrains Mono
+   ueber jeder grossen Ueberschrift, mit dem kurzen Strich davor. */
 .eyebrow{
-  margin:0;font-size:13px;line-height:1.3;font-weight:600;letter-spacing:.01em;
-  text-transform:uppercase;color:var(--text-2);
+  margin:0;display:flex;align-items:center;gap:9px;
+  font-family:var(--mono);font-size:12px;line-height:1.3;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--link);
 }
-/* Das „Neu" von apple.com: orange ueber dem Namen. */
-.eyebrow.neu{color:var(--orange);text-transform:none;font-size:15px;letter-spacing:-.01em}
+.eyebrow::before{content:"";width:16px;height:2px;border-radius:2px;background:var(--akzent);flex:0 0 auto}
+/* Auf den Kacheln keine Mono-Zeile, nur ein ruhiges Wort in Rot
+   ueber dem Titel, wie das „Neu" auf apple.com. */
+.eyebrow.neu{
+  justify-content:center;font-family:var(--schrift);font-size:15px;font-weight:600;
+  letter-spacing:-.01em;text-transform:none;
+}
+.eyebrow.neu::before{display:none}
 h1.big{
-  margin:4px 0 0;font-size:34px;line-height:1.12;font-weight:700;letter-spacing:-.022em;
-  text-wrap:balance;-webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word;
+  margin:8px 0 0;font-family:var(--display);font-weight:400;font-size:42px;line-height:.98;letter-spacing:.006em;
+  text-transform:uppercase;text-wrap:balance;-webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word;
 }
-h1.big.vtitel{font-size:28px;line-height:1.14}
+h1.big.vtitel{font-size:33px;line-height:1}
 h2.sec{margin:0;font-size:22px;line-height:1.2;font-weight:700;letter-spacing:-.02em}
 /* Die Ueberschrift ueber einer Liste, wie in den Einstellungen. */
 h2.sec.leise{
@@ -335,12 +361,14 @@ h2.sec.leise{
 }
 .poster>img,.poster>svg{width:100%;height:100%;object-fit:cover;display:block}
 .poster::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.08)}
-/* Die Zeichnungen: weisse Linien auf der Farbe ihrer Ebene, wie die
-   Kacheln der Trainingsarten in Fitness+. */
+/* Die Zeichnungen: weisse Linien auf der Farbe ihrer Ebene, wie in der
+   Studie im Stil von Apple. Von KM1 bleibt der Strich: leicht aufgeraut
+   wie Kreide (Filter #kreide oben im Koerper). */
 svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in srgb,var(--dia-acc) 88%,#fff) 0%,var(--dia-acc) 45%,color-mix(in srgb,var(--dia-acc) 62%,#000) 100%)}
 .dia .bg{fill:none}
-.dia .c{fill:none;stroke:rgba(255,255,255,.5);stroke-width:1.5}
-.dia .a{fill:none;stroke:#fff;stroke-width:2.2}
+.dia g{filter:url(#kreide)}
+.dia .c{fill:none;stroke:rgba(255,255,255,.55);stroke-width:1.5}
+.dia .a{fill:none;stroke:#fff;stroke-width:2.3}
 .dia .f{fill:#fff;stroke:none}
 
 .badge{
@@ -388,6 +416,13 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 }
 .hero:active{transform:scale(.98)}
 .hero .hm{position:relative;display:block;width:100%;aspect-ratio:1/1;max-height:62svh;overflow:hidden}
+/* Auf sehr kleinen Telefonen braucht ein langer Titel in Anton drei
+   Zeilen. Die Karte wird dort etwas hoeher und der Titel eine Stufe
+   kleiner, damit er unter der Zeichnung bleibt. */
+@media (max-width:359px){
+  .hero .hm{aspect-ratio:1/1.1}
+  .hero .ht.eng{font-size:25px}
+}
 /* Auf dem Tablet waere das Quadrat hoeher als der halbe Bildschirm. */
 @media (min-width:600px){ .hero .hm{aspect-ratio:4/3} }
 .hero .hm>img,.hero .hm>svg{width:100%;height:100%;object-fit:cover;display:block}
@@ -396,22 +431,22 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
   background:linear-gradient(180deg,rgba(0,0,0,.34) 0%,rgba(0,0,0,0) 24%,rgba(0,0,0,0) 38%,rgba(0,0,0,.55) 62%,rgba(0,0,0,.86) 100%);
 }
 .hero .hc{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;gap:6px;padding:20px 20px 22px;color:#fff}
-.hero .hk{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:rgba(255,255,255,.86)}
+.hero .hk{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:rgba(255,255,255,.88)}
 .hero .ht{
-  margin-top:auto;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.025em;
+  margin-top:auto;font-family:var(--display);font-weight:400;font-size:36px;line-height:1;letter-spacing:.008em;text-transform:uppercase;
   /* Kein Textschatten: der Zeilenschnitt (line-clamp) schneidet ihn an der
      Kante der Box ab, und hinter dem Titel stand ein dunkles Rechteck. Den
      Kontrast traegt der Verlauf darunter. */
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word;
 }
-.hero .ht.mittel{font-size:27px}
-.hero .ht.eng{font-size:23px;line-height:1.14}
+.hero .ht.mittel{font-size:31px}
+.hero .ht.eng{font-size:27px;line-height:1.02}
 .hero .hmeta{font-size:15px;color:rgba(255,255,255,.82);letter-spacing:-.01em}
 .hero .hfuss{display:flex;align-items:center;gap:14px;margin-top:10px}
 .hero .hplay{
   display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;
   height:44px;padding:0 20px 0 17px;border-radius:999px;
-  background:#fff;color:#1D1D1F;font-size:17px;font-weight:600;letter-spacing:-.02em;
+  background:#C81E14;color:#fff;font-size:17px;font-weight:600;letter-spacing:-.02em;
   transition:transform .3s var(--ease);
 }
 .hero .hplay svg{width:15px;height:15px}
@@ -494,8 +529,8 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 .panel.ziel{flex-direction:row;align-items:center;gap:18px}
 .ring{width:78px;height:78px;flex:0 0 auto}
 .ring circle{fill:none;stroke-width:9;stroke-linecap:round}
-.ring .spur{stroke:var(--mein,var(--blau));opacity:.18}
-.ring .voll{stroke:var(--mein,var(--blau))}
+.ring .spur{stroke:var(--mein,var(--akzent));opacity:.18}
+.ring .voll{stroke:var(--mein,var(--akzent))}
 .ziel .zt{display:flex;flex-direction:column;gap:2px;min-width:0}
 .ziel .zahl{margin:4px 0 0;font-family:var(--rund);font-size:28px;line-height:1.1;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .ziel .zahl span{font-family:var(--schrift);font-size:17px;font-weight:500;letter-spacing:-.02em;color:var(--text-2)}
@@ -510,7 +545,7 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 }
 .wide:active{transform:scale(.985)}
 .wide .body{order:-1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:34px 24px 24px}
-.wide .t{display:block;margin:0;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.025em}
+.wide .t{display:block;margin:4px 0 0;font-family:var(--display);font-weight:400;font-size:36px;line-height:1;letter-spacing:.008em;text-transform:uppercase}
 .wide .p{display:block;margin:2px 0 0;font-size:17px;line-height:1.45;color:var(--text-2);max-width:32ch}
 .wide .los{margin-top:10px}
 .wide .poster{aspect-ratio:16/10;border-radius:0}
@@ -531,28 +566,28 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
   display:inline-block;font-size:19px;line-height:1.2;font-weight:700;letter-spacing:-.02em;
   background:var(--pro);-webkit-background-clip:text;background-clip:text;color:transparent;
 }
-.proband .t{display:block;margin:0;font-size:32px;line-height:1.1;font-weight:700;letter-spacing:-.025em}
+.proband .t{display:block;margin:4px 0 0;font-family:var(--display);font-weight:400;font-size:42px;line-height:.98;letter-spacing:.008em;text-transform:uppercase}
 .proband .p{display:block;margin:4px 0 0;font-size:17px;line-height:1.45;color:#A1A1A6;max-width:30ch}
 .proband .paar{display:flex;align-items:center;justify-content:center;gap:10px 22px;margin-top:14px;flex-wrap:wrap}
-.proband .los{color:#2997FF}
+.proband .los{color:#FF5A4F}
 .proband .symbolbild{
   width:118px;height:118px;border-radius:22.37%;margin:30px 0 -22px;
   box-shadow:0 24px 60px -8px rgba(232,67,58,.6),inset 0 0 0 .5px rgba(255,255,255,.2);
 }
 /* Im Profil dieselbe Kachel, nur kleiner. */
 .proband.klein{padding:28px 22px 26px}
-.proband.klein .t{font-size:26px}
+.proband.klein .t{font-size:32px}
 .proband.klein .paar{margin-top:10px}
 
 /* ---------- Knoepfe ---------- */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
   width:100%;min-height:50px;padding:12px 22px;border-radius:999px;
-  background:var(--blau);color:#fff;
+  background:var(--akzent);color:#fff;
   font-size:17px;line-height:1.2;font-weight:600;letter-spacing:-.022em;text-align:center;text-decoration:none;
   transition:background .2s var(--ease),transform .25s var(--feder),opacity .2s var(--ease);
 }
-.btn:hover{background:var(--blau-hover)}
+.btn:hover{background:var(--akzent-hover)}
 .btn:active{transform:scale(.97);opacity:.88}
 .btn svg{width:18px;height:18px}
 /* Der kleine Knopf von apple.com, neben „Mehr erfahren ›". */
@@ -652,7 +687,8 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 .sprung svg{width:17px;height:17px}
 .sprung.an{opacity:1}
 
-/* Der grosse Knopf in der Mitte: Glas statt Farbe. */
+/* Der grosse Knopf in der Mitte: das rote Rund der Hauptfassung. Das
+   Schloss vor gesperrten Videos bleibt Glas. */
 .pbtn{position:absolute;top:0;bottom:62px;left:40%;right:40%;z-index:3;display:flex;align-items:center;justify-content:center}
 .player .pbtn[data-act$="login"],.player .pbtn[data-act="paywall"],.player .pbtn[data-act^="kontologin"]{left:0;right:0}
 .pbtn span{
@@ -663,6 +699,10 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 }
 @media (hover:hover){ .pbtn:hover span{transform:scale(1.06)} }
 .pbtn:active span{transform:scale(.92)}
+.pbtn span:not(.zu),.kino-play span{
+  background:rgba(200,30,20,.94);-webkit-backdrop-filter:none;backdrop-filter:none;
+  box-shadow:0 8px 22px rgba(0,0,0,.22);
+}
 .pbtn svg{width:26px;height:26px;margin-left:3px}
 .pbtn .zu svg{width:24px;height:24px;margin:0}
 
@@ -749,7 +789,7 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 }
 
 .bar{display:block;height:5px;background:var(--fuell-2);border-radius:999px;position:relative;overflow:hidden}
-.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--blau);display:block;border-radius:999px}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:var(--akzent);display:block;border-radius:999px}
 
 /* ---------- Text im Blatt ---------- */
 /* Eine Zeile Angaben wie in der TV-App, mit Punkten dazwischen. */
@@ -775,7 +815,7 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 .steps li:has(button):active{background:var(--fuell)}
 .steps li .tx{flex:1 1 auto;min-width:0}
 .steps li .zt{flex:0 0 auto;font-size:15px;color:var(--text-2);font-variant-numeric:tabular-nums;letter-spacing:0;transition:color .2s var(--ease)}
-.steps li.jetzt::before{background:var(--blau);color:#fff}
+.steps li.jetzt::before{background:var(--akzent);color:#fff}
 .steps li.jetzt .zt{color:var(--link);font-weight:600}
 
 /* Der Aufstieg: eine Auszeichnung wie in Fitness. */
@@ -790,7 +830,7 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
   box-shadow:0 26px 60px -16px var(--c),inset 0 2px 0 rgba(255,255,255,.35);
 }
 .feier .ring-orden svg{width:54px;height:54px}
-.feier h1.big{font-size:40px}
+.feier h1.big{font-size:52px}
 .feier .meta{justify-content:center;margin-top:0}
 .feier .btn{margin-top:14px;max-width:360px}
 
@@ -805,7 +845,7 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
           mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M10.3 3.4a2 2 0 0 1 3.4 0l8.3 14.3a2 2 0 0 1-1.7 3H3.7a2 2 0 0 1-1.7-3zM12 8.1c-.7 0-1.2.6-1.1 1.2l.3 4.8a.8.8 0 0 0 1.6 0l.3-4.8c.1-.6-.4-1.2-1.1-1.2zm0 8.4a1.2 1.2 0 1 0 0 2.4 1.2 1.2 0 0 0 0-2.4z'/%3E%3C/svg%3E") center/contain no-repeat;
 }
 .callout.stille::before{
-  background:var(--blau);
+  background:var(--akzent);
   -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 4.4a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8zm-1.6 4.3a.9.9 0 0 0 0 1.8h.7v4.4h-1a.9.9 0 0 0 0 1.8h3.8a.9.9 0 0 0 0-1.8h-.9v-5.3a.9.9 0 0 0-.9-.9z'/%3E%3C/svg%3E");
           mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20zm0 4.4a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8zm-1.6 4.3a.9.9 0 0 0 0 1.8h.7v4.4h-1a.9.9 0 0 0 0 1.8h3.8a.9.9 0 0 0 0-1.8h-.9v-5.3a.9.9 0 0 0-.9-.9z'/%3E%3C/svg%3E");
 }
@@ -827,13 +867,14 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 .coach.ich .n{font-size:26px;font-weight:700;letter-spacing:-.025em}
 .coach.ich .n span{font-size:15px;font-weight:400;margin-top:2px}
 
-/* Wer kein Foto hat, bekommt seine Anfangsbuchstaben im grauen Kreis
-   der Kontakte-App. */
+/* Wer kein Foto hat, bekommt seine Anfangsbuchstaben auf der Farbe der
+   eigenen Ebene, in der runden Systemschrift. Gaeste bleiben grau. */
 .avatar{
   width:48px;height:48px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
-  background:linear-gradient(180deg,#A5ABB8,#858B97);color:#fff;
+  background:var(--mein,var(--akzent));color:var(--on-lv);
   font-family:var(--rund);font-size:19px;font-weight:600;letter-spacing:.01em;
 }
+.avatar.gast{background:linear-gradient(180deg,#A5B0AA,#86918B);color:#fff}
 .avatar svg{width:28px;height:28px}
 
 .lupe{
@@ -869,7 +910,7 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 .pyr .edge{fill:none;stroke:var(--trenn);stroke-width:.4;stroke-linecap:round}
 .pyr .plate{cursor:pointer}
 .pyr .plate:focus{outline:none}
-.pyr .plate:focus-visible{outline:.4px solid var(--blau);outline-offset:.55px;border-radius:.8px}
+.pyr .plate:focus-visible{outline:.4px solid var(--akzent);outline-offset:.55px;border-radius:.8px}
 .pyr .plate polygon{transition:fill-opacity .4s var(--ease),stroke-opacity .4s var(--ease)}
 .pyr .nm{font-family:var(--schrift);font-size:4.6px;font-weight:700;letter-spacing:-.06px;fill:var(--text);text-anchor:middle}
 .pyr .ag{font-family:var(--schrift);font-size:3.3px;font-weight:500;letter-spacing:-.02px;fill:var(--text-2);text-anchor:middle}
@@ -885,7 +926,7 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 .duchip.naechste{background:none;color:var(--text);box-shadow:inset 0 0 0 1.5px var(--c)}
 .pips{display:flex;gap:6px}
 .pips i{flex:1 1 auto;height:6px;border-radius:999px;background:var(--fuell-2)}
-.pips i.on{background:var(--c,var(--mein,var(--blau)))}
+.pips i.on{background:var(--c,var(--mein,var(--akzent)))}
 
 /* ---------- Listen ---------- */
 /* Der Pfad wie eine Liste in Erinnerungen: rechts der Kreis zum Abhaken. */
@@ -956,15 +997,15 @@ a.lrow{color:var(--text)}
   display:flex;flex-direction:column;gap:6px;width:62px;height:112px;padding:14px 8px;border-radius:13px;
   box-shadow:0 0 0 1px var(--rand),0 4px 14px rgba(0,0,0,.08);
 }
-.dvorschau.hell{background:#F5F5F7}
-.dvorschau.dunkel{background:#000}
+.dvorschau.hell{background:#F1F4F0}
+.dvorschau.dunkel{background:#050907}
 .dvorschau i{display:block;height:16px;border-radius:5px;background:#fff}
-.dvorschau.dunkel i{background:#2C2C2E}
+.dvorschau.dunkel i{background:#1E2824}
 .dvorschau i:first-child{height:6px;width:62%;border-radius:3px;background:#C7C7CC}
 .dvorschau.dunkel i:first-child{background:#48484A}
 .dkreis{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.6px var(--text-3)}
 .dwahl[aria-pressed="true"] .dkreis,.price[aria-pressed="true"]::after,.sym[aria-pressed="true"]::after{
-  background:var(--blau) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat;
+  background:var(--akzent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat;
   box-shadow:none;
 }
 
@@ -980,7 +1021,7 @@ a.lrow{color:var(--text)}
 }
 .field textarea{height:auto;min-height:112px;padding:14px 16px;line-height:1.4;resize:vertical}
 .field input::placeholder,.field textarea::placeholder{color:var(--text-2)}
-.field input:focus,.field select:focus,.field textarea:focus{outline:none;box-shadow:inset 0 0 0 1px var(--blau),0 0 0 4px rgba(0,125,250,.22)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;box-shadow:inset 0 0 0 1px var(--akzent),0 0 0 4px rgba(200,30,20,.16)}
 /* Das Auswahlfeld mit dem Doppelpfeil der Menues in iOS. */
 .wahl{position:relative;display:block}
 .wahl select{padding-right:44px;cursor:pointer}
@@ -1005,7 +1046,7 @@ a.lrow{color:var(--text)}
   border-radius:var(--r-karte);background:var(--flaeche);border:1.5px dashed var(--rand);
   transition:border-color .2s var(--ease);
 }
-.drop svg{width:34px;height:34px;color:var(--blau)}
+.drop svg{width:34px;height:34px;color:var(--akzent)}
 .drop .h{font-size:17px;font-weight:600;letter-spacing:-.02em;color:var(--text)}
 .drop .s{font-size:15px;color:var(--text-2)}
 .drop.has{border-style:solid;border-color:var(--gruen-voll)}
@@ -1018,7 +1059,7 @@ a.lrow{color:var(--text)}
   transition:box-shadow .2s var(--ease),transform .25s var(--feder);
 }
 .price:active{transform:scale(.98)}
-.price[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--blau)}
+.price[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--akzent)}
 .price::after{content:"";position:absolute;top:14px;right:14px;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.6px var(--text-3)}
 .price .k{font-size:15px;letter-spacing:-.01em;color:var(--text-2)}
 .price .k:first-child{font-weight:600;color:var(--text)}
@@ -1027,12 +1068,12 @@ a.lrow{color:var(--text)}
 .ticks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
 .ticks li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;align-items:start;font-size:17px;line-height:1.42;color:var(--text)}
 /* Der Haken im blauen Kreis. */
-.ticks svg{width:22px;height:22px;padding:5px;margin-top:1px;border-radius:50%;background:var(--blau);color:#fff}
+.ticks svg{width:22px;height:22px;padding:5px;margin-top:1px;border-radius:50%;background:var(--akzent);color:#fff}
 
 /* Die Abo-Seite als Produktseite: Symbol, Name im Verlauf, grosse Zeile. */
 .pay-kopf{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding-top:8px}
 .pay-symbol{width:96px;height:96px;border-radius:22.37%;margin-bottom:10px;box-shadow:0 18px 44px -10px rgba(232,67,58,.55),inset 0 0 0 .5px rgba(255,255,255,.2)}
-.pay-kopf h1.big{margin:0;font-size:36px}
+.pay-kopf h1.big{margin:2px 0 0;font-size:44px}
 .pay-kopf .sub{margin:4px 0 0}
 .pay .ticks{padding:20px;background:var(--flaeche);border-radius:var(--r-karte)}
 .pay .fine{text-align:center}
@@ -1043,10 +1084,12 @@ a.lrow{color:var(--text)}
 .pro-aktiv{display:inline-flex;align-items:center;height:26px;padding:0 11px;border-radius:999px;font-size:13px;font-weight:600;color:var(--gruen);background:rgba(52,199,89,.16)}
 
 /* ---------- Mitteilung ---------- */
-/* Die Vorschau liegt auf einem Sperrbildschirm, damit das Glas wirkt. */
+/* Die Vorschau liegt auf einem Sperrbildschirm, damit das Glas wirkt.
+   Als Hintergrund der Platz unter Flutlicht. */
 .sperrbild{
   padding:26px 14px;border-radius:var(--r-gross);overflow:hidden;
-  background:radial-gradient(90% 90% at 0% 0%,#5B8CFF 0%,rgba(91,140,255,0) 60%),radial-gradient(90% 100% at 100% 100%,#FF7A59 0%,rgba(255,122,89,0) 60%),linear-gradient(135deg,#6C5CE7,#C06BD8);
+  background:#12211B;
+  background:linear-gradient(180deg,rgba(5,9,7,.1),rgba(5,9,7,.45)),url(img/pitch.jpg) center/cover;
 }
 .push{
   display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:22px;
@@ -1085,7 +1128,7 @@ a.btn{text-decoration:none}
   transition:box-shadow .2s var(--ease),transform .25s var(--feder);
 }
 .sym:active{transform:scale(.98)}
-.sym[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--blau)}
+.sym[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--akzent)}
 .sym::after{content:"";position:absolute;top:12px;right:12px;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.6px var(--text-3)}
 .sym .bild{position:relative;width:84px;height:84px;border-radius:22.37%;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.14),inset 0 0 0 .5px rgba(0,0,0,.08)}
 .sym .bild img{width:100%;height:100%;object-fit:cover;display:block}
@@ -1102,7 +1145,7 @@ a.btn{text-decoration:none}
   transition:background .2s var(--ease),color .2s var(--ease),transform .25s var(--feder);
 }
 .day:active{transform:scale(.92)}
-.day[aria-pressed="true"]{background:var(--blau);color:#fff}
+.day[aria-pressed="true"]{background:var(--akzent);color:#fff}
 
 /* ---------- Hinweis ----------
    Eine dunkle Kapsel ueber der Tableiste. Oben lag sie ueber der Kopfleiste
@@ -1148,16 +1191,16 @@ a.btn{text-decoration:none}
 
   .screen{max-width:1024px;padding:calc(var(--kopf) + 44px) 32px 96px;gap:52px}
   .screen.schmal{max-width:760px}
-  h1.big{font-size:48px;line-height:1.08;letter-spacing:-.025em}
-  h1.big.vtitel{font-size:40px}
+  h1.big{font-size:60px;line-height:.96}
+  h1.big.vtitel{font-size:46px}
   h2.sec{font-size:28px}
   .eyebrow.neu{font-size:17px}
 
   .hero .hm{aspect-ratio:21/9;max-height:460px}
   .hero .hc{padding:34px 40px 36px}
-  .hero .ht{font-size:44px;max-width:18ch}
-  .hero .ht.mittel{font-size:40px}
-  .hero .ht.eng{font-size:34px}
+  .hero .ht{font-size:56px;max-width:18ch}
+  .hero .ht.mittel{font-size:50px}
+  .hero .ht.eng{font-size:42px}
   .hero .hmeta{font-size:17px}
   .hero .hfuss{max-width:520px}
 
@@ -1167,14 +1210,14 @@ a.btn{text-decoration:none}
   .chips{flex-wrap:wrap;overflow:visible;margin:0;padding:0}
 
   .wide .body{padding:48px 32px 30px}
-  .wide .t{font-size:40px}
+  .wide .t{font-size:52px}
   .wide .p{font-size:19px}
   .wide .poster{aspect-ratio:21/8}
   .proband{padding:56px 32px 0}
-  .proband .t{font-size:48px}
+  .proband .t{font-size:62px}
   .proband .p{font-size:19px}
   .proband.klein{padding:36px 28px 32px}
-  .proband.klein .t{font-size:32px}
+  .proband.klein .t{font-size:40px}
 
   .pyr{max-width:660px;margin:0 auto}
   .lvpanel{max-width:660px;margin:0 auto;width:100%}
@@ -1232,7 +1275,7 @@ a.btn{text-decoration:none}
 @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .start-logo{filter:url(#logoLight)} }
 .start-logo.da{opacity:1}
 .start-bahn{display:block;width:min(150px,40vw);height:4px;border-radius:999px;background:var(--fuell-2);overflow:hidden}
-.start-bahn i{display:block;height:100%;width:6%;border-radius:999px;background:var(--text);transition:width .35s var(--ease)}
+.start-bahn i{display:block;height:100%;width:6%;border-radius:999px;background:var(--akzent);transition:width .35s var(--ease)}
 
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
@@ -1248,6 +1291,14 @@ a.btn{text-decoration:none}
   <filter id="logoDark" color-interpolation-filters="sRGB">
     <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.33 -0.34 -0.33 0 1" result="k"/>
     <feComposite in="k" in2="SourceGraphic" operator="in"/>
+  </filter>
+  <!-- Kreide: die Linien der Zeichnungen zittern ein wenig und haben
+       kleine Luecken, wie ein Strich auf dem Brett. -->
+  <filter id="kreide" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="1.3" numOctaves="2" seed="4" result="rausch"/>
+    <feDisplacementMap in="SourceGraphic" in2="rausch" scale="1.3" xChannelSelector="R" yChannelSelector="G" result="zitter"/>
+    <feComponentTransfer in="rausch" result="poren"><feFuncA type="discrete" tableValues="0 .55 1 1 1"/></feComponentTransfer>
+    <feComposite in="zitter" in2="poren" operator="in"/>
   </filter>
 </svg>
 
@@ -1344,16 +1395,19 @@ window.km1Start = (function(){
   /* Auf iPhone, iPad und Mac steht die Schrift schon auf dem Geraet:
      SF Pro. Nur ueberall sonst wird Inter geladen, und nur dort wird
      darauf gewartet. */
+  /* Anton und JetBrains Mono braucht jedes Geraet, Inter nur die, auf
+     denen es kein SF Pro gibt. */
   function schriftLaden(){
-    var apple = document.documentElement.classList.contains('sf');
-    if(apple || !document.fonts || !document.fonts.load || !window.Promise) return fertig('schrift');
+    if(!document.fonts || !document.fonts.load || !window.Promise) return fertig('schrift');
     var los = function(){ fertig('schrift'); };
-    try{
-      Promise.all([
-        document.fonts.load('400 1em Inter'),
-        document.fonts.load('700 1em Inter')
-      ]).then(los, los);
-    }catch(e){ los(); }
+    var laden = [
+      document.fonts.load('400 1em Anton'),
+      document.fonts.load('700 1em "JetBrains Mono"')
+    ];
+    if(!document.documentElement.classList.contains('sf')){
+      laden.push(document.fonts.load('400 1em Inter'), document.fonts.load('700 1em Inter'));
+    }
+    try{ Promise.all(laden).then(los, los); }catch(e){ los(); }
   }
   schriftLaden();
 
@@ -1732,7 +1786,8 @@ var ICON = {
   apple:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><path d="M16.3 12.6c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.6-1.9-1.5-.2-3 .9-3.7.9-.8 0-2-.9-3.2-.8-1.7 0-3.2 1-4 2.5-1.7 2.9-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.3 1.3-2.6 1.3-2.7 0 0-2.4-.9-2.4-3.6z"/><path d="M14.2 5.4c.7-.8 1.1-1.9 1-3-.9 0-2.1.6-2.8 1.4-.6.7-1.1 1.8-1 2.9 1 .1 2.1-.5 2.8-1.3z"/></g></svg>',
   google:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.7z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 8-2.9l-3.9-3c-1.1.7-2.5 1.2-4.1 1.2-3.1 0-5.8-2.1-6.7-5H1.3v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.3 14.3a7.2 7.2 0 0 1 0-4.6V6.6h-4a12 12 0 0 0 0 10.8l4-3.1z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 1.3 6.6l4 3.1c.9-2.9 3.6-4.9 6.7-4.9z"/></svg>',
   /* Die Tableiste */
-  tabStart:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11.2 3.1a1.3 1.3 0 0 1 1.6 0l8.4 6.7c.6.5.3 1.4-.5 1.4H19.2v8.1a1.7 1.7 0 0 1-1.7 1.7h-3v-5.3a1.2 1.2 0 0 0-1.2-1.2h-2.6a1.2 1.2 0 0 0-1.2 1.2V21h-3a1.7 1.7 0 0 1-1.7-1.7v-8.1H3.3c-.8 0-1.1-.9-.5-1.4z"/></svg>',
+  /* Der Ball fuer den Start, wie in der Hauptfassung. */
+  tabStart:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M12 7.7l4.1 3-1.6 4.8h-5l-1.6-4.8z" fill="currentColor"/><path d="M12 7.7V2.9M16.1 10.7l4.6-1.5M14.5 15.5l2.8 3.9M9.5 15.5l-2.8 3.9M7.9 10.7L3.3 9.2"/></g></svg>',
   tabTech:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M5.2 4.5h13.6a2.7 2.7 0 0 1 2.7 2.7v9.6a2.7 2.7 0 0 1-2.7 2.7H5.2a2.7 2.7 0 0 1-2.7-2.7V7.2a2.7 2.7 0 0 1 2.7-2.7zm4.8 4.4v6.2c0 .6.6 1 1.1.7l5-3.1a.8.8 0 0 0 0-1.4l-5-3.1c-.5-.3-1.1.1-1.1.7z"/></svg>',
   tabPyr:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><path d="M11.1 3.6a1 1 0 0 1 1.8 0l2.6 4.8H8.5z"/><path d="M7.7 10h8.6l2.3 4.3H5.4z"/><path d="M4.6 15.9h14.8l1.9 3.5a1 1 0 0 1-.9 1.5H3.6a1 1 0 0 1-.9-1.5z"/></g></svg>',
   tabProf:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M12 2.3a9.7 9.7 0 1 1 0 19.4 9.7 9.7 0 0 1 0-19.4zm0 4a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8zm0 8.4c-2.6 0-4.9 1.2-6 3.1a7.7 7.7 0 0 0 12 0c-1.1-1.9-3.4-3.1-6-3.1z"/></svg>',
@@ -1747,10 +1802,10 @@ var ICON = {
 };
 
 /* Zeichnungen als Vorschaubild: weisse Linien auf einem Verlauf in der
-   Farbe der Ebene, wie die Kacheln der Trainingsarten in Fitness+. Den
-   Verlauf malt der Stil hinter das Bild, deshalb darf die Zeichnung
-   ganz hineinpassen („meet") und wird nie angeschnitten, auch nicht in
-   der quadratischen Karte oben auf der Startseite. */
+   Farbe der Ebene. Den Verlauf malt der Stil hinter das Bild, deshalb
+   darf die Zeichnung ganz hineinpassen („meet") und wird nie
+   angeschnitten, auch nicht in der quadratischen Karte oben auf der
+   Startseite. */
 function dia(k, lv, held){
   var d = {
     flanken:'<path class="c" d="M112 12V88"/><path class="c" d="M112 26h40v48h-40"/><path class="c" d="M152 40v20"/><path class="a" d="M22 82C54 40 96 30 128 44" stroke-dasharray="5 4"/><path class="a" d="M120 40l9 4-7 6"/><circle class="f" cx="22" cy="82" r="3.4"/><circle class="f" cx="130" cy="45" r="3.4"/>',
@@ -1766,11 +1821,11 @@ function dia(k, lv, held){
      und eine Liste aus zwoelf Karten sah aus wie zwoelfmal dasselbe. */
   var ton = lv ? ' style="--dia-acc:var(--lv'+lv+')"' : '';
   /* In der grossen Karte stehen unten Titel und Knopf. Dort bekommt die
-     Zeichnung einen quadratischen Rahmen mit Luft nach unten und bleibt
-     in der oberen Haelfte, statt durch den Titel zu laufen. */
-  /* Sonst ein Rand rundherum, damit die Linien nicht unter die Schilder
-     „Neu" und die Dauer laufen. */
-  var rahmen = held ? '-40 -30 240 240' : '-16 -12 192 124';
+     Zeichnung einen quadratischen Rahmen mit viel Luft nach unten und
+     bleibt im oberen Drittel, auch wenn der Titel in Anton auf einem
+     kleinen Telefon drei Zeilen braucht. Sonst ein Rand rundherum, damit
+     die Linien nicht unter die Schilder „Neu" und die Dauer laufen. */
+  var rahmen = held ? '-80 -40 320 320' : '-16 -12 192 124';
   return '<svg class="dia" viewBox="'+rahmen+'" preserveAspectRatio="xMidYMid meet" aria-hidden="true"'+ton+'>' +
     '<rect class="bg" width="160" height="100"/>' +
     '<g stroke-linecap="round" stroke-linejoin="round">' + d + '</g></svg>';
@@ -2123,18 +2178,17 @@ function zeile(act, symbol, farbe, text, rechts){
 var IMPRESSUM = '<a class="lrow" href="https://km1-training.de/impressum/" target="_blank" rel="noopener">' +
   '<span class="ico" style="--i:#8E8E93">'+ICON.info+'</span><span>Impressum</span><span class="r">km1-training.de</span></a>';
 
-/* Der Weg zurueck zur Hauptfassung. Nur dort, wo die Studie neben ihr
-   liegt, also unter …/km1-app/apple/. In der Vorschau auf claude.ai
-   gibt es kein Daneben, dort fehlt die Zeile. */
-var ORIGINAL = /\/apple\/(index\.html)?$/.test(location.pathname) ? '../' : '';
+/* Die Wege zu den drei anderen Fassungen. Nur dort, wo die Mischung 2
+   neben ihnen liegt, also unter …/km1-app/mischung2/. In der Vorschau auf
+   claude.ai gibt es kein Daneben, dort fehlen die Zeilen. */
+var NEBENAN = /\/mischung2\/(index\.html)?$/.test(location.pathname);
 function originalZeile(){
-  if(!ORIGINAL) return '';
-  return '<div class="rows mit-symbol"><a class="lrow" href="'+ORIGINAL+'">' +
-    '<span class="ico" style="--i:#FF9500">'+ICON.pinsel+'</span><span>Zum Originaldesign</span><span class="r"></span></a>' +
-    '<a class="lrow" href="'+ORIGINAL+'mischung/">' +
-    '<span class="ico" style="--i:#C81E14">'+ICON.pinsel+'</span><span>Zur Mischung</span><span class="r"></span></a>' +
-    '<a class="lrow" href="'+ORIGINAL+'mischung2/">' +
-    '<span class="ico" style="--i:#3C8329">'+ICON.pinsel+'</span><span>Zur Mischung 2</span><span class="r"></span></a></div>';
+  if(!NEBENAN) return '';
+  return '<div class="rows mit-symbol">' +
+    '<a class="lrow" href="../"><span class="ico" style="--i:#C81E14">'+ICON.pinsel+'</span><span>Zum Originaldesign</span><span class="r"></span></a>' +
+    '<a class="lrow" href="../apple/"><span class="ico" style="--i:#0071E3">'+ICON.pinsel+'</span><span>Zur Fassung im Apple-Stil</span><span class="r"></span></a>' +
+    '<a class="lrow" href="../mischung/"><span class="ico" style="--i:#12211B">'+ICON.pinsel+'</span><span>Zur Mischung</span><span class="r"></span></a>' +
+  '</div>';
 }
 
 function screenProfil(){
@@ -3213,7 +3267,7 @@ function render(){
   /* Punkt 12: die Farbe der eigenen Ebene als Leitfarbe. Ohne Konto
      bleibt es beim Blau. */
   document.documentElement.style.setProperty('--mein',
-    drin() ? lvOf(state.meinLv).c : 'var(--blau)');
+    drin() ? lvOf(state.meinLv).c : 'var(--akzent)');
 
   /* Punkt 10: nur beim Wechsel der Seite blenden die Bloecke auf. */
   if(tabWechsel){

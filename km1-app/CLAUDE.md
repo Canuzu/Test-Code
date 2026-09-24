@@ -71,6 +71,22 @@ Grautöne und der Ball in der Tableiste.
 - Vorschau auf claude.ai: `python3 artefakt.py mischung`, mit den Dateien aus
   `mischung/fonts/` und `mischung/img/`.
 
+## Die Mischung 2 in `mischung2/`
+
+`mischung2/` ist die vierte Fassung: die Mischung, farbiger und ruhiger.
+Entstanden als Kopie von `mischung/index.html`, mit diesen Unterschieden:
+
+- Die Vorschaubilder tragen wieder die Farbe ihrer Ebene mit weißen
+  Linien, wie in `apple/`. Die Linien bleiben leicht aufgeraut wie Kreide.
+- Anton nur noch für die großen Titel (Seiten, große Karte, Kacheln,
+  Videos). Zahlen, Preise, Initialen und die Namen in der Pyramide stehen
+  in der runden Systemschrift.
+- Die rote Zeile in JetBrains Mono nur noch über den Titeln einer Seite,
+  mit weniger Buchstabenabstand. Auf Kacheln ein ruhiges rotes Wort.
+- Rote Knöpfe ohne Leuchten.
+
+Vorschau auf claude.ai: `python3 artefakt.py mischung2`.
+
 ## Sprache
 
 Code-Kommentare, Commits, Pull Requests und die Dokumentation sind auf
@@ -85,7 +101,8 @@ Commit-Nachrichten werden umschrieben (ae, oe, ue), im übrigen Text nicht.
 | `app/sw.js` | Service Worker, `VERSION` bei jeder Änderung erhöhen |
 | `apple/index.html` | Designstudie im Stil von Apple: dieselbe App, anderes Design, liegt unter `…/km1-app/apple/` |
 | `mischung/index.html` | Die Mischung aus Apple-Stil und KM1-Charakter, liegt unter `…/km1-app/mischung/` |
-| `artefakt.py` | Macht aus `app/index.html` die Fassung für die Vorschau auf claude.ai, mit `apple` oder `mischung` aus den Studien |
+| `mischung2/index.html` | Die Mischung 2, farbiger und ruhiger, liegt unter `…/km1-app/mischung2/` |
+| `artefakt.py` | Macht aus `app/index.html` die Fassung für die Vorschau auf claude.ai, mit `apple`, `mischung` oder `mischung2` aus den Studien |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, Weg ins App Store |
 | `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
 | `mobile/` | Die echte App für iPhone und Android (Expo), siehe `mobile/README.md` |
