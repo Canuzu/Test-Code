@@ -56,6 +56,21 @@ Vergleichen. Sie ersetzt nichts: `app/` bleibt die Hauptfassung, und eine
 - Vorschau auf claude.ai: `python3 artefakt.py apple`, veröffentlicht als
   eigenes Artefakt mit den Dateien aus `apple/fonts/` und `apple/img/`.
 
+## Die Mischung in `mischung/`
+
+`mischung/` ist die dritte Fassung: achtzig Teile aus `apple/`, zwanzig Teile
+aus `app/`. Aufbau, Listen, Glas und Bewegung kommen aus der Apple-Studie.
+Aus der Hauptfassung kommen Anton in Versalien für die großen Titel und
+Zahlen, Köln-Rot als Akzent, die rote Zeile in JetBrains Mono über den
+Überschriften, die Kreidezeichnungen auf dem grünen Brett, die grünlichen
+Grautöne und der Ball in der Tableiste.
+
+- Entstanden als Kopie von `apple/index.html`. Was dort geändert wird, zieht
+  nicht von selbst nach.
+- Kein Service Worker, aus demselben Grund wie in `apple/`.
+- Vorschau auf claude.ai: `python3 artefakt.py mischung`, mit den Dateien aus
+  `mischung/fonts/` und `mischung/img/`.
+
 ## Sprache
 
 Code-Kommentare, Commits, Pull Requests und die Dokumentation sind auf
@@ -69,7 +84,8 @@ Commit-Nachrichten werden umschrieben (ae, oe, ue), im übrigen Text nicht.
 | `app/index.html` | Die ganze App: Aufbau, Gestaltung, Verhalten in einem Dokument |
 | `app/sw.js` | Service Worker, `VERSION` bei jeder Änderung erhöhen |
 | `apple/index.html` | Designstudie im Stil von Apple: dieselbe App, anderes Design, liegt unter `…/km1-app/apple/` |
-| `artefakt.py` | Macht aus `app/index.html` die Fassung für die Vorschau auf claude.ai, mit `apple` aus der Designstudie |
+| `mischung/index.html` | Die Mischung aus Apple-Stil und KM1-Charakter, liegt unter `…/km1-app/mischung/` |
+| `artefakt.py` | Macht aus `app/index.html` die Fassung für die Vorschau auf claude.ai, mit `apple` oder `mischung` aus den Studien |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, Weg ins App Store |
 | `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
 | `mobile/` | Die echte App für iPhone und Android (Expo), siehe `mobile/README.md` |
