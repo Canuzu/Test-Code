@@ -1105,11 +1105,11 @@ a.btn{text-decoration:none}
 .day[aria-pressed="true"]{background:var(--blau);color:#fff}
 
 /* ---------- Hinweis ----------
-   Faellt oben als dunkle Kapsel herein, wie die Anzeigen an der
-   Dynamic Island. */
+   Eine dunkle Kapsel ueber der Tableiste. Oben lag sie ueber der Kopfleiste
+   oder, darunter, ueber der grossen Ueberschrift. */
 .toast{
-  position:absolute;z-index:40;left:50%;top:calc(var(--oben) + var(--kopf) + 6px);
-  transform:translate(-50%,-18px) scale(.94);max-width:min(88%,420px);
+  position:absolute;z-index:40;left:50%;bottom:calc(86px + var(--unten));
+  transform:translate(-50%,16px) scale(.94);max-width:min(88%,420px);
   padding:12px 20px;border-radius:999px;text-align:center;
   background:rgba(22,22,24,.86);color:#fff;font-size:15px;font-weight:600;letter-spacing:-.015em;
   -webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
@@ -1193,7 +1193,8 @@ a.btn{text-decoration:none}
 
   .kino .pctl{left:28px;right:28px;bottom:28px;max-width:900px;margin:0 auto}
   .kino-oben{padding:22px 28px}
-  .toast{top:calc(var(--kopf) + 12px)}
+  /* Am PC gibt es unten keine Leiste: der Hinweis sitzt unter der oberen. */
+  .toast{top:calc(var(--kopf) + 12px);bottom:auto;transform:translate(-50%,-16px) scale(.94)}
 }
 
 /* Blockweise aufblenden beim Wechsel der Seite. */
