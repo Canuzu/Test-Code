@@ -11,6 +11,7 @@ Hochladen darf ausschließlich der KM1-Account, alle anderen sehen nur zu.
 | `app/` | Die App. Installierbare Web-App, läuft im Browser und auf dem Startbildschirm |
 | `icon/` | App-Symbol und Markenbilder, dazu `bauen.py`, das sie aus dem Logo erzeugt |
 | `apple/` | Dieselbe App im Stil von Apple, als Designstudie zum Vergleichen |
+| `mischung/` | Die Mischung: der Aufbau von Apple mit dem Charakter von KM1 |
 | `artefakt.py` | Macht aus `app/` (oder mit `apple` aus `apple/`) die Fassung für die Vorschau auf claude.ai |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, App Store |
 | `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
@@ -38,6 +39,14 @@ in einem Design, das sich an apple.com und an den Apps auf dem iPhone
 orientiert: Systemschrift, große Überschriften, blaue Knöpfe, eine schwebende
 Tableiste aus Glas, Listen wie in den Einstellungen. Inhalte und Abläufe sind
 dieselben. Im Profil führt „Zum Originaldesign" zurück.
+
+### Die Mischung
+
+Unter **<https://canuzu.github.io/Test-Code/km1-app/mischung/>** liegt die dritte
+Fassung: achtzig Teile Apple, zwanzig Teile KM1. Aufbau und Bedienung wie in der
+Apple-Studie, dazu die großen Titel in Anton, Köln-Rot als Akzent, die rote
+Zeile über den Überschriften und die Kreidezeichnungen auf dem grünen Brett.
+Im Profil führen zwei Zeilen zu den anderen beiden Fassungen.
 
 ## Was drin ist
 
