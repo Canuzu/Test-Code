@@ -68,6 +68,8 @@
   --trenn:rgba(60,60,67,.29);
   --rand:#D2D2D7;
   --leiste:rgba(245,245,247,.8);
+  /* Der weiche Rand oben und unten, wenn Inhalt darunter wegrollt. */
+  --kante:rgba(245,245,247,.9);
 
   /* Schrift. --text-2 haelt auf jeder Flaeche mindestens 4,6 : 1.
      --text-3 ist zu blass fuer Text und traegt nur Pfeile und Ringe. */
@@ -142,6 +144,7 @@
     --trenn:rgba(84,84,88,.65);
     --rand:#424245;
     --leiste:rgba(0,0,0,.72);
+    --kante:rgba(0,0,0,.84);
     --text:#F5F5F7;
     --text-2:#A1A1A6;
     --text-3:#636366;
@@ -175,6 +178,7 @@
   --trenn:rgba(84,84,88,.65);
   --rand:#424245;
   --leiste:rgba(0,0,0,.72);
+  --kante:rgba(0,0,0,.84);
   --text:#F5F5F7;
   --text-2:#A1A1A6;
   --text-3:#636366;
@@ -216,6 +220,13 @@ svg{display:block;flex:0 0 auto}
 ::selection{background:rgba(0,113,227,.25)}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
+/* Auf iPhone, iPad und Mac steht SF Pro da, und Safari setzt ihre
+   Laufweite je nach Groesse selbst: eng im Text, weiter in den grossen
+   Titeln. Die engen Werte oben gelten deshalb nur fuer Inter. Kaeme SF
+   noch einmal enger dazu, klebten die Buchstaben der Ueberschriften
+   aneinander. Die Klasse setzt das Skript ganz oben im Koerper. */
+:root.sf,:root.sf *,:root.sf *::before,:root.sf *::after{letter-spacing:normal !important}
+
 /* Die Haarlinie zwischen zwei Zeilen einer Liste. Sie beginnt dort,
    wo der Text beginnt, nicht am Rand — so wie in iOS. */
 .lrow+.lrow::before,.dwahlen+.lrow::before,.ebzeile+.ebzeile::before,
@@ -225,27 +236,40 @@ svg{display:block;flex:0 0 auto}
 }
 
 /* ---------- Der Rahmen ---------- */
-.stage{position:relative;height:100dvh}
+.stage{position:relative;height:100%}
 .device{position:relative;width:100%;height:100%;overflow:hidden;background:var(--seite)}
 .app{position:absolute;inset:0}
 
 /* ---------- Die Kopfleiste ----------
    Liegt ueber dem Inhalt und ist zuerst unsichtbar. Sobald etwas
-   darunter wegrollt, wird sie zu Milchglas und uebernimmt den Titel. */
+   darunter wegrollt, legt sich ein weicher Rand aus Milchglas darueber,
+   der nach unten ausblendet, statt an einer harten Linie zu enden — so
+   wie in iOS 26. Dazu uebernimmt die Leiste den Titel. */
 .appbar{
   position:absolute;top:0;left:0;right:0;z-index:5;
   /* Logo und Ebene stehen buendig mit dem Inhalt darunter, auch auf dem
      Tablet, wo der Inhalt hoechstens 720 Pixel breit ist. */
   height:calc(var(--kopf) + var(--oben));padding:var(--oben) max(16px,calc((100% - 688px) / 2)) 0;
   display:flex;align-items:center;justify-content:space-between;gap:12px;
-  transition:background-color .3s var(--ease),box-shadow .3s var(--ease);
+  isolation:isolate;
 }
-.appbar.scrolled{
-  background:var(--leiste);
-  -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
-  box-shadow:0 .5px 0 var(--trenn);
+.appbar::before{
+  content:"";position:absolute;left:0;right:0;top:0;bottom:-26px;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,var(--kante) 0%,var(--kante) 58%,transparent 100%);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);
+  -webkit-mask-image:linear-gradient(180deg,#000 58%,transparent 100%);mask-image:linear-gradient(180deg,#000 58%,transparent 100%);
+  opacity:0;transition:opacity .3s var(--ease);
 }
-.mark{height:21px;width:auto;filter:url(#logoDark);transition:opacity .2s var(--ease)}
+.appbar.scrolled::before{opacity:1}
+
+/* Dasselbe unten: der Inhalt laeuft vor der Tableiste in die Flaeche aus,
+   statt scharf unter dem Glas weiterzulaufen. */
+.app::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;z-index:4;pointer-events:none;
+  height:calc(104px + var(--unten));
+  background:linear-gradient(0deg,var(--kante) 0%,var(--kante) 28%,transparent 100%);
+}
+.mark{height:23px;width:auto;filter:url(#logoDark);transition:opacity .2s var(--ease)}
 :root[data-theme="dark"] .mark{filter:url(#logoLight)}
 .kopftitel{
   position:absolute;left:50%;top:calc(var(--oben) + var(--kopf) / 2);
@@ -349,7 +373,7 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
   display:block;font-size:15px;line-height:1.3;font-weight:600;letter-spacing:-.015em;color:var(--text);
   -webkit-hyphens:auto;hyphens:auto;overflow-wrap:break-word;
 }
-.card .m{display:block;font-size:13px;line-height:1.35;letter-spacing:-.005em;color:var(--text-2)}
+.card .m{display:block;font-size:13px;line-height:1.35;letter-spacing:-.005em;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;display:inline-block;vertical-align:middle}
 .card .m .dot{margin:-2px 6px 0 0}
 
@@ -369,13 +393,15 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 .hero .hm>img,.hero .hm>svg{width:100%;height:100%;object-fit:cover;display:block}
 .hero .hm::after{
   content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(0,0,0,.38) 0%,rgba(0,0,0,0) 26%,rgba(0,0,0,0) 42%,rgba(0,0,0,.82) 100%);
+  background:linear-gradient(180deg,rgba(0,0,0,.34) 0%,rgba(0,0,0,0) 24%,rgba(0,0,0,0) 38%,rgba(0,0,0,.55) 62%,rgba(0,0,0,.86) 100%);
 }
 .hero .hc{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;gap:6px;padding:20px 20px 22px;color:#fff}
 .hero .hk{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:rgba(255,255,255,.86)}
 .hero .ht{
   margin-top:auto;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.025em;
-  text-shadow:0 1px 18px rgba(0,0,0,.35);
+  /* Kein Textschatten: der Zeilenschnitt (line-clamp) schneidet ihn an der
+     Kante der Box ab, und hinter dem Titel stand ein dunkles Rechteck. Den
+     Kontrast traegt der Verlauf darunter. */
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word;
 }
 .hero .ht.mittel{font-size:27px}
@@ -576,6 +602,11 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
   box-shadow:-24px 0 40px rgba(0,0,0,.06);
 }
 .sheet.on{transform:none}
+.sheet:not(.on){pointer-events:none}
+/* Die Seite darunter weicht ein Stueck nach links aus, waehrend das Blatt
+   hereinkommt, und kehrt zurueck, wenn es geht. */
+.screens,.appbar{transition:transform .5s var(--feder)}
+.app.blatt .screens,.app.blatt .appbar{transform:translateX(-24%)}
 .sheet-head{
   position:sticky;top:0;z-index:4;display:flex;align-items:center;
   min-height:calc(56px + var(--oben));padding:var(--oben) 12px 0;
@@ -724,7 +755,7 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 /* Eine Zeile Angaben wie in der TV-App, mit Punkten dazwischen. */
 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:2px 0;margin-top:-16px;font-size:15px;letter-spacing:-.01em;color:var(--text-2)}
 .meta span{display:inline-flex;align-items:center;gap:6px}
-.meta span+span::before{content:"·";margin:0 8px;color:var(--text-2)}
+.meta span+span::before{content:"·";margin:0 2px 0 8px;color:var(--text-2)}
 
 /* Die Schritte als Liste mit Nummern im Kreis. Der laufende Schritt
    bekommt das Blau. */
@@ -840,9 +871,10 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 .pyr .plate:focus{outline:none}
 .pyr .plate:focus-visible{outline:.4px solid var(--blau);outline-offset:.55px;border-radius:.8px}
 .pyr .plate polygon{transition:fill-opacity .4s var(--ease),stroke-opacity .4s var(--ease)}
-.pyr .nm{font-family:var(--schrift);font-size:4.3px;font-weight:700;letter-spacing:-.06px;fill:var(--text);text-anchor:middle}
-.pyr .ag{font-family:var(--schrift);font-size:2.9px;font-weight:500;letter-spacing:-.02px;fill:var(--text-2);text-anchor:middle}
-.pyr .fz{font-family:var(--rund);font-size:2.7px;font-weight:600;fill:var(--text-2);text-anchor:middle}
+.pyr .nm{font-family:var(--schrift);font-size:4.6px;font-weight:700;letter-spacing:-.06px;fill:var(--text);text-anchor:middle}
+.pyr .ag{font-family:var(--schrift);font-size:3.3px;font-weight:500;letter-spacing:-.02px;fill:var(--text-2);text-anchor:middle}
+.pyr .fz{font-family:var(--rund);font-size:3.1px;font-weight:700;fill:var(--text-2);text-anchor:middle;font-variant-numeric:tabular-nums}
+.pyr polygon{stroke-linejoin:round}
 .lvpanel{background:var(--flaeche);border-radius:var(--r-karte);padding:20px;display:flex;flex-direction:column;gap:8px}
 .lvpanel .t{margin:0;font-size:28px;line-height:1.14;font-weight:700;letter-spacing:-.025em;color:var(--c)}
 .lvpanel .sub{font-size:17px}
@@ -1076,7 +1108,7 @@ a.btn{text-decoration:none}
    Faellt oben als dunkle Kapsel herein, wie die Anzeigen an der
    Dynamic Island. */
 .toast{
-  position:absolute;z-index:40;left:50%;top:calc(10px + var(--oben));
+  position:absolute;z-index:40;left:50%;top:calc(var(--oben) + var(--kopf) + 6px);
   transform:translate(-50%,-18px) scale(.94);max-width:min(88%,420px);
   padding:12px 20px;border-radius:999px;text-align:center;
   background:rgba(22,22,24,.86);color:#fff;font-size:15px;font-weight:600;letter-spacing:-.015em;
@@ -1098,6 +1130,7 @@ a.btn{text-decoration:none}
     background:var(--leiste);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
     box-shadow:0 .5px 0 var(--trenn);
   }
+  .appbar::before,.app::after{display:none}
   .appbar.tief .mark{opacity:1}
   .kopftitel{display:none}
   .mark{height:20px}
@@ -1147,6 +1180,7 @@ a.btn{text-decoration:none}
   .lvpanel{max-width:660px;margin:0 auto;width:100%}
 
   .sheet{inset:var(--kopf) 0 0 0;transform:translateX(3%);opacity:0;transition:transform .4s var(--feder),opacity .3s var(--ease);box-shadow:none}
+  .app.blatt .screens,.app.blatt .appbar{transform:none}
   .sheet.on{opacity:1}
   .sheet-head{min-height:56px;padding:0 max(24px,calc((100% - 820px) / 2 + 20px))}
   .kopf-t{left:84px;right:84px}
@@ -1220,7 +1254,7 @@ a.btn{text-decoration:none}
      kann, sobald der Kopf gelesen ist — also lange bevor Bilder oder
      Schriften da sind. Er braucht die Filter oben drueber, deshalb steht
      er dahinter. -->
-<div class="start" id="start">
+<div class="start" id="start" lang="de">
   <div class="start-mitte">
     <img class="start-logo" id="startlogo" src="img/logo.png" alt="KM1 Training" width="487" height="181">
     <span class="start-bahn" id="startbahn" role="progressbar" aria-label="Ladefortschritt"
@@ -1245,6 +1279,11 @@ a.btn{text-decoration:none}
    bleibt nie haengen, weil Schriften nach 2,2 Sekunden und der ganze
    Bildschirm nach 6 Sekunden aufgeben.
    ============================================================ */
+/* Auf Apple-Geraeten ist die Schrift SF Pro vom Geraet. Die Klasse
+   schaltet im Stil die Laufweite fuer Inter ab und steht vor allem
+   anderen, damit schon der erste gezeichnete Bildschirm stimmt. */
+if(/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent || '')) document.documentElement.classList.add('sf');
+
 window.km1Start = (function(){
   var el = document.getElementById('start');
   var bahn = document.getElementById('startbahn');
@@ -1305,7 +1344,7 @@ window.km1Start = (function(){
      SF Pro. Nur ueberall sonst wird Inter geladen, und nur dort wird
      darauf gewartet. */
   function schriftLaden(){
-    var apple = /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent || '');
+    var apple = document.documentElement.classList.contains('sf');
     if(apple || !document.fonts || !document.fonts.load || !window.Promise) return fertig('schrift');
     var los = function(){ fertig('schrift'); };
     try{
@@ -1326,7 +1365,7 @@ window.km1Start = (function(){
 })();
 </script>
 
-<div class="stage">
+<div class="stage" lang="de">
   <div class="device">
     <div class="app">
       <!-- Die Kopfleiste steht vorn, damit Vorleseprogramme sie zuerst
@@ -1728,7 +1767,9 @@ function dia(k, lv, held){
   /* In der grossen Karte stehen unten Titel und Knopf. Dort bekommt die
      Zeichnung einen quadratischen Rahmen mit Luft nach unten und bleibt
      in der oberen Haelfte, statt durch den Titel zu laufen. */
-  var rahmen = held ? '-40 -30 240 240' : '0 0 160 100';
+  /* Sonst ein Rand rundherum, damit die Linien nicht unter die Schilder
+     „Neu" und die Dauer laufen. */
+  var rahmen = held ? '-40 -30 240 240' : '-16 -12 192 124';
   return '<svg class="dia" viewBox="'+rahmen+'" preserveAspectRatio="xMidYMid meet" aria-hidden="true"'+ton+'>' +
     '<rect class="bg" width="160" height="100"/>' +
     '<g stroke-linecap="round" stroke-linejoin="round">' + d + '</g></svg>';
@@ -1787,7 +1828,10 @@ function karte(v){
     '</span>' +
     '<span class="body">' +
       '<span class="t">'+h(v.t)+'</span>' +
-      '<span class="m"><i class="dot" style="background:'+lvOf(v.lv).c+'"></i>'+lvOf(v.lv).nm+' · '+KAT[v.k]+'</span>' +
+      /* Eine Zeile wie unter den Kacheln der TV-App. Mit dem Namen der
+         Ebene brach sie im Raster um, und der Punkt blieb am Zeilenende
+         haengen. Der farbige Punkt nennt die Ebene trotzdem. */
+      '<span class="m"><i class="dot" style="background:'+lvOf(v.lv).c+'"></i>'+KAT[v.k]+' · Ebene '+v.lv+'</span>' +
     '</span></button>';
 }
 
@@ -1977,7 +2021,7 @@ function pyramide(){
     var my = g.y0 + (g.y1-g.y0)/2;
     var f = lvFortschritt(g.n), q = drin() ? f.fertig/f.gesamt : 0;
     var hoehe = (g.y1-g.y0)*q;
-    var yNm = drin() ? my-1.1 : my+0.4;
+    var yNm = drin() ? my-1.4 : my+0.2;
     var yAg = drin() ? my+2.9 : my+4.6;
     defs += '<clipPath id="cp'+g.n+'"><polygon points="'+pts+'"/></clipPath>';
     plates += '<g class="plate" data-act="lv:'+g.n+'" role="button" tabindex="0" aria-label="'+l.nm+', '+l.ag+
@@ -1990,7 +2034,7 @@ function pyramide(){
         '" stroke-width="'+((mein||an)?.75:.4)+'"'+((naechste&&!an)?' stroke-dasharray="2.2 1.8"':'')+'/>' +
       '<text class="nm" x="50" y="'+yNm+'">'+l.nm+'</text>' +
       '<text class="ag" x="50" y="'+yAg+'">'+l.ag+'</text>' +
-      (drin() ? '<text class="fz" x="50" y="'+(my+6.7)+'">'+f.fertig+' / '+f.gesamt+'</text>' : '') +
+      (drin() ? '<text class="fz" x="50" y="'+(my+6.6)+'">'+f.fertig+' / '+f.gesamt+'</text>' : '') +
     '</g>';
   });
 
@@ -2178,12 +2222,17 @@ function screenProfil(){
    ============================================================ */
 var stack = [];
 
+var app = document.querySelector('.app');
 function openSheet(html){
   stack.push(html);
   var s = document.getElementById('sheet');
+  clearTimeout(s._weg);
   s.innerHTML = html; s.hidden = false; s.scrollTop = 0;
   s.classList.remove('on');
-  requestAnimationFrame(function(){ s.classList.add('on'); });
+  /* Die Ausgangslage einmal berechnen lassen, sonst springt das Blatt
+     ohne Bewegung an seinen Platz. */
+  void s.offsetWidth;
+  requestAnimationFrame(function(){ s.classList.add('on'); app.classList.add('blatt'); });
 }
 function closeSheet(){
   if(P.kino) kinoZu();
@@ -2191,8 +2240,15 @@ function closeSheet(){
   stack.pop();
   var s = document.getElementById('sheet');
   if(!stack.length){
-    s.classList.remove('on'); s.hidden = true; s.innerHTML = '';
+    /* Erst hinausschieben, dann leeren — wie der Schritt zurueck in iOS. */
+    s.classList.remove('on');
+    app.classList.remove('blatt');
     render();          /* damit die Karte oben die neue Stelle zeigt */
+    clearTimeout(s._weg);
+    s._weg = setTimeout(function(){
+      if(stack.length) return;
+      s.hidden = true; s.innerHTML = '';
+    }, 460);
     return;
   }
   s.innerHTML = stack[stack.length-1];

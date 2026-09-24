@@ -14,14 +14,25 @@ wie die Bilder aus img/ — jeweils aus dem Ordner der Fassung.
 """
 import sys
 
+# In der Vorschau polstert die Plattform oben und unten die sicheren
+# Ränder des Telefons schon selbst. Die Designstudie rechnet sie sonst ein
+# zweites Mal ein und wäre mit 100dvh um genau diese Ränder zu hoch.
+ZUSATZ_APPLE = (
+    '<style>\n'
+    '/* Nur in der Vorschau auf claude.ai: die Ränder polstert die Seite. */\n'
+    'body{height:100%}\n'
+    ':root{--oben:0px;--unten:0px}\n'
+    '</style>\n'
+)
+
 FASSUNGEN = {
-    'app':   ('app/index.html',   'artefakt.html',       'KM1 Training App'),
-    'apple': ('apple/index.html', 'artefakt-apple.html', 'KM1 Apple-Stil'),
+    'app':   ('app/index.html',   'artefakt.html',       'KM1 Training App', ''),
+    'apple': ('apple/index.html', 'artefakt-apple.html', 'KM1 Apple-Stil',   ZUSATZ_APPLE),
 }
 
 argumente = sys.argv[1:]
 fassung = argumente.pop(0) if argumente and argumente[0] in FASSUNGEN else 'app'
-QUELLE, ZIEL, TITEL = FASSUNGEN[fassung]
+QUELLE, ZIEL, TITEL, ZUSATZ = FASSUNGEN[fassung]
 if argumente:
     ZIEL = argumente[0]
 
@@ -35,6 +46,6 @@ sw = s.find('<script>\n/* Legt die App ins Regal')
 koerper = s[anfang:sw if sw >= 0 else s.index('</body>')]
 
 open(ZIEL, 'w', encoding='utf-8').write(
-    '<title>' + TITEL + '</title>\n' + stil + '\n' + koerper.strip() + '\n'
+    '<title>' + TITEL + '</title>\n' + stil + '\n' + ZUSATZ + koerper.strip() + '\n'
 )
 print('geschrieben:', ZIEL)
