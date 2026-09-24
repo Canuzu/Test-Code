@@ -10,7 +10,8 @@ Hochladen darf ausschließlich der KM1-Account, alle anderen sehen nur zu.
 | --- | --- |
 | `app/` | Die App. Installierbare Web-App, läuft im Browser und auf dem Startbildschirm |
 | `icon/` | App-Symbol und Markenbilder, dazu `bauen.py`, das sie aus dem Logo erzeugt |
-| `artefakt.py` | Macht aus `app/` die Fassung für die Vorschau auf claude.ai |
+| `apple/` | Dieselbe App im Stil von Apple, als Designstudie zum Vergleichen |
+| `artefakt.py` | Macht aus `app/` (oder mit `apple` aus `apple/`) die Fassung für die Vorschau auf claude.ai |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, App Store |
 | `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
 | `VEROEFFENTLICHUNG.md` | Der Weg in die Stores: Vorlaufzeiten, Reihenfolge, Stolpersteine |
@@ -29,6 +30,14 @@ Apps und startet im Vollbild, ohne Browserleisten.
 Nach dem ersten Start läuft die App auch ohne Netz: ein Service Worker legt
 Seite, Bilder und Schriften lokal ab. Bei einer neuen Fassung die Zahl in
 `app/sw.js` (`VERSION`) erhöhen, sonst behalten installierte Geräte die alte.
+
+### Die Designstudie im Stil von Apple
+
+Unter **<https://canuzu.github.io/Test-Code/km1-app/apple/>** liegt dieselbe App
+in einem Design, das sich an apple.com und an den Apps auf dem iPhone
+orientiert: Systemschrift, große Überschriften, blaue Knöpfe, eine schwebende
+Tableiste aus Glas, Listen wie in den Einstellungen. Inhalte und Abläufe sind
+dieselben. Im Profil führt „Zum Originaldesign" zurück.
 
 ## Was drin ist
 

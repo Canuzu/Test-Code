@@ -1,27 +1,40 @@
 #!/usr/bin/env python3
 """Macht aus der Web-App die Fassung für die Vorschau auf claude.ai.
 
-    python3 artefakt.py [zieldatei]
+    python3 artefakt.py [zieldatei]          die Hauptfassung aus app/
+    python3 artefakt.py apple [zieldatei]    die Designstudie aus apple/
 
-Die Web-App in app/ ist ein vollständiges HTML-Dokument: eigener Kopf,
-Manifest, Service Worker. Die Artefakt-Vorschau bekommt Kopf und Körper von
-der Plattform, deshalb fällt hier alles weg, was drumherum steht.
+Die Web-App ist ein vollständiges HTML-Dokument: eigener Kopf, Manifest,
+Service Worker. Die Artefakt-Vorschau bekommt Kopf und Körper von der
+Plattform, deshalb fällt hier alles weg, was drumherum steht.
 
 Die Schriften stehen als @font-face im Stil und zeigen auf fonts/. Beim
-Veröffentlichen gehen die Dateien aus app/fonts/ deshalb als Beiwerk mit,
-genau wie die Bilder aus app/img/.
+Veröffentlichen gehen die Dateien aus fonts/ deshalb als Beiwerk mit, genau
+wie die Bilder aus img/ — jeweils aus dem Ordner der Fassung.
 """
 import sys
 
-QUELLE = 'app/index.html'
-ZIEL = sys.argv[1] if len(sys.argv) > 1 else 'artefakt.html'
+FASSUNGEN = {
+    'app':   ('app/index.html',   'artefakt.html',       'KM1 Training App'),
+    'apple': ('apple/index.html', 'artefakt-apple.html', 'KM1 Apple-Stil'),
+}
+
+argumente = sys.argv[1:]
+fassung = argumente.pop(0) if argumente and argumente[0] in FASSUNGEN else 'app'
+QUELLE, ZIEL, TITEL = FASSUNGEN[fassung]
+if argumente:
+    ZIEL = argumente[0]
 
 s = open(QUELLE, encoding='utf-8').read()
 
 stil = s[s.index('<style>'):s.index('</style>') + len('</style>')]
-koerper = s[s.index('<body>') + len('<body>'):s.index('<script>\n/* Legt die App ins Regal')]
+# Der Körper endet vor dem Service Worker. Die Designstudie hat keinen,
+# dort endet er mit </body>.
+anfang = s.index('<body>') + len('<body>')
+sw = s.find('<script>\n/* Legt die App ins Regal')
+koerper = s[anfang:sw if sw >= 0 else s.index('</body>')]
 
 open(ZIEL, 'w', encoding='utf-8').write(
-    '<title>KM1 Training App</title>\n' + stil + '\n' + koerper.strip() + '\n'
+    '<title>' + TITEL + '</title>\n' + stil + '\n' + koerper.strip() + '\n'
 )
 print('geschrieben:', ZIEL)

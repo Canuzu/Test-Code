@@ -168,8 +168,12 @@ jobs:
         run: |
           mkdir -p dist/km1-app
           cp -r km1-app/app/. dist/km1-app/
+          # Die Designstudie im Stil von Apple liegt daneben unter
+          # <pages>/km1-app/apple/. Sie ersetzt nichts an der Hauptfassung.
+          mkdir -p dist/km1-app/apple
+          cp -r km1-app/apple/. dist/km1-app/apple/
           echo "===== km1-app ausgeliefert ====="
-          ls -la dist/km1-app
+          ls -la dist/km1-app dist/km1-app/apple
       - uses: actions/configure-pages@v5
         with:
           enablement: true
