@@ -97,10 +97,16 @@ Startseite seine Rollen und Daten braucht.
   gewechselt hat.
 - Drei Regeln gelten überall: geprüft wird, wer mit Kindern arbeitet oder sie
   sichtet; kein Video eines Kindes ist öffentlich, unter 16 geben die Eltern
-  frei; niemand schreibt einem Kind direkt.
+  frei; kein Fremder schreibt einem Kind, Kinder unter 16 schreiben nur mit
+  Trainer, Team und Eltern, und die Eltern lesen mit.
+- Wer wem schreiben darf, steht allein in `schreibRecht(von, an)`. Neue
+  Regeln kommen dorthin und in das Blatt „Wer wem schreiben darf"
+  (`sheetRegeln`), sonst nirgends.
 - Die Namen sind erfunden und gehören zu einer Geschichte: Luis (U13), seine
   Mutter Sandra, Trainer Tim Hoffmann, die Akademie Rheinblick, Scout Marco
-  Berger und Kader für KM1.
+  Berger, der FC Rheinstadt mit seinem Torwart Niklas Hartwig und Kader für
+  KM1. Echte Profis und Vereine kommen nur mit ihrer Zustimmung hinein, nie
+  als ausgedachtes Profil unter echtem Namen.
 
 Vorschau auf claude.ai: `python3 artefakt.py mischung2`.
 

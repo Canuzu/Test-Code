@@ -68,6 +68,9 @@ sich antippen, die Namen darin sind erfunden:
 | Teilen | Eine Karte im Hochformat für WhatsApp-Status und Instagram-Story |
 | Neuigkeiten | Nur von KM1, auf der Startseite und als Liste |
 | Talente | Talentprofil ab 16 oder mit Zustimmung der Eltern, geprüfte Scouts mit Berichten, Kontakt nur über Eltern oder Akademie |
+| Profis und Vereine | Eigene Rollen mit Prüfung und einer öffentlichen Seite. Der Profi Niklas Hartwig und der FC Rheinstadt sind erfunden. |
+| Folgen | Seiten von Profis, Vereinen, Akademien, Trainern und KM1. Kindern unter 16 folgt nur das eigene Team. |
+| Nachrichten | Mit Regeln: Kinder unter 16 schreiben nur mit Trainer, Team und Eltern, die Eltern lesen mit. Profis und Vereine bekommen Anfragen von geprüften Konten, Fans stellen Profis eine Frage. |
 
 Die Sicht wechselt man über die Ebene oben rechts. Was eine Rolle tut, sehen die
 anderen: Luis lädt hoch, Sandra gibt frei, Tim zählt nach und gibt Feedback.

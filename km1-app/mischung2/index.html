@@ -1486,6 +1486,71 @@ button.poster{cursor:pointer}
 .block-head button.more{color:var(--link)}
 .nzeile .k{display:block;font-size:13px;line-height:1.3;font-weight:600;color:var(--link)}
 
+
+/* ---------- Seiten, Folgen und Nachrichten ---------- */
+.appbar-rechts{display:flex;align-items:center;gap:8px}
+.postknopf{
+  position:relative;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--text);
+  background:var(--glas);-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
+  box-shadow:var(--glas-kante),0 2px 8px rgba(0,0,0,.06);transition:transform .25s var(--feder);
+}
+.postknopf:active{transform:scale(.92)}
+.postknopf svg{width:17px;height:17px}
+.postknopf .zaehler{position:absolute;top:-6px;right:-7px;min-width:18px;height:18px;padding:0 5px;font-size:11px;box-shadow:0 0 0 2px var(--seite)}
+.stat .v.lang{font-size:22px;line-height:1.36}
+.avbild{display:block;border-radius:50%;object-fit:cover;flex:0 0 auto}
+.coach.ich .avbild{width:96px;height:96px}
+
+/* Die Karten zum Folgen auf der Startseite. */
+.seitenkarte{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 12px 16px;border-radius:var(--r-karte);background:var(--flaeche);text-align:center}
+.row>.seitenkarte{flex:0 0 156px}
+.seitenkopf{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%}
+.seitenkopf .avatar,.seitenkopf .avbild{width:64px;height:64px;font-size:22px}
+.seitenkopf .n{font-size:15px;line-height:1.25;font-weight:600;letter-spacing:-.015em}
+.seitenkopf .n .haken,.post-kopf .n .haken{width:15px;height:15px;margin-left:3px;vertical-align:-2px}
+.seitenkopf .m{font-size:12px;color:var(--text-2)}
+.seitenkarte .btn.klein{min-width:108px}
+.seitenlink{display:block;border-radius:50%;flex:0 0 auto}
+.post-kopf .avbild{width:36px;height:36px}
+
+/* Frag den Profi: Fragen mit Stimmen. */
+.lrow.frage{align-items:center}
+.lrow>.stimme,.lrow>.btn{flex:0 0 auto;width:auto}
+.stimme{
+  display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:999px;flex:0 0 auto;
+  background:var(--fuell);font-family:var(--rund);font-size:15px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;
+}
+.stimme span{font-size:10px}
+.stimme[aria-pressed="true"]{background:color-mix(in srgb,var(--akzent) 13%,transparent);color:var(--link)}
+
+/* Die Regeln fuer Nachrichten, als Liste. */
+.regeln{display:flex;flex-direction:column;background:var(--flaeche);border-radius:var(--r-karte);overflow:hidden}
+.regeln>div{position:relative;padding:14px 16px}
+.regeln>div+div::before{content:"";position:absolute;top:0;right:0;left:16px;height:1px;background:var(--trenn);transform:scaleY(.5);transform-origin:top}
+.regeln b{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--link)}
+.regeln p{margin:3px 0 0;font-size:17px;line-height:1.42;letter-spacing:-.02em}
+
+/* Ein Chat: Blasen wie in Nachrichten auf dem iPhone, die eigenen rot. */
+.chat-seite{gap:18px}
+.chat-kopf{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding-top:4px}
+.chat-kopf .avatar,.chat-kopf .avbild{width:64px;height:64px;font-size:22px}
+.chat-kopf .n{font-size:19px;font-weight:700;letter-spacing:-.02em}
+.chat-kopf .m{font-size:13px;color:var(--text-2)}
+.chat-hinweis{display:flex;gap:10px;align-items:flex-start;margin:0;padding:12px 14px;border-radius:16px;background:color-mix(in srgb,var(--haken) 10%,transparent);font-size:15px;line-height:1.4;color:var(--text)}
+.chat-hinweis svg{width:16px;height:16px;flex:0 0 auto;color:var(--haken);margin-top:2px}
+.chat{display:flex;flex-direction:column;gap:6px}
+.blase{
+  margin:0;max-width:80%;padding:10px 14px;border-radius:20px 20px 20px 6px;align-self:flex-start;
+  background:var(--flaeche);font-size:17px;line-height:1.38;letter-spacing:-.018em;overflow-wrap:anywhere;
+}
+.blase.mein{align-self:flex-end;border-radius:20px 20px 6px 20px;background:var(--akzent);color:#fff}
+.blase-zeit{margin:8px 0 2px;align-self:center;font-size:12px;color:var(--text-2)}
+.chat-aktionen{display:flex;justify-content:center;gap:28px}
+.chat-aktionen button{min-height:44px;font-size:15px;color:var(--text-2)}
+.chat-aktionen button.rot{color:var(--rot)}
+.chatzeile small.unter{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.chatzeile .r{font-size:15px}
+
 @media (min-width:1000px){
   .menue{align-items:center}
   .vorf{grid-template-columns:repeat(6,minmax(0,1fr))}
@@ -1761,7 +1826,10 @@ window.km1Start = (function(){
         <span class="kopftitel" id="kopftitel" aria-hidden="true"></span>
         <!-- Die Ebene oben rechts oeffnet die Wahl der Sicht: Spieler,
              Eltern, Trainer, Akademie, Scout oder KM1. -->
-        <button class="lvchip" id="lvchip" type="button" data-act="sicht"></button>
+        <div class="appbar-rechts">
+          <button class="postknopf" id="postknopf" type="button" data-act="nachrichten" aria-label="Nachrichten" hidden></button>
+          <button class="lvchip" id="lvchip" type="button" data-act="sicht"></button>
+        </div>
       </header>
 
       <div class="screens" id="screens"></div>
@@ -2355,6 +2423,7 @@ function screenStart(){
       '</span></button>' +
 
     newsBlock() +
+    folgenBlock() +
 
     '<div class="block">' +
       '<div class="block-head"><h2 class="sec">Profi-Einheiten</h2>' +
@@ -2592,7 +2661,7 @@ function screenProfil(){
   var bild = state.owner
     ? '<button class="gross" type="button" data-act="portrait" aria-label="Bild vergrößern">' +
         '<img src="img/coach.jpg" alt=""></button>'
-    : '<span class="avatar" aria-hidden="true">'+h(initialen(state.konto.name))+'</span>';
+    : '<span class="avatar" aria-hidden="true"'+(state.rolle !== 'spieler' ? ' style="background:'+ROLLEN[state.rolle].i+'"' : '')+'>'+h(initialen(state.konto.name))+'</span>';
 
   var r = state.rolle;
   /* Trainer, Akademie und Scout zaehlen ihre eigene Arbeit, nicht
@@ -2603,7 +2672,7 @@ function screenProfil(){
       '<div class="stat"><span class="v">'+offenFuerMich()+'</span><span class="k">Offen</span></div>' +
       '<div class="stat"><span class="v">'+serieWochen()+'</span><span class="k">Wochen&shy;serie</span></div>' +
     '</div>' : rollenStats();
-  var abo = (r==='trainer' || r==='akademie') ? teamAboPanel() : (r==='scout' ? '' : (state.pro ?
+  var abo = (r==='trainer' || r==='akademie') ? teamAboPanel() : ((r==='scout' || r==='profi' || r==='verein') ? '' : (state.pro ?
       '<div class="panel">' +
         '<div class="pro-zeile"><span class="pro-name">KM1 Pro</span><span class="pro-aktiv">Aktiv</span></div>' +
         '<p class="sub" style="margin:0">' +
@@ -2849,8 +2918,8 @@ function sheetLogin(grund){
       '</div>' +
 
       (neu ? rollenWahl() : '') +
-      (neu ? '<div class="field"><label for="lg-name">'+(state.wahlRolle==='akademie' ? 'Name der Akademie' : 'Vorname')+'</label>' +
-        '<input id="lg-name" type="text" placeholder="'+(state.wahlRolle==='akademie' ? 'Akademie Rheinblick' : (state.wahlRolle==='eltern' ? 'Sandra' : 'Luis'))+'"></div>' : '') +
+      (neu ? '<div class="field"><label for="lg-name">'+({akademie:'Name der Akademie', verein:'Name des Vereins'}[state.wahlRolle] || 'Vorname')+'</label>' +
+        '<input id="lg-name" type="text" placeholder="'+({akademie:'Akademie Rheinblick', verein:'FC Rheinstadt', eltern:'Sandra', profi:'Niklas'}[state.wahlRolle] || 'Luis')+'"></div>' : '') +
       (neu && state.wahlRolle==='spieler' ? jahrgangFeld() : '') +
       '<div class="field"><label for="lg-mail">E-Mail</label><input id="lg-mail" type="email" placeholder="name@beispiel.de"></div>' +
       '<div class="field"><label for="lg-pw">Passwort</label><input id="lg-pw" type="password" placeholder="mindestens 8 Zeichen">' +
@@ -2941,7 +3010,7 @@ function sheetEltern(){
           ['Ob Ihr Kind Videos hochladen darf. Unter 16 sieht niemand ein Video, bevor Sie es freigegeben haben.',
            'Ob geprüfte Scouts das Talentprofil sehen. Unter 16 geht das nur mit Ihrer Zustimmung.',
            'Ob jemand Kontakt aufnimmt. Anfragen von Scouts kommen immer zuerst zu Ihnen, nie zu Ihrem Kind.',
-           'Private Nachrichten an Kinder gibt es nicht. Im Team gibt es drei feste Reaktionen, schreiben dürfen nur geprüfte Trainer.'
+           'Nachrichten bekommt Ihr Kind nur von seinem Trainer und aus dem eigenen Team, und Sie können jeden Chat lesen. Fremde, Profis und Scouts können Kinder nicht anschreiben.'
           ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
         '</ul></div>' +
 
@@ -3055,7 +3124,9 @@ function sheetDaten(){
            'Welche Übungen du abgehakt hast und wo ein Video stehen geblieben ist',
            'Videos, die du hochlädst. Sie sieht nur, wen du auswählst: dein Trainer, dein Team oder KM1',
            'Dein Talentprofil, wenn du es freigibst. Unter 16 entscheiden deine Eltern mit',
-           'Bei Trainern, Akademien und Scouts die Prüfung. Vom Führungszeugnis nur, dass es vorlag und von wann, nicht das Dokument',
+           'Deine Nachrichten, damit sie ankommen. Chats von Kindern unter 16 können die Eltern lesen',
+           'Wem du folgst. Das sehen nur du und die Seite, der du folgst',
+           'Bei geprüften Konten die Prüfung. Vom Führungszeugnis nur, dass es vorlag und von wann, nicht das Dokument',
            'Ob dein Abo läuft'
           ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
         '</ul></div>' +
@@ -3063,7 +3134,7 @@ function sheetDaten(){
         '<ul class="ticks">' +
           ['Kein Tracking, keine Werbenetzwerke',
            'Keine Weitergabe an Dritte',
-           'Keine öffentlichen Videos von Kindern und keine privaten Nachrichten an Kinder',
+           'Keine öffentlichen Videos von Kindern und keine Nachrichten von Fremden an Kinder',
            'Keine Auswertung, wer wie oft welches Video schaut'
           ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
         '</ul></div>' +
@@ -3172,7 +3243,8 @@ function sheetBedingungen(){
         'Hochgeladene Videos bleiben in der App. Herunterladen, weitergeben oder außerhalb zeigen ist nicht erlaubt.',
         'Wer ein anderes Kind filmt, braucht die Zustimmung von dessen Eltern.',
         'Beleidigungen, Mobbing und alles, was Kinder gefährdet, führen zur Sperre. Was gemeldet wird, sieht sich KM1 innerhalb von 24 Stunden an.',
-        'Trainer, Akademien und Scouts prüft KM1, bevor sie den Haken bekommen. KM1 kann ihn jederzeit wieder entziehen.'
+        'Trainer, Akademien, Vereine, Profis und Scouts prüft KM1, bevor sie den Haken bekommen. KM1 kann ihn jederzeit wieder entziehen.',
+        'Kinder unter 16 schreiben nur mit ihrem Trainer und dem eigenen Team, die Eltern können mitlesen. Profis und Vereine bekommen keine Nachrichten von Fans.'
       ]) + '</div>' +
       '<div class="block"><h2 class="sec">KM1 Team</h2>' + liste([
         'KM1 Team kostet 12,99 € im Monat je Mannschaft, KM1 Akademie 79,00 € im Monat für bis zu zehn Mannschaften.',
@@ -3691,6 +3763,7 @@ function render(){
   var chip = document.getElementById('lvchip');
   chip.innerHTML = chipInhalt() + '<span class="pfeil" aria-hidden="true"></span>';
   chip.setAttribute('aria-label', 'Sicht wechseln');
+  postknopfZeichnen();
 }
 var toastT = null;
 function toast(msg){
@@ -3996,8 +4069,9 @@ function publish(){
       und traegt den Haken.
    2. Kein Video eines Kindes ist oeffentlich. Unter 16 geben die
       Eltern frei, bevor es irgendwer sieht.
-   3. Niemand schreibt einem Kind direkt. Kinder reagieren mit drei
-      festen Zeichen, schreiben duerfen nur gepruefte Trainer.
+   3. Kein Fremder schreibt einem Kind. Kinder unter 16 schreiben nur
+      mit ihrem Trainer und dem eigenen Team, und die Eltern lesen mit.
+      Im Team reagieren Kinder mit drei festen Zeichen.
    ============================================================ */
 
 /* ---------- Zeichen ---------- */
@@ -4014,6 +4088,7 @@ ICON.kalender = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="current
 ICON.mehr = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></g></svg>';
 ICON.stern = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" d="M12 3.2l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9L12 16.6l-5.3 2.8 1.1-5.9-4.3-4.1 5.9-.8z"/></svg>';
 ICON.stift = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 3.8a2 2 0 0 1 2.8 0l1 1a2 2 0 0 1 0 2.8L9.3 18.5l-4.7 1.3a.6.6 0 0 1-.7-.7l1.3-4.7z"/></svg>';
+ICON.wappen = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M11.7 2.6a1 1 0 0 1 .6 0l7.4 2.5c.4.1.7.5.7 1v5.4c0 4.6-3.2 8.5-8.1 10-.2.1-.4.1-.6 0-4.9-1.5-8.1-5.4-8.1-10V6.1c0-.5.3-.9.7-1zM12 5.4 6.3 7.3v4.2c0 3.3 2.2 6.1 5.7 7.4 3.5-1.3 5.7-4.1 5.7-7.4V7.3z"/><path fill="currentColor" d="M12 7.4l3.9 1.3v2.8c0 2.3-1.5 4.3-3.9 5.3z"/></svg>';
 ICON.auge = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M12 5c4.6 0 8.2 3.1 9.6 6.3.2.4.2.9 0 1.3C20.2 15.9 16.6 19 12 19s-8.2-3.1-9.6-6.3a1.6 1.6 0 0 1 0-1.3C3.8 8.1 7.4 5 12 5zm0 3.4a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2z"/></svg>';
 
 /* Der Haken: eine Rosette mit sechzehn Zacken, darin der weisse Haken.
@@ -4076,7 +4151,9 @@ var ROLLEN = {
   spieler:  {nm:'Spieler',  satz:'Ich trainiere selbst.',                          i:'#FF9500', ico:ICON.tabStart},
   eltern:   {nm:'Eltern',   satz:'Mein Kind trainiert, ich behalte den Überblick.', i:'#34C759', ico:ICON.familie},
   trainer:  {nm:'Trainer',  satz:'Ich trainiere eine Mannschaft.',                 i:'#0D7C75', ico:ICON.team,     pruef:true},
-  akademie: {nm:'Akademie', satz:'Wir sind ein Verein oder eine Fußballschule.',   i:'#AF52DE', ico:ICON.akademie, pruef:true},
+  akademie: {nm:'Akademie', satz:'Wir sind eine Fußballschule oder ein Nachwuchszentrum.', i:'#AF52DE', ico:ICON.akademie, pruef:true},
+  verein:   {nm:'Verein',   satz:'Wir sind ein Profiverein, etwa aus der Bundesliga.', i:'#34495E', ico:ICON.wappen, pruef:true},
+  profi:    {nm:'Profi',    satz:'Ich spiele im Profifußball.',                     i:'#D39B00', ico:ICON.pokal,    pruef:true},
   scout:    {nm:'Scout',    satz:'Ich sichte Talente für einen Verein.',           i:'#5856D6', ico:ICON.fernglas, pruef:true},
   km1:      {nm:'KM1',      satz:'Prüfen, freigeben, Neuigkeiten schreiben.',      i:'#C81E14', ico:ICON.schild}
 };
@@ -4084,12 +4161,16 @@ var ROLLEN = {
 /* Die Konten der Vorfuehrung. Alle gehoeren zu derselben Geschichte:
    Luis spielt in der U13 des SC Rheinblick, Sandra ist seine Mutter,
    Tim sein Trainer, die Akademie Rheinblick fuehrt vier Mannschaften,
-   Marco sichtet fuer einen Verein, und Kader ist KM1. */
+   Marco sichtet fuer einen Verein, und Kader ist KM1. Der FC Rheinstadt
+   und sein Torwart Niklas Hartwig sind ebenso erfunden: der Name eines
+   echten Profis oder Vereins gehoert erst hinein, wenn er zugestimmt hat. */
 var DEMO = {
   spieler:  {name:'Luis M.',             vn:'Luis',     wer:'Luis, 12',            was:'Spieler in der U13'},
   eltern:   {name:'Sandra M.',           vn:'Sandra',   wer:'Sandra',              was:'Mutter von Luis'},
   trainer:  {name:'Tim Hoffmann',        vn:'Tim',      wer:'Tim Hoffmann',        was:'Trainer der U13, geprüft'},
   akademie: {name:'Akademie Rheinblick', vn:'zusammen', wer:'Akademie Rheinblick', was:'Vier Mannschaften, geprüft'},
+  verein:   {name:'FC Rheinstadt',       vn:'zusammen', wer:'FC Rheinstadt',       was:'Profiverein, 1. Bundesliga, geprüft'},
+  profi:    {name:'Niklas Hartwig',      vn:'Niklas',   wer:'Niklas Hartwig',      was:'Profi, Torwart beim FC Rheinstadt, geprüft'},
   scout:    {name:'Marco Berger',        vn:'Marco',    wer:'Marco Berger',        was:'Scout, geprüft'},
   km1:      {name:'Kader',               vn:'Kader',    wer:'Kader',               was:'KM1: prüfen und freigeben'}
 };
@@ -4125,7 +4206,7 @@ function rolleSetzen(r, neu){
   state.eigenesTeam = null;
   if(r === 'spieler') W.neuName = state.konto.name;
   /* „Moin Akademie Rheinblick." waere ein Satz zu lang. */
-  if(r === 'akademie') state.konto.vn = 'zusammen';
+  if(r === 'akademie' || r === 'verein') state.konto.vn = 'zusammen';
 }
 function rolleZuruecksetzen(){
   state.rolle = 'spieler'; state.demo = false; state.ichId = null;
@@ -4169,7 +4250,8 @@ function chipInhalt(){
 function teamTab(){
   var r = drin() ? state.rolle : 'gast';
   var t = {eltern:['Familie', ICON.familie], akademie:['Akademie', ICON.akademie],
-           scout:['Talente', ICON.fernglas], km1:['Prüfen', ICON.schild]}[r] || ['Team', ICON.team];
+           scout:['Talente', ICON.fernglas], km1:['Prüfen', ICON.schild],
+           profi:['Seite', ICON.pokal], verein:['Verein', ICON.wappen]}[r] || ['Team', ICON.team];
   return ['team', t[0], t[1]];
 }
 
@@ -4407,6 +4489,20 @@ function hinweisZeile(x){
 }
 function hinweiseStart(){
   var r = state.rolle, k = [], t = meinTeam();
+  /* Eine neue Nachricht steht oben, vor allem anderen. */
+  var neu = ungeleseneChats();
+  if(neu.length){
+    var c0 = neu[0], anderer = gegenueber(c0);
+    k.push({act:'chat:'+c0.id, ico:ICON.sprech, farbe:'#34C759',
+      t:(c0.status === 'anfrage' ? 'Nachrichtenanfrage von ' : 'Neue Nachricht von ')+vorname(konto(anderer).name),
+      s:c0.msgs[c0.msgs.length - 1].t, n:neu.length});
+  }
+  if(r === 'profi' || r === 'verein'){
+    if(!state.geprueft) k.push({act:'pruefung', ico:ICON.schild, farbe:'#0A7AFF', t:'Hol dir den Haken', s:state.pruefung ? 'KM1 prüft gerade die Belege' : 'Ohne Prüfung ist die Seite nicht zu finden'});
+    var fr = offeneFragen(meineId()).length;
+    if(r === 'profi' && fr) k.push({act:'tab:team', ico:ICON.pokal, farbe:'#D39B00',
+      t:(fr === 1 ? 'Eine Frage' : ZAHLWORT[fr].replace(/^./, function(c){ return c.toUpperCase(); })+' Fragen')+' deiner Fans', s:'Die meistgewählte beantwortest du als Video', n:fr});
+  }
   if(r === 'spieler'){
     if(state.imTeam !== true){
       k.push({act:'tab:team', ico:ICON.team, farbe:'#0D7C75', t:'Tritt deinem Team bei', s:'Mit dem Code von deinem Trainer'});
@@ -4451,7 +4547,7 @@ function hinweiseStart(){
       s:'Gemeldetes innerhalb von 24 Stunden', n:p + m});
   }
   if(!k.length) return '';
-  return '<div class="hinweise">'+k.map(hinweisZeile).join('')+'</div>';
+  return '<div class="hinweise">'+k.slice(0, 3).map(hinweisZeile).join('')+'</div>';
 }
 
 /* Die Zeile ueber der Begruessung und ihr zweiter Satz, je Rolle. */
@@ -4461,7 +4557,9 @@ function begruessung(){
     eltern:['Elternkonto', 'Alles im Blick.'],
     trainer:[t ? 'KM1 Team · '+t.name+' '+t.verein : 'Trainer', t ? 'Dein Team wartet.' : 'Auf geht’s.'],
     akademie:['KM1 Akademie', 'Alles im Blick.'],
-    scout:['Scouting', 'Wer fällt auf?']
+    scout:['Scouting', 'Wer fällt auf?'],
+    profi:[state.demo ? 'Profi · FC Rheinstadt' : 'Profi', 'Deine Fans fragen.'],
+    verein:[state.demo ? 'Profiverein · 1. Bundesliga' : 'Verein', 'Alles im Blick.']
   }[state.rolle] || [heuteZeile(), 'Weiter geht’s.'];
 }
 /* Das Abo auf der Startseite: Pro fuer Spieler und Eltern, KM1 Team
@@ -4469,7 +4567,7 @@ function begruessung(){
 function aboKachelStart(){
   var r = drin() ? state.rolle : 'gast';
   if(r === 'trainer' || r === 'akademie') return state.teamAbo ? '' : teamKachel();
-  if(r === 'scout') return '';
+  if(r === 'scout' || r === 'profi' || r === 'verein') return '';
   return state.pro ? '' : proKachel(false);
 }
 
@@ -4497,17 +4595,24 @@ function profilUnterzeile(){
   if(r === 'trainer') return 'Trainer'+(t ? ' · '+t.name+' '+t.verein : '');
   if(r === 'akademie') return 'Akademie'+(state.demo ? ' · vier Mannschaften' : '');
   if(r === 'scout') return 'Scout'+(state.demo ? ' · '+W.anfragen[0].org : '');
+  if(r === 'profi') return 'Profi'+(state.demo ? ' · Torwart beim FC Rheinstadt' : '');
+  if(r === 'verein') return 'Profiverein'+(state.demo ? ' · 1. Bundesliga' : '');
   return 'Gründer und Trainer';
 }
 
 /* Die drei Zahlen oben im Profil, fuer alle ausser Spielern. */
 function statsHtml(zahlen){
   return '<div class="stats">'+zahlen.map(function(z){
-    return '<div class="stat"><span class="v">'+z[0]+'</span><span class="k">'+z[1]+'</span></div>';
+    return '<div class="stat"><span class="v'+(String(z[0]).length > 6 ? ' lang' : '')+'">'+z[0]+'</span><span class="k">'+z[1]+'</span></div>';
   }).join('')+'</div>';
 }
 function rollenStats(){
   var r = state.rolle, t = meinTeam();
+  if(r === 'profi' || r === 'verein'){
+    var ich = meineId(), sei = SEITEN[ich];
+    return statsHtml([[sei ? zahlKurz(followerVon(ich)) : 0, 'Follower'], [beitraegeVon(ich).length, 'Beiträge'],
+      r === 'profi' ? [offeneFragen(ich).length, 'Fragen'] : [meineChats().length, 'Chats']]);
+  }
   if(r === 'eltern'){
     var a = TEAM.aufgaben, z = a.filter(function(x){ return aufgabeFertig(x, 'luis'); }).length;
     return statsHtml([[uebungen().length, 'Übungen von '+KIND.vn], [z+'/'+a.length, 'Haus&shy;aufgaben'], [serieWochen(), 'Wochen&shy;serie']]);
@@ -4532,12 +4637,16 @@ function rollenStats(){
 var BELEGE = {
   trainer:  [['lizenz','Trainerlizenz','DFB oder vergleichbar'],['fz','Erweitertes Führungszeugnis','nicht älter als drei Monate'],['verein','Bestätigung des Vereins','Brief oder E-Mail vom Vorstand']],
   akademie: [['register','Vereins- oder Handelsregister','Auszug, nicht älter als ein Jahr'],['schutz','Kinderschutzkonzept','wie es der Landessportbund verlangt'],['person','Ansprechperson','mit erweitertem Führungszeugnis']],
+  verein:   [['register','Vereinsregister','Auszug, nicht älter als ein Jahr'],['liga','Bestätigung der Liga','oder des Verbands'],['person','Ansprechperson','aus der Kommunikation des Vereins']],
+  profi:    [['kader','Bestätigung des Vereins','dass du im Profikader stehst'],['ausweis','Ausweis','Vorder- und Rückseite'],['kontakt','Ansprechperson','beim Verein oder Berater, für Anfragen']],
   scout:    [['arbeit','Bestätigung des Vereins','für den du sichtest'],['fz','Erweitertes Führungszeugnis','nicht älter als drei Monate'],['ausweis','Ausweis','Vorder- und Rückseite']]
 };
 var PRUEF_TEXT = {
   trainer:'DFB B-Lizenz, erweitertes Führungszeugnis vom Juli, Bestätigung des SC Rheinblick.',
   akademie:'Vereinsregister, Kinderschutzkonzept und Ansprechperson mit Führungszeugnis.',
-  scout:'Bestätigung des Vereins, erweitertes Führungszeugnis vom August, Ausweis.'
+  scout:'Bestätigung des Vereins, erweitertes Führungszeugnis vom August, Ausweis.',
+  verein:'Vereinsregister, Bestätigung der Liga und eine Ansprechperson aus der Kommunikation.',
+  profi:'Bestätigung des FC Rheinstadt, Ausweis und eine Ansprechperson beim Verein.'
 };
 function pruefPanel(){
   if(!istPruefRolle()) return '';
@@ -4554,9 +4663,10 @@ function pruefPanel(){
       '<button class="demo" type="button" data-act="pruefok">Vorführung: Prüfung abschließen</button>' +
     '</div>';
   }
-  var was = {trainer:'Ohne Haken kann niemand deinem Team beitreten.', akademie:'Ohne Haken legt ihr keine Teams an.', scout:'Ohne Haken siehst du keine Talente.'}[state.rolle];
+  var was = {trainer:'Ohne Haken kann niemand deinem Team beitreten.', akademie:'Ohne Haken legt ihr keine Teams an.', scout:'Ohne Haken siehst du keine Talente.',
+             verein:'Ohne Haken ist eure Seite nicht zu finden.', profi:'Ohne Haken ist deine Seite nicht zu finden.'}[state.rolle];
   return '<div class="callout"><span class="h">Noch nicht geprüft</span>' +
-    '<p>'+was+' KM1 prüft Lizenz, Führungszeugnis und Verein.</p>' +
+    '<p>'+was+' KM1 prüft jeden Beleg von Hand.</p>' +
     '<button class="btn klein" type="button" data-act="pruefung" style="align-self:flex-start;margin-top:8px">Prüfung beantragen</button></div>';
 }
 
@@ -4583,7 +4693,12 @@ function teamAboPanel(){
 
 /* Die Zeilen im Profil, die nur Spieler haben. */
 function rollenZeilen(){
-  if(state.rolle !== 'spieler') return '';
+  /* Wer eine oeffentliche Seite hat, sieht sie so, wie andere sie sehen. */
+  var id = meineId();
+  if(state.rolle !== 'spieler'){
+    return (id && SEITEN[id]) ? '<div class="rows mit-symbol">' +
+      zeile('seite:'+id, ICON.auge, ROLLEN[state.rolle].i, 'Öffentliche Seite', zahlKurz(followerVon(id))) + '</div>' : '';
+  }
   var n = W.uploads.filter(function(u){ return ichBin(u.von); }).length;
   return '<div class="rows mit-symbol">' +
     zeile('meinevideos', ICON.upl, '#FF9500', 'Meine Videos', n) +
@@ -4600,7 +4715,7 @@ function vorfuehrungBlock(){
 /* ---------- Anmeldung ---------- */
 function rollenWahl(){
   return '<div class="field"><label>Ich bin</label><div class="rollen">' +
-    ['spieler','eltern','trainer','akademie','scout'].map(function(r){
+    ['spieler','eltern','trainer','akademie','verein','profi','scout'].map(function(r){
       var x = ROLLEN[r];
       return '<button class="rolle" type="button" data-act="wahlrolle:'+r+'" aria-pressed="'+(state.wahlRolle === r)+'">' +
         '<span class="ico" style="--i:'+x.i+'">'+x.ico+'</span>' +
@@ -4621,7 +4736,7 @@ function jahrgangFeld(){
 function screenTeam(){
   if(!drin()) return teamGast();
   return ({spieler:teamSpieler, eltern:teamEltern, trainer:teamTrainer, akademie:teamAkademie,
-           scout:teamScout, km1:teamKm1}[state.rolle] || teamSpieler)();
+           scout:teamScout, km1:teamKm1, profi:teamSeite, verein:teamSeite}[state.rolle] || teamSpieler)();
 }
 
 function teamGast(){
@@ -4873,8 +4988,9 @@ function teamEltern(){
       '<button class="lrow" type="button" data-act="talentprofil"><span>Talentprofil</span><span class="r">'+talentStatusWort()+'</span></button>' +
       '<button class="lrow" type="button" data-act="versuch:aufgabe"><span>Video für '+KIND.vn+' hochladen</span><span class="r"></span></button>' +
     '</div></div>' +
-    '<div class="callout stille"><span class="h">Keine privaten Nachrichten</span>' +
-      '<p>Niemand kann '+KIND.vn+' direkt schreiben, auch kein Trainer und kein Scout. Wer etwas möchte, fragt zuerst Sie.</p></div>' +
+    '<div class="callout stille"><span class="h">Keine Fremden im Postfach</span>' +
+      '<p>'+KIND.vn+' schreibt nur mit dem Trainer und dem eigenen Team, und Sie können jeden Chat lesen. Profis, Scouts und Fremde können nicht schreiben. Wer etwas möchte, fragt zuerst Sie.</p>' +
+      '<button class="btn klein" type="button" data-act="nachrichten" style="align-self:flex-start;margin-top:8px">Chats von '+KIND.vn+' ansehen</button></div>' +
   '</section>';
 }
 
@@ -5092,7 +5208,7 @@ function teamKm1(){
 /* Die Wahl der Sicht fuer die Vorfuehrung. */
 function sheetSicht(){
   var jetzt = aktuelleSicht();
-  var reihe = ['spieler','eltern','trainer','akademie','scout','km1'].map(function(r){
+  var reihe = ['spieler','eltern','trainer','akademie','verein','profi','scout','km1'].map(function(r){
     var x = ROLLEN[r];
     return '<button class="rolle" type="button" data-act="sichtwahl:'+r+'" aria-pressed="'+(jetzt === r)+'">' +
       '<span class="ico" style="--i:'+x.i+'">'+x.ico+'</span>' +
@@ -5105,7 +5221,7 @@ function sheetSicht(){
   return kopf('Vorführung') +
     '<div class="sheet-body">' +
       '<div><p class="eyebrow">Vorführung</p><h1 class="big">Aus welcher Sicht?</h1>' +
-        '<p class="sub">Eine App, sechs Rollen. Die Namen sind erfunden, alles lässt sich antippen.</p></div>' +
+        '<p class="sub">Eine App, acht Rollen. Die Namen sind erfunden, alles lässt sich antippen.</p></div>' +
       '<div class="rollen">'+reihe+'</div>' +
       '<div class="callout stille"><span class="h">Eine Geschichte in fünf Schritten</span>' +
         '<p>Luis lädt seinen Versuch hoch. Sandra gibt ihn frei. Tim zählt nach und gibt Feedback. Luis steht in der Rangliste und teilt es als Status. Was eine Rolle tut, sehen die anderen.</p></div>' +
@@ -5150,7 +5266,9 @@ function sheetPruefung(){
   var r = state.rolle, l = BELEGE[r] || [];
   var satz = {trainer:'Eltern sehen auf einen Blick, dass KM1 dich kennt. Erst mit dem Haken können Spieler deinem Team beitreten.',
               akademie:'Eltern und Trainer sehen, dass KM1 euch geprüft hat. Erst mit dem Haken legt ihr Mannschaften an.',
-              scout:'Erst mit dem Haken siehst du Talente. Eltern und Akademien sehen, dass KM1 dich kennt.'}[r] || '';
+              scout:'Erst mit dem Haken siehst du Talente. Eltern und Akademien sehen, dass KM1 dich kennt.',
+              verein:'Fans sehen auf einen Blick, dass die Seite wirklich euch gehört. Erst mit dem Haken ist sie zu finden.',
+              profi:'Fans sehen auf einen Blick, dass die Seite wirklich dir gehört. Erst mit dem Haken ist sie zu finden.'}[r] || '';
   return kopf('Prüfung') +
     '<div class="sheet-body">' +
       '<div class="pay-kopf"><span class="haken-gross">'+hakenSvg()+'</span>' +
@@ -5343,8 +5461,9 @@ function sheetSpieler(id){
           '<span class="tick'+(f ? ' on' : '')+'">'+ICON.check+'</span></div>';
       }).join('') + '</div></div>' : '') +
       (ups.length ? '<div class="block"><h2 class="sec">Videos</h2><div class="nliste">'+ups.map(function(u){ return uploadZeile(u); }).join('')+'</div></div>' : '') +
-      '<div class="callout stille"><span class="h">Keine Direktnachrichten</span>' +
-        '<p>Private Nachrichten an Kinder gibt es in KM1 nicht. Was du sagen willst, schreibst du als Feedback zu einem Video. Die Eltern lesen mit.</p></div>' +
+      '<div class="callout stille"><span class="h">Nachrichten mit Eltern</span>' +
+        '<p>Du kannst '+h(vorname(p.name))+' schreiben, weil ihr im selben Team seid. Die Eltern können den Chat lesen. Kinder außerhalb deines Teams kannst du nicht anschreiben.</p>' +
+        '<button class="btn klein" type="button" data-act="chatmit:'+id+'" style="align-self:flex-start;margin-top:8px">Nachricht an '+h(vorname(p.name))+'</button></div>' +
     '</div>';
 }
 function sheetKader(){
@@ -6226,6 +6345,613 @@ function challengeExtras(fertig){
   if(meinTeam() && teamIds(meinTeam()).length) out += rangBlock(6);
   return out;
 }
+
+/* ============================================================
+   Folgen und Nachrichten.
+   Profis, Vereine, Akademien, Trainer, Scouts und KM1 haben eine
+   oeffentliche Seite, der man folgen kann. Kinder unter 16 haben
+   keine: ihnen folgt nur das eigene Team.
+
+   Nachrichten gibt es, aber nicht fuer jeden an jeden. Wer wem
+   schreiben darf, steht in einer einzigen Funktion (schreibRecht),
+   damit sich die Regeln an einer Stelle aendern lassen.
+   ============================================================ */
+
+/* Alle Konten, die in der Vorfuehrung vorkommen. Die Mitspieler aus
+   der U13 kommen aus SPIELER dazu. */
+var KONTEN = {
+  luis:       {name:'Luis M.',             typ:'spieler',  alter:12, team:'u13', unter:'Spieler · U13 · 12 Jahre'},
+  sandra:     {name:'Sandra M.',           typ:'eltern',   kind:'luis',          unter:'Mutter von Luis'},
+  tim:        {name:'Tim Hoffmann',        typ:'trainer',  team:'u13', geprueft:true, unter:'Trainer der U13 · SC Rheinblick'},
+  rheinblick: {name:'Akademie Rheinblick', typ:'akademie', geprueft:true,        unter:'Akademie · vier Mannschaften'},
+  rheinstadt: {name:'FC Rheinstadt',       typ:'verein',   geprueft:true,        unter:'Profiverein · 1. Bundesliga'},
+  hartwig:    {name:'Niklas Hartwig',      typ:'profi',    geprueft:true,        unter:'Profi · Torwart beim FC Rheinstadt'},
+  marco:      {name:'Marco Berger',        typ:'scout',    geprueft:true,        unter:'Scout · Nachwuchsscouting West'},
+  kader:      {name:'Kader',               typ:'km1',      geprueft:true,        unter:'KM1 Training'},
+  jannik:     {name:'Jannik K.',           typ:'spieler',  alter:17,             unter:'Spieler · Akademie Rheinblick · 17 Jahre'}
+};
+var DEMO_ID = {spieler:'luis', eltern:'sandra', trainer:'tim', akademie:'rheinblick', scout:'marco',
+               profi:'hartwig', verein:'rheinstadt', km1:'kader'};
+function meineId(){
+  if(!drin()) return null;
+  if(state.demo) return DEMO_ID[state.rolle];
+  return state.rolle === 'spieler' ? 'neu' : 'ich';
+}
+function konto(id){
+  if(!id) return null;
+  if(id === 'ich' || id === 'neu'){
+    var r = state.rolle, t = meinTeam();
+    return {name:state.konto ? state.konto.name : 'Ich', typ:r, geprueft:state.geprueft,
+      alter:r === 'spieler' ? alterVon(state.jahrgang) : 30,
+      team:t ? t.id : null, kind:(r === 'eltern' && state.kindDa) ? 'luis' : null, unter:ROLLEN[r].nm};
+  }
+  if(KONTEN[id]) return KONTEN[id];
+  var s = SPIELER[id];
+  return s ? {name:s.name, typ:'spieler', alter:12, team:'u13', unter:'Spieler · U13'} : null;
+}
+function kontoFarbe(id){
+  var k = konto(id);
+  if(!k) return '#8E8E93';
+  if(k.typ === 'spieler'){ var p = person(id); return lvFarbe(p ? p.lv : (k.alter >= 16 ? 3 : 1)); }
+  return (ROLLEN[k.typ] || {}).i || '#8E8E93';
+}
+function kontoHaken(id){ var k = konto(id); return !!k && !!k.geprueft && !!(ROLLEN[k.typ] || {}).pruef || (k && k.typ === 'km1'); }
+function nameMitHaken(id){ return h(konto(id).name)+(kontoHaken(id) ? haken() : ''); }
+
+/* ---------- Die Regeln ---------- */
+function istKind(id){ var k = konto(id); return !!k && k.typ === 'spieler' && k.alter < 16; }
+function minderjaehrig(id){ var k = konto(id); return !!k && k.typ === 'spieler' && k.alter < 18; }
+function geprueftId(id){ var k = konto(id); return !!k && !!k.geprueft && (!!(ROLLEN[k.typ] || {}).pruef || k.typ === 'km1'); }
+function selbesTeam(a, b){ var x = konto(a), y = konto(b); return !!(x && y && x.team && x.team === y.team); }
+function elternVon(a, b){ var x = konto(a); return !!x && x.kind === b; }
+function gegenseitig(a, b){ return !!(folgtListe(a)[b] && folgtListe(b)[a]); }
+
+/* Die Antwort: direkt, als Anfrage, als Frage an den Profi, oder
+   gar nicht. Dazu, ob die Eltern mitlesen, und warum. */
+function schreibRecht(von, an){
+  var a = konto(von), b = konto(an);
+  if(!a || !b || von === an) return {weg:'nein', grund:''};
+  if(W.blockiert[an] || W.blockiert[von]) return {weg:'nein', grund:'Blockiert.'};
+  /* 1. Kinder unter 16: nur der eigene Trainer und das eigene Team,
+        die Eltern lesen mit. Dazu KM1 selbst. */
+  if(istKind(von) || istKind(an)){
+    var kind = istKind(an) ? an : von, andere = kind === an ? von : an, ko = konto(andere);
+    if(elternVon(andere, kind)) return {weg:'direkt'};
+    if(selbesTeam(kind, andere) && (ko.typ === 'spieler' || (ko.typ === 'trainer' && ko.geprueft))) return {weg:'direkt', eltern:true};
+    if(ko.typ === 'km1') return {weg:'direkt', eltern:true};
+    /* Einem Profi schreibt auch ein Kind nicht, es stellt eine Frage. */
+    if(kind === von && ko.typ === 'profi') return {weg:'frage', grund:'Profis bekommen keine Nachrichten. Stell eine Frage, die meistgewählten beantwortet '+vorname(b.name)+' als Video.'};
+    return {weg:'nein', grund:kind === an
+      ? vorname(b.name)+' ist unter 16. Schreiben dürfen nur der Trainer und das eigene Team.'
+      : 'Unter 16 schreibst du nur mit deinem Trainer und deinem Team. So kann dich niemand Fremdes anschreiben.'};
+  }
+  /* 2. Spieler von 16 bis 17: Scouts und Vereine nur ueber die Eltern
+        oder die Akademie, alle anderen nur, wenn man sich folgt. */
+  if(minderjaehrig(an) && !selbesTeam(von, an) && a.typ !== 'km1'){
+    if(a.typ === 'scout' || a.typ === 'verein') return {weg:'nein', grund:'Spieler unter 18 erreichst du nur über die Eltern oder die Akademie, mit „Kontakt anfragen" im Talentprofil.'};
+    if(!gegenseitig(von, an)) return {weg:'nein', grund:vorname(b.name)+' ist unter 18. Schreiben dürfen das eigene Team und wer sich gegenseitig folgt.'};
+  }
+  /* Wer im selben Team ist, schreibt sich. */
+  if(selbesTeam(von, an)) return {weg:'direkt'};
+  /* 3. KM1 ist fuer alle da. */
+  if(a.typ === 'km1' || b.typ === 'km1') return {weg:'direkt'};
+  /* 4. Profis und Vereine haben kein offenes Postfach. */
+  if(b.typ === 'profi' || b.typ === 'verein'){
+    if((a.typ === 'profi' || a.typ === 'verein') && a.geprueft) return {weg:'direkt'};
+    if(geprueftId(von)) return {weg:'anfrage', grund:'Geht als Anfrage. '+vorname(b.name)+' entscheidet, ob daraus ein Chat wird.'};
+    return b.typ === 'profi'
+      ? {weg:'frage', grund:'Profis bekommen keine Nachrichten von Fans, sonst wäre ihr Postfach voll. Stell eine Frage, die meistgewählten beantwortet '+vorname(b.name)+' als Video.'}
+      : {weg:'nein', grund:'Vereine bekommen keine Nachrichten von Fans. Folge dem Verein, dann verpasst du nichts.'};
+  }
+  /* 5. Eltern und der Trainer ihres Kindes. */
+  if((a.typ === 'eltern' && b.typ === 'trainer' && a.kind && selbesTeam(a.kind, an)) ||
+     (b.typ === 'eltern' && a.typ === 'trainer' && b.kind && selbesTeam(b.kind, von))) return {weg:'direkt'};
+  /* 6. Gepruefte Konten untereinander. */
+  if(geprueftId(von) && geprueftId(an)) return {weg:'direkt'};
+  /* 7. Wer sich gegenseitig folgt. */
+  if(gegenseitig(von, an)) return {weg:'direkt'};
+  /* 8. Gepruefte an alle anderen: als Anfrage. */
+  if(geprueftId(von)) return {weg:'anfrage', grund:'Geht als Anfrage. '+vorname(b.name)+' entscheidet, ob daraus ein Chat wird.'};
+  return {weg:'nein', grund:'Ihr folgt euch nicht gegenseitig. Nachrichten gibt es nur zwischen Menschen, die sich kennen.'};
+}
+
+/* ---------- Seiten und Folgen ---------- */
+var SEITEN = {
+  kader:      {follower:12400,  bild:'img/app-symbol.png', titel:'KM1 Training'},
+  hartwig:    {follower:48200},
+  rheinstadt: {follower:312000},
+  rheinblick: {follower:1850},
+  tim:        {follower:214},
+  marco:      {follower:640},
+  jannik:     {follower:96}
+};
+function seitenTitel(id){ return (SEITEN[id] && SEITEN[id].titel) || konto(id).name; }
+W.folgt = {
+  luis:{kader:1, tim:1, hartwig:1}, sandra:{kader:1, tim:1}, tim:{kader:1, rheinblick:1, hartwig:1},
+  rheinblick:{kader:1, rheinstadt:1}, marco:{rheinstadt:1, rheinblick:1}, hartwig:{kader:1, rheinstadt:1},
+  rheinstadt:{kader:1, hartwig:1}, kader:{hartwig:1, rheinstadt:1, rheinblick:1}, jannik:{kader:1, hartwig:1, rheinstadt:1}
+};
+function folgtListe(id){ if(!W.folgt[id]) W.folgt[id] = {}; return W.folgt[id]; }
+function folgeIch(id){ var m = meineId(); return !!m && !!folgtListe(m)[id]; }
+function followerVon(id){ return (SEITEN[id] ? SEITEN[id].follower : 0) + (W.folgtNeu[id] || 0); }
+W.folgtNeu = {};
+function zahlKurz(n){
+  if(n >= 1e6) return String(Math.round(n / 1e5) / 10).replace('.', ',')+' Mio.';
+  if(n >= 1e4) return String(Math.round(n / 100) / 10).replace('.', ',')+' Tsd.';
+  return n.toLocaleString('de-DE');
+}
+
+/* Beitraege auf den oeffentlichen Seiten. Reaktionen wie im Team:
+   drei feste Zeichen, keine offenen Kommentare. */
+W.posts = [
+  {id:'p-hartwig-1', von:'hartwig', zeit:Date.now() - 5 * 3600e3, k:'torwart', lv:4, dauer:42,
+   text:'Torwart-Tipp: Der erste Schritt zur Ecke kommt aus den Fußballen, nicht aus den Fersen. Zehnmal pro Seite, jeden Tag.',
+   r:{feuer:812, klatsch:406, ball:233}, mein:{}},
+  {id:'p-kader-1', von:'kader', zeit:Date.now() - 9 * 3600e3, bild:'pitch',
+   text:'Die neue Profi-Einheit mit Niklas Hartwig ist gedreht. Ab Montag in der App.',
+   r:{feuer:214, klatsch:188, ball:67}, mein:{}},
+  {id:'p-rheinstadt-1', von:'rheinstadt', zeit:Date.now() - 26 * 3600e3, k:'taktik', lv:4,
+   text:'Sichtungstag für unsere U15 am 18. Oktober. Anmelden können nur die Eltern, geprüfte Scouts sind dabei.',
+   r:{feuer:1904, klatsch:1277, ball:640}, mein:{}},
+  {id:'p-tim-1', von:'tim', zeit:Date.now() - 2 * TAG_MS,
+   text:'Drei Siege am Stück für die U13. Die Übersteiger aus der Hausaufgabe sitzen.',
+   r:{feuer:31, klatsch:44, ball:12}, mein:{}},
+  {id:'p-rheinblick-1', von:'rheinblick', zeit:Date.now() - 3 * TAG_MS, k:'passen', lv:2,
+   text:'Alle vier Mannschaften trainieren jetzt mit KM1 Team: eine Hausaufgabe pro Woche, von jedem Trainer.',
+   r:{feuer:58, klatsch:73, ball:20}, mein:{}}
+];
+function beitraegeVon(id){ return W.posts.filter(function(p){ return p.von === id; }); }
+
+/* Frag den Profi: statt eines offenen Postfachs eine Liste von Fragen,
+   ueber die Fans abstimmen. Der Profi beantwortet die meistgewaehlten
+   als kurzes Video. Eine Frage im Monat, mit KM1 Pro drei. */
+W.fragen = [
+  {id:'q1', an:'hartwig', t:'Wie bereitest du dich auf einen Elfmeter vor?', stimmen:128, mein:false},
+  {id:'q2', an:'hartwig', t:'Was machst du, wenn dir ein Fehler passiert ist?', stimmen:96, mein:false},
+  {id:'q3', an:'hartwig', t:'Mit welchem Fuß spielst du den Abstoß, und warum?', stimmen:41, mein:false}
+];
+W.gefragt = {};
+function offeneFragen(id){
+  return W.fragen.filter(function(q){ return q.an === id && !q.beantwortet; })
+    .sort(function(a, b){ return (b.stimmen + (b.mein ? 1 : 0)) - (a.stimmen + (a.mein ? 1 : 0)); });
+}
+
+/* ---------- Nachrichten ---------- */
+W.chats = [
+  {id:'c-tim-luis', mit:['tim','luis'], eltern:true, status:'offen', gelesen:{tim:2, luis:2}, msgs:[
+    {von:'tim', t:'Luis, starke Flanken im Video. Denk an die Übersteiger bis Freitag.', zeit:Date.now() - 20 * 3600e3},
+    {von:'luis', t:'Mach ich! Samstag zeig ich sie.', zeit:Date.now() - 19 * 3600e3}]},
+  {id:'c-finn-luis', mit:['finn','luis'], eltern:true, status:'offen', gelesen:{luis:0, finn:1}, msgs:[
+    {von:'finn', t:'Kommst du Samstag früher? Wir üben Übersteiger vor dem Spiel.', zeit:Date.now() - 3 * 3600e3}]},
+  {id:'c-sandra-tim', mit:['sandra','tim'], status:'offen', gelesen:{sandra:2, tim:2}, msgs:[
+    {von:'sandra', t:'Luis kommt Samstag erst um 10:15, wir sind vorher beim Arzt.', zeit:Date.now() - 26 * 3600e3},
+    {von:'tim', t:'Danke für Bescheid, kein Problem.', zeit:Date.now() - 25 * 3600e3}]},
+  {id:'c-kader-hartwig', mit:['kader','hartwig'], status:'offen', gelesen:{kader:1, hartwig:2}, msgs:[
+    {von:'kader', t:'Danke für den Dreh! Die Einheit geht Montag online.', zeit:Date.now() - 8 * 3600e3},
+    {von:'hartwig', t:'Gerne wieder. Nächstes Mal Flanken abfangen?', zeit:Date.now() - 7 * 3600e3}]},
+  {id:'c-marco-rheinstadt', mit:['marco','rheinstadt'], status:'offen', gelesen:{marco:1, rheinstadt:0}, msgs:[
+    {von:'marco', t:'Für eure U17 hätte ich einen Jahrgang 2009 im Blick. Der Bericht ist geteilt, Kontakt läuft über die Akademie.', zeit:Date.now() - 5 * 3600e3}]},
+  {id:'c-tim-hartwig', mit:['tim','hartwig'], status:'anfrage', von:'tim', gelesen:{tim:1, hartwig:0}, msgs:[
+    {von:'tim', t:'Hallo Niklas, meine U13 hätte drei Fragen zum Torwartspiel. Hätten Sie fünf Minuten für ein kurzes Video?', zeit:Date.now() - 6 * 3600e3}]}
+];
+function chatVon(id){ return W.chats.filter(function(c){ return c.id === id; })[0]; }
+function gegenueber(c){ var m = meineId(); return c.mit[0] === m ? c.mit[1] : c.mit[0]; }
+/* Die Chats, an denen ich beteiligt bin. Abgelehnte Anfragen und
+   Blockierte verschwinden. */
+function meineChats(){
+  var m = meineId();
+  if(!m) return [];
+  return W.chats.filter(function(c){
+    return c.mit.indexOf(m) >= 0 && c.status !== 'abgelehnt' && !W.blockiert[gegenueber(c)];
+  }).sort(function(a, b){ return b.msgs[b.msgs.length - 1].zeit - a.msgs[a.msgs.length - 1].zeit; });
+}
+function ungelesen(c){ var m = meineId(); return c.msgs.length - (c.gelesen[m] || 0); }
+function ungeleseneChats(){
+  var m = meineId();
+  return meineChats().filter(function(c){
+    var letzte = c.msgs[c.msgs.length - 1];
+    return ungelesen(c) > 0 && letzte.von !== m;
+  });
+}
+/* Die Einsicht der Eltern: alle Chats ihres Kindes, nur zum Lesen. */
+function kinderChats(){
+  var k = konto(meineId());
+  if(!k || !k.kind) return [];
+  return W.chats.filter(function(c){ return c.mit.indexOf(k.kind) >= 0 && c.status !== 'abgelehnt'; });
+}
+function chatOeffnen(an){
+  var m = meineId(), r = schreibRecht(m, an);
+  if(r.weg === 'frage'){ openSheet(sheetFrage(an)); return; }
+  if(r.weg === 'nein'){ haptik('wand'); toast(r.grund || 'Das geht nicht'); return; }
+  var c = W.chats.filter(function(x){ return x.mit.indexOf(m) >= 0 && x.mit.indexOf(an) >= 0; })[0];
+  if(!c){
+    c = {id:'c-'+Date.now(), mit:[m, an], eltern:!!r.eltern, status:r.weg === 'anfrage' ? 'anfrage' : 'offen', von:m, gelesen:{}, msgs:[]};
+    W.chats.push(c);
+  }
+  openSheet(sheetChat(c.id));
+}
+function postknopfZeichnen(){
+  var k = document.getElementById('postknopf');
+  if(!k) return;
+  k.hidden = !drin();
+  var n = ungeleseneChats().length;
+  k.innerHTML = ICON.sprech + (n ? '<span class="zaehler">'+n+'</span>' : '');
+  k.setAttribute('aria-label', n ? 'Nachrichten, '+n+' neu' : 'Nachrichten');
+}
+
+/* ============================================================
+   Bausteine
+   ============================================================ */
+function kontoBild(id){
+  if(SEITEN[id] && SEITEN[id].bild) return '<img class="avbild" src="'+SEITEN[id].bild+'" alt="">';
+  return avatarVon(konto(id).name, kontoFarbe(id));
+}
+function folgenKnopf(id){
+  if(meineId() === id) return '';
+  var an = folgeIch(id);
+  return '<button class="btn klein'+(an ? ' ghost' : '')+'" type="button" data-act="folgen:'+id+'" aria-pressed="'+an+'">'+(an ? 'Folgst du' : 'Folgen')+'</button>';
+}
+/* Auf der Startseite: Seiten zum Folgen, und was die, denen man folgt,
+   zuletzt gepostet haben. */
+function folgenBlock(){
+  var ids = ['hartwig','rheinstadt','kader','rheinblick','tim'].filter(function(id){ return id !== meineId(); });
+  var karten = ids.map(function(id){
+    return '<div class="seitenkarte">' +
+      '<button class="seitenkopf" type="button" data-act="seite:'+id+'">'+kontoBild(id) +
+        '<span class="n">'+h(seitenTitel(id))+(kontoHaken(id) ? haken() : '')+'</span>' +
+        '<span class="m">'+zahlKurz(followerVon(id))+' Follower</span></button>' +
+      folgenKnopf(id) +
+    '</div>';
+  }).join('');
+  var m = meineId(), folgt = m ? folgtListe(m) : {};
+  var posts = W.posts.filter(function(p){ return folgt[p.von]; }).slice(0, 2);
+  return '<div class="block">' +
+      '<div class="block-head"><h2 class="sec">Profis und Vereine</h2><span class="more">Folgen</span></div>' +
+      '<div class="row">'+karten+'</div>' +
+    '</div>' +
+    (posts.length ? '<div class="block"><div class="block-head"><h2 class="sec">Von denen, denen du folgst</h2></div>' +
+      '<div class="feed">'+posts.map(seitenBeitrag).join('')+'</div></div>' : '');
+}
+function seitenBeitrag(p){
+  return '<article class="post">' +
+    '<div class="post-kopf"><button class="seitenlink" type="button" data-act="seite:'+p.von+'">'+kontoBild(p.von)+'</button>' +
+      '<span class="wer"><span class="n">'+h(seitenTitel(p.von))+(kontoHaken(p.von) ? haken() : '')+'</span>' +
+      '<span class="m">'+h(wann(p.zeit))+' · Öffentlich</span></span></div>' +
+    '<p class="text">'+h(p.text)+'</p>' +
+    (p.bild ? '<span class="poster"><img src="img/'+p.bild+'.jpg" alt="" loading="lazy"></span>'
+            : (p.k ? '<span class="poster">'+dia(p.k, p.lv)+(p.dauer ? '<span class="badge dur">'+fmtZeit(p.dauer)+'</span>' : '')+'</span>' : '')) +
+    '<div class="reaktionen">'+REAKTIONEN.map(function(x){
+      var an = !!p.mein[x[0]], n = p.r[x[0]] + (an ? 1 : 0);
+      return '<button class="reakt" type="button" data-act="preakt:'+p.id+':'+x[0]+'" aria-pressed="'+an+'" aria-label="'+x[2]+', '+n+'">' +
+        '<span class="e" aria-hidden="true">'+x[1]+'</span>'+n.toLocaleString('de-DE')+'</button>';
+    }).join('')+'</div>' +
+  '</article>';
+}
+/* Der Knopf neben Folgen: je nach Regel Nachricht, Anfrage, Frage
+   oder gesperrt, mit dem Grund darunter. */
+function schreibKnopf(id){
+  var m = meineId();
+  if(!m) return {knopf:'<button class="btn ghost klein" type="button" data-act="login:neu">Nachricht</button>', grund:''};
+  if(m === id) return {knopf:'', grund:''};
+  var r = schreibRecht(m, id);
+  var text = {direkt:'Nachricht', anfrage:'Anfrage senden', frage:'Frage stellen', nein:'Nachricht'}[r.weg];
+  return {knopf:'<button class="btn ghost klein" type="button" data-act="chatmit:'+id+'"'+(r.weg === 'nein' ? ' aria-disabled="true" style="opacity:.5"' : '')+'>' +
+    (r.weg === 'nein' ? ICON.lock+' ' : '')+text+'</button>', grund:r.weg === 'direkt' ? '' : r.grund};
+}
+
+/* Die oeffentliche Seite eines Profis, Vereins, Trainers oder von KM1. */
+function sheetSeite(id){
+  var k = konto(id), s = schreibKnopf(id), posts = beitraegeVon(id);
+  var fr = k.typ === 'profi' ? offeneFragen(id) : [];
+  return kopf(seitenTitel(id)) +
+    '<div class="sheet-body">' +
+      '<div class="coach ich" style="--mein:'+kontoFarbe(id)+'">'+kontoBild(id) +
+        '<span class="n">'+h(seitenTitel(id))+(kontoHaken(id) ? haken() : '')+'<span>'+h(k.unter)+'</span></span></div>' +
+      statsHtml([[zahlKurz(followerVon(id)), 'Follower'], [posts.length, 'Beiträge'], [Object.keys(folgtListe(id)).length, 'Folgt']]) +
+      (meineId() === id ? '' : '<div class="paar2">'+folgenKnopfGross(id)+s.knopf.replace('btn ghost klein', 'btn ghost')+'</div>') +
+      (s.grund ? '<p class="fine" style="margin-top:-16px">'+h(s.grund)+'</p>' : '') +
+      (fr.length ? '<div class="block"><div class="block-head"><h2 class="sec">Frag den Profi</h2><span class="more">'+fr.length+' offen</span></div>' +
+        fragenListe(fr) + '</div>' : '') +
+      (posts.length ? '<div class="block"><h2 class="sec">Beiträge</h2><div class="feed">'+posts.map(seitenBeitrag).join('')+'</div></div>'
+                    : '<p class="fine">Noch keine Beiträge.</p>') +
+    '</div>';
+}
+function folgenKnopfGross(id){
+  var an = folgeIch(id);
+  return '<button class="btn'+(an ? ' ghost' : '')+'" type="button" data-act="folgen:'+id+'" aria-pressed="'+an+'">'+(an ? ICON.check+' Folgst du' : 'Folgen')+'</button>';
+}
+function fragenListe(fr){
+  return '<div class="rows">'+fr.map(function(q){
+    var n = q.stimmen + (q.mein ? 1 : 0);
+    return '<div class="lrow frage"><span>'+h(q.t)+'<small class="unter">Aus der Community</small></span>' +
+      '<button class="stimme" type="button" data-act="fragestimme:'+q.id+'" aria-pressed="'+q.mein+'" aria-label="Will ich auch wissen, '+n+'">' +
+        '<span aria-hidden="true">▲</span>'+n+'</button></div>';
+  }).join('')+'</div>';
+}
+
+/* Frag den Profi. */
+function sheetFrage(id){
+  var k = konto(id), fr = offeneFragen(id), monat = new Date().getMonth();
+  var schon = W.gefragt[meineId()+'-'+id] === monat;
+  return kopf('Frage an '+vorname(k.name)) +
+    '<div class="sheet-body frage-seite">' +
+      '<div><p class="eyebrow">Frag den Profi</p><h1 class="big">Deine Frage an '+h(vorname(k.name))+'</h1>' +
+        '<p class="sub">'+h(vorname(k.name))+' beantwortet die Fragen, die die meisten wissen wollen, als kurzes Video.</p></div>' +
+      (schon
+        ? '<div class="callout stille"><span class="h">Diesen Monat schon gefragt</span><p>Nächsten Monat geht die nächste. Bis dahin kannst du für andere Fragen stimmen.</p></div>'
+        : '<div class="field"><label for="fr-text">Deine Frage</label><textarea id="fr-text" maxlength="140" placeholder="z. B. Wie hältst du einen Elfmeter?"></textarea></div>' +
+          '<button class="btn" type="button" data-act="fragesend:'+id+'">Frage stellen</button>' +
+          '<p class="fine" style="margin-top:-16px">Eine Frage im Monat, mit KM1 Pro drei. Dein Name steht nicht dabei.</p>') +
+      (fr.length ? '<div class="block"><h2 class="sec">Das wollen andere wissen</h2>'+fragenListe(fr)+'</div>' : '') +
+      '<div class="callout stille"><span class="h">Warum keine Nachricht?</span>' +
+        '<p>Ein Profi bekäme sonst tausende Nachrichten am Tag und würde keine lesen. So kommen die Fragen an, die viele haben.</p></div>' +
+    '</div>';
+}
+
+/* Die Liste der Chats. Eltern sehen dazu die Chats ihres Kindes. */
+/* Kurz, fuer den rechten Rand einer Zeile. */
+function kurzZeit(t){
+  var d = Date.now() - t;
+  if(d < 3600e3) return 'Jetzt';
+  if(d < 864e5) return Math.round(d / 3600e3)+' Std.';
+  if(d < 2 * 864e5) return 'Gestern';
+  var x = new Date(t); return x.getDate()+'.'+(x.getMonth() + 1)+'.';
+}
+function chatZeile(c, einsicht){
+  var m = meineId(), anderer = einsicht ? c.mit.filter(function(x){ return x !== konto(m).kind; })[0] : gegenueber(c);
+  var letzte = c.msgs[c.msgs.length - 1], n = einsicht ? 0 : ungelesen(c);
+  var titel = einsicht ? vorname(konto(konto(m).kind).name)+' und '+konto(anderer).name : konto(anderer).name;
+  var zusatz = c.status === 'anfrage' ? (c.von === m ? 'Anfrage gesendet · ' : 'Anfrage · ') : (c.eltern && !einsicht ? 'Eltern lesen mit · ' : '');
+  return '<button class="lrow chatzeile" type="button" data-act="chat:'+c.id+'">'+kopfZeichen(konto(anderer).name, kontoFarbe(anderer)) +
+    '<span>'+h(titel)+(kontoHaken(anderer) ? haken() : '')+'<small class="unter">'+h(zusatz)+(letzte ? (letzte.von === m ? 'Du: ' : '')+h(letzte.t) : 'Noch keine Nachricht')+'</small></span>' +
+    '<span class="r">'+(n > 0 && letzte.von !== m ? '<span class="zaehler">'+n+'</span>' : (letzte ? kurzZeit(letzte.zeit) : ''))+'</span></button>';
+}
+function sheetNachrichten(){
+  var chats = meineChats(), anfragen = chats.filter(function(c){ return c.status === 'anfrage' && c.von !== meineId(); });
+  var normale = chats.filter(function(c){ return anfragen.indexOf(c) < 0; });
+  var einsicht = kinderChats();
+  return kopf('Nachrichten') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Mit klaren Regeln</p><h1 class="big">Nachrichten</h1></div>' +
+      (anfragen.length ? '<div class="block"><div class="block-head"><h2 class="sec">Anfragen</h2><span class="zaehler">'+anfragen.length+'</span></div>' +
+        '<div class="rows mit-symbol">'+anfragen.map(function(c){ return chatZeile(c); }).join('')+'</div></div>' : '') +
+      '<div class="block"><h2 class="sec">Chats</h2>' +
+        (normale.length ? '<div class="rows mit-symbol">'+normale.map(function(c){ return chatZeile(c); }).join('')+'</div>'
+                        : '<p class="fine">Noch keine Chats.</p>') +
+      '</div>' +
+      (einsicht.length ? '<div class="block"><div class="block-head"><h2 class="sec">Chats von '+h(KIND.vn)+'</h2><span class="more">Nur lesen</span></div>' +
+        '<div class="rows mit-symbol">'+einsicht.map(function(c){ return chatZeile(c, true); }).join('')+'</div>' +
+        '<p class="fine">Unter 16 können Sie jeden Chat Ihres Kindes lesen. '+h(KIND.vn)+' sieht, dass Sie das können.</p></div>' : '') +
+      '<button class="btn" type="button" data-act="neuenachricht">'+ICON.stift+' Neue Nachricht</button>' +
+      '<div class="rows mit-symbol">'+zeile('regeln', ICON.schild, '#0A7AFF', 'Wer wem schreiben darf', '')+'</div>' +
+    '</div>';
+}
+/* An wen? Alle Konten, und bei jedem, ob und wie es geht. */
+function sheetNeueNachricht(){
+  var m = meineId();
+  var ids = ['kader','hartwig','rheinstadt','rheinblick','tim','marco','sandra','luis','finn','jannik'].filter(function(id){ return id !== m; });
+  return kopf('Neue Nachricht') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Neue Nachricht</p><h1 class="big">An wen?</h1>' +
+        '<p class="sub">Du siehst alle. Bei manchen geht es nur als Anfrage oder gar nicht, und hier steht, warum.</p></div>' +
+      (istKind(m) ? '<div class="callout stille"><span class="h">Unter 16</span><p>Du schreibst mit deinem Trainer, deinem Team und deinen Eltern, und deine Eltern können mitlesen. Einem Profi stellst du eine Frage. So kann dich niemand Fremdes anschreiben.</p></div>' : '') +
+      '<div class="rows mit-symbol">'+ids.map(function(id){
+        var r = schreibRecht(m, id);
+        if(istKind(m) && r.weg === 'nein') r = {weg:'nein', grund:'Nicht in deinem Team'};
+        var pille = {direkt:['gruen','Schreiben'], anfrage:['blau','Anfrage'], frage:['orange','Frage'], nein:['','Gesperrt']}[r.weg];
+        return '<button class="lrow" type="button" data-act="chatmit:'+id+'">'+kopfZeichen(konto(id).name, kontoFarbe(id)) +
+          '<span>'+nameMitHaken(id)+'<small class="unter">'+h(r.weg === 'direkt' ? konto(id).unter+(r.eltern ? '. Die Eltern lesen mit.' : '') : r.grund)+'</small></span>' +
+          '<span class="pille '+pille[0]+'">'+(r.weg === 'nein' ? ICON.lock : '')+pille[1]+'</span></button>';
+      }).join('')+'</div>' +
+    '</div>';
+}
+/* Die Regeln, so wie sie in schreibRecht stehen, in Worten. */
+function sheetRegeln(){
+  var zeilen = [
+    ['Kinder unter 16', 'Schreiben nur mit ihrem Trainer und dem eigenen Team. Die Eltern können jeden Chat lesen.'],
+    ['Spieler ab 16', 'Schreiben mit dem Team und mit allen, denen sie folgen und die ihnen folgen. Scouts und Vereine bis 18 nur über die Eltern.'],
+    ['Profis und Vereine', 'Kein offenes Postfach. Geprüfte Trainer, Akademien und Scouts schicken eine Anfrage, Fans stellen eine Frage.'],
+    ['Eltern', 'Schreiben mit dem Trainer ihres Kindes und mit KM1.'],
+    ['Geprüfte Konten', 'Trainer, Akademien, Scouts, Profis und Vereine schreiben sich direkt.'],
+    ['KM1', 'Für alle erreichbar. Bei Kindern lesen die Eltern mit.'],
+    ['Immer', 'Melden und Blockieren in jedem Chat. KM1 schaut sich jede Meldung innerhalb von 24 Stunden an.']
+  ];
+  return kopf('Regeln') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Nachrichten</p><h1 class="big">Wer wem schreiben darf</h1></div>' +
+      '<div class="regeln">'+zeilen.map(function(z){ return '<div><b>'+z[0]+'</b><p>'+z[1]+'</p></div>'; }).join('')+'</div>' +
+      '<p class="fine">Was nicht ausdrücklich erlaubt ist, geht nicht. Wer niemanden kennt, schreibt niemandem.</p>' +
+    '</div>';
+}
+/* Ein Chat. Kinder und ihre Chats bekommen einen Hinweis oben, und
+   Eltern lesen hier nur. */
+function sheetChat(id){
+  var c = chatVon(id), m = meineId(), teil = c.mit.indexOf(m) >= 0;
+  var anderer = teil ? gegenueber(c) : c.mit.filter(function(x){ return x !== konto(m).kind; })[0];
+  if(teil) c.gelesen[m] = c.msgs.length;
+  /* Das Kind im Chat. Liest ein Elternteil mit, ist es das eigene. */
+  var kind = teil ? c.mit.filter(istKind)[0] : konto(m).kind;
+  var hinweis = '';
+  if(!teil) hinweis = 'Sie lesen den Chat von '+vorname(konto(kind).name)+' mit '+konto(anderer).name+'. Schreiben können Sie hier nicht.';
+  else if(c.eltern && istKind(m)) hinweis = 'Deine Eltern können diesen Chat lesen. Nur Text, keine Bilder.';
+  else if(c.eltern) hinweis = 'Die Eltern von '+vorname(konto(kind).name)+' können diesen Chat lesen. Nur Text, keine Bilder.';
+  var anfrageAnMich = teil && c.status === 'anfrage' && c.von !== m;
+  var anfrageVonMir = teil && c.status === 'anfrage' && c.von === m;
+  var letzteZeit = 0;
+  var blasen = c.msgs.map(function(x){
+    var zeit = (x.zeit - letzteZeit > 3600e3) ? '<p class="blase-zeit">'+h(wann(x.zeit))+'</p>' : '';
+    letzteZeit = x.zeit;
+    var meine = teil ? x.von === m : x.von === kind;
+    return zeit+'<p class="blase'+(meine ? ' mein' : '')+'">'+h(x.t)+'</p>';
+  }).join('');
+  var darfSchreiben = teil && !anfrageAnMich && !(anfrageVonMir && c.msgs.length);
+  return kopf(konto(anderer).name) +
+    '<div class="sheet-body chat-seite">' +
+      '<button class="chat-kopf" type="button" data-act="'+(SEITEN[anderer] ? 'seite:'+anderer : 'chatinfo')+'">'+kontoBild(anderer) +
+        '<span class="n">'+nameMitHaken(anderer)+'</span><span class="m">'+h(konto(anderer).unter)+'</span></button>' +
+      (hinweis ? '<p class="chat-hinweis">'+ICON.lock+'<span>'+h(hinweis.replace(/\.\./g, '.'))+'</span></p>' : '') +
+      (anfrageAnMich ? '<div class="freigabe"><div class="fk"><span class="ico" style="--i:#0A7AFF">'+ICON.sprech+'</span>' +
+          '<span><span class="t">Anfrage von '+h(konto(anderer).name)+'</span><span class="s">Ihr kennt euch noch nicht. Nimmst du an, wird daraus ein Chat. Lehnst du ab, erfährt '+h(vorname(konto(anderer).name))+' nur, dass es gerade nicht passt.</span></span></div>' +
+          '<div class="paar2"><button class="btn ghost" type="button" data-act="chatablehnen:'+c.id+'">Ablehnen</button>' +
+          '<button class="btn" type="button" data-act="chatannehmen:'+c.id+'">Annehmen</button></div></div>' : '') +
+      (anfrageVonMir ? '<p class="chat-hinweis">'+ICON.sprech+'<span>'+(c.msgs.length ? 'Anfrage gesendet. '+h(vorname(konto(anderer).name))+' entscheidet, ob daraus ein Chat wird.' : 'Das wird eine Anfrage. Eine Nachricht, dann entscheidet '+h(vorname(konto(anderer).name))+'.')+'</span></p>' : '') +
+      '<div class="chat">'+(blasen || '<p class="fine" style="text-align:center">Noch keine Nachricht.</p>')+'</div>' +
+      (darfSchreiben ? '<div class="schreiben"><input id="chat-text" type="text" aria-label="Nachricht" placeholder="Nachricht" autocomplete="off">' +
+        '<button class="btn klein" type="button" data-act="chatsend:'+c.id+'">Senden</button></div>' : '') +
+      (teil ? '<div class="chat-aktionen"><button type="button" data-act="chatmelden:'+c.id+'">Melden</button>' +
+        '<button class="rot" type="button" data-act="chatblock:'+c.id+'">Blockieren</button></div>' : '') +
+    '</div>';
+}
+
+/* Der mittlere Bereich fuer Profis und Vereine: die eigene Seite. */
+function teamSeite(){
+  var id = meineId(), k = konto(id), profi = state.rolle === 'profi';
+  var fr = profi ? offeneFragen(id) : [];
+  var anfragen = meineChats().filter(function(c){ return c.status === 'anfrage' && c.von !== id; });
+  if(!state.demo){
+    return '<section class="screen schmal">' +
+      '<div><p class="eyebrow">'+(profi ? 'Profi' : 'Verein')+'</p><h1 class="big">'+(profi ? 'Deine Seite' : 'Eure Seite')+'</h1>' +
+        '<p class="sub">'+(profi ? 'Fans folgen dir, stellen Fragen und sehen deine Tipps.' : 'Fans folgen euch und sehen, was im Verein passiert.')+'</p></div>' +
+      pruefPanel() +
+      '<div class="leer klein">'+ICON.auge+'<p>'+(state.geprueft ? 'Die Seite ist sichtbar. Der erste Beitrag fehlt noch.' : 'Die Seite wird sichtbar, sobald KM1 die Belege geprüft hat.')+'</p></div>' +
+    '</section>';
+  }
+  return '<section class="screen schmal">' +
+    '<div><p class="eyebrow">'+(profi ? 'Deine Seite' : 'Eure Seite')+'</p><h1 class="big">'+h(k.name)+'</h1></div>' +
+    statsHtml([[zahlKurz(followerVon(id)), 'Follower'], [beitraegeVon(id).length, 'Beiträge'], profi ? [fr.length, 'Fragen'] : [meineChats().length, 'Chats']]) +
+    (fr.length ? '<div class="block"><div class="block-head"><h2 class="sec">Fragen deiner Fans</h2><span class="more">nach Stimmen</span></div>' +
+      '<div class="rows">'+fr.slice(0, 3).map(function(q){
+        return '<div class="lrow frage"><span>'+h(q.t)+'<small class="unter">'+(q.stimmen + (q.mein ? 1 : 0))+' wollen das wissen</small></span>' +
+          '<button class="btn klein" type="button" data-act="antwort:'+q.id+'">Beantworten</button></div>';
+      }).join('')+'</div>' +
+      '<p class="fine">Fans schreiben dir keine Nachrichten. Sie stellen Fragen, und du beantwortest die, die die meisten wissen wollen.</p></div>' : '') +
+    (anfragen.length ? '<div class="block"><div class="block-head"><h2 class="sec">Nachrichtenanfragen</h2><span class="zaehler">'+anfragen.length+'</span></div>' +
+      '<div class="rows mit-symbol">'+anfragen.map(function(c){ return chatZeile(c); }).join('')+'</div>' +
+      '<p class="fine">Nur geprüfte Trainer, Akademien und Scouts können anfragen. Du entscheidest, ob daraus ein Chat wird.</p></div>' : '') +
+    '<div class="block"><h2 class="sec">Neuer Beitrag</h2>' +
+      '<div class="field"><label for="pb-text">Für alle, die '+(profi ? 'dir' : 'euch')+' folgen</label><textarea id="pb-text" placeholder="'+(profi ? 'Ein Tipp, ein Gedanke, ein Blick hinter die Kulissen.' : 'Ein Termin, ein Ergebnis, eine Nachricht aus dem Nachwuchs.')+'"></textarea></div>' +
+      '<button class="btn" type="button" data-act="beitragneu">Veröffentlichen</button></div>' +
+    '<div class="block"><h2 class="sec">'+(profi ? 'Deine' : 'Eure')+' Beiträge</h2><div class="feed">'+beitraegeVon(id).map(seitenBeitrag).join('')+'</div></div>' +
+    '<p class="fine">Die Seite ist öffentlich. Kinder können folgen und reagieren, aber niemand unter 16 kann '+(profi ? 'dir' : 'euch')+' schreiben, und '+(profi ? 'du kannst' : 'ihr könnt')+' ihnen nicht schreiben.</p>' +
+  '</section>';
+}
+/* Eine Frage als Video beantworten. */
+function sheetAntwort(qid){
+  var q = W.fragen.filter(function(x){ return x.id === qid; })[0];
+  return kopf('Antwort') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">Frage aus der Community</p><h1 class="big vtitel">'+h(q.t)+'</h1></div>' +
+      '<p class="sub" style="margin-top:-12px">'+(q.stimmen + (q.mein ? 1 : 0))+' wollen das wissen.</p>' +
+      '<button class="drop'+(state.antwortDa ? ' has' : '')+'" type="button" data-act="antwortvideo">'+ICON.upl +
+        '<span class="h">'+(state.antwortDa ? 'Antwort aufgenommen' : 'Antwort aufnehmen')+'</span>' +
+        '<span class="s">'+(state.antwortDa ? '0:48 · bereit' : 'Ein kurzes Video, eine Minute reicht')+'</span></button>' +
+      '<button class="btn" type="button" data-act="antwortsend:'+q.id+'">Veröffentlichen</button>' +
+      '<p class="fine">Erscheint auf deiner Seite und bei allen, die dir folgen.</p>' +
+    '</div>';
+}
+
+/* ---------- Klicks ---------- */
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-act]');
+  if(!b) return;
+  var a = b.getAttribute('data-act'), i = a.indexOf(':');
+  var k = i < 0 ? a : a.slice(0, i), v = i < 0 ? '' : a.slice(i + 1);
+  var teil = v.split(':');
+  var imBlatt = !!b.closest('.sheet');
+
+  if(k === 'nachrichten'){
+    if(!drin()){ haptik('wand'); state.loginModus = 'neu'; openSheet(sheetLogin()); return; }
+    openSheet(sheetNachrichten());
+  }
+  else if(k === 'chat'){ openSheet(sheetChat(v)); render(); }
+  else if(k === 'chatmit'){
+    if(!drin()){ haptik('wand'); state.loginModus = 'neu'; openSheet(sheetLogin()); return; }
+    chatOeffnen(v);
+  }
+  else if(k === 'neuenachricht'){ openSheet(sheetNeueNachricht()); }
+  else if(k === 'regeln'){ openSheet(sheetRegeln()); }
+  else if(k === 'chatinfo'){ toast('Kinder und Eltern haben keine öffentliche Seite'); }
+  else if(k === 'chatsend'){
+    var c = chatVon(v), f = document.getElementById('chat-text'), t = f ? f.value.trim() : '';
+    if(!t){ haptik('fehler'); toast('Schreib zuerst etwas'); return; }
+    c.msgs.push({von:meineId(), t:t, zeit:Date.now()});
+    c.gelesen[meineId()] = c.msgs.length;
+    haptik('leicht'); refreshSheet(sheetChat(c.id)); render();
+    var ss = document.getElementById('sheet'); if(ss) ss.scrollTop = ss.scrollHeight;
+    if(c.status === 'anfrage') toast('Anfrage gesendet');
+  }
+  else if(k === 'chatannehmen' || k === 'chatablehnen'){
+    var ca = chatVon(v);
+    ca.status = k === 'chatannehmen' ? 'offen' : 'abgelehnt';
+    haptik(k === 'chatannehmen' ? 'erfolg' : 'leicht');
+    if(k === 'chatannehmen'){ refreshSheet(sheetChat(ca.id)); toast('Angenommen. Ihr könnt jetzt schreiben.'); }
+    else { closeSheet(); toast(vorname(konto(ca.von).name)+' erfährt nur, dass es gerade nicht passt.'); }
+    render();
+  }
+  else if(k === 'chatmelden'){
+    var cm = chatVon(v);
+    W.meldungen.unshift({id:'me-'+Date.now(), was:'Chat mit '+konto(gegenueber(cm)).name, grund:'Aus dem Chat gemeldet',
+      von:state.rolle === 'eltern' ? 'Ein Elternteil' : (istKind(meineId()) ? 'Ein Kind' : 'Ein Nutzer'), zeit:Date.now()});
+    haptik('mittel'); toast('Gemeldet. KM1 schaut es sich innerhalb von 24 Stunden an.');
+  }
+  else if(k === 'chatblock'){
+    var cb = chatVon(v), wer = gegenueber(cb);
+    W.blockiert[wer] = 1;
+    haptik('mittel'); closeSheet(); render();
+    toast(vorname(konto(wer).name)+' ist blockiert und kann dir nicht mehr schreiben.');
+  }
+  else if(k === 'seite'){ openSheet(sheetSeite(v)); }
+  else if(k === 'folgen'){
+    if(!drin()){ haptik('wand'); state.loginModus = 'neu'; openSheet(sheetLogin()); return; }
+    var liste = folgtListe(meineId());
+    if(liste[v]){ delete liste[v]; W.folgtNeu[v] = (W.folgtNeu[v] || 0) - 1; haptik('leicht'); }
+    else { liste[v] = 1; W.folgtNeu[v] = (W.folgtNeu[v] || 0) + 1; haptik('erfolg'); }
+    render();
+    if(imBlatt && stack.length) refreshSheet(sheetSeite(v));
+    toast(liste[v] ? 'Du folgst '+seitenTitel(v) : 'Du folgst '+seitenTitel(v)+' nicht mehr');
+  }
+  else if(k === 'preakt'){
+    if(!drin()){ haptik('wand'); return; }
+    var p = W.posts.filter(function(x){ return x.id === teil[0]; })[0];
+    if(p.mein[teil[1]]) delete p.mein[teil[1]]; else p.mein[teil[1]] = 1;
+    haptik('tick');
+    render();
+    /* Oeffentliche Beitraege stehen in Blaettern nur auf einer Seite. */
+    if(imBlatt && stack.length) refreshSheet(sheetSeite(p.von));
+  }
+  else if(k === 'fragestimme'){
+    if(!drin()){ haptik('wand'); return; }
+    var q = W.fragen.filter(function(x){ return x.id === v; })[0];
+    q.mein = !q.mein; haptik('tick');
+    if(imBlatt && stack.length) refreshSheet(document.querySelector('#sheet .frage-seite') ? sheetFrage(q.an) : sheetSeite(q.an));
+    render();
+  }
+  else if(k === 'fragesend'){
+    var ft = ((document.getElementById('fr-text') || {}).value || '').trim();
+    if(ft.length < 5){ haptik('fehler'); toast('Schreib deine Frage in einem Satz'); return; }
+    W.fragen.push({id:'q'+Date.now(), an:v, t:ft, stimmen:0, mein:true});
+    W.gefragt[meineId()+'-'+v] = new Date().getMonth();
+    haptik('erfolg'); refreshSheet(sheetFrage(v));
+    toast('Gestellt. Je mehr sie wissen wollen, desto eher kommt die Antwort.');
+  }
+  else if(k === 'antwort'){ state.antwortDa = false; openSheet(sheetAntwort(v)); }
+  else if(k === 'antwortvideo'){ state.antwortDa = true; haptik('leicht'); refreshSheet(sheetAntwort(stack[stack.length - 1].match(/antwortsend:([^"]+)/)[1])); }
+  else if(k === 'antwortsend'){
+    if(!state.antwortDa){ haptik('fehler'); toast('Erst die Antwort aufnehmen'); return; }
+    var qa = W.fragen.filter(function(x){ return x.id === v; })[0];
+    qa.beantwortet = true;
+    W.posts.unshift({id:'p-'+Date.now(), von:meineId(), zeit:Date.now(), k:'torwart', lv:4, dauer:48,
+      text:'Eure Frage: „'+qa.t+'“ Die Antwort im Video.', r:{feuer:0, klatsch:0, ball:0}, mein:{}});
+    haptik('erfolg'); closeSheet(); render();
+    toast('Veröffentlicht. Alle, die dir folgen, sehen die Antwort.');
+  }
+  else if(k === 'beitragneu'){
+    var bt = ((document.getElementById('pb-text') || {}).value || '').trim();
+    if(!bt){ haptik('fehler'); toast('Schreib zuerst etwas'); return; }
+    W.posts.unshift({id:'p-'+Date.now(), von:meineId(), zeit:Date.now(), text:bt, r:{feuer:0, klatsch:0, ball:0}, mein:{}});
+    haptik('erfolg'); render(); toast('Veröffentlicht');
+  }
+});
 
 /* ============================================================
    Start. Steht hier am Ende, weil die Startseite Rollen, Teams und
