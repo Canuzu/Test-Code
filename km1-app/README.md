@@ -56,6 +56,22 @@ Fassung: die Mischung, farbiger und ruhiger. Die Vorschaubilder tragen wieder di
 Farbe ihrer Ebene, Anton steht nur noch in den großen Titeln, Zahlen stehen in
 der runden Systemschrift. Im Profil führen Zeilen zu allen anderen Fassungen.
 
+Nur die Mischung 2 hat dazu die Funktionen für die Präsentation. Alle lassen
+sich antippen, die Namen darin sind erfunden:
+
+| Funktion | Wo |
+| --- | --- |
+| Rollen und Haken | Spieler, Eltern, Trainer, Akademie, Scout und KM1. Trainer, Akademien und Scouts bekommen den blauen Haken erst nach der Prüfung durch KM1. |
+| KM1 Team | Abo für Trainer und Akademien: Team per Code, Hausaufgaben, Fortschritt jedes Spielers, Rangliste |
+| Geschützte Videos | Versuch hochladen, sichtbar nur für Trainer, Team oder KM1. Unter 16 geben die Eltern frei. Feedback mit Zeitmarken. |
+| Reaktionen | Drei feste Zeichen statt Kommentaren, schreiben dürfen nur geprüfte Trainer. Melden und Blockieren an jedem Beitrag. |
+| Teilen | Eine Karte im Hochformat für WhatsApp-Status und Instagram-Story |
+| Neuigkeiten | Nur von KM1, auf der Startseite und als Liste |
+| Talente | Talentprofil ab 16 oder mit Zustimmung der Eltern, geprüfte Scouts mit Berichten, Kontakt nur über Eltern oder Akademie |
+
+Die Sicht wechselt man über die Ebene oben rechts. Was eine Rolle tut, sehen die
+anderen: Luis lädt hoch, Sandra gibt frei, Tim zählt nach und gibt Feedback.
+
 ## Was drin ist
 
 Die App ist die reine Kundenansicht: kein Erklärtext, keine Schalter. Jeder
