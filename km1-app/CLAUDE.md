@@ -85,6 +85,29 @@ Entstanden als Kopie von `mischung/index.html`, mit diesen Unterschieden:
   mit weniger Buchstabenabstand. Auf Kacheln ein ruhiges rotes Wort.
 - Rote Knöpfe ohne Leuchten.
 
+Dazu hat nur die Mischung 2 die Funktionen für die Präsentation: Rollen mit
+Haken, KM1 Team, geschützte Videos mit Feedback, feste Reaktionen mit Melden
+und Blockieren, Teilen als Status, Neuigkeiten und Talente mit Scouts. Sie
+stehen in einem zweiten Skript am Ende von `mischung2/index.html`, mit einem
+eigenen Klickfänger. Gezeichnet wird erst am Ende dieses Skripts, weil die
+Startseite seine Rollen und Daten braucht.
+
+- Die Beispielwelt `W` gehört allen Rollen gemeinsam. Was eine Rolle tut,
+  sieht die nächste, nachdem man die Sicht über die Ebene oben rechts
+  gewechselt hat.
+- Drei Regeln gelten überall: geprüft wird, wer mit Kindern arbeitet oder sie
+  sichtet; kein Video eines Kindes ist öffentlich, unter 16 geben die Eltern
+  frei; kein Fremder schreibt einem Kind, Kinder unter 16 schreiben nur mit
+  Trainer, Team und Eltern, und die Eltern lesen mit.
+- Wer wem schreiben darf, steht allein in `schreibRecht(von, an)`. Neue
+  Regeln kommen dorthin und in das Blatt „Wer wem schreiben darf"
+  (`sheetRegeln`), sonst nirgends.
+- Die Namen sind erfunden und gehören zu einer Geschichte: Luis (U13), seine
+  Mutter Sandra, Trainer Tim Hoffmann, die Akademie Rheinblick, Scout Marco
+  Berger, der FC Rheinstadt mit seinem Torwart Niklas Hartwig und Kader für
+  KM1. Echte Profis und Vereine kommen nur mit ihrer Zustimmung hinein, nie
+  als ausgedachtes Profil unter echtem Namen.
+
 Vorschau auf claude.ai: `python3 artefakt.py mischung2`.
 
 ## Sprache
