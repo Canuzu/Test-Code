@@ -2,7 +2,7 @@
    Legt die App beim ersten Besuch ins Regal, damit sie danach auch ohne Netz
    startet. Bei einer neuen Fassung die Zahl in VERSION erhoehen: der alte
    Speicher wird dann geloescht und alles frisch geholt. */
-const VERSION = 'km1-v11';
+const VERSION = 'km1-v12';
 const SCHRANK = VERSION + '-schrank';
 
 const GRUNDAUSSTATTUNG = [
@@ -21,8 +21,9 @@ const GRUNDAUSSTATTUNG = [
   './icons/apple-touch-icon-180.png',
   // Die Schriften liegen seit km1-v10 neben der App. Die Erweiterungen
   // fuer Namen wie „Çağlar" kommen erst mit, wenn sie gebraucht werden.
+  // Seit km1-v12 ist die fruehere Mischung 2 die App: Inter statt Chivo.
   './fonts/anton-latin.woff2',
-  './fonts/chivo-latin.woff2',
+  './fonts/inter-latin.woff2',
   './fonts/jetbrains-mono-latin.woff2'
 ];
 

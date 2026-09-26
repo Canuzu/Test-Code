@@ -10,8 +10,9 @@ Request nach jeder fertigen Änderung, gemerged wird von Can.
   Playwright bei 390 × 844.
 - **Pakete nur mit `npx expo install`**, damit sie zu SDK 57 passen.
 - **Der Prototyp bleibt die Vorlage.** Farben, Abstände und Texte kommen aus
-  `../app/index.html`. Wer dort etwas ändert, zieht es hier nach, und
-  umgekehrt.
+  `../app/index.html`, der offiziellen Web-App (früher Mischung 2). Gebaut
+  ist diese App noch nach dem ersten Entwurf in `../original/`; wer hier
+  etwas ändert, nimmt den Stil aus `../app/`.
 - **Die Videos kommen aus dem Prototyp:** `node ../supabase/werkzeug/startdaten.mjs`
   schreibt `src/daten/katalog.json` und `../supabase/seed.sql`. Beide nicht
   von Hand ändern.

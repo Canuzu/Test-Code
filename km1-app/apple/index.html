@@ -2130,11 +2130,11 @@ var ORIGINAL = /\/apple\/(index\.html)?$/.test(location.pathname) ? '../' : '';
 function originalZeile(){
   if(!ORIGINAL) return '';
   return '<div class="rows mit-symbol"><a class="lrow" href="'+ORIGINAL+'">' +
-    '<span class="ico" style="--i:#FF9500">'+ICON.pinsel+'</span><span>Zum Originaldesign</span><span class="r"></span></a>' +
+    '<span class="ico" style="--i:#3C8329">'+ICON.pinsel+'</span><span>Zur KM1-App</span><span class="r"></span></a>' +
+    '<a class="lrow" href="'+ORIGINAL+'original/">' +
+    '<span class="ico" style="--i:#FF9500">'+ICON.pinsel+'</span><span>Zum ersten Entwurf</span><span class="r"></span></a>' +
     '<a class="lrow" href="'+ORIGINAL+'mischung/">' +
-    '<span class="ico" style="--i:#C81E14">'+ICON.pinsel+'</span><span>Zur Mischung</span><span class="r"></span></a>' +
-    '<a class="lrow" href="'+ORIGINAL+'mischung2/">' +
-    '<span class="ico" style="--i:#3C8329">'+ICON.pinsel+'</span><span>Zur Mischung 2</span><span class="r"></span></a></div>';
+    '<span class="ico" style="--i:#C81E14">'+ICON.pinsel+'</span><span>Zur Mischung</span><span class="r"></span></a></div>';
 }
 
 function screenProfil(){

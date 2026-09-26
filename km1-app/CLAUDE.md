@@ -41,56 +41,26 @@ auf.
   Datenbank mit `npm test` in `supabase/tests/`. Beides läuft auch in der CI
   (`.github/workflows/km1-app.yml`).
 
-## Die Designstudie in `apple/`
+## Die App in `app/`
 
-`apple/` ist eine Kopie der App mit einem Design im Stil von Apple, zum
-Vergleichen. Sie ersetzt nichts: `app/` bleibt die Hauptfassung, und eine
-Änderung an `app/` wird nicht automatisch in `apple/` nachgezogen.
+Seit September 2026 ist die frühere „Mischung 2“ die App. Wer von der App
+spricht, meint `app/`; das Wort Mischung braucht es dafür nicht mehr.
 
-- Logik und Texte sind dieselben wie in `app/index.html`. Neu sind der Stil,
-  die Zeichen und der Aufbau einiger Bildschirme.
-- Kein Service Worker. So kommt sich die Studie nicht mit dem Speicher der
-  Hauptfassung in die Quere, und `VERSION` in `app/sw.js` bleibt unberührt.
-- Die Schrift ist auf Apple-Geräten SF Pro vom Gerät, sonst Inter aus
-  `apple/fonts/`.
-- Vorschau auf claude.ai: `python3 artefakt.py apple`, veröffentlicht als
-  eigenes Artefakt mit den Dateien aus `apple/fonts/` und `apple/img/`.
+Gestaltung: der Aufbau von Apple mit dem Charakter von KM1.
 
-## Die Mischung in `mischung/`
-
-`mischung/` ist die dritte Fassung: achtzig Teile aus `apple/`, zwanzig Teile
-aus `app/`. Aufbau, Listen, Glas und Bewegung kommen aus der Apple-Studie.
-Aus der Hauptfassung kommen Anton in Versalien für die großen Titel und
-Zahlen, Köln-Rot als Akzent, die rote Zeile in JetBrains Mono über den
-Überschriften, die Kreidezeichnungen auf dem grünen Brett, die grünlichen
-Grautöne und der Ball in der Tableiste.
-
-- Entstanden als Kopie von `apple/index.html`. Was dort geändert wird, zieht
-  nicht von selbst nach.
-- Kein Service Worker, aus demselben Grund wie in `apple/`.
-- Vorschau auf claude.ai: `python3 artefakt.py mischung`, mit den Dateien aus
-  `mischung/fonts/` und `mischung/img/`.
-
-## Die Mischung 2 in `mischung2/`
-
-`mischung2/` ist die vierte Fassung: die Mischung, farbiger und ruhiger.
-Entstanden als Kopie von `mischung/index.html`, mit diesen Unterschieden:
-
-- Die Vorschaubilder tragen wieder die Farbe ihrer Ebene mit weißen
-  Linien, wie in `apple/`. Die Linien bleiben leicht aufgeraut wie Kreide.
-- Anton nur noch für die großen Titel (Seiten, große Karte, Kacheln,
-  Videos). Zahlen, Preise, Initialen und die Namen in der Pyramide stehen
-  in der runden Systemschrift.
-- Die rote Zeile in JetBrains Mono nur noch über den Titeln einer Seite,
-  mit weniger Buchstabenabstand. Auf Kacheln ein ruhiges rotes Wort.
+- Die Vorschaubilder tragen die Farbe ihrer Ebene mit weißen Linien, leicht
+  aufgeraut wie Kreide.
+- Anton nur für die großen Titel (Seiten, große Karte, Kacheln, Videos).
+  Zahlen, Preise, Initialen und die Namen in der Pyramide stehen in der
+  runden Systemschrift, Text in SF Pro oder Inter.
+- Die rote Zeile in JetBrains Mono nur über den Titeln einer Seite. Auf
+  Kacheln ein ruhiges rotes Wort.
 - Rote Knöpfe ohne Leuchten.
 
-Dazu hat nur die Mischung 2 die Funktionen für die Präsentation: Rollen mit
-Haken, KM1 Team, geschützte Videos mit Feedback, feste Reaktionen mit Melden
-und Blockieren, Teilen als Status, Neuigkeiten und Talente mit Scouts. Sie
-stehen in einem zweiten Skript am Ende von `mischung2/index.html`, mit einem
-eigenen Klickfänger. Gezeichnet wird erst am Ende dieses Skripts, weil die
-Startseite seine Rollen und Daten braucht.
+Rollen, Teams, Videos, Laufbahn, Folgen und Nachrichten stehen in einem
+zweiten Skript am Ende von `app/index.html`, mit eigenen Klickfängern.
+Gezeichnet wird erst am Ende dieses Skripts, weil die Startseite seine Rollen
+und Daten braucht.
 
 - Die Beispielwelt `W` gehört allen Rollen gemeinsam. Was eine Rolle tut,
   sieht die nächste, nachdem man die Sicht über die Ebene oben rechts
@@ -100,6 +70,10 @@ Startseite seine Rollen und Daten braucht.
   Eltern jedes Video frei, und dann sehen es nur Team, Familie und von KM1
   geprüfte Konten; kein Fremder schreibt einem Kind, Kinder unter 16
   schreiben nur mit Trainer, Team und Eltern, und die Eltern lesen mit.
+- Den Haken vergibt KM1 an Vereine und Akademien selbst. Trainer, Scouts und
+  Profis bekommen ihn über die Einladung ihres Vereins, der mit seinem Code
+  für sie bürgt, oder über Belege, die KM1 prüft. Ob ein Code gilt, steht
+  allein in `einladungGueltig(code, rolle)`, die Codes in `W.einladungen`.
 - Jede Rolle hat ihr eigenes Menü, festgelegt in `tabsFuer()`. Wer ein Video
   sieht, steht allein in `darfSehen(u)`.
 - Wer wem schreiben darf, steht allein in `schreibRecht(von, an)`. Neue
@@ -112,7 +86,27 @@ Startseite seine Rollen und Daten braucht.
   Vereine kommen nur mit ihrer Zustimmung hinein, nie als ausgedachtes
   Profil unter echtem Namen.
 
-Vorschau auf claude.ai: `python3 artefakt.py mischung2`.
+Vorschau auf claude.ai: `python3 artefakt.py`, veröffentlicht als Artefakt
+„KM1 Training“ mit den Dateien aus `app/fonts/` und `app/img/`.
+
+## Die Studien in `original/`, `apple/` und `mischung/`
+
+Frühere Fassungen, zum Vergleichen. Sie bekommen keine neuen Funktionen, und
+keine hat einen Service Worker: So kommen sie sich nicht mit dem Speicher der
+App in die Quere, und `VERSION` in `app/sw.js` bleibt unberührt.
+
+- `original/` ist der erste Entwurf, bis September 2026 die App: Anton, Chivo
+  und JetBrains Mono wie auf der Website. Nach ihm ist noch die echte App in
+  `mobile/` gebaut.
+- `apple/` ist dieselbe App im Stil von Apple: Systemschrift, große
+  Überschriften, blaue Knöpfe, Tableiste aus Glas.
+- `mischung/` nimmt achtzig Teile aus `apple/` und zwanzig aus dem ersten
+  Entwurf. Aus ihr ist die App entstanden.
+- `mischung2/` enthält nur noch eine Weiterleitung auf die App, für alte Links
+  und Symbole auf dem Startbildschirm.
+
+Vorschau auf claude.ai: `python3 artefakt.py original`, `apple` oder
+`mischung`.
 
 ## Sprache
 
@@ -126,10 +120,11 @@ Commit-Nachrichten werden umschrieben (ae, oe, ue), im übrigen Text nicht.
 | --- | --- |
 | `app/index.html` | Die ganze App: Aufbau, Gestaltung, Verhalten in einem Dokument |
 | `app/sw.js` | Service Worker, `VERSION` bei jeder Änderung erhöhen |
-| `apple/index.html` | Designstudie im Stil von Apple: dieselbe App, anderes Design, liegt unter `…/km1-app/apple/` |
+| `original/index.html` | Der erste Entwurf, als Studie unter `…/km1-app/original/` |
+| `apple/index.html` | Designstudie im Stil von Apple, liegt unter `…/km1-app/apple/` |
 | `mischung/index.html` | Die Mischung aus Apple-Stil und KM1-Charakter, liegt unter `…/km1-app/mischung/` |
-| `mischung2/index.html` | Die Mischung 2, farbiger und ruhiger, liegt unter `…/km1-app/mischung2/` |
-| `artefakt.py` | Macht aus `app/index.html` die Fassung für die Vorschau auf claude.ai, mit `apple`, `mischung` oder `mischung2` aus den Studien |
+| `mischung2/index.html` | Nur eine Weiterleitung auf die App |
+| `artefakt.py` | Macht aus `app/index.html` die Fassung für die Vorschau auf claude.ai, mit `original`, `apple` oder `mischung` aus den Studien |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, Weg ins App Store |
 | `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
 | `mobile/` | Die echte App für iPhone und Android (Expo), siehe `mobile/README.md` |
