@@ -96,9 +96,12 @@ Startseite seine Rollen und Daten braucht.
   sieht die nächste, nachdem man die Sicht über die Ebene oben rechts
   gewechselt hat.
 - Drei Regeln gelten überall: geprüft wird, wer mit Kindern arbeitet oder sie
-  sichtet; kein Video eines Kindes ist öffentlich, unter 16 geben die Eltern
-  frei; kein Fremder schreibt einem Kind, Kinder unter 16 schreiben nur mit
-  Trainer, Team und Eltern, und die Eltern lesen mit.
+  sichtet; kein Video eines Kindes steht im offenen Netz, unter 16 geben die
+  Eltern jedes Video frei, und dann sehen es nur Team, Familie und von KM1
+  geprüfte Konten; kein Fremder schreibt einem Kind, Kinder unter 16
+  schreiben nur mit Trainer, Team und Eltern, und die Eltern lesen mit.
+- Jede Rolle hat ihr eigenes Menü, festgelegt in `tabsFuer()`. Wer ein Video
+  sieht, steht allein in `darfSehen(u)`.
 - Wer wem schreiben darf, steht allein in `schreibRecht(von, an)`. Neue
   Regeln kommen dorthin und in das Blatt „Wer wem schreiben darf"
   (`sheetRegeln`), sonst nirgends.
