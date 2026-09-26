@@ -1,9 +1,12 @@
 # KM1 Training — die echte App
 
-Die App für iPhone und Android, gebaut mit Expo (SDK 57) aus dem Prototyp in
-`../app/index.html`. Sie sieht aus wie der Prototyp, aber alles dahinter ist
-echt: Videos mit dem Player des Systems, Konten auf dem Server, Erinnerungen
-als Mitteilung auf dem Handy.
+Die App für iPhone und Android, gebaut mit Expo (SDK 57) aus dem ersten
+Entwurf des Prototyps, der heute in `../original/index.html` liegt. Alles
+dahinter ist echt: Videos mit dem Player des Systems, Konten auf dem Server,
+Erinnerungen als Mitteilung auf dem Handy.
+
+Die Web-App in `../app/` ist seit September 2026 die frühere Mischung 2, mit
+Rollen, Teams, Videos und Laufbahn. Diese Fassung zieht als Nächstes nach.
 
 ## Zwei Modi
 

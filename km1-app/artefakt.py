@@ -4,7 +4,7 @@
     python3 artefakt.py [zieldatei]          die Hauptfassung aus app/
     python3 artefakt.py apple [zieldatei]    die Designstudie aus apple/
     python3 artefakt.py mischung [zieldatei] die Mischung aus mischung/
-    python3 artefakt.py mischung2 [zieldatei] die Mischung 2 aus mischung2/
+    python3 artefakt.py original [zieldatei] den ersten Entwurf aus original/
 
 Die Web-App ist ein vollständiges HTML-Dokument: eigener Kopf, Manifest,
 Service Worker. Die Artefakt-Vorschau bekommt Kopf und Körper von der
@@ -28,10 +28,10 @@ ZUSATZ_APPLE = (
 )
 
 FASSUNGEN = {
-    'app':   ('app/index.html',   'artefakt.html',       'KM1 Training App', ''),
+    'app':   ('app/index.html',   'artefakt.html',       'KM1 Training', ZUSATZ_APPLE),
+    'original': ('original/index.html', 'artefakt-original.html', 'KM1 Erster Entwurf', ''),
     'apple': ('apple/index.html', 'artefakt-apple.html', 'KM1 Apple-Stil',   ZUSATZ_APPLE),
     'mischung': ('mischung/index.html', 'artefakt-mischung.html', 'KM1 Mischung', ZUSATZ_APPLE),
-    'mischung2': ('mischung2/index.html', 'artefakt-mischung2.html', 'KM1 Mischung 2', ZUSATZ_APPLE),
 }
 
 argumente = sys.argv[1:]

@@ -169,14 +169,15 @@ jobs:
           mkdir -p dist/km1-app
           cp -r km1-app/app/. dist/km1-app/
           # Die Designstudien liegen daneben, jede in ihrem Unterordner:
-          # <pages>/km1-app/apple/, …/mischung/ und …/mischung2/. Sie
-          # ersetzen nichts an der Hauptfassung.
-          for fassung in apple mischung mischung2; do
+          # <pages>/km1-app/original/ (der erste Entwurf), …/apple/ und
+          # …/mischung/. Unter …/mischung2/ liegt nur noch eine
+          # Weiterleitung: die Mischung 2 ist seit September 2026 die App.
+          for fassung in original apple mischung mischung2; do
             mkdir -p "dist/km1-app/$fassung"
             cp -r "km1-app/$fassung/." "dist/km1-app/$fassung/"
           done
           echo "===== km1-app ausgeliefert ====="
-          ls -la dist/km1-app dist/km1-app/apple dist/km1-app/mischung dist/km1-app/mischung2
+          ls -la dist/km1-app dist/km1-app/original dist/km1-app/apple dist/km1-app/mischung dist/km1-app/mischung2
       - uses: actions/configure-pages@v5
         with:
           enablement: true

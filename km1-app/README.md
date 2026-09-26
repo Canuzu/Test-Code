@@ -1,8 +1,10 @@
 # KM1 Training — die App
 
 Lern-App zur [KM1 Fußballschule](https://km1-training.de): Videos, Tutorials und
-Bildreihen zu Technik und Athletik. Für iOS und Android, mit Freemium-Abo.
-Hochladen darf ausschließlich der KM1-Account, alle anderen sehen nur zu.
+Bildreihen zu Technik und Athletik, dazu Teams für Trainer, Talente mit Laufbahn
+für Scouts und Seiten für Profis und Vereine. Für iOS und Android, mit
+Freemium-Abo. Jedes Kind ist geschützt: Wer mit Kindern arbeitet, trägt den
+Haken von KM1, und Videos von Kindern sehen nur Team, Familie und geprüfte Konten.
 
 ## Was hier liegt
 
@@ -10,10 +12,13 @@ Hochladen darf ausschließlich der KM1-Account, alle anderen sehen nur zu.
 | --- | --- |
 | `app/` | Die App. Installierbare Web-App, läuft im Browser und auf dem Startbildschirm |
 | `icon/` | App-Symbol und Markenbilder, dazu `bauen.py`, das sie aus dem Logo erzeugt |
-| `apple/` | Dieselbe App im Stil von Apple, als Designstudie zum Vergleichen |
+| `original/` | Der erste Entwurf der App, als Studie zum Vergleichen |
+| `apple/` | Dieselbe App im Stil von Apple, als Designstudie |
 | `mischung/` | Die Mischung: der Aufbau von Apple mit dem Charakter von KM1 |
-| `mischung2/` | Die Mischung 2: farbige Vorschaubilder wie bei Apple, Anton nur für die großen Titel |
-| `artefakt.py` | Macht aus `app/` (oder mit `apple` aus `apple/`) die Fassung für die Vorschau auf claude.ai |
+| `mischung2/` | Nur noch eine Weiterleitung: die Mischung 2 ist seit September 2026 die App |
+| `artefakt.py` | Macht aus `app/` (oder mit `original`, `apple`, `mischung` aus den Studien) die Fassung für die Vorschau auf claude.ai |
+| `mobile/` | Die echte App für iPhone und Android (Expo), noch nach dem ersten Entwurf |
+| `supabase/` | Datenbank, Regeln, Startdaten und ihr Test |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, App Store |
 | `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
 | `VEROEFFENTLICHUNG.md` | Der Weg in die Stores: Vorlaufzeiten, Reihenfolge, Stolpersteine |
@@ -33,35 +38,34 @@ Nach dem ersten Start läuft die App auch ohne Netz: ein Service Worker legt
 Seite, Bilder und Schriften lokal ab. Bei einer neuen Fassung die Zahl in
 `app/sw.js` (`VERSION`) erhöhen, sonst behalten installierte Geräte die alte.
 
-### Die Designstudie im Stil von Apple
+Wer die frühere Mischung 2 unter `…/km1-app/mischung2/` auf dem Startbildschirm
+hat, landet über eine Weiterleitung in der App. Am besten legt man sie einmal
+neu von `…/km1-app/` aus dorthin.
 
-Unter **<https://canuzu.github.io/Test-Code/km1-app/apple/>** liegt dieselbe App
-in einem Design, das sich an apple.com und an den Apps auf dem iPhone
-orientiert: Systemschrift, große Überschriften, blaue Knöpfe, eine schwebende
-Tableiste aus Glas, Listen wie in den Einstellungen. Inhalte und Abläufe sind
-dieselben. Im Profil führt „Zum Originaldesign" zurück.
+## Die Studien
 
-### Die Mischung
+Neben der App liegen drei frühere Fassungen, zum Vergleichen. Sie haben keinen
+Service Worker und bekommen keine neuen Funktionen.
 
-Unter **<https://canuzu.github.io/Test-Code/km1-app/mischung/>** liegt die dritte
-Fassung: achtzig Teile Apple, zwanzig Teile KM1. Aufbau und Bedienung wie in der
-Apple-Studie, dazu die großen Titel in Anton, Köln-Rot als Akzent, die rote
-Zeile über den Überschriften und die Kreidezeichnungen auf dem grünen Brett.
-Im Profil führen zwei Zeilen zu den anderen beiden Fassungen.
+- **Erster Entwurf** unter <https://canuzu.github.io/Test-Code/km1-app/original/>:
+  Anton, Chivo und JetBrains Mono wie auf der Website, dunkles Grün, rote Akzente.
+- **Apple-Stil** unter <https://canuzu.github.io/Test-Code/km1-app/apple/>:
+  Systemschrift, große Überschriften, blaue Knöpfe, Tableiste aus Glas.
+- **Mischung** unter <https://canuzu.github.io/Test-Code/km1-app/mischung/>:
+  achtzig Teile Apple, zwanzig Teile KM1.
 
-### Die Mischung 2
+Die App selbst ist aus der Mischung entstanden, farbiger und ruhiger: Die
+Vorschaubilder tragen die Farbe ihrer Ebene, Anton steht nur in den großen
+Titeln, Zahlen stehen in der runden Systemschrift.
 
-Unter **<https://canuzu.github.io/Test-Code/km1-app/mischung2/>** liegt die vierte
-Fassung: die Mischung, farbiger und ruhiger. Die Vorschaubilder tragen wieder die
-Farbe ihrer Ebene, Anton steht nur noch in den großen Titeln, Zahlen stehen in
-der runden Systemschrift. Im Profil führen Zeilen zu allen anderen Fassungen.
+## Die Funktionen
 
-Nur die Mischung 2 hat dazu die Funktionen für die Präsentation. Alle lassen
-sich antippen, die Namen darin sind erfunden:
+Alle lassen sich antippen, die Namen in der Vorführung sind erfunden:
 
 | Funktion | Wo |
 | --- | --- |
-| Rollen und Haken | Spieler, Eltern, Trainer, Akademie, Verein, Profi, Scout und KM1. Wer mit Kindern arbeitet oder sie sichtet, bekommt den blauen Haken erst nach der Prüfung durch KM1. |
+| Rollen und Haken | Spieler, Eltern, Trainer, Akademie, Verein, Profi, Scout und KM1. Wer mit Kindern arbeitet oder sie sichtet, bekommt den blauen Haken erst nach einer Prüfung. |
+| Einladungen | Vereine und Akademien prüft KM1 selbst. Sie laden ihre Trainer, Scouts und Profis mit einem Code ein und bürgen für sie, der Haken ist dann sofort da. Wer keinen Code hat, reicht Belege ein. KM1 sieht jede Einladung und kann jeden Haken wieder entziehen. |
 | Menüs pro Rolle | Spieler üben (Technik, Team, Pyramide), Eltern haben Familie und Videos, Trainer Team, Videos und Übungen, Akademien Teams und Talente, Vereine Seite und Nachwuchs, Scouts Talente, Beobachtet und Berichte, KM1 Prüfen, Inhalte und Meldungen. |
 | KM1 Team | Abo für Trainer und Akademien: Team per Code, Hausaufgaben, Fortschritt jedes Spielers, Rangliste |
 | Videos | Jeder lädt hoch, im Bereich Videos. Kinder wählen Trainer, Team, KM1 oder ihr Profil. Unter 16 geben die Eltern jedes Video frei, dann sehen es Team, Familie und geprüfte Konten. Ab 16 sieht ein Profilvideo jeder in KM1. Öffentlich posten nur geprüfte Konten. Feedback mit Zeitmarken. |
@@ -73,8 +77,9 @@ sich antippen, die Namen darin sind erfunden:
 | Folgen | Seiten von Profis, Vereinen, Akademien, Trainern und KM1. Kindern unter 16 folgt nur das eigene Team. |
 | Nachrichten | Mit Regeln: Kinder unter 16 schreiben nur mit Trainer, Mitspielern und Eltern, die Eltern lesen mit. Eltern derselben Mannschaft schreiben sich direkt. Profis und Vereine bekommen Anfragen von geprüften Konten, Fans folgen ihnen und schreiben nicht. |
 
-Die Sicht wechselt man über die Ebene oben rechts. Was eine Rolle tut, sehen die
-anderen: Luis lädt hoch, Sandra gibt frei, Tim zählt nach und gibt Feedback.
+Die Sicht für die Vorführung wechselt man über die Ebene oben rechts. Was eine
+Rolle tut, sehen die anderen: Luis lädt hoch, Sandra gibt frei, Tim zählt nach
+und gibt Feedback.
 
 ## Was drin ist
 
@@ -87,15 +92,18 @@ Zustand ist über die App selbst erreichbar, genau wie später im Betrieb:
 | Mit Konto | Start → *Konto anlegen*, oder ein Video mit Konto-Abzeichen antippen |
 | KM1 PRO | Eine Profi-Einheit antippen → *Mit KM1 Pro ansehen* → *7 Tage gratis testen* |
 | Dunkle Fassung | Profil → *Darstellung* |
-| Trainerbereich | Beim Anmelden eine E-Mail mit „kader" verwenden, etwa `kader@km1-training.de`. Die Trainerrolle hängt am Konto, nicht an einem Schalter. |
+| Mit Einladung | *Konto anlegen* → Trainer, Scout oder Profi → *Mit Einladung* → *Vorführung: Code einsetzen*. Neue Codes legen Akademie und Verein unter Profil → *Leute einladen* an. |
+| Eine andere Rolle | Oben rechts auf die Ebene tippen und eine Sicht wählen, oder beim Anlegen des Kontos die Rolle wählen |
+| KM1 selbst | Beim Anmelden eine E-Mail mit „kader" verwenden, etwa `kader@km1-training.de`. Die Rolle hängt am Konto, nicht an einem Schalter. |
 
 Der Videoplayer ist eine Attrappe: die Leiste läuft, es liegt aber noch kein
 Video dahinter. Alles andere reagiert wie in einer fertigen App.
 
-Design, Logo und Schriften sind aus der Website übernommen: Anton für die großen
-Versalzeilen, Chivo für den Text, JetBrains Mono für Marken und Zahlen,
-Köln-Rot `#C81E14` als einziger Akzent. Hell ist die Grundeinstellung, Dunkel
-liegt im Profil unter „Darstellung".
+Logo und Farben kommen von der Website: Anton für die großen Titel, die
+Systemschrift (auf Apple-Geräten SF Pro, sonst Inter) für den Text, JetBrains
+Mono für die rote Zeile über den Titeln, Köln-Rot `#C81E14` für alles, was man
+antippen kann. Hell ist die Grundeinstellung, Dunkel liegt im Profil unter
+„Darstellung".
 
 ## Örtlich ausprobieren
 
