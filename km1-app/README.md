@@ -61,13 +61,14 @@ sich antippen, die Namen darin sind erfunden:
 
 | Funktion | Wo |
 | --- | --- |
-| Rollen und Haken | Spieler, Eltern, Trainer, Akademie, Scout und KM1. Trainer, Akademien und Scouts bekommen den blauen Haken erst nach der Prüfung durch KM1. |
+| Rollen und Haken | Spieler, Eltern, Trainer, Akademie, Verein, Profi, Scout und KM1. Wer mit Kindern arbeitet oder sie sichtet, bekommt den blauen Haken erst nach der Prüfung durch KM1. |
+| Menüs pro Rolle | Spieler üben (Technik, Team, Pyramide), Eltern haben Familie und Videos, Trainer Team, Videos und Übungen, Akademien Teams und Talente, Vereine Seite und Nachwuchs, Scouts Talente, Beobachtet und Berichte, KM1 Prüfen, Inhalte und Meldungen. |
 | KM1 Team | Abo für Trainer und Akademien: Team per Code, Hausaufgaben, Fortschritt jedes Spielers, Rangliste |
-| Geschützte Videos | Versuch hochladen, sichtbar nur für Trainer, Team oder KM1. Unter 16 geben die Eltern frei. Feedback mit Zeitmarken. |
+| Videos | Jeder lädt hoch, im Bereich Videos. Kinder wählen Trainer, Team, KM1 oder ihr Profil. Unter 16 geben die Eltern jedes Video frei, dann sehen es Team, Familie und geprüfte Konten. Ab 16 sieht ein Profilvideo jeder in KM1. Öffentlich posten nur geprüfte Konten. Feedback mit Zeitmarken. |
 | Reaktionen | Drei feste Zeichen statt Kommentaren, schreiben dürfen nur geprüfte Trainer. Melden und Blockieren an jedem Beitrag. |
 | Teilen | Eine Karte im Hochformat für WhatsApp-Status und Instagram-Story |
 | Neuigkeiten | Nur von KM1, auf der Startseite und als Liste |
-| Talente | Talentprofil ab 16 oder mit Zustimmung der Eltern, geprüfte Scouts mit Berichten, Kontakt nur über Eltern oder Akademie |
+| Talente und Laufbahn | Spielerprofil mit Videos, Laufbahn und den Einheiten bei KM1. Stationen tragen die Eltern ein, der Trainer bestätigt, jede Angabe zeigt ihre Quelle. Scouts beobachten Spieler und schreiben Berichte, Kontakt nur über Eltern oder Akademie. |
 | Profis und Vereine | Eigene Rollen mit Prüfung und einer öffentlichen Seite. Der Profi Niklas Hartwig und der FC Rheinstadt sind erfunden. |
 | Folgen | Seiten von Profis, Vereinen, Akademien, Trainern und KM1. Kindern unter 16 folgt nur das eigene Team. |
 | Nachrichten | Mit Regeln: Kinder unter 16 schreiben nur mit Trainer, Mitspielern und Eltern, die Eltern lesen mit. Eltern derselben Mannschaft schreiben sich direkt. Profis und Vereine bekommen Anfragen von geprüften Konten, Fans folgen ihnen und schreiben nicht. |
