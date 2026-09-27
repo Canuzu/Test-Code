@@ -707,6 +707,21 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 .player .poster::after{box-shadow:none;background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,.45) 100%)}
 
 .zone{position:absolute;top:0;bottom:62px;width:40%;z-index:2}
+/* Das Video laedt nicht: eine Meldung ueber dem Bild und ein Knopf zum
+   Erneutversuchen, statt eines Players, der stumm stehen bleibt. */
+.pfehler{
+  position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  padding:16px 24px;text-align:center;color:#fff;background:rgba(0,0,0,.84);
+}
+#player:has(.pfehler) .pbtn,.dreh:has(.pfehler) .kino-play{display:none}
+.pfehler p{margin:0;font-size:15px;line-height:1.4;max-width:30ch}
+.pfehler .btn{width:auto;min-height:40px;padding:8px 20px}
+.netzleiste{
+  position:absolute;z-index:41;left:50%;bottom:calc(144px + var(--unten));transform:translateX(-50%);
+  width:max-content;max-width:calc(100% - 32px);padding:8px 14px;border-radius:999px;
+  background:#FF9500;color:#1C1300;font-size:13px;font-weight:600;letter-spacing:-.01em;text-align:center;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+}
 .zone.links{left:0}
 .zone.rechts{right:0}
 .sprung{
@@ -1870,6 +1885,9 @@ window.km1Start = (function(){
           <button class="lvchip" id="lvchip" type="button" data-act="sicht"></button>
         </div>
       </header>
+
+      <!-- Ohne Netz sagt die App das, statt einfach leer zu bleiben. -->
+      <div class="netzleiste" id="netzleiste" role="status" aria-live="polite" hidden>Kein Netz. Videos laden gerade nicht.</div>
 
       <div class="screens" id="screens"></div>
 
@@ -3465,7 +3483,7 @@ function steuerung(gross){
    dasselbe behaelt seine Stelle, auch wenn das Blatt neu gebaut wird. */
 function playerInline(o){
   /* Ein anderes Video steigt da ein, wo man aufgehoert hat. */
-  if(P.id !== o.id){ stopPlayer(); P.id = o.id; P.sek = state.gesehen[o.id] || 0; }
+  if(P.id !== o.id){ stopPlayer(); P.id = o.id; P.sek = state.gesehen[o.id] || 0; P.fehler = false; }
   P.titel = o.titel; P.poster = o.poster; P.dauer = o.dauer;
   return '<div class="player" id="player">' +
     '<div class="poster">'+o.poster+'</div>' +
@@ -3473,6 +3491,7 @@ function playerInline(o){
     '<button class="pbtn" type="button" data-act="play" aria-label="Abspielen"'+(P.laeuft ? ' hidden' : '')+'>' +
       '<span>'+ICON.play+'</span></button>' +
     steuerung(false) +
+    (P.fehler ? fehlerHtml() : '') +
   '</div>';
 }
 
@@ -3503,9 +3522,26 @@ function zeichnePlayer(){
   }
 }
 
+/* Ohne Netz laedt kein Video. Heute liegen die Dateien noch nicht
+   hinter der App; im Betrieb meldet dasselbe ein abgelaufener Link. */
+function playerFehler(an){
+  P.fehler = an;
+  [].forEach.call(document.querySelectorAll('#player, #kino .dreh'), function(f){
+    var alt = f.querySelector('.pfehler');
+    if(alt) alt.remove();
+    if(!an) return;
+    f.insertAdjacentHTML('beforeend', fehlerHtml());
+  });
+}
+function fehlerHtml(){
+  return '<div class="pfehler" role="alert"><p>Das Video lädt gerade nicht. Prüf dein Netz und versuch es noch einmal.</p>' +
+    '<button class="btn" type="button" data-act="nochmal">Erneut versuchen</button></div>';
+}
 function spiele(an){
   if(!P.id) return;
   var neu = (an === undefined) ? !P.laeuft : an;
+  if(neu && navigator.onLine === false){ haptik('fehler'); playerFehler(true); return; }
+  if(neu && P.fehler) playerFehler(false);
   if(P.takt){ clearInterval(P.takt); P.takt = null; }
   if(neu && P.sek >= P.dauer) P.sek = 0;
   P.laeuft = neu;
@@ -3573,6 +3609,23 @@ function scrubZu(e, sc){
   P.sek = pr * P.dauer;
   zeichnePlayer();
 }
+
+/* Anruf, Sperrbildschirm oder App gewechselt: das Video haelt an und
+   merkt sich die Stelle. Zurueck in der App steht der Knopf zum
+   Weiterspielen genau dort. */
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden && P.laeuft){ spiele(false); merkeStelle(); P.unterbrochen = true; }
+  else if(!document.hidden && P.unterbrochen){
+    P.unterbrochen = false;
+    toast('Angehalten bei '+fmtZeit(P.sek)+'. Tipp zum Weiterspielen.');
+  }
+});
+function netzZeigen(){
+  var l = document.getElementById('netzleiste');
+  if(l) l.hidden = navigator.onLine !== false;
+}
+window.addEventListener('offline', function(){ netzZeigen(); if(P.laeuft){ spiele(false); playerFehler(true); } });
+window.addEventListener('online', function(){ netzZeigen(); toast('Wieder online'); });
 
 /* ---------- Vollbild ---------- */
 function kinoAuf(){
@@ -3947,6 +4000,10 @@ document.addEventListener('click', function(e){
     if(pl) pl.scrollIntoView({block:'start', behavior:'smooth'});
   }
   else if(k==='kino'){ kinoAuf(); }
+  else if(k==='nochmal'){
+    if(navigator.onLine === false){ haptik('fehler'); toast('Noch kein Netz'); return; }
+    playerFehler(false); spiele(true);
+  }
   else if(k==='kinozu'){ kinoZu(); }
   else if(k==='tempo'){
     var li = document.getElementById('tempoliste');
@@ -7785,6 +7842,7 @@ document.addEventListener('click', function(e){
    ============================================================ */
 applyTheme();
 render();
+netzZeigen();
 if(window.km1Start) window.km1Start.fertig('app');
 
 /* Punkt 11: die Platzhalterkarten. Den Zeitpunkt gibt jetzt der
