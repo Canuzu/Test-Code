@@ -1379,6 +1379,23 @@ button.lvchip:active{transform:scale(.94)}
   width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
   background:var(--fuell);font-size:13px;font-weight:700;letter-spacing:0;color:var(--text);
 }
+.unit.plan{grid-template-columns:34px minmax(0,1fr) 44px;padding:6px 6px 6px 16px}
+.unit.plan.jetzt .tag{background:var(--akzent);color:#fff}
+.plan-v{display:block;min-width:0;padding:6px 0;text-align:left}
+.plan-haken{width:44px;height:44px;display:grid;place-items:center;color:var(--text-3)}
+.plan-haken svg{width:16px;height:16px}
+/* Ein Trainingsplan als Kachel in der Videothek. */
+.plankarte{
+  flex:0 0 min(72%,260px);display:flex;flex-direction:column;gap:6px;min-height:132px;padding:16px;text-align:left;
+  border-radius:var(--r-karte);color:#fff;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--c) 88%,#000) 0%,color-mix(in srgb,var(--c) 62%,#000) 100%);
+}
+.plankarte:active{transform:scale(.98)}
+.pk-kopf{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pk-lv{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;opacity:.86}
+.plankarte .pille{background:rgba(255,255,255,.22);color:#fff}
+.pk-t{margin-top:auto;font-family:var(--display);font-size:24px;line-height:1.02;text-transform:uppercase}
+.pk-m{font-size:13px;opacity:.86}
 .unit .tag.eilig{background:color-mix(in srgb,var(--akzent) 13%,transparent);color:var(--link)}
 
 /* Der Code zum Beitreten, gross und gut vorzulesen. */
@@ -2081,6 +2098,44 @@ var PFAD = {
   4:[{w:1,id:'anlaufen'},{w:2,id:'schnittstelle'},{w:3,id:'standard-ecke'},{w:4,id:'finishing-mued'},{w:5,id:'regeneration'}]
 };
 
+/* Trainingsplaene: sechs Wochen, drei Einheiten pro Woche. Ein Plan hat
+   einen Anfang und ein Ende, eine Videosammlung nicht. Dasselbe Video
+   kommt mehrmals vor, jedes Mal mit einer anderen Aufgabe: erst
+   langsam, dann mit Tempo, am Ende unter Druck. Die erste Woche ist mit
+   Konto frei, danach gehoert der Plan zu KM1 Pro. */
+var PLAENE = [
+  {id:'grundlagen', t:'Grundlagen in sechs Wochen', lv:1, k:'annahme', fuer:'U8 bis U13', min:20,
+   satz:'Annehmen, passen, abstoppen und die Füße schnell machen. Die Basis für alles andere.',
+   wochen:[
+    [{v:'erste-beruehrung', a:'Langsam, 3 × 5 Minuten, beide Füße'},{v:'flacher-pass', a:'Gegen die Wand, 50 Pässe pro Fuß'},{v:'leiter', a:'Die ersten drei Muster, je 5 Durchgänge'}],
+    [{v:'abstoppen', a:'Stoppen, andribbeln, 20 Wiederholungen'},{v:'erste-beruehrung', a:'Mit Blick nach oben vor der Annahme'},{v:'leiter', a:'Alle sechs Muster, je 3 Durchgänge'}],
+    [{v:'flacher-pass', a:'Über 20 Meter, 30 Pässe pro Fuß'},{v:'abstoppen', a:'Mit Richtungswechsel nach dem Stoppen'},{v:'erste-beruehrung', a:'Annahme in die Bewegung'}],
+    [{v:'leiter', a:'Tempo steigern, auf Zeit'},{v:'flacher-pass', a:'Direkt spielen, ohne Annahme'},{v:'abstoppen', a:'Aus dem Lauf stoppen'}],
+    [{v:'erste-beruehrung', a:'Unter Zeitdruck: zwei Kontakte'},{v:'flacher-pass', a:'Mit dem schwachen Fuß, 50 Pässe'},{v:'leiter', a:'Muster nach Ansage'}],
+    [{v:'abstoppen', a:'Im Spiel zu zweit'},{v:'erste-beruehrung', a:'Annahme, Blick, Pass in einer Bewegung'},{v:'flacher-pass', a:'Test: 20 Pässe durch ein Hütchentor'}]
+   ]},
+  {id:'dribbling', t:'Dribbling mit Tempo', lv:2, k:'dribbling', fuer:'U10 bis U15', min:25,
+   satz:'Vom ersten Übersteiger bis zum 1 gegen 1: Tempowechsel statt Tricks.',
+   wochen:[
+    [{v:'uebersteiger', a:'Im Stand, 3 × 20 pro Seite'},{v:'abstoppen', a:'Stoppen und explodieren, 20 Mal'},{v:'leiter', a:'Schnelle Füße, 4 Muster'}],
+    [{v:'uebersteiger', a:'Im Gehen, dann im Trab'},{v:'ballmitnahme', a:'Mitnahme in den freien Raum'},{v:'leiter', a:'Mit Ball danach: 5 Meter Antritt'}],
+    [{v:'uebersteiger', a:'Mit Tempowechsel nach dem Trick'},{v:'eins-gegen-eins', a:'Gegen einen Hütchengegner'},{v:'abstoppen', a:'Richtungswechsel links und rechts'}],
+    [{v:'eins-gegen-eins', a:'Gegen einen Partner, halbes Tempo'},{v:'ballmitnahme', a:'Im Sprint, 10 Wiederholungen'},{v:'uebersteiger', a:'Doppelter Übersteiger'}],
+    [{v:'eins-gegen-eins', a:'Volles Tempo, 10 Duelle'},{v:'uebersteiger', a:'Mit dem schwachen Fuß'},{v:'ballmitnahme', a:'Mitnahme und Abschluss'}],
+    [{v:'eins-gegen-eins', a:'Im Spiel 2 gegen 2'},{v:'uebersteiger', a:'Test: 44 in 60 Sekunden'},{v:'abstoppen', a:'Alles zusammen, 15 Minuten'}]
+   ]},
+  {id:'flanke', t:'Flanke und Abschluss', lv:2, k:'flanken', fuer:'U10 bis U17', min:30,
+   satz:'Die Flanke, die ankommt, und der Abschluss, der sitzt. Zu zweit am schönsten.',
+   wochen:[
+    [{v:'flanke-innen', a:'Aus dem Stand, 20 pro Seite'},{v:'vollspann', a:'Flach aufs Tor, 20 Schüsse'},{v:'kopfball', a:'Aus der Hand, Timing üben'}],
+    [{v:'flanke-innen', a:'Aus dem Lauf, auf den Elfmeterpunkt'},{v:'vollspann', a:'Nach Ballmitnahme'},{v:'kopfball', a:'Mit Anlauf'}],
+    [{v:'innenrist-flanke', a:'Aus dem Halbfeld, 20 Flanken'},{v:'vollspann', a:'Mit dem schwachen Fuß'},{v:'flanke-innen', a:'Flach an den ersten Pfosten'}],
+    [{v:'innenrist-flanke', a:'Auf einen Partner im Lauf'},{v:'kopfball', a:'Nach Flanke vom Partner'},{v:'vollspann', a:'Direktabnahme'}],
+    [{v:'flanke-innen', a:'Unter Zeitdruck: drei Kontakte'},{v:'finishing-mued', a:'Abschluss nach Sprint'},{v:'kopfball', a:'Gegen einen Gegenspieler'}],
+    [{v:'innenrist-flanke', a:'Flanke und Abschluss zu zweit'},{v:'finishing-mued', a:'10 Abschlüsse nach Belastung'},{v:'flanke-innen', a:'Test: 7 von 10 kommen an'}]
+   ]}
+];
+
 /* Schlag den Coach. Ansehen, nachmachen, im Training zeigen. Wer im
    Team ist, laedt seinen Versuch geschuetzt hoch: das Video sieht nur
    der eigene Trainer, und die Zahl zaehlt erst, wenn er sie bestaetigt. */
@@ -2118,7 +2173,7 @@ var state = {
   versuch:{datei:null, zweck:'challenge', sicht:'trainer', zahl:'', busy:false},
   bericht:null, scoutPos:'alle', teilArt:'ebene', gelesen:{},
   demo:false, zuw:null, newsArt:0, scoutJg:'alle', hoch:null,
-  startSicht:'fuerdich', teamSicht:'uebersicht'
+  startSicht:'fuerdich', teamSicht:'uebersicht', plan:null
 };
 
 /* ============================================================
@@ -2395,8 +2450,19 @@ function startKarte(){
     return heroKarte(pe, 'Neue Profi-Einheit',
       state.rolle === 'trainer' ? 'Als Hausaufgabe für dein ganzes Team frei' : pe.d+' · '+(pe.gast || 'Profi-Einheit'), 0);
   }
+  /* Wer einen Plan hat, sieht dessen naechste Einheit. */
+  var st = drin() && planStand();
+  if(st && st.naechste && planWocheFrei(st.naechste.w)){
+    return heroKarte(byId(st.naechste.ein.v), 'Dein Plan', st.naechste.ein.a, 0, planRing(st));
+  }
   var n = naechstesVideo() || VIDEOS[0];
   return heroKarte(n, drin() ? (state.rolle === 'eltern' ? KIND.vn+' als Nächstes' : 'Als Nächstes') : 'Fang hier an', n.d+' · '+lvOf(n.lv).nm, 0, wochenziel());
+}
+/* Mit Plan zaehlt der Ring die Einheiten der laufenden Planwoche. */
+function planRing(st){
+  var z = [0, 1, 2].filter(function(e){ return state.plan.done[planSchluessel(st.woche, e)]; }).length;
+  return '<span class="hziel" aria-label="Woche '+(st.woche + 1)+' des Plans, '+z+' von 3 Einheiten">'+ring(z / 3) +
+    '<span>Woche '+(st.woche + 1)+': '+z+' von 3</span></span>';
 }
 /* Das Wochenziel als kleiner Ring in der grossen Karte. Nur wer selbst
    uebt, und Eltern fuer ihr Kind; gezaehlt wird seit Montag, ohne Challenge. */
@@ -2541,6 +2607,7 @@ function screenTechnik(uebungen){
         '<i class="pkt"></i>'+(eb ? h(eb.nm) : 'Ebene')+ICON.runter+'</button>' +
     '</div>' +
 
+    (uebungen || state.suche ? '' : planBlock()) +
     '<div class="chips">'+katChips+'</div>' +
 
     (state.laedt ? skelette(6) :
@@ -2551,6 +2618,76 @@ function screenTechnik(uebungen){
             ? '<button class="btn ghost" type="button" data-act="filterweg" style="width:auto">Filter zurücksetzen</button>' : '') +
         '</div>')) +
   '</section>';
+}
+
+/* ---------- Trainingsplaene ---------- */
+function planVon(id){ return PLAENE.filter(function(x){ return x.id === id; })[0]; }
+function planSchluessel(w, e){ return w+'-'+e; }
+/* Wie weit der laufende Plan ist: erledigte Einheiten, die aktuelle
+   Woche (die erste mit offener Einheit) und die naechste Einheit. */
+function planStand(){
+  var st = state.plan;
+  if(!st) return null;
+  var pl = planVon(st.id), fertig = 0, naechste = null;
+  pl.wochen.forEach(function(woche, w){
+    woche.forEach(function(ein, e){
+      if(st.done[planSchluessel(w, e)]) fertig++;
+      else if(!naechste) naechste = {w:w, e:e, ein:ein};
+    });
+  });
+  return {plan:pl, fertig:fertig, gesamt:pl.wochen.length * 3, naechste:naechste, woche:naechste ? naechste.w : pl.wochen.length - 1};
+}
+/* Die erste Woche ist frei, danach braucht es Pro. */
+function planWocheFrei(w){ return w === 0 || state.pro; }
+function planKarte(pl){
+  var an = state.plan && state.plan.id === pl.id, st = an ? planStand() : null;
+  return '<button class="plankarte" type="button" data-act="plan:'+pl.id+'" style="--c:'+lvFarbe(pl.lv)+'">' +
+    '<span class="pk-kopf"><span class="pk-lv">'+lvOf(pl.lv).nm+'</span>'+(an ? '<span class="pille">Läuft</span>' : '')+'</span>' +
+    '<span class="pk-t">'+h(pl.t)+'</span>' +
+    '<span class="pk-m">'+(st ? 'Woche '+(st.woche + 1)+' von '+pl.wochen.length+' · '+st.fertig+' von '+st.gesamt : pl.wochen.length+' Wochen · 3 × pro Woche · '+pl.fuer)+'</span>' +
+  '</button>';
+}
+function planBlock(){
+  return '<div class="block"><div class="block-head"><h2 class="sec">Trainingspläne</h2><span class="more">6 Wochen</span></div>' +
+    '<div class="row">'+PLAENE.map(planKarte).join('')+'</div></div>';
+}
+function sheetPlan(id){
+  var pl = planVon(id), an = state.plan && state.plan.id === id, st = an ? planStand() : null;
+  var eltern = drin() && state.rolle === 'eltern';
+  var wochen = pl.wochen.map(function(woche, w){
+    var frei = planWocheFrei(w);
+    return '<div class="block"><div class="block-head"><h2 class="sec leise">Woche '+(w + 1)+'</h2>' +
+        (frei ? '' : '<span class="more">'+ICON.lock+' Pro</span>')+'</div>' +
+      '<div class="path">'+woche.map(function(ein, e){
+        var v = byId(ein.v), fertig = an && !!state.plan.done[planSchluessel(w, e)];
+        var jetzt = st && st.naechste && st.naechste.w === w && st.naechste.e === e;
+        return '<div class="unit plan'+(jetzt ? ' jetzt' : '')+'">' +
+          '<span class="tag">'+(e + 1)+'</span>' +
+          '<button class="plan-v" type="button" data-act="'+(frei ? 'video:'+v.id : 'paywall')+'">' +
+            '<span class="t">'+h(v.t)+'</span><span class="s">'+h(ein.a)+'</span></button>' +
+          (an && frei
+            ? '<button class="plan-haken" type="button" data-act="planhaken:'+w+':'+e+'" aria-pressed="'+fertig+'" aria-label="Einheit '+(e + 1)+' in Woche '+(w + 1)+' erledigt">' +
+                '<span class="tick'+(fertig ? ' on' : '')+'">'+ICON.check+'</span></button>'
+            : '<span class="plan-haken leer">'+(frei ? '' : ICON.lock)+'</span>') +
+        '</div>';
+      }).join('')+'</div></div>';
+  }).join('');
+  var pips = '';
+  if(st) for(var i = 0; i < st.gesamt; i++) pips += '<i class="'+(i < st.fertig ? 'on' : '')+'"></i>';
+  return kopf('Trainingsplan') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">'+lvOf(pl.lv).nm+' · '+pl.fuer+'</p><h1 class="big">'+h(pl.t)+'</h1>' +
+        '<p class="sub">'+h(pl.satz)+'</p></div>' +
+      (st
+        ? '<div class="lvpanel" style="--c:'+lvFarbe(pl.lv)+'"><p class="note">'+(st.naechste ? 'Woche '+(st.woche + 1)+' von '+pl.wochen.length : 'Geschafft')+'</p>' +
+            '<span class="pips" style="--c:'+lvFarbe(pl.lv)+'">'+pips+'</span>' +
+            '<p class="sub" style="margin:0">'+st.fertig+' von '+st.gesamt+' Einheiten'+(st.naechste ? '' : '. Stark.')+'</p></div>'
+        : statsHtml([[pl.wochen.length, 'Wochen'], [pl.wochen.length * 3, 'Einheiten'], [pl.min, 'Minuten']])) +
+      (an ? '' : '<button class="btn" type="button" data-act="planstart:'+id+'">'+(eltern ? 'Für '+h(KIND.vn)+' starten' : 'Plan starten')+'</button>' +
+        '<p class="fine" style="margin-top:-16px">Die erste Woche ist mit Konto frei, die übrigen fünf gehören zu KM1 Pro.</p>') +
+      wochen +
+      (an ? '<button class="btn text" type="button" data-act="planende">Plan beenden</button>' : '') +
+    '</div>';
 }
 
 function pyramide(){
@@ -4088,6 +4225,23 @@ document.addEventListener('click', function(e){
   else if(k==='filterweg'){ state.kat = 'alle'; state.fltLv = 0; state.suche = ''; haptik('leicht'); render(); }
   else if(k==='theme'){ state.theme = v; haptik('leicht'); applyTheme(); render(); blattAuffrischen(); }
   else if(k==='einstellungen'){ openSheet(sheetEinstellungen()); }
+  else if(k==='plan'){ openSheet(sheetPlan(v)); }
+  else if(k==='planstart'){
+    if(!drin()){ haptik('wand'); state.loginModus = 'neu'; openSheet(sheetLogin()); return; }
+    var alterPlan = state.plan;
+    state.plan = {id:v, start:Date.now(), done:{}};
+    haptik('aufstieg'); refreshSheet(sheetPlan(v)); render();
+    toast(alterPlan ? 'Neuer Plan gestartet. Der alte ist beendet.' : 'Plan gestartet. Die erste Einheit steht auf deiner Startseite.');
+  }
+  else if(k==='planhaken'){
+    var pw = v.split(':'), key = planSchluessel(+pw[0], +pw[1]);
+    if(state.plan.done[key]) delete state.plan.done[key]; else state.plan.done[key] = Date.now();
+    var ps = planStand();
+    if(!ps.naechste){ haptik('aufstieg'); toast('Plan geschafft. Sechs Wochen, achtzehn Einheiten. Stark.'); }
+    else haptik(state.plan.done[key] ? 'erfolg' : 'leicht');
+    refreshSheet(sheetPlan(state.plan.id)); render();
+  }
+  else if(k==='planende'){ state.plan = null; haptik('leicht'); while(stack.length) closeSheet(); render(); toast('Plan beendet'); }
   else if(k==='info'){ haptik('leicht'); toast(INFO[v] || '', true); }
   else if(k==='teamsicht'){ state.teamSicht = v; haptik('tick'); letzterTab = null; render(); }
   else if(k==='spielereinladen'){ openSheet(sheetSpielerEinladen()); }
@@ -4844,6 +4998,7 @@ function rollenZeilen(){
     zeile('meinevideos', ICON.upl, '#FF9500', 'Meine Videos', n) +
     zeile('talentprofil', ICON.stern, '#AF52DE', 'Talentprofil', talentStatusWort()) +
     zeile('talent:'+ichId(), ICON.auge, '#0A7AFF', 'Mein Profil', 'Laufbahn') +
+    (state.plan ? zeile('plan:'+state.plan.id, ICON.kalender, '#34C759', 'Trainingsplan', 'Woche '+(planStand().woche + 1)+' von 6') : '') +
     merkZeile() +
     zeile('teilen:ebene', ICON.teilen, '#0A7AFF', 'Erfolg teilen', '') +
   '</div>';
