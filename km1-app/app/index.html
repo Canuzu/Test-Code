@@ -1175,6 +1175,13 @@ a.btn{text-decoration:none}
 
 /* Die Wochentage als Kreise. */
 .days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+/* Der erste Start: die Jahrgaenge als Raster, oben rechts „Ueberspringen". */
+.jahre{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:8px}
+.jahre .day{aspect-ratio:auto;height:46px;border-radius:14px;font-family:var(--rund);font-variant-numeric:tabular-nums}
+.sheet-head.erst{justify-content:space-between}
+.sheet-head.erst .kopf-t{pointer-events:none}
+.back-platz{width:44px;height:44px}
+.kopf-rechts{position:relative;z-index:1;min-height:44px;padding:0 6px;font-size:17px;color:var(--link);letter-spacing:-.02em}
 .day{
   aspect-ratio:1;min-height:44px;border-radius:50%;background:var(--fuell);color:var(--text);
   font-size:15px;font-weight:600;letter-spacing:-.01em;
@@ -2647,6 +2654,7 @@ function sheetEinstellungen(){
         zeile('erinnerung', ICON.glocke, '#FF3B30', 'Erinnerung', erinnerungText()) +
       '</div>' +
       vorfuehrungBlock() +
+      (drin() ? '' : '<div class="rows mit-symbol">'+zeile('erststart', ICON.stern, '#FF9500', 'Einführung ansehen')+'</div>') +
       '<div class="rows mit-symbol">' +
         zeile('eltern', ICON.familie, '#34C759', 'Für Eltern') +
         zeile('daten', ICON.schild, '#007AFF', 'Datenschutz') +
@@ -5420,6 +5428,101 @@ function sheetPruefung(){
     '</div>';
 }
 
+/* ---------- Der erste Start ----------
+   Drei kurze Fragen, dann weiss die App, fuer wen sie da ist: wer man
+   ist, welcher Jahrgang, wann trainiert wird. Alles laesst sich
+   ueberspringen, und nichts davon verlaesst das Geraet. */
+var ERST_KEY = 'km1-erster-start';
+function ersterStartGesehen(){ try{ return !!localStorage.getItem(ERST_KEY); }catch(e){ return false; } }
+function ersterStartMerken(){ try{ localStorage.setItem(ERST_KEY, '1'); }catch(e){} }
+function einfuehrungPruefen(){
+  if(drin() || stack.length || ersterStartGesehen()) return;
+  einfuehrungAuf();
+}
+function einfuehrungAuf(){
+  state.erst = {schritt:'rolle', rolle:null, jg:state.jahrgang, tage:state.erinnerung.tage.slice(), zeit:state.erinnerung.zeit};
+  openSheet(sheetErsterStart());
+}
+/* Wer selbst trainiert oder ein Kind hat, beantwortet alle drei Fragen.
+   Trainer nur die Zeit, alle anderen keine. */
+function erstSchritte(r){
+  if(r === 'spieler' || r === 'eltern') return ['rolle','jahrgang','zeit','fertig'];
+  if(r === 'trainer') return ['rolle','zeit','fertig'];
+  return ['rolle','fertig'];
+}
+/* Welche Ebene zum Alter passt: bis zur U13 Foundational, bis zur U15
+   Development, darueber Performance. */
+function ebeneFuerJahrgang(jg){
+  var alter = JAHR - jg;
+  return alter <= 12 ? 1 : (alter <= 14 ? 2 : 3);
+}
+var ERST_ZEITEN = ['16:00','17:00','18:00','19:00'];
+function sheetErsterStart(){
+  var e = state.erst, folge = erstSchritte(e.rolle), i = folge.indexOf(e.schritt);
+  var fragen = folge.length - 1, eltern = e.rolle === 'eltern';
+  var kopfzeile = '<div class="sheet-head erst">' +
+    (i > 0 ? '<button class="back" type="button" data-act="erstzurueck" aria-label="Zurück">'+ICON.back+'</button>' : '<span class="back-platz"></span>') +
+    '<span class="kopf-t">'+(e.schritt === 'fertig' ? '' : (e.rolle ? (i + 1)+' von '+fragen : 'Willkommen'))+'</span>' +
+    (e.schritt === 'fertig' ? '<span class="back-platz"></span>' : '<button class="kopf-rechts" type="button" data-act="erstweg">Überspringen</button>')+'</div>';
+  var inhalt;
+  if(e.schritt === 'rolle'){
+    inhalt = '<div><p class="eyebrow">Willkommen bei KM1</p><h1 class="big">Wer bist du?</h1></div>' +
+      '<div class="rollen">'+['spieler','eltern','trainer','akademie','verein','profi','scout'].map(function(r){
+        var x = ROLLEN[r];
+        return '<button class="rolle" type="button" data-act="erstrolle:'+r+'" aria-pressed="'+(e.rolle === r)+'">' +
+          '<span class="ico" style="--i:'+x.i+'">'+x.ico+'</span>' +
+          '<span><span class="t">'+x.nm+'</span><span class="s">'+h(x.satz)+'</span></span>' +
+          '<span class="kreis" aria-hidden="true"></span></button>';
+      }).join('')+'</div>';
+  } else if(e.schritt === 'jahrgang'){
+    var jahre = [];
+    for(var j = JAHR - 6; j >= JAHR - 19; j--) jahre.push(j);
+    var lv = lvOf(ebeneFuerJahrgang(e.jg));
+    inhalt = '<div><p class="eyebrow">'+(eltern ? 'Ihr Kind' : 'Du')+'</p><h1 class="big">'+(eltern ? 'Welcher Jahrgang ist Ihr Kind?' : 'Welcher Jahrgang bist du?')+'</h1></div>' +
+      '<div class="jahre">'+jahre.map(function(j){
+        return '<button class="day" type="button" data-act="erstjg:'+j+'" aria-pressed="'+(e.jg === j)+'">'+j+'</button>';
+      }).join('')+'</div>' +
+      '<div class="lvpanel" style="--c:'+lv.c+'"><p class="note">'+lv.ag+'</p><p class="t">'+lv.nm+'</p>' +
+        '<p class="sub" style="margin:0">'+(eltern ? 'Damit fängt Ihr Kind an.' : 'Damit fängst du an.')+' '+h(lv.tx)+'</p></div>' +
+      '<button class="btn" type="button" data-act="erstweiter">Weiter</button>';
+  } else if(e.schritt === 'zeit'){
+    var frage = {eltern:'Wann trainiert Ihr Kind?', trainer:'Wann trainiert deine Mannschaft?'}[e.rolle] || 'Wann trainierst du?';
+    inhalt = '<div><p class="eyebrow">Erinnerung</p><h1 class="big">'+frage+'</h1></div>' +
+      '<div class="field"><label>An diesen Tagen</label><div class="days">'+TAGE.map(function(t){
+        return '<button class="day" type="button" data-act="erstag:'+t[0]+'" aria-pressed="'+(e.tage.indexOf(t[0]) >= 0)+'">'+t[1]+'</button>';
+      }).join('')+'</div></div>' +
+      '<div class="field"><label>Uhrzeit</label><div class="seg">'+ERST_ZEITEN.map(function(z){
+        return '<button type="button" data-act="erstzeit:'+z+'" aria-pressed="'+(e.zeit === z)+'">'+z+'</button>';
+      }).join('')+'</div></div>' +
+      '<button class="btn" type="button" data-act="erstweiter">Weiter</button>';
+  } else {
+    var zeilen = [ROLLEN[e.rolle].nm];
+    if(folge.indexOf('jahrgang') >= 0) zeilen.push('Jahrgang '+e.jg+', '+lvOf(ebeneFuerJahrgang(e.jg)).nm);
+    if(folge.indexOf('zeit') >= 0) zeilen.push(e.tage.length ? 'Erinnerung '+e.tage.map(tagName).join(' + ')+', '+e.zeit : 'Keine Erinnerung');
+    inhalt = '<div class="pay-kopf"><span class="haken-gross">'+ICON.check+'</span>' +
+        '<p class="eyebrow">Fertig</p><h1 class="big">Alles klar.</h1></div>' +
+      liste(zeilen.map(h)) +
+      (ROLLEN[e.rolle].pruef ? '<p class="fine">'+(einladbar(e.rolle) ? 'Mit dem Code deines Vereins bist du sofort geprüft.' : 'KM1 prüft euch, bevor ihr loslegt.')+'</p>' : '') +
+      '<button class="btn" type="button" data-act="erstkonto">Kostenloses Konto anlegen</button>' +
+      '<button class="btn text" type="button" data-act="erstweg">Erst mal umschauen</button>';
+  }
+  return kopfzeile + '<div class="sheet-body">'+inhalt+'</div>';
+}
+/* Was die Antworten bewirken: Jahrgang und Ebene, die Erinnerung und
+   die Rolle, die beim Anlegen des Kontos schon ausgewaehlt ist. */
+function erstUebernehmen(){
+  var e = state.erst, folge = erstSchritte(e.rolle);
+  if(e.rolle) state.wahlRolle = e.rolle;
+  if(folge.indexOf('jahrgang') >= 0){
+    state.jahrgang = e.jg;
+    state.meinLv = state.lvSel = ebeneFuerJahrgang(e.jg);
+  }
+  if(folge.indexOf('zeit') >= 0){
+    state.erinnerung.tage = e.tage.slice(); state.erinnerung.zeit = e.zeit; state.erinnerung.an = e.tage.length > 0;
+  }
+  ersterStartMerken();
+}
+
 /* ---------- Einladungen ----------
    Die Kette des Vertrauens: KM1 prueft jeden Verein und jede Akademie
    selbst. Die laden ihre Trainer, Scouts und Profis mit einem Code ein
@@ -6284,6 +6387,34 @@ document.addEventListener('click', function(e){
     feldWerteZurueck(fw);
   }
   else if(k === 'signin'){ /* der erste Klickfaenger meldet an */ }
+  else if(k === 'erstrolle'){
+    state.erst.rolle = v; haptik('tick');
+    state.erst.schritt = erstSchritte(v)[1];
+    refreshSheet(sheetErsterStart());
+  }
+  else if(k === 'erstjg'){ state.erst.jg = +v; haptik('tick'); refreshSheet(sheetErsterStart()); }
+  else if(k === 'erstag'){
+    var et = state.erst.tage, ei = et.indexOf(v);
+    if(ei >= 0) et.splice(ei, 1); else et.push(v);
+    et.sort(function(a, b){ return TAGE.map(function(x){ return x[0]; }).indexOf(a) - TAGE.map(function(x){ return x[0]; }).indexOf(b); });
+    haptik('tick'); refreshSheet(sheetErsterStart());
+  }
+  else if(k === 'erstzeit'){ state.erst.zeit = v; haptik('tick'); refreshSheet(sheetErsterStart()); }
+  else if(k === 'erstweiter' || k === 'erstzurueck'){
+    var ef = erstSchritte(state.erst.rolle), ex = ef.indexOf(state.erst.schritt) + (k === 'erstweiter' ? 1 : -1);
+    state.erst.schritt = ef[Math.max(0, Math.min(ef.length - 1, ex))];
+    haptik('leicht'); refreshSheet(sheetErsterStart());
+  }
+  else if(k === 'erstweg'){
+    if(state.erst && state.erst.rolle) erstUebernehmen(); else ersterStartMerken();
+    while(stack.length) closeSheet();
+  }
+  else if(k === 'erstkonto'){
+    erstUebernehmen();
+    while(stack.length) closeSheet();
+    state.loginModus = 'neu'; openSheet(sheetLogin());
+  }
+  else if(k === 'erststart'){ while(stack.length) closeSheet(); einfuehrungAuf(); }
   else if(k === 'pruefweg'){
     var fp = feldWerte(['lg-name','lg-mail','lg-pw','lg-jg','lg-code']);
     state.pruefWeg = v; haptik('tick');
@@ -7859,6 +7990,7 @@ if(window.km1Start) window.km1Start.fertig('app');
     state.laedt = false;
     letzterTab = null;      /* damit die Bloecke einmal aufblenden */
     render();
+    einfuehrungPruefen();
   };
   if(window.km1Start) window.km1Start.kurzVorSchluss(fertig);
   setTimeout(fertig, 2600);
