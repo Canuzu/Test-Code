@@ -256,7 +256,7 @@ svg{display:block;flex:0 0 auto}
 
 /* Die Haarlinie zwischen zwei Zeilen einer Liste. Sie beginnt dort,
    wo der Text beginnt, nicht am Rand — so wie in iOS. */
-.lrow+.lrow::before,.dwahlen+.lrow::before,.ebzeile+.ebzeile::before,
+.lrow+.lrow::before,.ebzeile+.ebzeile::before,
 .unit+.unit::before,.vid-admin+.vid-admin::before,.steps li+li::after,
 .rolle+.rolle::before,.rz+.rz::before,.fbz+.fbz::before,.wz+.wz::before,.menue-gruppe>*+*::before{
   content:"";position:absolute;top:0;right:0;left:var(--einzug,16px);
@@ -299,13 +299,15 @@ svg{display:block;flex:0 0 auto}
 }
 .mark{height:23px;width:auto;filter:url(#logoDark);transition:opacity .2s var(--ease)}
 :root[data-theme="dark"] .mark{filter:url(#logoLight)}
+/* Der Titel tritt beim Scrollen an die Stelle des Logos. In der Mitte
+   stiess er an die Knoepfe rechts, sobald die Ebene breit war. */
 .kopftitel{
-  position:absolute;left:50%;top:calc(var(--oben) + var(--kopf) / 2);
-  transform:translate(-50%,-50%) translateY(6px);
+  position:absolute;left:max(16px,calc((100% - 688px) / 2));top:calc(var(--oben) + var(--kopf) / 2);
+  transform:translateY(-50%) translateY(6px);
   font-size:17px;font-weight:600;letter-spacing:-.02em;white-space:nowrap;
   opacity:0;pointer-events:none;transition:opacity .22s var(--ease),transform .3s var(--feder);
 }
-.appbar.tief .kopftitel{opacity:1;transform:translate(-50%,-50%)}
+.appbar.tief .kopftitel{opacity:1;transform:translateY(-50%)}
 .appbar.tief .mark{opacity:0}
 .lvchip{
   display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 13px 0 11px;border-radius:999px;
@@ -428,6 +430,18 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
   box-shadow:var(--schatten-2);transition:transform .45s var(--ease);
 }
 .hero:active{transform:scale(.98)}
+/* Das Wochenziel sitzt als kleiner Ring oben rechts in der grossen Karte. */
+.hero .hziel{
+  position:absolute;top:14px;right:14px;z-index:3;display:flex;align-items:center;gap:8px;
+  padding:5px 12px 5px 5px;border-radius:999px;color:#fff;font-size:13px;font-weight:600;letter-spacing:-.01em;
+  background:rgba(0,0,0,.34);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+}
+.hero .hziel .ring{width:26px;height:26px}
+.hero .hziel .ring circle{stroke-width:10}
+.hero .hziel .ring .spur{stroke:#fff;opacity:.3}
+.hero .hziel .ring .voll{stroke:#fff}
+.hero.heute .hm{aspect-ratio:5/4;max-height:46svh}
+@media (max-width:370px){.hero .hziel .zw{display:none}}
 .hero .hm{position:relative;display:block;width:100%;aspect-ratio:1/1;max-height:62svh;overflow:hidden}
 /* Auf sehr kleinen Telefonen braucht ein langer Titel in Anton drei
    Zeilen. Die Karte wird dort etwas hoeher und der Titel eine Stufe
@@ -557,6 +571,15 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
   transition:transform .45s var(--ease);
 }
 .wide:active{transform:scale(.985)}
+/* Die kleine Fassung fuer Challenge und Camp: Bild links, Text rechts. */
+.wide.kompakt{flex-direction:row;align-items:stretch;text-align:left}
+.wide.kompakt .poster{order:0;flex:0 0 36%;aspect-ratio:auto;min-height:128px}
+.wide.kompakt .body{order:1;flex:1 1 auto;align-items:flex-start;gap:3px;padding:16px 16px 16px 16px;min-width:0}
+.wide.kompakt .t{font-size:24px;margin-top:2px}
+.wide.kompakt .p{font-size:15px;line-height:1.4}
+.wide.kompakt .los{margin-top:4px}
+/* Oben auf der Startseite: Fuer dich oder Folge ich. */
+.startwahl{margin-top:-6px}
 .wide .body{order:-1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:34px 24px 24px}
 .wide .t{display:block;margin:4px 0 0;font-family:var(--display);font-weight:400;font-size:36px;line-height:1;letter-spacing:.008em;text-transform:uppercase}
 .wide .p{display:block;margin:2px 0 0;font-size:17px;line-height:1.45;color:var(--text-2);max-width:32ch}
@@ -1002,22 +1025,7 @@ a.lrow{color:var(--text)}
 [aria-checked="true"]>.schalter{background:var(--gruen-voll)}
 [aria-checked="true"]>.schalter::after{transform:translateX(20px)}
 
-/* Hell oder dunkel: zwei kleine Telefone mit Kreis darunter, wie unter
-   „Anzeige & Helligkeit". */
-.dwahlen{display:flex;justify-content:center;gap:52px;padding:22px 16px 18px}
-.dwahl{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:15px;letter-spacing:-.01em}
-.dvorschau{
-  display:flex;flex-direction:column;gap:6px;width:62px;height:112px;padding:14px 8px;border-radius:13px;
-  box-shadow:0 0 0 1px var(--rand),0 4px 14px rgba(0,0,0,.08);
-}
-.dvorschau.hell{background:#F1F4F0}
-.dvorschau.dunkel{background:#050907}
-.dvorschau i{display:block;height:16px;border-radius:5px;background:#fff}
-.dvorschau.dunkel i{background:#1E2824}
-.dvorschau i:first-child{height:6px;width:62%;border-radius:3px;background:#C7C7CC}
-.dvorschau.dunkel i:first-child{background:#48484A}
-.dkreis{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1.6px var(--text-3)}
-.dwahl[aria-pressed="true"] .dkreis,.price[aria-pressed="true"]::after,.sym[aria-pressed="true"]::after{
+.price[aria-pressed="true"]::after,.sym[aria-pressed="true"]::after{
   background:var(--akzent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat;
   box-shadow:none;
 }
@@ -1172,6 +1180,14 @@ a.btn{text-decoration:none}
   box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12),0 12px 30px rgba(0,0,0,.25);
   opacity:0;pointer-events:none;transition:opacity .25s var(--ease),transform .5s var(--feder);
 }
+/* Die Erklaerung hinter einem i: laenger als ein Toast, deshalb als Karte. */
+.toast.lang{width:min(88%,380px);border-radius:18px;padding:14px 18px;text-align:left;font-weight:500;line-height:1.4}
+/* Das kleine i neben einer Ueberschrift. */
+.infoknopf{display:inline-grid;place-items:center;width:32px;height:32px;margin:-8px -6px -8px 0;vertical-align:middle;color:var(--text-3);border-radius:50%}
+.infoknopf svg{width:18px;height:18px}
+.infoknopf:active{background:var(--fuell)}
+.big .infoknopf{margin-left:2px}
+.big .infoknopf svg{width:22px;height:22px}
 .toast.on{opacity:1;transform:translate(-50%,0) scale(1)}
 
 /* ============================================================
@@ -1200,7 +1216,13 @@ button.lvchip:active{transform:scale(.94)}
 
 /* Die Zeile oben auf der Startseite, die sagt, was fuer diese Rolle
    heute ansteht. Gebaut wie eine Mitteilung in iOS. */
-.hinweise{display:flex;flex-direction:column;gap:10px}
+.hinweise{display:flex;flex-direction:column;gap:0;border-radius:var(--r-karte);background:var(--flaeche);overflow:hidden}
+/* Die Hinweise stehen in einer Karte, wie eine Liste in iOS: eine
+   Flaeche statt drei, die Haarlinie trennt. */
+.hinweise .hinweis{position:relative;border-radius:0;background:none;padding:12px 14px 12px 16px}
+.hinweise .hinweis+.hinweis::before{content:"";position:absolute;top:0;right:0;left:70px;border-top:.5px solid var(--trenn)}
+.hinweise .hinweis:active{transform:none;background:var(--fuell)}
+.hinweise .hinweis .s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hinweis{
   display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;
   padding:14px 14px 14px 16px;border-radius:var(--r-karte);background:var(--flaeche);text-align:left;
@@ -1842,6 +1864,8 @@ window.km1Start = (function(){
         <!-- Die Ebene oben rechts oeffnet die Wahl der Sicht: Spieler,
              Eltern, Trainer, Akademie, Scout oder KM1. -->
         <div class="appbar-rechts">
+          <!-- Das Zahnrad steht nur im Profil, wie bei Instagram oder Duolingo. -->
+          <button class="postknopf" id="zahnrad" type="button" data-act="einstellungen" aria-label="Einstellungen" hidden></button>
           <button class="postknopf" id="postknopf" type="button" data-act="nachrichten" aria-label="Nachrichten" hidden></button>
           <button class="lvchip" id="lvchip" type="button" data-act="sicht"></button>
         </div>
@@ -2068,7 +2092,8 @@ var state = {
   teamAbo:false, teamPreis:'team', eigenesTeam:null,
   versuch:{datei:null, zweck:'challenge', sicht:'trainer', zahl:'', busy:false},
   bericht:null, scoutPos:'alle', teilArt:'ebene', gelesen:{},
-  demo:false, zuw:null, newsArt:0, scoutJg:'alle', hoch:null
+  demo:false, zuw:null, newsArt:0, scoutJg:'alle', hoch:null,
+  startSicht:'fuerdich', teamSicht:'uebersicht'
 };
 
 /* ============================================================
@@ -2225,6 +2250,7 @@ var ICON = {
   tabProf:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M12 2.3a9.7 9.7 0 1 1 0 19.4 9.7 9.7 0 0 1 0-19.4zm0 4a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 0 0 0-6.8zm0 8.4c-2.6 0-4.9 1.2-6 3.1a7.7 7.7 0 0 0 12 0c-1.1-1.9-3.4-3.1-6-3.1z"/></svg>',
   /* Die Zeichen in den Listen der Einstellungen */
   raster:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></g></svg>',
+  zahnrad:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" d="M19.63 9.59 L22.06 9.79 L22.06 14.21 L19.63 14.41 L19.10 15.69 L20.67 17.55 L17.55 20.67 L15.69 19.10 L14.41 19.63 L14.21 22.06 L9.79 22.06 L9.59 19.63 L8.31 19.10 L6.45 20.67 L3.33 17.55 L4.90 15.69 L4.37 14.41 L1.94 14.21 L1.94 9.79 L4.37 9.59 L4.90 8.31 L3.33 6.45 L6.45 3.33 L8.31 4.90 L9.59 4.37 L9.79 1.94 L14.21 1.94 L14.41 4.37 L15.69 4.90 L17.55 3.33 L20.67 6.45 L19.10 8.31Z M8.60 12a3.40 3.40 0 1 0 6.80 0a3.40 3.40 0 1 0 -6.80 0Z"/></svg>',
   glocke:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.8a5.6 5.6 0 0 0-5.6 5.6v3.7l-1.6 3.1c-.3.7.1 1.4.9 1.4h12.6c.8 0 1.2-.7.9-1.4l-1.6-3.1V8.4A5.6 5.6 0 0 0 12 2.8zM9.6 18.2a2.5 2.5 0 0 0 4.8 0z"/></svg>',
   familie:'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><circle cx="9" cy="8" r="3.3"/><path d="M2.8 18.6c0-3.1 2.8-5.4 6.2-5.4s6.2 2.3 6.2 5.4c0 .6-.4 1-1 1H3.8c-.6 0-1-.4-1-1z"/><circle cx="16.8" cy="9.2" r="2.6"/><path d="M16.8 13.4c2.6 0 4.5 1.8 4.5 4.3 0 .5-.4.9-.9.9h-3.7c.1-.3.1-.6.1-.9 0-1.6-.6-3-1.7-4.1.5-.1 1.1-.2 1.7-.2z"/></g></svg>',
   schild:'<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.6l7 2.8v5.8c0 4.4-2.9 8.3-7 9.9-4.1-1.6-7-5.5-7-9.9V5.4z"/></svg>',
@@ -2279,9 +2305,10 @@ function titelKlasse(titel){
   return '';
 }
 
-function heroKarte(v, kicker, meta, pct){
-  return '<button class="hero" type="button" data-act="video:'+v.id+'">' +
+function heroKarte(v, kicker, meta, pct, ziel){
+  return '<button class="hero heute" type="button" data-act="video:'+v.id+'">' +
     '<span class="hm">'+posterOf(v, true)+'</span>' +
+    (ziel || '') +
     '<span class="hc">' +
       '<span class="hk">'+h(kicker)+'</span>' +
       '<span class="ht'+titelKlasse(v.t)+'">'+h(v.t)+'</span>' +
@@ -2334,7 +2361,7 @@ function startKarte(){
     var d = sek(v.d);
     return heroKarte(v, 'Weitertrainieren',
       fmtZeit(d - stelle)+' übrig · '+lvOf(v.lv).nm,
-      Math.max(3, Math.round(stelle / d * 100)));
+      Math.max(3, Math.round(stelle / d * 100)), wochenziel());
   }
   /* Wer Spieler betreut oder sichtet, sieht oben die neueste
      Profi-Einheit: mit KM1 Team ist sie fuer die ganze Mannschaft frei. */
@@ -2344,7 +2371,15 @@ function startKarte(){
       state.rolle === 'trainer' ? 'Als Hausaufgabe für dein ganzes Team frei' : pe.d+' · '+(pe.gast || 'Profi-Einheit'), 0);
   }
   var n = naechstesVideo() || VIDEOS[0];
-  return heroKarte(n, drin() ? (state.rolle === 'eltern' ? KIND.vn+' als Nächstes' : 'Als Nächstes') : 'Fang hier an', n.d+' · '+lvOf(n.lv).nm, 0);
+  return heroKarte(n, drin() ? (state.rolle === 'eltern' ? KIND.vn+' als Nächstes' : 'Als Nächstes') : 'Fang hier an', n.d+' · '+lvOf(n.lv).nm, 0, wochenziel());
+}
+/* Das Wochenziel als kleiner Ring in der grossen Karte. Nur wer selbst
+   uebt, und Eltern fuer ihr Kind; gezaehlt wird seit Montag, ohne Challenge. */
+function wochenziel(){
+  if(!drin() || istPruefRolle() || state.rolle === 'km1') return '';
+  var z = Math.min(dieseWoche(), 5);
+  return '<span class="hziel" aria-label="'+(z >= 5 ? 'Wochenziel geschafft' : z+' von 5 Einheiten diese Woche')+'">'+ring(z / 5) +
+    '<span>'+(z >= 5 ? 'Geschafft' : z+' von 5<span class="zw"> diese Woche</span>')+'</span></span>';
 }
 
 /* Die Zeile ueber der Begruessung. Sie kennt den Wochentag und die Tage,
@@ -2387,81 +2422,65 @@ function proKachel(klein){
   '</button>';
 }
 
+/* Die Startseite hat eine Aufgabe: zeigen, was heute dran ist. Unter
+   „Für dich" stehen hoechstens fuenf Bloecke, alles von anderen steht
+   unter „Folge ich", wie bei Instagram oder TikTok. */
 function screenStart(){
-  var neu = VIDEOS.filter(function(v){return v.neu;});
-  var ch = CHALLENGES[0];
-  /* Wer selbst nicht uebt, bekommt keine Challenge angeboten. */
-  var erwachsen = drin() && ['trainer','akademie','verein','profi','scout','km1'].indexOf(state.rolle) >= 0;
-
-  var kopfteil, mitte;
+  var folge = state.startSicht === 'folge';
+  var kopfteil;
   if(drin()){
     var gruss = begruessung();
-    kopfteil = '<div><p class="eyebrow">'+h(gruss[0])+'</p><h1 class="big">Moin '+h(state.konto.vn)+'.<br>'+gruss[1]+'</h1></div>' +
-      hinweiseStart() +
-      startKarte();
-    /* Nur was seit Montag abgehakt wurde, und keine Challenge. */
-    var ziel = Math.min(dieseWoche(),5);
-    /* Trainer, Akademie und Scout haben kein eigenes Wochenziel. */
-    mitte = istPruefRolle() ? '' : '<div class="panel ziel">' + ring(ziel / 5) +
-      '<div class="zt">' +
-        '<p class="note">'+(state.rolle==='eltern' ? h(KIND.vn)+' diese Woche' : 'Dein Wochenziel')+'</p>' +
-        '<p class="zahl">'+ziel+' <span>von 5 Einheiten</span></p>' +
-        '<p class="rest">'+(ziel >= 5 ? 'Geschafft. Stark.' : 'Noch '+(5 - ziel)+' bis zum Ziel')+'</p>' +
-      '</div>' +
-    '</div>';
+    kopfteil = '<div><p class="eyebrow">'+h(gruss[0])+'</p><h1 class="big">Moin '+h(state.konto.vn)+'.<br>'+gruss[1]+'</h1></div>';
   } else {
-    kopfteil = '<div><p class="eyebrow">Ohne Anmeldung</p><h1 class="big">Moin.<br>Fang einfach an.</h1>' +
-      '</div>' +
-      startKarte();
-    mitte = '<div class="panel mitte">' +
-      '<span class="bild-kreis">'+ICON.tabProf+'</span>' +
-      '<p class="note">Kostenlos</p>' +
-      '<h2 class="sec">Fortschritt sichern</h2>' +
-      '<button class="btn" type="button" data-act="login:neu">Konto anlegen</button>' +
-      '<button class="btn text" type="button" data-act="login:alt">Ich habe schon eins</button>' +
-    '</div>';
+    kopfteil = '<div><p class="eyebrow">Ohne Anmeldung</p><h1 class="big">Moin.<br>Fang einfach an.</h1></div>';
   }
-
-  return '<section class="screen">' +
-    kopfteil +
-
+  var wahl = '<div class="seg startwahl">' +
+    '<button type="button" data-act="startsicht:fuerdich" aria-pressed="'+(!folge)+'">Für dich</button>' +
+    '<button type="button" data-act="startsicht:folge" aria-pressed="'+folge+'">Folge ich</button></div>';
+  return '<section class="screen">' + kopfteil + wahl + (folge ? startFolgeIch() : fuerDich()) + '</section>';
+}
+function fuerDich(){
+  var neu = VIDEOS.filter(function(v){return v.neu;});
+  /* Wer selbst nicht uebt, bekommt keine Challenge angeboten. */
+  var erwachsen = drin() && ['trainer','akademie','verein','profi','scout','km1'].indexOf(state.rolle) >= 0;
+  var ch = CHALLENGES[0];
+  var gast = drin() ? '' : '<div class="hinweise">'+hinweisZeile({act:'login:neu', ico:ICON.tabProf, farbe:'#8E8E93',
+    t:'Kostenloses Konto anlegen', s:'Dann merkt sich die App deinen Fortschritt'})+'</div>';
+  return (drin() ? hinweiseStart() : gast) +
+    startKarte() +
     '<div class="block">' +
       '<div class="block-head"><h2 class="sec">Neu diese Woche</h2><span class="more">'+neu.length+' Videos</span></div>' +
       '<div class="row">'+neu.map(karte).join('')+'</div>' +
     '</div>' +
-
-    mitte +
-
-    (erwachsen ? '' : '<button class="wide" type="button" data-act="challenge">' +
+    (erwachsen ? '' : '<button class="wide kompakt" type="button" data-act="challenge">' +
       '<span class="poster">'+dia('dribbling')+'</span>' +
       '<span class="body">' +
         '<span class="eyebrow neu">Challenge im '+ch.m+'</span>' +
         '<span class="t">Schlag den Coach</span>' +
-        '<span class="p">'+h(ch.t)+'. Kader steht bei '+ch.marke+'. Schaffst du '+(ch.marke+1)+'?</span>' +
+        '<span class="p">'+h(ch.t)+'. Schaffst du '+(ch.marke+1)+'?</span>' +
         '<span class="los">Mitmachen</span>' +
       '</span></button>') +
-
-    newsBlock() +
-    folgenBlock() +
-
-    '<div class="block">' +
-      '<div class="block-head"><h2 class="sec">Profi-Einheiten</h2>' +
-        '<span class="more">'+(state.pro?'Freigeschaltet':'Mit Pro')+'</span></div>' +
-      '<div class="row">'+VIDEOS.filter(function(v){return v.zg==='pro';}).map(karte).join('')+'</div>' +
-    '</div>' +
-
-    aboKachelStart() +
-
-    '<button class="wide" type="button" data-act="camps">' +
-      '<span class="poster"><img src="img/goal.jpg" alt="" loading="lazy"></span>' +
-      '<span class="body">' +
-        '<span class="eyebrow neu">In den Herbstferien</span>' +
-        '<span class="t">Herbstcamp Köln</span>' +
-        '<span class="p">Montag bis Freitag, 19. bis 23. Oktober.</span>' +
-        '<span class="los">Mehr erfahren</span>' +
-      '</span></button>' +
-
-  '</section>';
+    werbeplatz();
+}
+function campKarte(){
+  return '<button class="wide kompakt" type="button" data-act="camps">' +
+    '<span class="poster"><img src="img/goal.jpg" alt="" loading="lazy"></span>' +
+    '<span class="body">' +
+      '<span class="eyebrow neu">In den Herbstferien</span>' +
+      '<span class="t">Herbstcamp Köln</span>' +
+      '<span class="p">19. bis 23. Oktober</span>' +
+      '<span class="los">Mehr erfahren</span>' +
+    '</span></button>';
+}
+/* Ein einziger Werbeplatz. Er wechselt taeglich zwischen dem Abo und dem
+   Camp; wer das Abo schon hat, sieht das Camp. Pro zeigt sich sonst dort,
+   wo man es braucht: beim Antippen einer gesperrten Einheit. */
+function werbeplatz(){
+  var r = drin() ? state.rolle : 'gast';
+  if(r === 'scout' || r === 'profi' || r === 'verein' || r === 'km1') return '';
+  var abo = (r === 'trainer' || r === 'akademie') ? (state.teamAbo ? '' : teamKachel()) : (state.pro ? '' : proKachel(true));
+  if(!abo) return campKarte();
+  return new Date().getDate() % 2 ? campKarte() : abo;
 }
 
 /* Fuer Trainer dieselbe Videothek als Werkzeug: jedes Video laesst sich
@@ -2487,8 +2506,7 @@ function screenTechnik(uebungen){
 
   return '<section class="screen">' +
     (uebungen
-      ? '<div><p class="eyebrow">Für dein Team</p><h1 class="big">Übungen</h1>' +
-          '<p class="sub">Tipp auf ein Video und weise es als Hausaufgabe zu. Profi-Einheiten sind mit KM1 Team für alle frei.</p></div>'
+      ? '<div><p class="eyebrow">Für dein Team</p><h1 class="big">Übungen'+infoKnopf('uebungen', 'Tipp auf ein Video und weise es als Hausaufgabe zu. Profi-Einheiten sind mit KM1 Team für die ganze Mannschaft frei.')+'</h1></div>'
       : '<div><p class="eyebrow">Videothek</p><h1 class="big">Technik</h1></div>') +
 
     '<div class="suchzeile">' +
@@ -2590,27 +2608,43 @@ function screenPyramide(){
   '</section>';
 }
 
-/* Hell oder dunkel wie unter „Anzeige & Helligkeit": zwei kleine
-   Telefone zum Antippen und darunter der Schalter „Automatisch". Wer
-   ein Telefon waehlt, schaltet „Automatisch" damit aus — genau wie in
-   iOS. Wer „Automatisch" ausschaltet, behaelt, was gerade zu sehen ist. */
+/* Hell, Dunkel oder Automatisch als ein kleiner Schalter. Die grosse
+   Auswahl mit zwei Telefonen war fuer eine Einstellung, die man einmal
+   im Leben trifft, zu viel Flaeche. */
 function darstellung(){
-  var auto = state.theme === 'auto';
-  var jetzt = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dunkel' : 'hell';
-  var aktiv = auto ? jetzt : state.theme;
   var wahl = function(t, nm){
-    return '<button class="dwahl" type="button" data-act="theme:'+t+'" aria-pressed="'+(aktiv===t)+'">' +
-      '<span class="dvorschau '+t+'" aria-hidden="true"><i></i><i></i><i></i><i></i></span>' +
-      '<span>'+nm+'</span><span class="dkreis" aria-hidden="true"></span></button>';
+    return '<button type="button" data-act="theme:'+t+'" aria-pressed="'+(state.theme===t)+'">'+nm+'</button>';
   };
-  return '<div class="block">' +
-    '<h2 class="sec leise">Darstellung</h2>' +
-    '<div class="rows">' +
-      '<div class="dwahlen">'+wahl('hell','Hell')+wahl('dunkel','Dunkel')+'</div>' +
-      '<button class="lrow" type="button" role="switch" aria-checked="'+auto+'" data-act="theme:'+(auto ? aktiv : 'auto')+'">' +
-        '<span>Automatisch</span><span class="schalter" aria-hidden="true"></span></button>' +
-    '</div>' +
-  '</div>';
+  return '<div class="field"><label>Darstellung</label>' +
+    '<div class="seg">'+wahl('hell','Hell')+wahl('dunkel','Dunkel')+wahl('auto','Automatisch')+'</div></div>';
+}
+
+/* Alles, was man einstellt statt benutzt, liegt hinter dem Zahnrad. */
+function sheetEinstellungen(){
+  return kopf('Einstellungen') +
+    '<div class="sheet-body" data-blatt="einstellungen">' +
+      darstellung() +
+      '<div class="rows mit-symbol">' +
+        (drin() ? zeile('symbol', ICON.raster, '#AF52DE', 'App-Symbol', state.symbol==='pro'?'Flutlicht':'Standard') : '') +
+        zeile('erinnerung', ICON.glocke, '#FF3B30', 'Erinnerung', erinnerungText()) +
+      '</div>' +
+      vorfuehrungBlock() +
+      '<div class="rows mit-symbol">' +
+        zeile('eltern', ICON.familie, '#34C759', 'Für Eltern') +
+        zeile('daten', ICON.schild, '#007AFF', 'Datenschutz') +
+        zeile('bedingungen', ICON.dok, '#8E8E93', 'Nutzungsbedingungen') +
+        IMPRESSUM +
+      '</div>' +
+      (drin() ? '<div class="rows"><button class="lrow rot" type="button" data-act="logout"><span>Abmelden</span><span class="r"></span></button></div>' : '') +
+    '</div>';
+}
+/* Ein Blatt, das Werte zeigt, wird neu gezeichnet, wenn man aus einem
+   Unterblatt zurueckkommt oder dort etwas umstellt. */
+function blattAuffrischen(){
+  if(!stack.length) return;
+  var m = /data-blatt="(\w+)"/.exec(stack[stack.length-1]);
+  var neu = m && {einstellungen:sheetEinstellungen, spielereinladen:sheetSpielerEinladen}[m[1]];
+  if(neu) refreshSheet(neu());
 }
 
 function initialen(name){
@@ -2625,6 +2659,13 @@ function zeile(act, symbol, farbe, text, rechts){
   return '<button class="lrow" type="button" data-act="'+act+'">' +
     '<span class="ico" style="--i:'+farbe+'">'+symbol+'</span>' +
     '<span>'+text+'</span><span class="r">'+(rechts || '')+'</span></button>';
+}
+/* Ein kleines i neben einer Ueberschrift. Die Erklaerung erscheint erst
+   beim Antippen, statt dauerhaft unter dem Block zu stehen. */
+var INFO = {};
+function infoKnopf(key, text){
+  INFO[key] = text;
+  return '<button class="infoknopf" type="button" data-act="info:'+key+'" aria-label="Mehr dazu">'+ICON.info+'</button>';
 }
 var IMPRESSUM = '<a class="lrow" href="https://km1-training.de/impressum/" target="_blank" rel="noopener">' +
   '<span class="ico" style="--i:#8E8E93">'+ICON.info+'</span><span>Impressum</span><span class="r">km1-training.de</span></a>';
@@ -2643,21 +2684,8 @@ function screenProfil(){
         '<button class="btn" type="button" data-act="login:neu">Konto anlegen</button>' +
         '<button class="btn text" type="button" data-act="login:alt">Anmelden</button>' +
       '</div>' +
-      vorfuehrungBlock() +
-      darstellung() +
-      '<div class="rows mit-symbol">' +
-        zeile('erinnerung', ICON.glocke, '#FF3B30', 'Erinnerung', erinnerungText()) +
-      '</div>' +
-      '<div class="rows mit-symbol">' +
-        zeile('eltern', ICON.familie, '#34C759', 'Für Eltern') +
-        zeile('daten', ICON.schild, '#007AFF', 'Datenschutz') +
-        IMPRESSUM +
-      '</div>' +
     '</section>';
   }
-
-  /* Hochladen in die Videothek steht fuer KM1 unter Inhalte. */
-  var trainer = '';
 
   /* Nur Kader hat ein Foto. Alle anderen bekommen ihre Anfangsbuchstaben. */
   var bild = state.owner
@@ -2667,52 +2695,50 @@ function screenProfil(){
 
   var r = state.rolle;
   /* Trainer, Akademie und Scout zaehlen ihre eigene Arbeit, nicht
-     Uebungen. Wer kein Pro braucht, sieht KM1 Team oder gar kein Abo. */
+     Uebungen. */
   var stats = (r==='spieler' || r==='km1') ?
     '<div class="stats">' +
       '<div class="stat"><span class="v">'+erledigt+'</span><span class="k">Übungen</span></div>' +
       '<div class="stat"><span class="v">'+offenFuerMich()+'</span><span class="k">Offen</span></div>' +
       '<div class="stat"><span class="v">'+serieWochen()+'</span><span class="k">Wochen&shy;serie</span></div>' +
     '</div>' : rollenStats();
-  var abo = (r==='trainer' || r==='akademie') ? teamAboPanel() : ((r==='scout' || r==='profi' || r==='verein') ? '' : (state.pro ?
-      '<div class="panel">' +
-        '<div class="pro-zeile"><span class="pro-name">KM1 Pro</span><span class="pro-aktiv">Aktiv</span></div>' +
-        '<p class="sub" style="margin:0">' +
-        (state.abo
-          ? 'Gratis bis '+datumText(state.abo.bis)+', danach '+preisText(state.abo.preis)+'. Kündbar bis 24 Stunden vorher.'
-          : 'Läuft.') +
-      '</p></div>' :
-      proKachel(true)));
 
+  /* Oben das Ich, darunter die eigenen Sachen, dann das Abo als eine
+     Zeile. Einstellen liegt hinter dem Zahnrad oben rechts. */
   return '<section class="screen schmal">' +
     '<div class="coach ich">' + bild +
       '<span class="n">'+h(state.konto.name)+(mitHaken() ? haken() : '')+'<span>'+h(profilUnterzeile())+'</span></span>' +
     '</div>' +
-
     stats +
     pruefPanel() +
-    abo +
-
-    trainer +
     rollenZeilen() +
-    vorfuehrungBlock() +
-    darstellung() +
-
-    '<div class="rows mit-symbol">' +
-      zeile('merkliste', ICON.herzVoll, '#FF2D55', 'Merkliste', Object.keys(state.merk).length) +
-      zeile('symbol', ICON.raster, '#AF52DE', 'App-Symbol', state.symbol==='pro'?'Flutlicht':'Standard') +
-      zeile('erinnerung', ICON.glocke, '#FF3B30', 'Erinnerung', erinnerungText()) +
-    '</div>' +
-    '<div class="rows mit-symbol">' +
-      zeile('eltern', ICON.familie, '#34C759', 'Für Eltern') +
-      zeile('daten', ICON.schild, '#007AFF', 'Datenschutz') +
-      zeile('bedingungen', ICON.dok, '#8E8E93', 'Nutzungsbedingungen') +
-      IMPRESSUM +
-    '</div>' +
-    '<div class="rows">' +
-      '<button class="lrow rot" type="button" data-act="logout"><span>Abmelden</span><span class="r"></span></button>' +
-    '</div>' +
+    aboZeile() +
   '</section>';
+}
+
+/* Das Abo als eine Zeile: wer es hat, sieht „Aktiv", wer nicht, das Angebot. */
+function aboZeile(){
+  var r = state.rolle;
+  if(r === 'scout' || r === 'profi' || r === 'verein') return '';
+  if(r === 'trainer' || r === 'akademie'){
+    var nm = r === 'akademie' ? 'KM1 Akademie' : 'KM1 Team';
+    return '<div class="rows mit-symbol">' + (state.teamAbo
+      ? zeile('meinabo', ICON.team, '#0D7C75', nm, 'Aktiv')
+      : zeile('teamabo', ICON.team, '#0D7C75', nm, 'Vier Wochen gratis')) + '</div>';
+  }
+  return '<div class="rows mit-symbol">' + (state.pro
+    ? zeile('meinabo', ICON.play, '#C81E14', 'KM1 Pro', 'Aktiv')
+    : zeile('paywall', ICON.play, '#C81E14', 'KM1 Pro', 'Sieben Tage gratis')) + '</div>';
+}
+function aboText(){
+  if(state.rolle === 'trainer' || state.rolle === 'akademie'){
+    var ak = state.rolle === 'akademie', t = meinTeam();
+    return (ak ? (state.demo ? 'Vier von zehn Mannschaften, 79,00 € im Monat.' : 'Bis zu zehn Mannschaften, 79,00 € im Monat.')
+      : (t ? 'Die '+t.name+', ' : 'Eine Mannschaft, ')+'12,99 € im Monat.')+' Kündbar bis 24 Stunden vor Ablauf.';
+  }
+  return state.abo
+    ? 'Gratis bis '+datumText(state.abo.bis)+', danach '+preisText(state.abo.preis)+'. Kündbar bis 24 Stunden vorher.'
+    : 'KM1 Pro läuft.';
 }
 
 /* ============================================================
@@ -2751,6 +2777,7 @@ function closeSheet(){
   }
   s.innerHTML = stack[stack.length-1];
   s.scrollTop = 0;
+  blattAuffrischen();
 }
 function refreshSheet(html){
   stack[stack.length-1] = html;
@@ -3777,13 +3804,16 @@ function render(){
   chip.innerHTML = chipInhalt() + '<span class="pfeil" aria-hidden="true"></span>';
   chip.setAttribute('aria-label', 'Sicht wechseln');
   postknopfZeichnen();
+  var zr = document.getElementById('zahnrad');
+  if(zr){ zr.hidden = state.tab !== 'profil'; if(!zr.innerHTML) zr.innerHTML = ICON.zahnrad; }
 }
 var toastT = null;
-function toast(msg){
+function toast(msg, lang){
   var t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('on');
+  t.classList.toggle('lang', !!lang);
   clearTimeout(toastT);
-  toastT = setTimeout(function(){ t.classList.remove('on'); }, 2300);
+  toastT = setTimeout(function(){ t.classList.remove('on'); }, lang ? Math.max(3500, Math.min(8000, msg.length * 60)) : 2300);
 }
 function anmelden(name){
   state.konto = {name: name || 'Luis M.', vn: (name || 'Luis M.').split(' ')[0], seit: Date.now()};
@@ -3805,7 +3835,11 @@ document.addEventListener('click', function(e){
   var a = b.getAttribute('data-act'), i = a.indexOf(':');
   var k = i<0 ? a : a.slice(0,i), v = i<0 ? '' : a.slice(i+1);
 
-  if(k==='tab'){ state.tab = v; while(stack.length) closeSheet(); render(); }
+  if(k==='tab'){
+    /* Ein Tab faengt immer vorne an, auch das Team mit seinem Umschalter. */
+    if(v === 'team') state.teamSicht = 'uebersicht';
+    state.tab = v; while(stack.length) closeSheet(); render();
+  }
   else if(k==='video'){ openSheet(sheetVideo(v)); }
   else if(k==='back'){ closeSheet(); }
   else if(k==='challenge'){ openSheet(sheetChallenge()); }
@@ -3866,6 +3900,7 @@ document.addEventListener('click', function(e){
     state.konto = null; state.pro = false; state.abo = null; state.owner = false; state.done = {};
     state.symbol = 'standard'; state.merk = {}; state.meinLv = 1;
     rolleZuruecksetzen();
+    while(stack.length) closeSheet();
     render(); toast('Abgemeldet');
   }
   else if(k==='buy'){
@@ -3986,7 +4021,13 @@ document.addEventListener('click', function(e){
   else if(k==='ebwahl'){ openSheet(sheetEbene()); }
   else if(k==='fltlv'){ state.fltLv = +v; if(stack.length) closeSheet(); render(); }
   else if(k==='filterweg'){ state.kat = 'alle'; state.fltLv = 0; state.suche = ''; haptik('leicht'); render(); }
-  else if(k==='theme'){ state.theme = v; haptik('leicht'); applyTheme(); render(); }
+  else if(k==='theme'){ state.theme = v; haptik('leicht'); applyTheme(); render(); blattAuffrischen(); }
+  else if(k==='einstellungen'){ openSheet(sheetEinstellungen()); }
+  else if(k==='info'){ haptik('leicht'); toast(INFO[v] || '', true); }
+  else if(k==='teamsicht'){ state.teamSicht = v; haptik('tick'); letzterTab = null; render(); }
+  else if(k==='spielereinladen'){ openSheet(sheetSpielerEinladen()); }
+  else if(k==='startsicht'){ state.startSicht = v; haptik('tick'); letzterTab = null; render(); }
+  else if(k==='meinabo'){ toast(aboText()); }
   else if(k==='upload'){ openSheet(sheetUpload()); }
   else if(k==='pickfile'){ state.up.datei = 'flanke-innenseite-2026.mp4'; refreshSheet(sheetUpload()); }
   else if(k==='uplv'){ state.up.lv = +v; refreshSheet(sheetUpload()); }
@@ -4608,15 +4649,6 @@ function begruessung(){
     verein:[state.demo ? 'Profiverein · 1. Bundesliga' : 'Verein', 'Alles im Blick.']
   }[state.rolle] || [heuteZeile(), 'Weiter geht’s.'];
 }
-/* Das Abo auf der Startseite: Pro fuer Spieler und Eltern, KM1 Team
-   fuer Trainer und Akademien, fuer Scouts keins. */
-function aboKachelStart(){
-  var r = drin() ? state.rolle : 'gast';
-  if(r === 'trainer' || r === 'akademie') return state.teamAbo ? '' : teamKachel();
-  if(r === 'scout' || r === 'profi' || r === 'verein') return '';
-  return state.pro ? '' : proKachel(false);
-}
-
 /* Neuigkeiten von KM1 auf der Startseite. */
 function newsBild(n){ return n.bild ? '<img src="img/'+n.bild+'.jpg" alt="" loading="lazy">' : dia(n.k, n.lv); }
 function newsKarte(n){
@@ -4720,7 +4752,7 @@ function pruefPanel(){
       '<button class="btn klein'+(code ? ' ghost' : '')+'" type="button" data-act="pruefung">Prüfung beantragen</button></div></div>';
 }
 
-/* KM1 Team im Profil: laeuft oder als Kachel. */
+/* KM1 Team als Kachel, fuer eine Akademie ohne Abo. */
 function teamKachel(){
   return '<button class="proband team klein" type="button" data-act="teamabo">' +
     '<span class="pro-name team">KM1 Team</span>' +
@@ -4729,19 +4761,8 @@ function teamKachel(){
     '<span class="paar"><span class="btn klein">Mehr erfahren</span><span class="los">Vier Wochen gratis</span></span>' +
   '</button>';
 }
-function teamAboPanel(){
-  if(!state.teamAbo) return teamKachel();
-  var ak = state.rolle === 'akademie', t = meinTeam();
-  var text = ak
-    ? (state.demo ? 'Vier von zehn Mannschaften. 79,00 € im Monat.' : 'Bis zu zehn Mannschaften. Vier Wochen gratis, danach 79,00 € im Monat.')
-    : (t ? 'Die '+t.name+' mit '+teamIds(t).length+' Spielern. ' : 'Eine Mannschaft. ')+(state.demo ? '12,99 € im Monat.' : 'Vier Wochen gratis, danach 12,99 € im Monat.');
-  return '<div class="panel">' +
-    '<div class="pro-zeile"><span class="pro-name team">'+(ak ? 'KM1 Akademie' : 'KM1 Team')+'</span><span class="pro-aktiv">Aktiv</span></div>' +
-    '<p class="sub" style="margin:0">'+text+' Kündbar bis 24 Stunden vor Ablauf.</p>' +
-  '</div>';
-}
-
-/* Die Zeilen im Profil, die nur Spieler haben. */
+function merkZeile(){ return zeile('merkliste', ICON.herzVoll, '#FF2D55', 'Merkliste', Object.keys(state.merk).length || ''); }
+/* Die eigenen Sachen im Profil, je nach Rolle. */
 function rollenZeilen(){
   /* Wer eine oeffentliche Seite hat, sieht sie so, wie andere sie sehen. */
   var id = meineId();
@@ -4751,13 +4772,14 @@ function rollenZeilen(){
     var offen = W.einladungen.filter(function(e){ return e.von === id && !e.genutzt && !e.entzogen; }).length;
     var ein = (state.rolle === 'akademie' || state.rolle === 'verein')
       ? zeile('einladen:trainer', ICON.einladen, '#34C759', 'Leute einladen', offen ? offen+' offen' : '') : '';
-    return (seite || ein) ? '<div class="rows mit-symbol">' + seite + ein + '</div>' : '';
+    return '<div class="rows mit-symbol">' + seite + ein + merkZeile() + '</div>';
   }
   var n = W.uploads.filter(function(u){ return ichBin(u.von); }).length;
   return '<div class="rows mit-symbol">' +
     zeile('meinevideos', ICON.upl, '#FF9500', 'Meine Videos', n) +
     zeile('talentprofil', ICON.stern, '#AF52DE', 'Talentprofil', talentStatusWort()) +
     zeile('talent:'+ichId(), ICON.auge, '#0A7AFF', 'Mein Profil', 'Laufbahn') +
+    merkZeile() +
     zeile('teilen:ebene', ICON.teilen, '#0A7AFF', 'Erfolg teilen', '') +
   '</div>';
 }
@@ -4878,9 +4900,8 @@ function rangliste(max){
 function rangBlock(max){
   var ch = CHALLENGES[0];
   return '<div class="block">' +
-    '<div class="block-head"><h2 class="sec">Rangliste</h2><span class="more">'+h(ch.eh)+' in 60 Sekunden</span></div>' +
+    '<div class="block-head"><h2 class="sec">Rangliste'+infoKnopf('rang', 'Es zählen nur Werte, die der Trainer im Video nachgezählt hat.')+'</h2><span class="more">'+h(ch.eh)+' in 60 Sekunden</span></div>' +
     rangliste(max) +
-    '<p class="fine">Es zählen nur Werte, die der Trainer im Video nachgezählt hat.</p>' +
   '</div>';
 }
 function statusPille(u){
@@ -4946,25 +4967,25 @@ function feedBlock(){
   var t = meinTeam();
   if(!t) return '';
   var posts = W.feed.filter(function(b){ return b.team === t.id; });
-  if(!posts.length) return '';
+  if(!posts.length) return '<div class="leer klein">'+ICON.team+'<p>Noch keine Beiträge aus dem Team.</p></div>';
   return '<div class="block">' +
-    '<div class="block-head"><h2 class="sec">Aus dem Team</h2><span class="more">Nur '+h(t.name)+'</span></div>' +
+    '<div class="block-head"><h2 class="sec">Aus dem Team'+infoKnopf('feed', 'Reagieren kann jeder mit drei festen Zeichen. Schreiben dürfen nur geprüfte Trainer. Über die drei Punkte meldest oder blockierst du.')+'</h2><span class="more">Nur '+h(t.name)+'</span></div>' +
     '<div class="feed">'+posts.map(beitrag).join('')+'</div>' +
-    '<p class="fine">Reagieren kann jeder mit drei festen Zeichen. Schreiben dürfen nur geprüfte Trainer. Über die drei Punkte meldest oder blockierst du.</p>' +
   '</div>';
 }
 
 function teamSpieler(){
   if(state.imTeam !== true) return spielerOhneTeam();
   var t = TEAM;
+  var wahl = teamWahl([['uebersicht','Übersicht'],['rangliste','Rangliste'],['beitraege','Beiträge']]);
+  var inhalt = {
+    uebersicht: trainerZelle(t) + aufgabenBlock('spieler') + meineVideosBlock(),
+    rangliste: rangBlock(7) + '<button class="btn" type="button" data-act="versuch:challenge">'+ICON.upl+' Challenge-Versuch hochladen</button>',
+    beitraege: feedBlock()
+  }[wahl.an];
   return '<section class="screen schmal">' +
     '<div><p class="eyebrow">'+h(t.name+' · '+t.verein)+'</p><h1 class="big">Mein Team</h1></div>' +
-    trainerZelle(t) +
-    aufgabenBlock('spieler') +
-    meineVideosBlock() +
-    rangBlock(7) +
-    '<button class="btn" type="button" data-act="versuch:challenge">'+ICON.upl+' Challenge-Versuch hochladen</button>' +
-    feedBlock() +
+    wahl.html + inhalt +
   '</section>';
 }
 function spielerOhneTeam(){
@@ -5024,26 +5045,30 @@ function teamEltern(){
   var k = person('luis'), t = TEAM, a = t.aufgaben;
   var z = a.filter(function(x){ return aufgabeFertig(x, 'luis'); }).length;
   var f = W.freigaben;
-  return '<section class="screen schmal">' +
-    '<div><p class="eyebrow">Elternkonto</p><h1 class="big">Familie</h1></div>' +
-    '<div class="coach">'+avatarVon(k.name, lvFarbe(k.lv)) +
-      '<span class="n">'+h(k.name)+'<span>'+h(t.name+' · '+t.verein)+' · '+alterVon(k.jg)+' Jahre</span></span></div>' +
-    statsHtml([[Math.min(dieseWoche(), 5)+'/5', 'Diese Woche'], [z+'/'+a.length, 'Haus&shy;aufgaben'], [serieWochen(), 'Wochen&shy;serie']]) +
+  /* Was ansteht, woher Luis kommt, und was Sie fuer ihn einstellen. */
+  var wahl = teamWahl([['uebersicht','Übersicht'],['laufbahn','Laufbahn'],['schutz','Schutz']]);
+  var inhalt = {
+    uebersicht: statsHtml([[Math.min(dieseWoche(), 5)+'/5', 'Diese Woche'], [z+'/'+a.length, 'Haus&shy;aufgaben'], [serieWochen(), 'Wochen&shy;serie']]) +
     (f.length
       ? '<div class="block"><div class="block-head"><h2 class="sec">Wartet auf Sie</h2><span class="zaehler">'+f.length+'</span></div>' +
           f.map(freigabeKarte).join('')+'</div>'
-      : '<div class="callout stille"><span class="h">Nichts offen</span><p>Sobald '+KIND.vn+' ein Video hochladen möchte oder ein Scout anfragt, sehen Sie es hier zuerst.</p></div>') +
-    aufgabenBlock('eltern') +
-    laufbahnBlockEltern() +
-    '<div class="block"><h2 class="sec leise">Einstellungen für '+KIND.vn+'</h2><div class="rows">' +
+      : '<div class="leer klein">'+ICON.familie+'<p>Nichts offen. Sobald '+KIND.vn+' etwas hochladen möchte oder ein Scout anfragt, steht es hier.</p></div>') +
+      aufgabenBlock('eltern'),
+    laufbahn: laufbahnBlockEltern(),
+    schutz: '<div class="block"><h2 class="sec leise">Einstellungen für '+KIND.vn+'</h2><div class="rows">' +
       '<button class="lrow" type="button" role="switch" aria-checked="'+W.einst.upload+'" data-act="einst:upload">' +
         '<span>Videos nur mit meiner Freigabe</span><span class="schalter" aria-hidden="true"></span></button>' +
       '<button class="lrow" type="button" data-act="talentprofil"><span>Talentprofil</span><span class="r">'+talentStatusWort()+'</span></button>' +
       '<button class="lrow" type="button" data-act="versuch:aufgabe"><span>Video für '+KIND.vn+' hochladen</span><span class="r"></span></button>' +
     '</div></div>' +
-    '<div class="callout stille"><span class="h">Keine Fremden im Postfach</span>' +
-      '<p>'+KIND.vn+' schreibt nur mit dem Trainer und dem eigenen Team, und Sie können jeden Chat lesen. Profis, Scouts und Fremde können nicht schreiben. Wer etwas möchte, fragt zuerst Sie.</p>' +
-      '<button class="btn klein" type="button" data-act="nachrichten" style="align-self:flex-start;margin-top:8px">Chats von '+KIND.vn+' ansehen</button></div>' +
+    '<div class="block"><h2 class="sec">Nachrichten'+infoKnopf('postfach', KIND.vn+' schreibt nur mit dem Trainer und dem eigenen Team, und Sie können jeden Chat lesen. Profis, Scouts und Fremde können nicht schreiben. Wer etwas möchte, fragt zuerst Sie.')+'</h2>' +
+      '<div class="rows mit-symbol">'+zeile('nachrichten', ICON.sprech, '#34C759', 'Chats von '+KIND.vn, 'Nur Team und Trainer')+'</div></div>'
+  }[wahl.an];
+  return '<section class="screen schmal">' +
+    '<div><p class="eyebrow">Elternkonto</p><h1 class="big">Familie</h1></div>' +
+    '<div class="coach">'+avatarVon(k.name, lvFarbe(k.lv)) +
+      '<span class="n">'+h(k.name)+'<span>'+h(t.name+' · '+t.verein)+' · '+alterVon(k.jg)+' Jahre</span></span></div>' +
+    wahl.html + inhalt +
   '</section>';
 }
 
@@ -5058,7 +5083,7 @@ function spielerBlock(t){
   var ids = teamIds(t);
   if(!ids.length){
     return '<div class="block"><h2 class="sec">Spieler</h2><div class="leer klein">'+ICON.einladen +
-      '<p>Noch niemand da. Teile den Code unten, dann tauchen deine Spieler hier auf.</p></div></div>';
+      '<p>Noch niemand da. Lade deine Spieler mit dem Code ein.</p></div></div>';
   }
   return '<div class="block">' +
     '<div class="block-head"><h2 class="sec">Spieler</h2><span class="more">Hausaufgaben</span></div>' +
@@ -5103,19 +5128,36 @@ function teamTrainer(){
     '</section>';
   }
   var w = wartend(t), n = teamIds(t).length;
+  /* Drei Ansichten statt einer langen Seite: was zu tun ist, wer dabei
+     ist, was im Team los ist. */
+  var wahl = teamWahl([['uebersicht','Übersicht'],['spieler','Spieler'],['beitraege','Beiträge']]);
+  var inhalt = {
+    uebersicht: statsHtml([[n, 'Spieler'], [aufgabenQuote(t)+' %', 'Haus&shy;aufgaben'], [w.length, 'Neue Videos']]) +
+      (w.length ? '<div class="rows mit-symbol">'+zeile('tab:videos', ICON.upl, '#0D7C75', (w.length === 1 ? 'Ein Video wartet' : w.length+' Videos warten')+' auf dein Feedback', '')+'</div>' : '') +
+      beitrittsBlock(t) +
+      bestaetigungenBlock() +
+      aufgabenBlock('trainer'),
+    spieler: (n ? rangBlock(6) : '') +
+      spielerBlock(t) +
+      '<button class="btn ghost" type="button" data-act="spielereinladen">'+ICON.einladen+' Spieler einladen</button>',
+    beitraege: feedBlock()
+  }[wahl.an];
   return '<section class="screen schmal">' +
     '<div><p class="eyebrow">KM1 Team · '+h(t.verein)+'</p><h1 class="big">'+h(t.name)+'</h1></div>' +
     (state.geprueft ? '' : pruefPanel()) +
-    statsHtml([[n, 'Spieler'], [aufgabenQuote(t)+' %', 'Haus&shy;aufgaben'], [w.length, 'Neue Videos']]) +
-    (w.length ? '<div class="rows mit-symbol">'+zeile('tab:videos', ICON.upl, '#0D7C75', (w.length === 1 ? 'Ein Video wartet' : w.length+' Videos warten')+' auf dein Feedback', '')+'</div>' : '') +
-    beitrittsBlock(t) +
-    bestaetigungenBlock() +
-    aufgabenBlock('trainer') +
-    (n ? rangBlock(6) : '') +
-    spielerBlock(t) +
-    einladenPanel(t) +
-    feedBlock() +
+    wahl.html + inhalt +
   '</section>';
+}
+/* Der Umschalter oben auf einer Team-Seite. Gilt die gemerkte Ansicht
+   hier nicht, steht die erste. */
+function teamWahl(teile){
+  var an = teile.some(function(x){ return x[0] === state.teamSicht; }) ? state.teamSicht : teile[0][0];
+  return {an:an, html:'<div class="seg">'+teile.map(function(x){
+    return '<button type="button" data-act="teamsicht:'+x[0]+'" aria-pressed="'+(an === x[0])+'">'+x[1]+'</button>';
+  }).join('')+'</div>'};
+}
+function sheetSpielerEinladen(){
+  return kopf('Spieler einladen') + '<div class="sheet-body" data-blatt="spielereinladen">' + einladenPanel(meinTeam()) + '</div>';
 }
 
 /* ---------- Akademie ---------- */
@@ -5158,7 +5200,7 @@ function teamAkademie(){
     '<div class="block"><h2 class="sec">Mannschaften</h2><div class="rows mit-symbol">'+AK_TEAMS.map(akTeamZeile).join('')+'</div></div>' +
     '<div class="block"><h2 class="sec">Trainer</h2><div class="rows mit-symbol">'+AK_TEAMS.map(akTrainerZeile).join('')+'</div>' +
       '<button class="btn ghost" type="button" data-act="einladen:trainer">'+ICON.einladen+' Trainer einladen</button>' +
-      '<p class="fine">Jeder Trainer braucht den Haken, bevor er eine Mannschaft übernimmt. Mit eurer Einladung ist er sofort da, ihr bürgt dann für ihn.</p></div>' +
+    '</div>' +
     (sa ? '<div class="rows mit-symbol">'+zeile('tab:talente', ICON.fernglas, '#5856D6', (sa === 1 ? 'Eine Scout-Anfrage' : sa+' Scout-Anfragen')+' unter Talente', '')+'</div>' : '') +
   '</section>';
 }
@@ -5194,9 +5236,7 @@ function teamScout(){
   var JG = {alle:[0, 9999], a:[2008, 2009], b:[2010, 2011], c:[2012, 9999]};
   var l = talente().filter(function(t){ return (pos === 'alle' || t.pos === pos) && t.jg >= JG[jg][0] && t.jg <= JG[jg][1]; });
   return '<section class="screen schmal">' +
-    '<div><p class="eyebrow">Scouting · von KM1 geprüft</p><h1 class="big">Talente</h1></div>' +
-    '<div class="callout stille"><span class="h">Nur mit Zustimmung</span>' +
-      '<p>Du siehst Spieler ab 16 und Jüngere, deren Eltern zugestimmt haben. Kontakt läuft immer über Eltern oder Akademie.</p></div>' +
+    '<div><p class="eyebrow">Scouting · von KM1 geprüft</p><h1 class="big">Talente'+infoKnopf('talente', 'Du siehst Spieler ab 16 und Jüngere, deren Eltern zugestimmt haben. Kontakt läuft immer über Eltern oder Akademie.')+'</h1></div>' +
     '<div class="chips">' + ['alle'].concat(POSITIONEN).map(function(p){
       return '<button class="chip" type="button" data-act="scoutpos:'+p+'" aria-pressed="'+(pos === p)+'">'+(p === 'alle' ? 'Alle' : p)+'</button>';
     }).join('') + '</div>' +
@@ -5468,8 +5508,7 @@ function neuerEinladungsCode(rolle){
 /* KM1 sieht, wer ueber eine Einladung gekommen ist. */
 function einladungenKm1(){
   var l = W.einladungen.filter(function(e){ return e.genutzt; });
-  return '<div class="block"><h2 class="sec">Über Einladung</h2>' +
-    '<p class="fine">Trainer, Scouts und Profis mit Einladung bestätigt ihr Verein, und der Verein bürgt für sie. KM1 prüft Vereine, Akademien und alle ohne Einladung.</p>' +
+  return '<div class="block"><h2 class="sec">Über Einladung'+infoKnopf('einladung', 'Trainer, Scouts und Profis mit Einladung bestätigt ihr Verein, und der Verein bürgt für sie. KM1 prüft Vereine, Akademien und alle ohne Einladung.')+'</h2>' +
     (l.length ? '<div class="rows mit-symbol">'+l.map(function(e){ return einladungZeile(e, true); }).join('')+'</div>' : '') +
   '</div>';
 }
@@ -6391,7 +6430,7 @@ document.addEventListener('click', function(e){
     var tn = meinTeam(), zeichen = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', neu = '';
     for(var n = 0; n < 4; n++) neu += zeichen.charAt(Math.floor(Math.random() * zeichen.length));
     tn.code = tn.code.split('-').slice(0, 2).join('-')+'-'+neu;
-    haptik('mittel'); render(); toast('Neuer Code. Der alte gilt nicht mehr.');
+    haptik('mittel'); render(); blattAuffrischen(); toast('Neuer Code. Der alte gilt nicht mehr.');
   }
   else if(k === 'teamanlegen'){
     var name = ((document.getElementById('tn-name') || {}).value || '').trim() || 'Meine Mannschaft';
@@ -6900,7 +6939,9 @@ function folgenKnopf(id){
 }
 /* Auf der Startseite: Seiten zum Folgen, und was die, denen man folgt,
    zuletzt gepostet haben. */
-function folgenBlock(){
+/* „Folge ich" auf der Startseite: Neuigkeiten von KM1, Vorschlaege zum
+   Folgen und alle Beitraege der Seiten, denen man folgt. */
+function startFolgeIch(){
   var ids = ['hartwig','rheinstadt','kader','rheinblick','tim'].filter(function(id){ return id !== meineId(); });
   var karten = ids.map(function(id){
     return '<div class="seitenkarte">' +
@@ -6911,13 +6952,15 @@ function folgenBlock(){
     '</div>';
   }).join('');
   var m = meineId(), folgt = m ? folgtListe(m) : {};
-  var posts = W.posts.filter(function(p){ return folgt[p.von]; }).slice(0, 2);
-  return '<div class="block">' +
-      '<div class="block-head"><h2 class="sec">Profis und Vereine</h2><span class="more">Folgen</span></div>' +
+  var posts = W.posts.filter(function(p){ return folgt[p.von]; });
+  return newsBlock() +
+    '<div class="block">' +
+      '<div class="block-head"><h2 class="sec">Profis und Vereine</h2></div>' +
       '<div class="row">'+karten+'</div>' +
     '</div>' +
-    (posts.length ? '<div class="block"><div class="block-head"><h2 class="sec">Von denen, denen du folgst</h2></div>' +
-      '<div class="feed">'+posts.map(seitenBeitrag).join('')+'</div></div>' : '');
+    (posts.length
+      ? '<div class="block"><h2 class="sec">Beiträge</h2><div class="feed">'+posts.map(seitenBeitrag).join('')+'</div></div>'
+      : '<div class="leer klein">'+ICON.stern+'<p>'+(m ? 'Folge Profis, Vereinen und KM1, dann steht hier, was sie posten.' : 'Mit einem Konto folgst du Profis, Vereinen und KM1.')+'</p></div>');
 }
 function seitenBeitrag(p){
   return '<article class="post">' +
@@ -7085,8 +7128,7 @@ function teamSeite(){
   var anfragen = meineChats().filter(function(c){ return c.status === 'anfrage' && c.von !== id; });
   if(!state.demo){
     return '<section class="screen schmal">' +
-      '<div><p class="eyebrow">'+(profi ? 'Profi' : 'Verein')+'</p><h1 class="big">'+(profi ? 'Deine Seite' : 'Eure Seite')+'</h1>' +
-        '<p class="sub">'+(profi ? 'Fans folgen dir und sehen deine Tipps.' : 'Fans folgen euch und sehen, was im Verein passiert.')+'</p></div>' +
+      '<div><p class="eyebrow">'+(profi ? 'Profi' : 'Verein')+'</p><h1 class="big">'+(profi ? 'Deine Seite' : 'Eure Seite')+'</h1></div>' +
       pruefPanel() +
       '<div class="leer klein">'+ICON.auge+'<p>'+(state.geprueft ? 'Die Seite ist sichtbar. Der erste Beitrag fehlt noch.' : 'Die Seite wird sichtbar, sobald KM1 die Belege geprüft hat.')+'</p></div>' +
     '</section>';
@@ -7094,14 +7136,12 @@ function teamSeite(){
   return '<section class="screen schmal">' +
     '<div><p class="eyebrow">'+(profi ? 'Deine Seite' : 'Eure Seite')+'</p><h1 class="big">'+h(k.name)+'</h1></div>' +
     statsHtml([[zahlKurz(followerVon(id)), 'Follower'], [beitraegeVon(id).length, 'Beiträge'], [meineChats().length, 'Chats']]) +
-    (anfragen.length ? '<div class="block"><div class="block-head"><h2 class="sec">Nachrichtenanfragen</h2><span class="zaehler">'+anfragen.length+'</span></div>' +
-      '<div class="rows mit-symbol">'+anfragen.map(function(c){ return chatZeile(c); }).join('')+'</div>' +
-      '<p class="fine">Nur geprüfte Trainer, Akademien und Scouts können anfragen. Du entscheidest, ob daraus ein Chat wird.</p></div>' : '') +
-    '<div class="block"><h2 class="sec">Neuer Beitrag</h2>' +
+    (anfragen.length ? '<div class="block"><div class="block-head"><h2 class="sec">Nachrichtenanfragen'+infoKnopf('anfragen', 'Nur geprüfte Trainer, Akademien und Scouts können anfragen. Du entscheidest, ob daraus ein Chat wird.')+'</h2><span class="zaehler">'+anfragen.length+'</span></div>' +
+      '<div class="rows mit-symbol">'+anfragen.map(function(c){ return chatZeile(c); }).join('')+'</div></div>' : '') +
+    '<div class="block"><h2 class="sec">Neuer Beitrag'+infoKnopf('seite', 'Die Seite ist öffentlich. Kinder können folgen und reagieren, aber niemand unter 16 kann '+(profi ? 'dir' : 'euch')+' schreiben, und '+(profi ? 'du kannst' : 'ihr könnt')+' ihnen nicht schreiben.')+'</h2>' +
       '<div class="field"><label for="pb-text">Für alle, die '+(profi ? 'dir' : 'euch')+' folgen</label><textarea id="pb-text" placeholder="'+(profi ? 'Ein Tipp, ein Gedanke, ein Blick hinter die Kulissen.' : 'Ein Termin, ein Ergebnis, eine Nachricht aus dem Nachwuchs.')+'"></textarea></div>' +
       '<button class="btn" type="button" data-act="beitragneu">Veröffentlichen</button></div>' +
     '<div class="block"><h2 class="sec">'+(profi ? 'Deine' : 'Eure')+' Beiträge</h2><div class="feed">'+beitraegeVon(id).map(seitenBeitrag).join('')+'</div></div>' +
-    '<p class="fine">Die Seite ist öffentlich. Kinder können folgen und reagieren, aber niemand unter 16 kann '+(profi ? 'dir' : 'euch')+' schreiben, und '+(profi ? 'du kannst' : 'ihr könnt')+' ihnen nicht schreiben.</p>' +
   '</section>';
 }
 /* ---------- Klicks ---------- */
@@ -7296,7 +7336,7 @@ function screenVideos(){
   var spieler = W.uploads.filter(function(u){ return u.sicht === 'profil' && u.status === 'sichtbar' && u.von !== 'luis' && darfSehen(u); })
     .sort(function(a, b){ return b.zeit - a.zeit; });
   return '<section class="screen">' +
-    '<div><p class="eyebrow">'+h(eyebrow)+'</p><h1 class="big">Videos</h1></div>' +
+    '<div><p class="eyebrow">'+h(eyebrow)+'</p><h1 class="big">Videos'+infoKnopf('videos', 'Videos von Kindern unter 16 sehen nur das Team, die Familie und von KM1 geprüfte Konten, und erst, wenn die Eltern sie freigegeben haben. Ab 16 sieht ein Video auf dem Profil jeder in KM1. Nichts davon steht im offenen Netz.')+'</h1></div>' +
     knopf + eigen +
     (stark.length ? '<div class="block"><div class="block-head"><h2 class="sec">Von geprüften Konten</h2><span class="more">Öffentlich</span></div>' +
       '<div class="row">'+stark.map(function(p){
@@ -7304,7 +7344,6 @@ function screenVideos(){
       }).join('')+'</div></div>' : '') +
     (spieler.length ? '<div class="block"><div class="block-head"><h2 class="sec">Neu von Spielern</h2><span class="more">Auf ihren Profilen</span></div>' +
       '<div class="row">'+spieler.map(spielerVideoKarte).join('')+'</div></div>' : '') +
-    '<p class="fine">Videos von Kindern unter 16 sehen nur das Team, die Familie und von KM1 geprüfte Konten, und erst, wenn die Eltern sie freigegeben haben. Ab 16 sieht ein Video auf dem Profil jeder in KM1. Nichts davon steht im offenen Netz.</p>' +
   '</section>';
 }
 
@@ -7575,7 +7614,7 @@ function screenNachwuchs(){
   }
   var anm = ['levin','ella'].map(talentVon).filter(Boolean);
   return '<section class="screen schmal">' +
-    '<div><p class="eyebrow">FC Rheinstadt</p><h1 class="big">Nachwuchs</h1></div>' +
+    '<div><p class="eyebrow">FC Rheinstadt</p><h1 class="big">Nachwuchs'+infoKnopf('nachwuchs', 'Anmelden können nur Eltern. Bis 18 schreibt ihr den Eltern, nie dem Spieler selbst.')+'</h1></div>' +
     W.sichtungen.map(function(x){
       return '<div class="panel"><div class="pro-zeile"><span class="note">'+h(x.d)+'</span><span class="pille gruen">Anmeldung offen</span></div>' +
         '<p class="prose" style="font-weight:600">'+h(x.t)+'</p><p class="sub" style="margin:0">'+h(x.jg)+'</p>' +
@@ -7587,7 +7626,6 @@ function screenNachwuchs(){
           '<span>'+h(t.name)+'<small class="unter">Jahrgang '+t.jg+' · '+h(t.lang)+' · von den Eltern angemeldet</small></span><span class="r"></span></button>';
       }).join('')+'</div></div>' +
     '<button class="btn ghost" type="button" data-act="sichtungneu">'+ICON.kalender+' Sichtungstag anlegen</button>' +
-    '<div class="callout stille"><span class="h">Nur über die Eltern</span><p>Anmelden können nur Eltern. Bis 18 schreibt ihr den Eltern, nie dem Spieler selbst.</p></div>' +
   '</section>';
 }
 
@@ -7607,7 +7645,7 @@ function screenBeobachtet(){
   var neu = beobachteteNeu();
   var liste = talente().filter(function(t){ return W.beobachtet[t.id]; });
   return '<section class="screen schmal">' +
-    '<div><p class="eyebrow">Scouting</p><h1 class="big">Beobachtet</h1></div>' +
+    '<div><p class="eyebrow">Scouting</p><h1 class="big">Beobachtet'+infoKnopf('beobachtet', 'Du bekommst Bescheid, wenn ein beobachteter Spieler eine Ebene abschließt, ein Video hochlädt oder der Trainer einen Wert bestätigt.')+'</h1></div>' +
     (neu.length ? '<div class="block"><h2 class="sec">Neuigkeiten</h2><div class="rows mit-symbol">' +
       neu.map(function(n){
         var t = talentVon(n.talent);
@@ -7618,7 +7656,6 @@ function screenBeobachtet(){
       (liste.length ? '<div class="talente">'+liste.map(talentKarte).join('')+'</div>'
                     : '<div class="leer klein">'+ICON.stern+'<p>Tipp bei einem Talent auf „Beobachten“. Dann siehst du hier, wie es vorankommt.</p></div>') +
     '</div>' +
-    '<p class="fine">Du bekommst Bescheid, wenn ein beobachteter Spieler eine Ebene abschließt, ein Video hochlädt oder der Trainer einen Wert bestätigt.</p>' +
   '</section>';
 }
 function screenBerichte(){
@@ -7653,13 +7690,13 @@ function screenInhalte(){
     '<div><p class="eyebrow">Nur KM1</p><h1 class="big">Inhalte</h1></div>' +
     statsHtml([[VIDEOS.length, 'Videos'], [zaehl('pro'), 'Profi-Einheiten'], [NEWS.length, 'Neuigkeiten']]) +
     '<button class="btn" type="button" data-act="upload">'+ICON.upl+' Video für die Videothek</button>' +
-    (vorschlag.length ? '<div class="block"><div class="block-head"><h2 class="sec">Für die Videothek?</h2><span class="more">Von geprüften Konten</span></div>' +
+    (vorschlag.length ? '<div class="block"><div class="block-head"><h2 class="sec">Für die Videothek?'+infoKnopf('videothek', 'Die Videothek bleibt bei KM1. Ein starkes Video kommt hinein, wenn der Urheber zustimmt.')+'</h2><span class="more">Von geprüften Konten</span></div>' +
       vorschlag.map(function(p){
         return '<div class="freigabe"><div class="fk"><span class="ico" style="--i:'+kontoFarbe(p.von)+'">'+ICON.kamera+'</span>' +
           '<span><span class="t">'+h(p.titel || p.text)+'</span><span class="s">'+h(seitenTitel(p.von))+', '+h(wann(p.zeit))+'. Öffentlich auf der Seite.</span></span></div>' +
           '<div class="paar2"><button class="btn ghost" type="button" data-act="seite:'+p.von+'">Ansehen</button>' +
           '<button class="btn" type="button" data-act="uebernehmen:'+p.id+'">Anfragen</button></div></div>';
-      }).join('')+'<p class="fine">Die Videothek bleibt bei KM1. Ein starkes Video kommt hinein, wenn der Urheber zustimmt.</p></div>' : '') +
+      }).join('')+'</div>' : '') +
     '<div class="block"><div class="block-head"><h2 class="sec">Meistgesehen</h2><span class="more">Aufrufe</span></div>' +
       '<div class="path">'+VIDEOS.slice().sort(function(a, b){ return b.views - a.views; }).slice(0, 5).map(function(v){
         return '<div class="vid-admin"><span class="t">'+h(v.t)+'</span><span class="n">'+v.views.toLocaleString('de-DE')+'</span></div>';
@@ -7672,8 +7709,7 @@ W.uebernommen = {};
 function screenMeldungen(){
   var me = W.meldungen;
   return '<section class="screen schmal">' +
-    '<div><p class="eyebrow">Nur KM1</p><h1 class="big">Meldungen</h1>' +
-      '<p class="sub">Jede Meldung innerhalb von 24 Stunden. Wer gemeldet hat, bleibt unbekannt.</p></div>' +
+    '<div><p class="eyebrow">Nur KM1</p><h1 class="big">Meldungen'+infoKnopf('meldungen', 'Jede Meldung innerhalb von 24 Stunden. Wer gemeldet hat, bleibt unbekannt.')+'</h1></div>' +
     (me.length ? me.map(function(m){
       return '<div class="freigabe"><div class="fk"><span class="ico" style="--i:#FF3B30">'+ICON.flagge+'</span>' +
         '<span><span class="t">'+h(m.was)+'</span><span class="s">'+h(m.grund)+'. Gemeldet von: '+h(m.von)+', '+h(wann(m.zeit))+'.</span></span></div>' +

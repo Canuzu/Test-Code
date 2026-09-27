@@ -74,6 +74,19 @@ und Daten braucht.
   Profis bekommen ihn über die Einladung ihres Vereins, der mit seinem Code
   für sie bürgt, oder über Belege, die KM1 prüft. Ob ein Code gilt, steht
   allein in `einladungGueltig(code, rolle)`, die Codes in `W.einladungen`.
+- Übersicht vor Vollständigkeit, wie bei Duolingo, Strava oder Instagram:
+  - Die Startseite zeigt unter „Für dich“ höchstens fünf Blöcke: Hinweise in
+    einer Karte, die große Karte mit dem Wochenziel, neue Videos, die
+    Challenge und einen einzigen Werbeplatz. Alles von anderen (Neuigkeiten,
+    Profis und Vereine, Beiträge) steht unter „Folge ich“.
+  - Das Profil zeigt das Ich und die eigenen Sachen. Alles, was man einstellt
+    statt benutzt, liegt hinter dem Zahnrad oben rechts
+    (`sheetEinstellungen`).
+  - Lange Seiten bekommen einen Umschalter oben (`teamWahl`), statt alles
+    untereinander zu stapeln.
+  - Ein Erklärtext steht nur dort, wo jemand etwas entscheidet, und gibt dort
+    ein Versprechen. Alles andere kommt hinter ein kleines i neben der
+    Überschrift (`infoKnopf`).
 - Jede Rolle hat ihr eigenes Menü, festgelegt in `tabsFuer()`. Wer ein Video
   sieht, steht allein in `darfSehen(u)`.
 - Wer wem schreiben darf, steht allein in `schreibRecht(von, an)`. Neue

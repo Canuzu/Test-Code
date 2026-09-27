@@ -58,6 +58,23 @@ Die App selbst ist aus der Mischung entstanden, farbiger und ruhiger: Die
 Vorschaubilder tragen die Farbe ihrer Ebene, Anton steht nur in den großen
 Titeln, Zahlen stehen in der runden Systemschrift.
 
+## Aufgeräumt
+
+Jede Seite hat eine Aufgabe, gebaut nach dem Vorbild erfolgreicher Apps:
+
+- **Start:** Unter „Für dich“ steht, was heute dran ist: Hinweise in einer
+  Karte, die nächste Einheit mit dem Wochenziel, neue Videos, die Challenge und
+  ein einziger Werbeplatz. Neuigkeiten, Profis, Vereine und ihre Beiträge
+  stehen unter „Folge ich“.
+- **Profil:** Das Ich, die eigenen Sachen und das Abo als eine Zeile. Alles
+  zum Einstellen liegt hinter dem Zahnrad oben rechts.
+- **Team:** Ein Umschalter statt einer langen Seite, beim Trainer etwa
+  „Übersicht · Spieler · Beiträge“, bei den Eltern „Übersicht · Laufbahn ·
+  Schutz“.
+- **Erklärungen:** Ein kleines i neben der Überschrift statt Text unter jedem
+  Block. Nur wo jemand entscheidet, etwa beim Hochladen oder Freigeben, steht
+  der Satz direkt da.
+
 ## Die Funktionen
 
 Alle lassen sich antippen, die Namen in der Vorführung sind erfunden:
@@ -71,7 +88,7 @@ Alle lassen sich antippen, die Namen in der Vorführung sind erfunden:
 | Videos | Jeder lädt hoch, im Bereich Videos. Kinder wählen Trainer, Team, KM1 oder ihr Profil. Unter 16 geben die Eltern jedes Video frei, dann sehen es Team, Familie und geprüfte Konten. Ab 16 sieht ein Profilvideo jeder in KM1. Öffentlich posten nur geprüfte Konten. Feedback mit Zeitmarken. |
 | Reaktionen | Drei feste Zeichen statt Kommentaren, schreiben dürfen nur geprüfte Trainer. Melden und Blockieren an jedem Beitrag. |
 | Teilen | Eine Karte im Hochformat für WhatsApp-Status und Instagram-Story |
-| Neuigkeiten | Nur von KM1, auf der Startseite und als Liste |
+| Neuigkeiten | Nur von KM1, auf der Startseite unter „Folge ich“ und als Liste |
 | Talente und Laufbahn | Spielerprofil mit Videos, Laufbahn und den Einheiten bei KM1. Stationen tragen die Eltern ein, der Trainer bestätigt, jede Angabe zeigt ihre Quelle. Scouts beobachten Spieler und schreiben Berichte, Kontakt nur über Eltern oder Akademie. |
 | Profis und Vereine | Eigene Rollen mit Prüfung und einer öffentlichen Seite. Der Profi Niklas Hartwig und der FC Rheinstadt sind erfunden. |
 | Folgen | Seiten von Profis, Vereinen, Akademien, Trainern und KM1. Kindern unter 16 folgt nur das eigene Team. |
@@ -91,7 +108,7 @@ Zustand ist über die App selbst erreichbar, genau wie später im Betrieb:
 | Gast | So startet die App |
 | Mit Konto | Start → *Konto anlegen*, oder ein Video mit Konto-Abzeichen antippen |
 | KM1 PRO | Eine Profi-Einheit antippen → *Mit KM1 Pro ansehen* → *7 Tage gratis testen* |
-| Dunkle Fassung | Profil → *Darstellung* |
+| Dunkle Fassung | Profil → Zahnrad oben rechts → *Darstellung* |
 | Mit Einladung | *Konto anlegen* → Trainer, Scout oder Profi → *Mit Einladung* → *Vorführung: Code einsetzen*. Neue Codes legen Akademie und Verein unter Profil → *Leute einladen* an. |
 | Eine andere Rolle | Oben rechts auf die Ebene tippen und eine Sicht wählen, oder beim Anlegen des Kontos die Rolle wählen |
 | KM1 selbst | Beim Anmelden eine E-Mail mit „kader" verwenden, etwa `kader@km1-training.de`. Die Rolle hängt am Konto, nicht an einem Schalter. |
@@ -102,8 +119,8 @@ Video dahinter. Alles andere reagiert wie in einer fertigen App.
 Logo und Farben kommen von der Website: Anton für die großen Titel, die
 Systemschrift (auf Apple-Geräten SF Pro, sonst Inter) für den Text, JetBrains
 Mono für die rote Zeile über den Titeln, Köln-Rot `#C81E14` für alles, was man
-antippen kann. Hell ist die Grundeinstellung, Dunkel liegt im Profil unter
-„Darstellung".
+antippen kann. Hell ist die Grundeinstellung, Dunkel liegt im Profil hinter dem
+Zahnrad unter „Darstellung".
 
 ## Örtlich ausprobieren
 
