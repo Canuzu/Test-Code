@@ -1379,6 +1379,22 @@ button.lvchip:active{transform:scale(.94)}
   width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
   background:var(--fuell);font-size:13px;font-weight:700;letter-spacing:0;color:var(--text);
 }
+.vg-paar{display:flex;flex-direction:column;gap:8px}
+.vg-feld{position:relative;width:100%;aspect-ratio:16/9;border-radius:var(--r-karte);overflow:hidden;background:#000;margin:0 auto}
+.vg-feld .poster{height:100%;aspect-ratio:auto;border-radius:0}
+.vg-feld.eigen{aspect-ratio:var(--ar,16/9);width:min(100%,calc(46svh * var(--ar,1.78)))}
+.vg-feld video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+.vg-feld.leer{display:grid;place-items:center;color:rgba(255,255,255,.5);background:var(--fuell)}
+:root[data-theme="dark"] .vg-feld.leer{background:#1E2824}
+.vg-feld.leer svg{width:36px;height:36px;color:var(--text-3)}
+.vg-name{position:absolute;top:10px;left:10px;z-index:2;padding:3px 10px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-size:13px;font-weight:600}
+.vg-zeit{position:absolute;right:10px;bottom:10px;z-index:2;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--rund);font-size:13px;font-variant-numeric:tabular-nums}
+.vg-steuer{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px}
+.vg-steuer input[type=range]{width:100%;accent-color:var(--akzent)}
+.vg-t{font-family:var(--rund);font-size:15px;font-variant-numeric:tabular-nums;color:var(--text-2)}
+.vg-play{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--akzent);color:#fff}
+.vg-play svg{width:18px;height:18px}
+label.btn{cursor:pointer}
 .unit.plan{grid-template-columns:34px minmax(0,1fr) 44px;padding:6px 6px 6px 16px}
 .unit.plan.jetzt .tag{background:var(--akzent);color:#fff}
 .plan-v{display:block;min-width:0;padding:6px 0;text-align:left}
@@ -3012,7 +3028,8 @@ function sheetVideo(id){
           '<button class="btn ghost merk'+(gemerkt?' an':'')+'" type="button" data-act="merk:'+v.id+'"' +
             ' aria-pressed="'+gemerkt+'" aria-label="'+(gemerkt?'Aus der Merkliste nehmen':'Auf die Merkliste')+'">' +
             ICON.herz+'</button>' +
-        '</div>') +
+        '</div>' +
+        (zu ? '' : '<button class="btn ghost" type="button" data-act="vergleich:'+v.id+'">'+ICON.kamera+' Mit mir vergleichen</button>')) +
         /* Kaders Foto nur bei Kader. Die Gaeste haben noch kein eigenes
            Bild, solange ihre Namen nicht feststehen. */
         '<div class="coach">' +
@@ -5583,6 +5600,114 @@ function sheetPruefung(){
     '</div>';
 }
 
+/* ---------- Selbstaufnahme mit Vergleich ----------
+   Das Kind filmt sich und sieht sich direkt unter Kader, in Zeitlupe
+   und Bild fuer Bild. Das eigene Video bleibt als lokale Datei im
+   Browser: kein Upload, keine Einwilligung, keine Moderation. Schliesst
+   man die App, ist es weg. Kaders Seite ist heute noch das Standbild;
+   sobald die Videos gedreht sind, laeuft sie im selben Takt mit. */
+var VG_TEMPI = [[1,'1×'],[0.5,'½×'],[0.25,'¼×']];
+function vergleichAuf(id){
+  var vg = state.vergleich;
+  if(!vg || vg.id !== id){
+    if(vg && vg.url) URL.revokeObjectURL(vg.url);
+    state.vergleich = {id:id, url:null, zeit:0, tempo:0.5, schritt:0, dauer:0};
+  }
+  openSheet(sheetVergleich());
+  vgVerbinden();
+}
+function sheetVergleich(){
+  var vg = state.vergleich, v = byId(vg.id);
+  var waehlen = function(klasse, text, kamera){
+    return '<label class="btn'+klasse+'">'+(kamera ? ICON.kamera+' ' : '')+text +
+      '<input class="vh" type="file" accept="video/*"'+(kamera ? ' capture="environment"' : '')+' data-vg="datei"></label>';
+  };
+  var versprechen = '<p class="fine">Dein Video bleibt auf diesem Handy. Es wird nicht hochgeladen, und niemand sonst sieht es.</p>';
+  var kader = '<div class="vg-feld"><span class="vg-name">Kader</span><div class="poster">'+posterOf(v)+'</div>' +
+    '<span class="vg-zeit" id="vg-kzeit">'+fmtZeit(kapitelSek(v, vg.schritt) + vg.zeit)+'</span></div>';
+  if(!vg.url){
+    return kopf('Vergleichen') +
+      '<div class="sheet-body">' +
+        '<div><p class="eyebrow">Nur auf diesem Handy</p><h1 class="big">Du und Kader</h1>' +
+          '<p class="sub">Film dich bei der Übung und sieh dich direkt unter Kader, in Zeitlupe und Bild für Bild.</p></div>' +
+        '<div class="vg-paar">'+kader +
+          '<div class="vg-feld leer"><span class="vg-name">Du</span>'+ICON.kamera+'</div></div>' +
+        waehlen('', 'Jetzt filmen', true) +
+        waehlen(' ghost', 'Video auswählen', false) +
+        versprechen +
+      '</div>';
+  }
+  return kopf('Vergleichen') +
+    '<div class="sheet-body">' +
+      '<div class="vg-paar">'+kader +
+        '<div class="vg-feld eigen"><span class="vg-name">Du</span>' +
+          '<video id="vg-eigen" src="'+vg.url+'" playsinline muted preload="auto"></video></div></div>' +
+      '<div class="vg-steuer">' +
+        '<button class="mini vg-play" type="button" data-act="vgplay" aria-label="Abspielen oder anhalten">'+ICON.play+'</button>' +
+        '<input id="vg-scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Stelle im Video">' +
+        '<span class="vg-t" id="vg-t">'+vgZeit(vg.zeit)+'</span>' +
+      '</div>' +
+      '<div class="paar2">' +
+        '<button class="btn ghost" type="button" data-act="vgbild:-1">Bild zurück</button>' +
+        '<button class="btn ghost" type="button" data-act="vgbild:1">Bild vor</button></div>' +
+      '<div class="field"><label>Tempo</label><div class="seg">'+VG_TEMPI.map(function(t){
+        return '<button type="button" data-act="vgtempo:'+t[0]+'" aria-pressed="'+(vg.tempo === t[0])+'">'+t[1]+'</button>';
+      }).join('')+'</div></div>' +
+      '<div class="field"><label>Kader ab</label><div class="seg">'+v.st.map(function(x, i){
+        return '<button type="button" data-act="vgschritt:'+i+'" aria-pressed="'+(vg.schritt === i)+'">Schritt '+(i + 1)+'</button>';
+      }).join('')+'</div></div>' +
+      '<div class="paar2">'+waehlen(' ghost', 'Neu filmen', true) +
+        '<button class="btn ghost" type="button" data-act="vgweg">Verwerfen</button></div>' +
+      versprechen +
+    '</div>';
+}
+/* Das eigene Video fuehrt den Takt, Kaders Zeit laeuft vom gewaehlten
+   Schritt an mit. */
+function vgVideo(){ return document.getElementById('vg-eigen'); }
+/* Eigene Clips sind kurz. Zehntelsekunden, damit Bild fuer Bild sichtbar wird. */
+function vgZeit(t){ return t < 60 ? t.toFixed(1).replace('.', ',')+' s' : fmtZeit(t); }
+function vgZeichnen(){
+  var el = vgVideo(), vg = state.vergleich;
+  if(!el || !vg) return;
+  var d = el.duration || 0;
+  vg.zeit = el.currentTime; vg.dauer = d;
+  var sc = document.getElementById('vg-scrub'); if(sc && d) sc.value = Math.round(el.currentTime / d * 1000);
+  var t = document.getElementById('vg-t'); if(t) t.textContent = vgZeit(el.currentTime);
+  var k = document.getElementById('vg-kzeit'); if(k) k.textContent = fmtZeit(kapitelSek(byId(vg.id), vg.schritt) + el.currentTime);
+  var pb = document.querySelector('.vg-play'); if(pb) pb.innerHTML = el.paused ? ICON.play : ICON.pause;
+}
+function vgVerbinden(){
+  var el = vgVideo(), vg = state.vergleich;
+  if(!el) return;
+  el.playbackRate = vg.tempo;
+  el.addEventListener('loadedmetadata', function(){
+    if(el.videoWidth && el.videoHeight) el.parentNode.style.setProperty('--ar', el.videoWidth / el.videoHeight);
+    if(vg.zeit && vg.zeit < el.duration) el.currentTime = vg.zeit;
+    vgZeichnen();
+  });
+  el.addEventListener('timeupdate', vgZeichnen);
+  el.addEventListener('play', function lauf(){
+    vgZeichnen();
+    if(!el.paused && document.body.contains(el)) requestAnimationFrame(lauf);
+  });
+  el.addEventListener('pause', vgZeichnen);
+  el.addEventListener('ended', vgZeichnen);
+}
+function vgNeu(){ refreshSheet(sheetVergleich()); vgVerbinden(); }
+document.addEventListener('change', function(e){
+  var t = e.target;
+  if(!t.matches || !t.matches('input[data-vg="datei"]') || !t.files || !t.files[0] || !state.vergleich) return;
+  var vg = state.vergleich;
+  if(vg.url) URL.revokeObjectURL(vg.url);
+  vg.url = URL.createObjectURL(t.files[0]); vg.zeit = 0;
+  haptik('erfolg'); vgNeu();
+});
+document.addEventListener('input', function(e){
+  if(e.target.id !== 'vg-scrub') return;
+  var el = vgVideo();
+  if(el && el.duration){ el.pause(); el.currentTime = e.target.value / 1000 * el.duration; vgZeichnen(); }
+});
+
 /* ---------- Der erste Start ----------
    Drei kurze Fragen, dann weiss die App, fuer wen sie da ist: wer man
    ist, welcher Jahrgang, wann trainiert wird. Alles laesst sich
@@ -6542,6 +6667,23 @@ document.addEventListener('click', function(e){
     feldWerteZurueck(fw);
   }
   else if(k === 'signin'){ /* der erste Klickfaenger meldet an */ }
+  else if(k === 'vergleich'){ stopPlayer(); vergleichAuf(v); }
+  else if(k === 'vgplay'){
+    var ve = vgVideo(); if(!ve) return;
+    if(ve.paused){ if(ve.ended) ve.currentTime = 0; ve.playbackRate = state.vergleich.tempo; ve.play(); } else ve.pause();
+    haptik('leicht');
+  }
+  else if(k === 'vgbild'){
+    var vb = vgVideo(); if(!vb) return;
+    vb.pause(); vb.currentTime = Math.max(0, Math.min(vb.duration || 0, vb.currentTime + (+v) / 30));
+    haptik('tick'); vgZeichnen();
+  }
+  else if(k === 'vgtempo'){ state.vergleich.tempo = +v; var vt = vgVideo(); if(vt) state.vergleich.zeit = vt.currentTime; haptik('tick'); vgNeu(); }
+  else if(k === 'vgschritt'){ state.vergleich.schritt = +v; var vs = vgVideo(); if(vs) state.vergleich.zeit = vs.currentTime; haptik('tick'); vgNeu(); }
+  else if(k === 'vgweg'){
+    var vw = state.vergleich; if(vw.url) URL.revokeObjectURL(vw.url);
+    vw.url = null; vw.zeit = 0; haptik('leicht'); refreshSheet(sheetVergleich()); toast('Verworfen. Es war nur auf diesem Handy.');
+  }
   else if(k === 'erstrolle'){
     state.erst.rolle = v; haptik('tick');
     state.erst.schritt = erstSchritte(v)[1];
