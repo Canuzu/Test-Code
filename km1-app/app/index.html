@@ -2189,7 +2189,7 @@ var state = {
   versuch:{datei:null, zweck:'challenge', sicht:'trainer', zahl:'', busy:false},
   bericht:null, scoutPos:'alle', teilArt:'ebene', gelesen:{},
   demo:false, zuw:null, newsArt:0, scoutJg:'alle', hoch:null,
-  startSicht:'fuerdich', teamSicht:'uebersicht', plan:null
+  startSicht:'fuerdich', teamSicht:'uebersicht', plan:null, buchungen:{}, campForm:null
 };
 
 /* ============================================================
@@ -3322,9 +3322,76 @@ function sheetCamp(){
            'Abschlussturnier am Freitag mit Urkunde'
           ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
         '</ul></div>' +
-      '<a class="btn" href="https://km1-training.de" target="_blank" rel="noopener">Auf die Warteliste</a>' +
+      campKnopf() +
     '</div>';
 }
+
+/* ---------- Camp buchen ----------
+   Ein Camp ist eine Leistung auf dem Platz. Bezahlt wird deshalb direkt
+   bei KM1, nicht ueber den App Store, und ohne dessen Abgabe. Buchen
+   kann nur ein Erwachsener; Kinder fragen ihre Eltern. */
+/* JAHR steht erst im zweiten Skript, deshalb hier das Jahr selbst. */
+var CAMP = {id:'herbst-koeln', t:'Herbstcamp Köln', d:'19. bis 23. Oktober', preis:249, geschwister:20, frei:9,
+            jgVon:new Date().getFullYear() - 15, jgBis:new Date().getFullYear() - 8};
+function euro(x){ return x.toFixed(2).replace('.', ',')+' €'; }
+function campKnopf(){
+  var b = state.buchungen[CAMP.id], r = drin() ? state.rolle : 'gast';
+  if(b) return '<div class="panel"><div class="pro-zeile"><span class="note">Gebucht</span><span class="pille gruen">'+h(b.nr)+'</span></div>' +
+    '<p class="sub" style="margin:0">'+h(b.kinder.map(function(k){ return k.vn; }).join(' und '))+' '+(b.kinder.length > 1 ? 'sind' : 'ist')+' dabei. Die Bestätigung ging an Ihre E-Mail.</p></div>';
+  var preis = '<div class="pro-zeile"><span class="note">'+euro(CAMP.preis)+' pro Kind</span><span class="pille orange">Noch '+CAMP.frei+' Plätze</span></div>';
+  if(r === 'spieler') return preis + (W.campWunsch
+    ? '<button class="btn done" type="button" disabled>'+ICON.check+' Deine Eltern sind gefragt</button>'
+    : '<button class="btn" type="button" data-act="campwunsch">Meine Eltern fragen</button>');
+  return preis + '<button class="btn" type="button" data-act="campbuchen">Platz buchen</button>';
+}
+function sheetCampBuchen(){
+  var c = state.campForm, sum = c.kinder.length * CAMP.preis - (c.kinder.length > 1 ? (c.kinder.length - 1) * CAMP.geschwister : 0);
+  var jahre = function(sel){ var o = ''; for(var j = CAMP.jgBis; j >= CAMP.jgVon; j--) o += '<option value="'+j+'"'+(j === sel ? ' selected' : '')+'>'+j+'</option>'; return o; };
+  return kopf('Platz buchen') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">'+h(CAMP.t)+' · '+h(CAMP.d)+'</p><h1 class="big">Platz buchen</h1></div>' +
+      c.kinder.map(function(k, i){
+        return '<div class="block"><div class="block-head"><h2 class="sec leise">'+(i === 0 ? 'Kind' : 'Geschwisterkind')+'</h2>' +
+            (i > 0 ? '<button class="more" type="button" data-act="campkindweg:'+i+'">Entfernen</button>' : '')+'</div>' +
+          '<div class="field"><label for="cb-vn-'+i+'">Vorname</label><input id="cb-vn-'+i+'" type="text" value="'+h(k.vn)+'" autocomplete="off"></div>' +
+          '<div class="field"><label for="cb-jg-'+i+'">Jahrgang</label><span class="wahl"><select id="cb-jg-'+i+'">'+jahre(k.jg)+'</select></span></div>' +
+          '<div class="field"><label for="cb-hin-'+i+'">Allergien, Medikamente, Hinweise</label><textarea id="cb-hin-'+i+'" rows="2" placeholder="Optional">'+h(k.hin || '')+'</textarea></div>' +
+        '</div>';
+      }).join('') +
+      (c.kinder.length < 3 ? '<button class="btn ghost" type="button" data-act="campkindplus">Geschwisterkind dazu, '+euro(CAMP.geschwister)+' günstiger</button>' : '') +
+      '<div class="field"><label for="cb-not">Notfallnummer</label><input id="cb-not" type="tel" inputmode="tel" placeholder="Erreichbar von 9 bis 16 Uhr" value="'+h(c.notfall || '')+'"></div>' +
+      '<div class="rows">' +
+        '<button class="lrow" type="button" role="switch" aria-checked="'+c.fotos+'" data-act="campfotos"><span>Fotos vom Camp dürfen in der App erscheinen</span><span class="schalter" aria-hidden="true"></span></button>' +
+        '<button class="lrow" type="button" role="switch" aria-checked="'+c.ok+'" data-act="campok"><span>Ich habe die Teilnahmebedingungen gelesen</span><span class="schalter" aria-hidden="true"></span></button>' +
+      '</div>' +
+      '<p class="fine" style="margin-top:-16px">Kostenlos stornierbar bis 14 Tage vor Beginn. Ohne Ihre Zustimmung erscheint kein Foto Ihres Kindes.</p>' +
+      '<div class="field"><label>Bezahlen</label><div class="seg">'+[['karte','Karte'],['paypal','PayPal'],['lastschrift','Lastschrift']].map(function(z){
+        return '<button type="button" data-act="campzahl:'+z[0]+'" aria-pressed="'+(c.zahl === z[0])+'">'+z[1]+'</button>';
+      }).join('')+'</div></div>' +
+      '<p class="fine" style="margin-top:-16px">Bezahlt wird direkt bei KM1, nicht über den App Store.</p>' +
+      '<button class="btn" type="button" data-act="campsenden">Verbindlich buchen · '+euro(sum)+'</button>' +
+    '</div>';
+}
+function campFelder(){
+  var c = state.campForm;
+  c.kinder.forEach(function(k, i){
+    var vn = document.getElementById('cb-vn-'+i), jg = document.getElementById('cb-jg-'+i), hin = document.getElementById('cb-hin-'+i);
+    if(vn) k.vn = vn.value.trim(); if(jg) k.jg = +jg.value; if(hin) k.hin = hin.value.trim();
+  });
+  var nt = document.getElementById('cb-not'); if(nt) c.notfall = nt.value.trim();
+}
+function sheetCampFertig(b){
+  return kopf('Gebucht') +
+    '<div class="sheet-body">' +
+      '<div class="pay-kopf"><span class="haken-gross">'+ICON.check+'</span>' +
+        '<p class="eyebrow">Buchung '+h(b.nr)+'</p><h1 class="big">Bis zum<br>19. Oktober!</h1>' +
+        '<p class="sub">'+h(b.kinder.map(function(k){ return k.vn; }).join(' und '))+' '+(b.kinder.length > 1 ? 'sind' : 'ist')+' im '+h(CAMP.t)+' dabei. Die Bestätigung und die Rechnung über '+euro(b.summe)+' gehen an Ihre E-Mail.</p></div>' +
+      liste(['Montag um 9 Uhr am Vereinsheim, mit Fußballschuhen und Trinkflasche', 'Abholen jeden Tag um 16 Uhr', 'Fragen gehen direkt an das Camp-Team von KM1']) +
+      '<div class="paar2"><button class="btn ghost" type="button" data-act="campkalender">'+ICON.kalender+' In den Kalender</button>' +
+        '<button class="btn ghost" type="button" data-act="back">Fertig</button></div>' +
+    '</div>';
+}
+
 
 function sheetDaten(){
   return kopf('Datenschutz') +
@@ -3335,6 +3402,7 @@ function sheetDaten(){
           ['E-Mail und Vorname, damit dein Konto existiert',
            'Deine Rolle und dein Team',
            'Welche Übungen du abgehakt hast und wo ein Video stehen geblieben ist',
+           'Bei einer Campbuchung: Vorname, Jahrgang und Hinweise zum Kind, die Notfallnummer und ob Fotos erlaubt sind. Bezahlt wird beim Zahlungsanbieter, KM1 sieht keine Kartendaten',
            'Videos, die du hochlädst. Sie sieht nur, wen du auswählst: dein Trainer, dein Team, KM1 oder, auf deinem Profil, von KM1 geprüfte Konten',
            'Deine Laufbahn: die Stationen und wer sie bestätigt hat',
            'Dein Talentprofil, wenn du es freigibst. Unter 16 entscheiden deine Eltern mit',
@@ -3459,6 +3527,7 @@ function sheetBedingungen(){
         'Wer ein anderes Kind filmt, braucht die Zustimmung von dessen Eltern.',
         'Videos von Kindern unter 16 sehen nur das Team, die Familie und von KM1 geprüfte Konten, und erst nach der Freigabe der Eltern. Öffentlich posten nur geprüfte Konten.',
         'Beleidigungen, Mobbing und alles, was Kinder gefährdet, führen zur Sperre. Was gemeldet wird, sieht sich KM1 innerhalb von 24 Stunden an.',
+        'Camps bucht ein Erwachsener. Bezahlt wird direkt bei KM1. Bis 14 Tage vor Beginn ist die Stornierung kostenlos, danach werden 50 Prozent fällig.',
         'Vereine und Akademien prüft KM1. Trainer, Scouts und Profis bekommen den Haken über die Einladung ihres Vereins, der für sie bürgt, oder nach Prüfung ihrer Belege durch KM1. KM1 kann jeden Haken jederzeit wieder entziehen.',
         'Kinder unter 16 schreiben nur mit ihrem Trainer und dem eigenen Team, die Eltern können mitlesen. Profis und Vereine bekommen keine Nachrichten von Fans.'
       ]) + '</div>' +
@@ -4270,6 +4339,38 @@ document.addEventListener('click', function(e){
   else if(k==='upvis'){ state.up.vis = v; refreshSheet(sheetUpload()); }
   else if(k==='publish'){ publish(); }
   else if(k==='camps'){ openSheet(sheetCamp()); }
+  else if(k==='campwunsch'){
+    W.campWunsch = true; haptik('erfolg'); refreshSheet(sheetCamp());
+    toast('Gefragt. Deine Eltern sehen es in ihrer App.');
+  }
+  else if(k==='campbuchen'){
+    if(!drin()){ haptik('wand'); state.loginModus = 'neu'; openSheet(sheetLogin()); return; }
+    var kind = state.rolle === 'eltern' && state.kindDa ? {vn:KIND.vn, jg:KIND.jg} : {vn:'', jg:JAHR - 10};
+    state.campForm = {kinder:[kind], notfall:'', fotos:false, ok:false, zahl:'karte'};
+    openSheet(sheetCampBuchen());
+  }
+  else if(k==='campkindplus'){ campFelder(); state.campForm.kinder.push({vn:'', jg:JAHR - 10}); haptik('leicht'); refreshSheet(sheetCampBuchen()); }
+  else if(k==='campkindweg'){ campFelder(); state.campForm.kinder.splice(+v, 1); haptik('leicht'); refreshSheet(sheetCampBuchen()); }
+  else if(k==='campfotos'){ campFelder(); state.campForm.fotos = !state.campForm.fotos; haptik('tick'); refreshSheet(sheetCampBuchen()); }
+  else if(k==='campok'){ campFelder(); state.campForm.ok = !state.campForm.ok; haptik('tick'); refreshSheet(sheetCampBuchen()); }
+  else if(k==='campzahl'){ campFelder(); state.campForm.zahl = v; haptik('tick'); refreshSheet(sheetCampBuchen()); }
+  else if(k==='campsenden'){
+    campFelder();
+    var cf = state.campForm;
+    var fehlt = cf.kinder.some(function(x){ return !x.vn; }) ? 'Der Vorname des Kindes fehlt'
+      : (!/[0-9]{6,}/.test(cf.notfall.replace(/\s|\/|-/g, '')) ? 'Die Notfallnummer fehlt'
+      : (!cf.ok ? 'Bestätigen Sie die Teilnahmebedingungen' : ''));
+    if(fehlt){ haptik('fehler'); toast(fehlt); return; }
+    var summe = cf.kinder.length * CAMP.preis - (cf.kinder.length - 1) * CAMP.geschwister;
+    var nr = 'HC-'+String(1000 + Math.floor(Math.random() * 9000));
+    state.buchungen[CAMP.id] = {nr:nr, kinder:cf.kinder.slice(), summe:summe, fotos:cf.fotos, zahl:cf.zahl};
+    CAMP.frei = Math.max(0, CAMP.frei - cf.kinder.length);
+    W.campWunsch = false;
+    haptik('aufstieg');
+    while(stack.length) closeSheet();
+    openSheet(sheetCampFertig(state.buchungen[CAMP.id])); render();
+  }
+  else if(k==='campkalender'){ haptik('erfolg'); toast('Im Kalender: 19. bis 23. Oktober, 9 bis 16 Uhr'); }
 });
 
 document.addEventListener('keydown', function(e){
@@ -4830,6 +4931,7 @@ function hinweiseStart(){
         t:'Hausaufgabe von '+vorname(t.trainer), s:byId(offen[0].video).t.replace(/­/g,'')+', '+offen[0].bisText});
     }
   } else if(r === 'eltern'){
+    if(W.campWunsch && !state.buchungen[CAMP.id]) k.push({act:'camps', ico:ICON.kalender, farbe:'#FF9500', t:KIND.vn+' möchte ins Herbstcamp', s:CAMP.d+', '+euro(CAMP.preis)});
     var f = W.freigaben.length;
     if(!state.kindDa) k.push({act:'tab:team', ico:ICON.familie, farbe:'#34C759', t:'Verbinden Sie Ihr Kind', s:'Dann sehen Sie Hausaufgaben und Freigaben'});
     else if(f) k.push({act:'tab:team', ico:ICON.familie, farbe:'#34C759', t:(f === 1 ? 'Eine Freigabe wartet' : ZAHLWORT[f].replace(/^./, function(c){ return c.toUpperCase(); })+' Freigaben warten')+' auf Sie', s:KIND.vn+' braucht Ihre Zustimmung', n:f});
