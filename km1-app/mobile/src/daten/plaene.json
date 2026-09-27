@@ -1,0 +1,287 @@
+[
+ {
+  "id": "grundlagen",
+  "titel": "Grundlagen in sechs Wochen",
+  "ebene": 1,
+  "fuer": "U8 bis U13",
+  "satz": "Annehmen, passen, abstoppen und die Füße schnell machen. Die Basis für alles andere.",
+  "minuten": 20,
+  "reihenfolge": 1,
+  "wochen": [
+   [
+    {
+     "slug": "erste-beruehrung",
+     "aufgabe": "Langsam, 3 × 5 Minuten, beide Füße"
+    },
+    {
+     "slug": "flacher-pass",
+     "aufgabe": "Gegen die Wand, 50 Pässe pro Fuß"
+    },
+    {
+     "slug": "leiter",
+     "aufgabe": "Die ersten drei Muster, je 5 Durchgänge"
+    }
+   ],
+   [
+    {
+     "slug": "abstoppen",
+     "aufgabe": "Stoppen, andribbeln, 20 Wiederholungen"
+    },
+    {
+     "slug": "erste-beruehrung",
+     "aufgabe": "Mit Blick nach oben vor der Annahme"
+    },
+    {
+     "slug": "leiter",
+     "aufgabe": "Alle sechs Muster, je 3 Durchgänge"
+    }
+   ],
+   [
+    {
+     "slug": "flacher-pass",
+     "aufgabe": "Über 20 Meter, 30 Pässe pro Fuß"
+    },
+    {
+     "slug": "abstoppen",
+     "aufgabe": "Mit Richtungswechsel nach dem Stoppen"
+    },
+    {
+     "slug": "erste-beruehrung",
+     "aufgabe": "Annahme in die Bewegung"
+    }
+   ],
+   [
+    {
+     "slug": "leiter",
+     "aufgabe": "Tempo steigern, auf Zeit"
+    },
+    {
+     "slug": "flacher-pass",
+     "aufgabe": "Direkt spielen, ohne Annahme"
+    },
+    {
+     "slug": "abstoppen",
+     "aufgabe": "Aus dem Lauf stoppen"
+    }
+   ],
+   [
+    {
+     "slug": "erste-beruehrung",
+     "aufgabe": "Unter Zeitdruck: zwei Kontakte"
+    },
+    {
+     "slug": "flacher-pass",
+     "aufgabe": "Mit dem schwachen Fuß, 50 Pässe"
+    },
+    {
+     "slug": "leiter",
+     "aufgabe": "Muster nach Ansage"
+    }
+   ],
+   [
+    {
+     "slug": "abstoppen",
+     "aufgabe": "Im Spiel zu zweit"
+    },
+    {
+     "slug": "erste-beruehrung",
+     "aufgabe": "Annahme, Blick, Pass in einer Bewegung"
+    },
+    {
+     "slug": "flacher-pass",
+     "aufgabe": "Test: 20 Pässe durch ein Hütchentor"
+    }
+   ]
+  ]
+ },
+ {
+  "id": "dribbling",
+  "titel": "Dribbling mit Tempo",
+  "ebene": 2,
+  "fuer": "U10 bis U15",
+  "satz": "Vom ersten Übersteiger bis zum 1 gegen 1: Tempowechsel statt Tricks.",
+  "minuten": 25,
+  "reihenfolge": 2,
+  "wochen": [
+   [
+    {
+     "slug": "uebersteiger",
+     "aufgabe": "Im Stand, 3 × 20 pro Seite"
+    },
+    {
+     "slug": "abstoppen",
+     "aufgabe": "Stoppen und explodieren, 20 Mal"
+    },
+    {
+     "slug": "leiter",
+     "aufgabe": "Schnelle Füße, 4 Muster"
+    }
+   ],
+   [
+    {
+     "slug": "uebersteiger",
+     "aufgabe": "Im Gehen, dann im Trab"
+    },
+    {
+     "slug": "ballmitnahme",
+     "aufgabe": "Mitnahme in den freien Raum"
+    },
+    {
+     "slug": "leiter",
+     "aufgabe": "Mit Ball danach: 5 Meter Antritt"
+    }
+   ],
+   [
+    {
+     "slug": "uebersteiger",
+     "aufgabe": "Mit Tempowechsel nach dem Trick"
+    },
+    {
+     "slug": "eins-gegen-eins",
+     "aufgabe": "Gegen einen Hütchengegner"
+    },
+    {
+     "slug": "abstoppen",
+     "aufgabe": "Richtungswechsel links und rechts"
+    }
+   ],
+   [
+    {
+     "slug": "eins-gegen-eins",
+     "aufgabe": "Gegen einen Partner, halbes Tempo"
+    },
+    {
+     "slug": "ballmitnahme",
+     "aufgabe": "Im Sprint, 10 Wiederholungen"
+    },
+    {
+     "slug": "uebersteiger",
+     "aufgabe": "Doppelter Übersteiger"
+    }
+   ],
+   [
+    {
+     "slug": "eins-gegen-eins",
+     "aufgabe": "Volles Tempo, 10 Duelle"
+    },
+    {
+     "slug": "uebersteiger",
+     "aufgabe": "Mit dem schwachen Fuß"
+    },
+    {
+     "slug": "ballmitnahme",
+     "aufgabe": "Mitnahme und Abschluss"
+    }
+   ],
+   [
+    {
+     "slug": "eins-gegen-eins",
+     "aufgabe": "Im Spiel 2 gegen 2"
+    },
+    {
+     "slug": "uebersteiger",
+     "aufgabe": "Test: 44 in 60 Sekunden"
+    },
+    {
+     "slug": "abstoppen",
+     "aufgabe": "Alles zusammen, 15 Minuten"
+    }
+   ]
+  ]
+ },
+ {
+  "id": "flanke",
+  "titel": "Flanke und Abschluss",
+  "ebene": 2,
+  "fuer": "U10 bis U17",
+  "satz": "Die Flanke, die ankommt, und der Abschluss, der sitzt. Zu zweit am schönsten.",
+  "minuten": 30,
+  "reihenfolge": 3,
+  "wochen": [
+   [
+    {
+     "slug": "flanke-innen",
+     "aufgabe": "Aus dem Stand, 20 pro Seite"
+    },
+    {
+     "slug": "vollspann",
+     "aufgabe": "Flach aufs Tor, 20 Schüsse"
+    },
+    {
+     "slug": "kopfball",
+     "aufgabe": "Aus der Hand, Timing üben"
+    }
+   ],
+   [
+    {
+     "slug": "flanke-innen",
+     "aufgabe": "Aus dem Lauf, auf den Elfmeterpunkt"
+    },
+    {
+     "slug": "vollspann",
+     "aufgabe": "Nach Ballmitnahme"
+    },
+    {
+     "slug": "kopfball",
+     "aufgabe": "Mit Anlauf"
+    }
+   ],
+   [
+    {
+     "slug": "innenrist-flanke",
+     "aufgabe": "Aus dem Halbfeld, 20 Flanken"
+    },
+    {
+     "slug": "vollspann",
+     "aufgabe": "Mit dem schwachen Fuß"
+    },
+    {
+     "slug": "flanke-innen",
+     "aufgabe": "Flach an den ersten Pfosten"
+    }
+   ],
+   [
+    {
+     "slug": "innenrist-flanke",
+     "aufgabe": "Auf einen Partner im Lauf"
+    },
+    {
+     "slug": "kopfball",
+     "aufgabe": "Nach Flanke vom Partner"
+    },
+    {
+     "slug": "vollspann",
+     "aufgabe": "Direktabnahme"
+    }
+   ],
+   [
+    {
+     "slug": "flanke-innen",
+     "aufgabe": "Unter Zeitdruck: drei Kontakte"
+    },
+    {
+     "slug": "finishing-mued",
+     "aufgabe": "Abschluss nach Sprint"
+    },
+    {
+     "slug": "kopfball",
+     "aufgabe": "Gegen einen Gegenspieler"
+    }
+   ],
+   [
+    {
+     "slug": "innenrist-flanke",
+     "aufgabe": "Flanke und Abschluss zu zweit"
+    },
+    {
+     "slug": "finishing-mued",
+     "aufgabe": "10 Abschlüsse nach Belastung"
+    },
+    {
+     "slug": "flanke-innen",
+     "aufgabe": "Test: 7 von 10 kommen an"
+    }
+   ]
+  ]
+ }
+]

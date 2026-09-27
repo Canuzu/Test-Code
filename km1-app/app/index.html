@@ -3331,7 +3331,8 @@ function sheetCamp(){
    bei KM1, nicht ueber den App Store, und ohne dessen Abgabe. Buchen
    kann nur ein Erwachsener; Kinder fragen ihre Eltern. */
 /* JAHR steht erst im zweiten Skript, deshalb hier das Jahr selbst. */
-var CAMP = {id:'herbst-koeln', t:'Herbstcamp Köln', d:'19. bis 23. Oktober', preis:249, geschwister:20, frei:9,
+var CAMP = {id:'herbst-koeln', t:'Herbstcamp Köln', d:'19. bis 23. Oktober', von:'2026-10-19', bis:'2026-10-23',
+            preis:249, geschwister:20, plaetze:40, frei:9,
             jgVon:new Date().getFullYear() - 15, jgBis:new Date().getFullYear() - 8};
 function euro(x){ return x.toFixed(2).replace('.', ',')+' €'; }
 function campKnopf(){

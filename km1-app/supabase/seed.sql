@@ -127,3 +127,81 @@ from (values
   ('profi-alltag', 3, 'Nach dem Abschlusstraining kommt die Videoanalyse des nächsten Gegners.', 694)
 ) as s(slug, nr, text, sekunde)
 join public.videos v on v.slug = s.slug;
+
+insert into public.plaene (id, titel, ebene, fuer, satz, minuten, reihenfolge)
+values
+  ('grundlagen', 'Grundlagen in sechs Wochen', 1, 'U8 bis U13', 'Annehmen, passen, abstoppen und die Füße schnell machen. Die Basis für alles andere.', 20, 1),
+  ('dribbling', 'Dribbling mit Tempo', 2, 'U10 bis U15', 'Vom ersten Übersteiger bis zum 1 gegen 1: Tempowechsel statt Tricks.', 25, 2),
+  ('flanke', 'Flanke und Abschluss', 2, 'U10 bis U17', 'Die Flanke, die ankommt, und der Abschluss, der sitzt. Zu zweit am schönsten.', 30, 3)
+on conflict (id) do update set
+  titel = excluded.titel, ebene = excluded.ebene, fuer = excluded.fuer,
+  satz = excluded.satz, minuten = excluded.minuten, reihenfolge = excluded.reihenfolge;
+
+delete from public.plan_einheiten where plan_id in ('grundlagen', 'dribbling', 'flanke');
+
+insert into public.plan_einheiten (plan_id, woche, nr, video_id, aufgabe)
+select e.plan_id, e.woche, e.nr, v.id, e.aufgabe
+from (values
+  ('grundlagen', 1, 1, 'erste-beruehrung', 'Langsam, 3 × 5 Minuten, beide Füße'),
+  ('grundlagen', 1, 2, 'flacher-pass', 'Gegen die Wand, 50 Pässe pro Fuß'),
+  ('grundlagen', 1, 3, 'leiter', 'Die ersten drei Muster, je 5 Durchgänge'),
+  ('grundlagen', 2, 1, 'abstoppen', 'Stoppen, andribbeln, 20 Wiederholungen'),
+  ('grundlagen', 2, 2, 'erste-beruehrung', 'Mit Blick nach oben vor der Annahme'),
+  ('grundlagen', 2, 3, 'leiter', 'Alle sechs Muster, je 3 Durchgänge'),
+  ('grundlagen', 3, 1, 'flacher-pass', 'Über 20 Meter, 30 Pässe pro Fuß'),
+  ('grundlagen', 3, 2, 'abstoppen', 'Mit Richtungswechsel nach dem Stoppen'),
+  ('grundlagen', 3, 3, 'erste-beruehrung', 'Annahme in die Bewegung'),
+  ('grundlagen', 4, 1, 'leiter', 'Tempo steigern, auf Zeit'),
+  ('grundlagen', 4, 2, 'flacher-pass', 'Direkt spielen, ohne Annahme'),
+  ('grundlagen', 4, 3, 'abstoppen', 'Aus dem Lauf stoppen'),
+  ('grundlagen', 5, 1, 'erste-beruehrung', 'Unter Zeitdruck: zwei Kontakte'),
+  ('grundlagen', 5, 2, 'flacher-pass', 'Mit dem schwachen Fuß, 50 Pässe'),
+  ('grundlagen', 5, 3, 'leiter', 'Muster nach Ansage'),
+  ('grundlagen', 6, 1, 'abstoppen', 'Im Spiel zu zweit'),
+  ('grundlagen', 6, 2, 'erste-beruehrung', 'Annahme, Blick, Pass in einer Bewegung'),
+  ('grundlagen', 6, 3, 'flacher-pass', 'Test: 20 Pässe durch ein Hütchentor'),
+  ('dribbling', 1, 1, 'uebersteiger', 'Im Stand, 3 × 20 pro Seite'),
+  ('dribbling', 1, 2, 'abstoppen', 'Stoppen und explodieren, 20 Mal'),
+  ('dribbling', 1, 3, 'leiter', 'Schnelle Füße, 4 Muster'),
+  ('dribbling', 2, 1, 'uebersteiger', 'Im Gehen, dann im Trab'),
+  ('dribbling', 2, 2, 'ballmitnahme', 'Mitnahme in den freien Raum'),
+  ('dribbling', 2, 3, 'leiter', 'Mit Ball danach: 5 Meter Antritt'),
+  ('dribbling', 3, 1, 'uebersteiger', 'Mit Tempowechsel nach dem Trick'),
+  ('dribbling', 3, 2, 'eins-gegen-eins', 'Gegen einen Hütchengegner'),
+  ('dribbling', 3, 3, 'abstoppen', 'Richtungswechsel links und rechts'),
+  ('dribbling', 4, 1, 'eins-gegen-eins', 'Gegen einen Partner, halbes Tempo'),
+  ('dribbling', 4, 2, 'ballmitnahme', 'Im Sprint, 10 Wiederholungen'),
+  ('dribbling', 4, 3, 'uebersteiger', 'Doppelter Übersteiger'),
+  ('dribbling', 5, 1, 'eins-gegen-eins', 'Volles Tempo, 10 Duelle'),
+  ('dribbling', 5, 2, 'uebersteiger', 'Mit dem schwachen Fuß'),
+  ('dribbling', 5, 3, 'ballmitnahme', 'Mitnahme und Abschluss'),
+  ('dribbling', 6, 1, 'eins-gegen-eins', 'Im Spiel 2 gegen 2'),
+  ('dribbling', 6, 2, 'uebersteiger', 'Test: 44 in 60 Sekunden'),
+  ('dribbling', 6, 3, 'abstoppen', 'Alles zusammen, 15 Minuten'),
+  ('flanke', 1, 1, 'flanke-innen', 'Aus dem Stand, 20 pro Seite'),
+  ('flanke', 1, 2, 'vollspann', 'Flach aufs Tor, 20 Schüsse'),
+  ('flanke', 1, 3, 'kopfball', 'Aus der Hand, Timing üben'),
+  ('flanke', 2, 1, 'flanke-innen', 'Aus dem Lauf, auf den Elfmeterpunkt'),
+  ('flanke', 2, 2, 'vollspann', 'Nach Ballmitnahme'),
+  ('flanke', 2, 3, 'kopfball', 'Mit Anlauf'),
+  ('flanke', 3, 1, 'innenrist-flanke', 'Aus dem Halbfeld, 20 Flanken'),
+  ('flanke', 3, 2, 'vollspann', 'Mit dem schwachen Fuß'),
+  ('flanke', 3, 3, 'flanke-innen', 'Flach an den ersten Pfosten'),
+  ('flanke', 4, 1, 'innenrist-flanke', 'Auf einen Partner im Lauf'),
+  ('flanke', 4, 2, 'kopfball', 'Nach Flanke vom Partner'),
+  ('flanke', 4, 3, 'vollspann', 'Direktabnahme'),
+  ('flanke', 5, 1, 'flanke-innen', 'Unter Zeitdruck: drei Kontakte'),
+  ('flanke', 5, 2, 'finishing-mued', 'Abschluss nach Sprint'),
+  ('flanke', 5, 3, 'kopfball', 'Gegen einen Gegenspieler'),
+  ('flanke', 6, 1, 'innenrist-flanke', 'Flanke und Abschluss zu zweit'),
+  ('flanke', 6, 2, 'finishing-mued', '10 Abschlüsse nach Belastung'),
+  ('flanke', 6, 3, 'flanke-innen', 'Test: 7 von 10 kommen an')
+) as e(plan_id, woche, nr, slug, aufgabe)
+join public.videos v on v.slug = e.slug;
+
+insert into public.camps (id, titel, von, bis, preis_cent, geschwister_rabatt_cent, plaetze, jahrgang_von, jahrgang_bis)
+values ('herbst-koeln', 'Herbstcamp Köln', '2026-10-19', '2026-10-23', 24900, 2000, 40, 2011, 2018)
+on conflict (id) do update set
+  titel = excluded.titel, von = excluded.von, bis = excluded.bis, preis_cent = excluded.preis_cent,
+  geschwister_rabatt_cent = excluded.geschwister_rabatt_cent, plaetze = excluded.plaetze,
+  jahrgang_von = excluded.jahrgang_von, jahrgang_bis = excluded.jahrgang_bis;

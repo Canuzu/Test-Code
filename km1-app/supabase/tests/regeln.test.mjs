@@ -38,11 +38,13 @@ let luis, lena, kader;
 before(async () => {
   await db.exec(lies('./supabase-attrappe.sql'));
   await db.exec(lies('../migrations/20260923120000_grundlage.sql'));
+  await db.exec(lies('../migrations/20260927120000_gemeinschaft.sql'));
   await db.exec(lies('../seed.sql'));
   luis = await nutzer({ vorname: 'Luis', geburtsjahr: jahr - 30 });
   lena = await nutzer({ vorname: 'Lena', geburtsjahr: jahr - 30 });
   kader = await nutzer({ vorname: 'Kader', geburtsjahr: jahr - 35 });
-  await db.query("update public.profiles set rolle = 'trainer' where id = $1", [kader]);
+  // Kader arbeitet für KM1. Seit der Gemeinschaft heißt die Rolle km1.
+  await db.query("update public.profiles set rolle = 'km1' where id = $1", [kader]);
   await db.query("insert into storage.objects (bucket_id, name) values ('videos-geschuetzt', 'ballmitnahme.mp4'), ('videos-geschuetzt', 'profi-freistoss.mp4')");
   await db.query("update public.videos set pfad = slug || '.mp4'");
 });
