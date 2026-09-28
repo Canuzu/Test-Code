@@ -106,6 +106,7 @@ export default function Wurzel() {
           <Stack.Screen name="camp-buchen" options={{ presentation: 'modal', ...kopf('Platz buchen') }} />
           <Stack.Screen name="einstellungen" options={kopf('Einstellungen')} />
           <Stack.Screen name="plan/[id]" options={kopf('Trainingsplan')} />
+          <Stack.Screen name="weg" options={kopf('Dein Weg')} />
           <Stack.Screen name="vergleich/[slug]" options={{ presentation: 'modal', ...kopf('Vergleichen') }} />
           <Stack.Screen name="willkommen" options={{ presentation: 'fullScreenModal', headerShown: false, gestureEnabled: false }} />
         </Stack>

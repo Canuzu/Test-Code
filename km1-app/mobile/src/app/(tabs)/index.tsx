@@ -13,6 +13,7 @@ import { planStand, planWocheFrei } from '@/daten/plaene';
 import { setze, useZustand, type Zustand } from '@/daten/zustand';
 import { dieseWoche, gesperrt, naechstesVideo, uebtSelbst, videoFuer } from '@/daten/aktionen';
 import { neuigkeitenLaden, type Neuigkeit } from '@/daten/gemeinschaft';
+import { istKind } from '@/daten/einfuehrung';
 import { fmtZeit, heuteZeile } from '@/lib/zeit';
 import { haptik } from '@/lib/haptik';
 import { Titel, Ueberzeile } from '@/ui/Schrift';
@@ -37,7 +38,7 @@ function Hinweise({ liste }: { liste: HinweisDaten[] }) {
           </View>
           <View style={{ flex: 1, gap: 1 }}>
             <Text numberOfLines={1} style={{ fontFamily: SCHRIFT.fett, fontSize: 16, letterSpacing: -0.3, color: f.ink }}>{h.t}</Text>
-            <Text numberOfLines={1} style={{ fontFamily: SCHRIFT.text, fontSize: 14, letterSpacing: -0.15, color: f.ink2 }}>{h.s}</Text>
+            <Text numberOfLines={2} style={{ fontFamily: SCHRIFT.text, fontSize: 14, letterSpacing: -0.15, color: f.ink2 }}>{h.s}</Text>
           </View>
           <Weiter farbe={f.ink3} />
           {i < liste.length - 1 && <View style={{ position: 'absolute', left: 60, right: 0, bottom: 0, height: 0.5, backgroundColor: f.line2 }} />}
@@ -90,8 +91,10 @@ function FuerDich({ s }: { s: Zustand }) {
       symbol: <Kalender farbe="#FFFFFF" />, weg: () => router.push('/camp') });
   }
 
-  /* Die große Karte: das angefangene Video, sonst die nächste Einheit
-     des Plans, sonst das nächste offene Video. */
+  /* Die große Karte beantwortet eine Frage: was heute dran ist. Es gibt
+     genau eine Antwort: das angefangene Video, sonst die nächste Einheit
+     des Plans, sonst der nächste Schritt auf dem eigenen Weg. Oben steht
+     nur „Heute“, der Grund darunter; rechts oben sitzt der Ring. */
   const z = zuletzt ? videoFuer(zuletzt, s) : undefined;
   const sek = z ? stelle[z.slug] : 0;
   const st = konto ? planStand(s) : null;
@@ -99,17 +102,18 @@ function FuerDich({ s }: { s: Zustand }) {
   const n = naechstesVideo(s) ?? katalog[0];
   let held: React.ReactNode = null;
   if (z && sek && !gesperrt(z, s)) {
-    held = <Held v={z} oben="Weitertrainieren" unten={`${fmtZeit(z.dauer_sek - sek)} übrig · ${ebene(z.ebene).nm}`}
+    held = <Held v={z} oben="Heute" unten={`Angefangen · ${fmtZeit(z.dauer_sek - sek)} übrig`}
       anteil={Math.max(3, Math.round((sek / z.dauer_sek) * 100))} ziel={wochenziel(s)} />;
   } else if (st && planVideo) {
-    held = <Held v={planVideo} oben="Dein Plan" unten={st.naechste!.einheit.aufgabe}
+    held = <Held v={planVideo} oben="Heute" unten={`Dein Plan · ${st.naechste!.einheit.aufgabe}`}
       ziel={{ anteil: st.dieseWoche / 3, text: `Woche ${st.woche + 1}: ${st.dieseWoche} von 3`, beschriftung: `Woche ${st.woche + 1} des Plans, ${st.dieseWoche} von 3 Einheiten` }} />;
   } else if (n) {
-    held = <Held v={n} oben={konto ? 'Als Nächstes' : 'Fang hier an'} unten={`${fmtZeit(n.dauer_sek)} · ${ebene(n.ebene).nm}`} ziel={wochenziel(s)} />;
+    held = <Held v={n} oben={konto ? 'Heute' : 'Fang hier an'} unten={`${konto ? 'Nächster Schritt · ' : ''}${fmtZeit(n.dauer_sek)} · ${ebene(n.ebene).nm}`} ziel={wochenziel(s)} />;
   }
 
   /* Ein einziger Werbeplatz. Er wechselt täglich zwischen dem Abo und dem
-     Camp; wer das Abo schon hat oder Kader ist, sieht das Camp. */
+     Camp; wer das Abo schon hat oder Kader ist, sieht das Camp. Kinder
+     bekommen keine Werbung für ein Abo, das Camp buchen die Eltern. */
   const camp = (
     <BreiteKarte key="camp" bild={<Image source={BILDER.goal} style={{ width: '100%', height: '100%' }} resizeMode="cover" />}
       oben="In den Herbstferien" titel={CAMP_DATEN.titel} text={`19. bis 23. Oktober · ${euro(CAMP_DATEN.preis_cent)}`}
@@ -124,7 +128,7 @@ function FuerDich({ s }: { s: Zustand }) {
       <Text style={{ fontFamily: SCHRIFT.fett, fontSize: 15, color: '#FF6A3D', marginTop: 2 }}>Mehr erfahren ›</Text>
     </Druck>
   );
-  const werbung = pro || konto?.rolle === 'km1' ? camp : new Date().getDate() % 2 ? camp : abo;
+  const werbung = pro || konto?.rolle === 'km1' || istKind(s) ? camp : new Date().getDate() % 2 ? camp : abo;
 
   return (
     <>

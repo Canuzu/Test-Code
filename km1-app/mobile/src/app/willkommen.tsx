@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RADIUS, SCHRIFT, ZAHL, useThema } from '@/lib/thema';
 import { ebene } from '@/daten/katalog';
-import { ERST_ZEITEN, ROLLEN, ebeneFuerJahrgang, erstJahrgaenge, erstSchritte, rollenName, type ErstSchritt } from '@/daten/einfuehrung';
+import { ERST_ZEITEN, ROLLEN, ROLLEN_HAUPT, ebeneFuerJahrgang, erstJahrgaenge, erstSchritte, rollenName, type ErstSchritt } from '@/daten/einfuehrung';
 import { useZustand, type Rolle } from '@/daten/zustand';
 import { ersterStartUebernehmen, type ErstAntworten } from '@/daten/aktionen';
 import { erinnerungAktualisieren } from '@/daten/erinnern';
@@ -15,7 +15,7 @@ import { TAGE, tagName, type Tag } from '@/lib/zeit';
 import { haptik } from '@/lib/haptik';
 import { Klein, Leise, Titel, Ueberzeile } from '@/ui/Schrift';
 import { HakenListe, Knopf, Raster, Wahl } from '@/ui/Bausteine';
-import { Haken, Zurueck } from '@/ui/Symbole';
+import { Haken, Mehr, Weiter as Pfeil, Zurueck } from '@/ui/Symbole';
 
 /* Die Tage in der Reihenfolge der Woche, nicht in der des Antippens. */
 const wochenOrdnung = (tage: Tag[]) => TAGE.map(([k]) => k).filter((k) => tage.includes(k));
@@ -26,8 +26,11 @@ export default function Willkommen() {
   const erinnerung = useZustand((z) => z.erinnerung);
   const vorlieben = useZustand((z) => z.vorlieben);
   const [schritt, setSchritt] = useState<ErstSchritt>('rolle');
+  const [andere, setAndere] = useState(false);
+  /* Der Jahrgang ist nie vorausgewählt. Wer einfach weitertippt, landete
+     sonst mit dem Jahrgang eines anderen auf der falschen Ebene. */
   const [a, setA] = useState<ErstAntworten>({
-    rolle: null, jahrgang: vorlieben.jahrgang ?? new Date().getFullYear() - 12,
+    rolle: null, jahrgang: vorlieben.jahrgang,
     tage: wochenOrdnung(erinnerung.tage), zeit: ERST_ZEITEN.includes(erinnerung.zeit) ? erinnerung.zeit : '17:00',
   });
   const folge = erstSchritte(a.rolle), i = folge.indexOf(schritt), eltern = a.rolle === 'eltern';
@@ -48,11 +51,14 @@ export default function Willkommen() {
 
   let inhalt: React.ReactNode;
   if (schritt === 'rolle') {
+    /* Spieler, Eltern und Trainer stehen oben, die übrigen vier Rollen
+       hinter „Etwas anderes“. */
+    const sichtbar = andere ? ROLLEN : ROLLEN.filter((x) => ROLLEN_HAUPT.includes(x.r));
     inhalt = (
       <>
         <View><Ueberzeile>Willkommen bei KM1</Ueberzeile><Titel>Wer bist du?</Titel></View>
         <View style={{ backgroundColor: f.surface, borderRadius: RADIUS.karte, overflow: 'hidden' }}>
-          {ROLLEN.map((x, n) => (
+          {sichtbar.map((x, n) => (
             <Pressable key={x.r} onPress={() => rolleWaehlen(x.r)} accessibilityRole="radio"
               accessibilityState={{ checked: a.rolle === x.r }} accessibilityLabel={`${x.nm}. ${x.satz}`}
               style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12 },
@@ -66,14 +72,29 @@ export default function Willkommen() {
               </View>
               <View style={{ width: 22, height: 22, borderRadius: 99, borderWidth: 2, borderColor: a.rolle === x.r ? f.accent : f.line2,
                 backgroundColor: a.rolle === x.r ? f.accent : 'transparent' }} />
-              {n < ROLLEN.length - 1 && <View style={{ position: 'absolute', left: 60, right: 0, bottom: 0, height: 0.5, backgroundColor: f.line2 }} />}
+              {(n < sichtbar.length - 1 || !andere) && <View style={{ position: 'absolute', left: 60, right: 0, bottom: 0, height: 0.5, backgroundColor: f.line2 }} />}
             </Pressable>
           ))}
+          {andere ? null : (
+            <Pressable onPress={() => { haptik('tick'); setAndere(true); }} accessibilityRole="button"
+              accessibilityLabel="Etwas anderes: Akademie, Verein, Profi oder Scout"
+              style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12 },
+                pressed && { backgroundColor: f.surface3 }]}>
+              <View style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: '#8E8E93', alignItems: 'center', justifyContent: 'center' }}>
+                <Mehr farbe="#FFFFFF" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: SCHRIFT.fett, fontSize: 16, color: f.ink }}>Etwas anderes</Text>
+                <Text style={{ fontFamily: SCHRIFT.text, fontSize: 14, lineHeight: 19, color: f.ink2 }}>Akademie, Verein, Profi oder Scout</Text>
+              </View>
+              <Pfeil farbe={f.ink3} />
+            </Pressable>
+          )}
         </View>
       </>
     );
   } else if (schritt === 'jahrgang') {
-    const lv = ebene(ebeneFuerJahrgang(a.jahrgang));
+    const lv = a.jahrgang ? ebene(ebeneFuerJahrgang(a.jahrgang)) : null;
     inhalt = (
       <>
         <View><Ueberzeile>{eltern ? 'Ihr Kind' : 'Du'}</Ueberzeile>
@@ -91,12 +112,14 @@ export default function Willkommen() {
             );
           })}
         </Raster>
-        <View style={{ backgroundColor: f.surface, borderRadius: RADIUS.karte, padding: 18, gap: 4, borderLeftWidth: 4, borderLeftColor: f.lv[lv.n - 1] }}>
-          <Text style={{ fontFamily: SCHRIFT.fett, fontSize: 13, color: f.ink2 }}>{lv.ag.toUpperCase()}</Text>
-          <Text style={{ fontFamily: SCHRIFT.display, fontSize: 26, color: f.lv[lv.n - 1] }}>{lv.nm.toUpperCase()}</Text>
-          <Leise style={{ fontSize: 15, lineHeight: 21 }}>{`${eltern ? 'Damit fängt Ihr Kind an.' : 'Damit fängst du an.'} ${lv.tx}`}</Leise>
-        </View>
-        <Knopf titel="Weiter" onPress={weiter} />
+        {lv ? (
+          <View style={{ backgroundColor: f.surface, borderRadius: RADIUS.karte, padding: 18, gap: 4, borderLeftWidth: 4, borderLeftColor: f.lv[lv.n - 1] }}>
+            <Text style={{ fontFamily: SCHRIFT.fett, fontSize: 13, color: f.ink2 }}>{lv.ag.toUpperCase()}</Text>
+            <Text style={{ fontFamily: SCHRIFT.display, fontSize: 26, color: f.lv[lv.n - 1] }}>{lv.nm.toUpperCase()}</Text>
+            <Leise style={{ fontSize: 15, lineHeight: 21 }}>{`${eltern ? 'Damit fängt Ihr Kind an.' : 'Damit fängst du an.'} ${lv.tx}`}</Leise>
+          </View>
+        ) : null}
+        <Knopf titel="Weiter" onPress={weiter} deaktiviert={!lv} />
       </>
     );
   } else if (schritt === 'zeit') {
@@ -129,13 +152,13 @@ export default function Willkommen() {
     );
   } else {
     const zeilen = [rollenName(a.rolle!)];
-    if (folge.includes('jahrgang')) zeilen.push(`Jahrgang ${a.jahrgang}, ${ebene(ebeneFuerJahrgang(a.jahrgang)).nm}`);
+    if (folge.includes('jahrgang') && a.jahrgang) zeilen.push(`Jahrgang ${a.jahrgang}, ${ebene(ebeneFuerJahrgang(a.jahrgang)).nm}`);
     if (folge.includes('zeit')) zeilen.push(a.tage.length ? `Erinnerung ${a.tage.map(tagName).join(' + ')}, ${a.zeit}` : 'Keine Erinnerung');
     const pruef = ROLLEN.find((x) => x.r === a.rolle)?.pruef;
     inhalt = (
       <>
         <View style={{ alignItems: 'center', gap: 10, paddingTop: 10 }}>
-          <View style={{ width: 64, height: 64, borderRadius: 99, backgroundColor: f.gruen, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 64, height: 64, borderRadius: 99, backgroundColor: f.accent, alignItems: 'center', justifyContent: 'center' }}>
             <Haken farbe="#FFFFFF" groesse={32} dicke={3} />
           </View>
           <Ueberzeile mitte>Fertig</Ueberzeile>

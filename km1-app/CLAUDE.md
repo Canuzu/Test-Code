@@ -65,6 +65,12 @@ und Daten braucht.
 - Die Beispielwelt `W` gehört allen Rollen gemeinsam. Was eine Rolle tut,
   sieht die nächste, nachdem man die Sicht über die Ebene oben rechts
   gewechselt hat.
+- Die Vorführung (Wahl der Sicht, gestrichelte Knöpfe `.demo`) sieht nur,
+  wer `?vorfuehrung` an die Adresse hängt; der Schalter liegt in `VORF`. Die
+  Vorschau auf claude.ai setzt `KM1_VORFUEHRUNG` und zeigt sie immer. Für
+  echte Nutzer öffnet die Ebene oben rechts den Weg durch die Pyramide
+  (`sheetWeg`), bei Rollen ohne Ebene das Profil. Nichts, was nur zum
+  Zeigen da ist, darf ohne Vorführung zu sehen sein.
 - Drei Regeln gelten überall: geprüft wird, wer mit Kindern arbeitet oder sie
   sichtet; kein Video eines Kindes steht im offenen Netz, unter 16 geben die
   Eltern jedes Video frei, und dann sehen es nur Team, Familie und von KM1
@@ -76,21 +82,32 @@ und Daten braucht.
   allein in `einladungGueltig(code, rolle)`, die Codes in `W.einladungen`.
 - Übersicht vor Vollständigkeit, wie bei Duolingo, Strava oder Instagram:
   - Die Startseite zeigt unter „Für dich“ höchstens fünf Blöcke: Hinweise in
-    einer Karte, die große Karte mit dem Wochenziel, neue Videos, die
+    einer Karte, die große Karte „Heute“ mit dem Wochenziel, neue Videos, die
     Challenge und einen einzigen Werbeplatz. Alles von anderen (Neuigkeiten,
     Profis und Vereine, Beiträge) steht unter „Folge ich“.
+  - „Heute“ gibt genau eine Antwort (`startKarte`): die Hausaufgabe vom
+    Trainer, dann das angefangene Video, dann die nächste Einheit im Plan,
+    sonst der nächste Schritt auf dem Weg. Was dort steht, steht nicht noch
+    einmal in den Hinweisen.
+  - Kinder bekommen auf der Startseite keine Werbung für ein Abo
+    (`werbeplatz`).
   - Das Profil zeigt das Ich und die eigenen Sachen. Alles, was man einstellt
     statt benutzt, liegt hinter dem Zahnrad oben rechts
     (`sheetEinstellungen`).
   - Lange Seiten bekommen einen Umschalter oben (`teamWahl`), statt alles
     untereinander zu stapeln.
+  - Was jemand entscheiden soll, steht auf der Seite als kurze Zeile. Die
+    Karte mit Erklärung und den beiden Knöpfen kommt im Blatt dahinter
+    (`sheetFreigabe`, `sheetEntscheid`).
   - Ein Erklärtext steht nur dort, wo jemand etwas entscheidet, und gibt dort
     ein Versprechen. Alles andere kommt hinter ein kleines i neben der
     Überschrift (`infoKnopf`).
 - Zum ersten Start, zu Plänen, Selbstaufnahme, Camp und Fehlerzuständen:
   - Der erste Start fragt Rolle, Jahrgang und Trainingszeit
     (`erstSchritte(r)`), nur für Gäste und nur einmal (`km1-erster-start` im
-    Speicher des Geräts).
+    Speicher des Geräts). Oben stehen Spieler, Eltern und Trainer, die
+    übrigen Rollen hinter „Etwas anderes“ (`rollenKnoepfe`), beim Anlegen
+    des Kontos genauso. Ein Jahrgang ist nie vorausgewählt.
   - Die Trainingspläne stehen in `PLAENE`, die erste Woche ist mit Konto frei
     (`planWocheFrei(w)`). `CAMP` und `PLAENE` liest
     `supabase/werkzeug/startdaten.mjs` für Datenbank und Handy-App; nach einer
@@ -103,8 +120,9 @@ und Daten braucht.
     fängt der Player selbst ab (`playerFehler`, `netzZeigen`).
 - Die Handy-App in `mobile/` zieht jede Änderung hier nach, im selben Stil.
   Was sie noch nicht hat, steht in `mobile/README.md`.
-- Jede Rolle hat ihr eigenes Menü, festgelegt in `tabsFuer()`. Wer ein Video
-  sieht, steht allein in `darfSehen(u)`.
+- Jede Rolle hat ihr eigenes Menü, festgelegt in `tabsFuer()`: Spieler
+  Start, Üben, Team, Profil; Gäste ohne Team; Eltern Start, Familie, Üben,
+  Profil. Wer ein Video sieht, steht allein in `darfSehen(u)`.
 - Wer wem schreiben darf, steht allein in `schreibRecht(von, an)`. Neue
   Regeln kommen dorthin und in das Blatt „Wer wem schreiben darf"
   (`sheetRegeln`), sonst nirgends.

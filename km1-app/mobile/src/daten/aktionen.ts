@@ -407,19 +407,19 @@ export function proVorschau(preis: 'monat' | 'jahr') {
 // ---------------------------------------------------------------------
 // Der erste Start
 // ---------------------------------------------------------------------
-export type ErstAntworten = { rolle: Rolle | null; jahrgang: number; tage: Tag[]; zeit: string };
+export type ErstAntworten = { rolle: Rolle | null; jahrgang: number | null; tage: Tag[]; zeit: string };
 
 /* Was die Antworten bewirken: der Jahrgang wählt die Ebene, aus der Zeit
    wird die Erinnerung, und die Rolle ist beim Anlegen des Kontos schon
    gewählt. Wer überspringt, bekommt nur die Frage nicht noch einmal. */
 export function ersterStartUebernehmen(a: ErstAntworten | null) {
   if (!a) { setze({ ersterStart: true }); return; }
-  const folge = erstSchritte(a.rolle);
+  const folge = erstSchritte(a.rolle), jg = folge.includes('jahrgang') ? a.jahrgang : null;
   setze((z) => ({
     ersterStart: true,
-    vorlieben: { rolle: a.rolle, jahrgang: folge.includes('jahrgang') ? a.jahrgang : z.vorlieben.jahrgang },
+    vorlieben: { rolle: a.rolle, jahrgang: jg ?? z.vorlieben.jahrgang },
     erinnerung: folge.includes('zeit') ? { an: a.tage.length > 0, tage: a.tage, zeit: a.zeit } : z.erinnerung,
-    filter: folge.includes('jahrgang') ? { ...z.filter, ebene: ebeneFuerJahrgang(a.jahrgang) } : z.filter,
+    filter: jg ? { ...z.filter, ebene: ebeneFuerJahrgang(jg) } : z.filter,
   }));
 }
 

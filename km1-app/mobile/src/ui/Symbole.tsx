@@ -25,6 +25,12 @@ export const Zurueck = ({ farbe, groesse = 17 }: P) => (
 export const Weiter = ({ farbe, groesse = 14 }: P) => (
   <Svg width={groesse} height={groesse} viewBox="0 0 24 24"><Path d="M10 6l6 6-6 6" {...linie(farbe, 2.6)} /></Svg>
 );
+/* Drei Punkte für „Etwas anderes“. */
+export const Mehr = ({ farbe, groesse = 20 }: P) => (
+  <Svg width={groesse} height={groesse} viewBox="0 0 24 24">
+    <Circle cx="5.5" cy="12" r="1.9" fill={farbe} /><Circle cx="12" cy="12" r="1.9" fill={farbe} /><Circle cx="18.5" cy="12" r="1.9" fill={farbe} />
+  </Svg>
+);
 export const Suche = ({ farbe, groesse = 18 }: P) => (
   <Svg width={groesse} height={groesse} viewBox="0 0 24 24">
     <Circle cx="11" cy="11" r="6.5" {...linie(farbe)} /><Path d="M16 16l4.5 4.5" {...linie(farbe)} />

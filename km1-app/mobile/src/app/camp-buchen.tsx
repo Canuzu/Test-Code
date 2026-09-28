@@ -106,7 +106,7 @@ export default function CampBuchen() {
       {c.kinder.map((k, i) => (
         <View key={i} style={{ gap: 14 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Abschnitt style={{ fontSize: 19 }}>{i === 0 ? 'Kind' : 'Geschwisterkind'}</Abschnitt>
+            <Abschnitt style={{ fontSize: 19 }}>{i === 0 ? 'Ihr Kind' : 'Geschwisterkind'}</Abschnitt>
             {i > 0 && (
               <Pressable onPress={() => { haptik('leicht'); setC((x) => ({ ...x, kinder: x.kinder.filter((_, j) => j !== i) })); }}
                 accessibilityRole="button" hitSlop={8}>
@@ -131,7 +131,8 @@ export default function CampBuchen() {
       )}
 
       <Feld titel="Notfallnummer" value={c.notfall} onChangeText={(t) => setC((x) => ({ ...x, notfall: t }))}
-        placeholder="Erreichbar von 9 bis 16 Uhr" keyboardType="phone-pad" autoComplete="tel" maxLength={30} />
+        placeholder="z. B. 0170 1234567" hilfe="Unter dieser Nummer erreicht Sie das Camp-Team während des Camps, von 9 bis 16 Uhr."
+        keyboardType="phone-pad" autoComplete="tel" maxLength={30} />
 
       <Zeilen>
         <SchalterZeile titel="Fotos vom Camp dürfen in der App erscheinen" an={c.fotos}

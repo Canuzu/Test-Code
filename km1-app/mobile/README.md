@@ -9,11 +9,15 @@ als Mitteilung auf dem Handy.
 ## Was sie kann
 
 - **Start** mit „Für dich“ (höchstens fünf Blöcke: Hinweise, die große Karte
-  mit Wochenziel oder Plan, neue Videos, die Challenge, ein Werbeplatz) und
-  „Folge ich“ (Neuigkeiten von KM1).
-- **Erster Start** mit drei Fragen: Rolle, Jahrgang, Trainingszeit. Der
-  Jahrgang wählt die Ebene, die Zeit wird zur Erinnerung.
-- **Technik** mit den Trainingsplänen oben, Suche und Filtern.
+  „Heute“ mit einer einzigen Aufgabe, neue Videos, die Challenge, ein
+  Werbeplatz ohne Abo-Werbung für Kinder) und „Folge ich“ (Neuigkeiten von
+  KM1).
+- **Erster Start** mit drei Fragen: Rolle, Jahrgang, Trainingszeit. Oben
+  stehen Spieler, Eltern und Trainer, der Rest hinter „Etwas anderes“. Der
+  Jahrgang ist nie vorausgewählt; er wählt die Ebene, die Zeit wird zur
+  Erinnerung.
+- **Üben** mit den Trainingsplänen oben, Suche und Filtern.
+- **Dein Weg** durch die Pyramide, über die Ebene oben rechts und im Profil.
 - **Trainingspläne**: sechs Wochen, drei Einheiten, erste Woche mit Konto frei.
 - **Video** mit Kapiteln, Zeitlupe, Abhaken, Merkliste und „Mit mir
   vergleichen“: filmen oder ein Video wählen, dann untereinander mit Kader,
@@ -99,7 +103,8 @@ aus, dazu die Regeln der Datenbank.
 | Pfad | Inhalt |
 | --- | --- |
 | `src/app/` | Die Bildschirme, ein Dateiname je Adresse (Expo Router) |
-| `src/app/(tabs)/` | Start, Technik, Pyramide, Profil |
+| `src/app/(tabs)/` | Start, Üben (`technik.tsx`), Profil |
+| `src/app/weg.tsx` | Der Weg durch die Pyramide |
 | `src/daten/aktionen.ts` | Alles, was die App tut: Anmelden, Abhaken, Löschen |
 | `src/daten/zustand.ts` | Der Zustand an einer Stelle |
 | `src/daten/katalog.ts` | Ebenen, Kategorien, Challenges, Preise, Texte |

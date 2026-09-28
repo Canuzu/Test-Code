@@ -1,4 +1,5 @@
-/* Die Videothek: suchen, nach Ebene und Kategorie filtern. */
+/* Üben: die Videothek mit den Trainingsplänen oben, suchen, nach Ebene
+   und Kategorie filtern. */
 import { useMemo } from 'react';
 import { ScrollView, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
@@ -37,8 +38,8 @@ export default function Technik() {
   return (
     <Seite>
       <View>
-        <Ueberzeile>Videothek</Ueberzeile>
-        <Titel>Technik</Titel>
+        <Ueberzeile>Videos und Pläne</Ueberzeile>
+        <Titel>Üben</Titel>
       </View>
 
       <View style={{ flexDirection: 'row', gap: 10 }}>

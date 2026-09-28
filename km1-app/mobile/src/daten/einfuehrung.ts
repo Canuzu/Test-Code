@@ -2,7 +2,7 @@
    ist. Wer man ist, welcher Jahrgang, wann trainiert wird. Alles lässt
    sich überspringen, und nichts davon verlässt das Gerät, bis ein Konto
    angelegt wird. Dieselben Regeln wie in der App im Browser. */
-import type { Rolle } from './zustand';
+import type { Rolle, Zustand } from './zustand';
 
 export type ErstSchritt = 'rolle' | 'jahrgang' | 'zeit' | 'fertig';
 
@@ -41,3 +41,23 @@ export const ROLLEN: { r: Rolle; nm: string; satz: string; farbe: string; pruef?
   { r: 'scout', nm: 'Scout', satz: 'Ich sichte Talente für einen Verein.', farbe: '#5856D6', pruef: true },
 ];
 export const rollenName = (r: Rolle) => r === 'km1' ? 'KM1' : ROLLEN.find((x) => x.r === r)?.nm ?? r;
+/* Fast alle, die die App öffnen, sind Kinder, Eltern oder Trainer. Die
+   übrigen vier Rollen stehen hinter „Etwas anderes“. */
+export const ROLLEN_HAUPT: Rolle[] = ['spieler', 'eltern', 'trainer'];
+
+/* Die eigene Ebene. Ohne Konto zählt der Jahrgang aus dem ersten Start,
+   ohne den die erste Ebene. */
+export function meineEbene(s: Pick<Zustand, 'konto' | 'vorlieben'>) {
+  if (s.konto) return s.konto.ebene;
+  return s.vorlieben.jahrgang ? ebeneFuerJahrgang(s.vorlieben.jahrgang) : 1;
+}
+
+/* Ob jemand als Kind gilt: wer selbst trainiert und jünger als 16 ist.
+   Ohne Angabe gilt man als Kind. Kinder bekommen auf der Startseite
+   keine Werbung für ein Abo. */
+export function istKind(s: Pick<Zustand, 'konto' | 'vorlieben'>, jahr = new Date().getFullYear()) {
+  const rolle = s.konto ? s.konto.rolle : s.vorlieben.rolle;
+  if (rolle && rolle !== 'spieler') return false;
+  const jg = s.konto ? s.konto.geburtsjahr : s.vorlieben.jahrgang;
+  return jg == null || jahr - jg < 16;
+}

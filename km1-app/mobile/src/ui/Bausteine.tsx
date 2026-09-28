@@ -307,7 +307,7 @@ export function Held({ v, oben, unten, anteil, ziel }: { v: Video; oben: string;
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, paddingLeft: 20, paddingRight: 92, paddingTop: 22, paddingBottom: 24, gap: 9 }}>
           <Text style={{ fontFamily: SCHRIFT.monoFett, fontSize: 11, letterSpacing: 2, color: '#FFFFFF', opacity: 0.92 }}>{oben.toUpperCase()}</Text>
           <Text numberOfLines={3} style={{ fontFamily: SCHRIFT.display, fontSize: groesse, lineHeight: groesse * 1.06, color: '#FFFFFF' }}>{v.titel.toUpperCase()}</Text>
-          <Text style={{ fontFamily: SCHRIFT.fett, fontSize: 13, color: 'rgba(244,247,243,0.86)' }}>{unten}</Text>
+          <Text numberOfLines={1} style={{ fontFamily: SCHRIFT.fett, fontSize: 13, color: 'rgba(244,247,243,0.86)' }}>{unten}</Text>
           {ziel ? (
             <View accessible accessibilityLabel={ziel.beschriftung} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
               <Ring anteil={ziel.anteil} farbe="#34C759" groesse={22} />

@@ -1,7 +1,7 @@
 /* Der erste Start: welche Fragen wer bekommt und was die Antworten
    bewirken. */
 import { lies, setze } from '@/daten/zustand';
-import { ebeneFuerJahrgang, erstSchritte } from '@/daten/einfuehrung';
+import { ROLLEN, ROLLEN_HAUPT, ebeneFuerJahrgang, erstSchritte, istKind, meineEbene } from '@/daten/einfuehrung';
 import { ersterStartUebernehmen, naechstesVideo } from '@/daten/aktionen';
 
 beforeEach(() => setze({
@@ -46,4 +46,27 @@ test('Überspringen merkt sich nur, dass gefragt wurde', () => {
   ersterStartUebernehmen(null);
   expect(lies().ersterStart).toBe(true);
   expect(lies().vorlieben.rolle).toBeNull();
+});
+
+test('Ohne gewählten Jahrgang bleibt die Ebene, wie sie war', () => {
+  ersterStartUebernehmen({ rolle: 'spieler', jahrgang: null, tage: ['mo'], zeit: '17:00' });
+  expect(lies().vorlieben).toEqual({ rolle: 'spieler', jahrgang: null });
+  expect(lies().filter.ebene).toBe(0);
+  expect(meineEbene(lies())).toBe(1);
+});
+
+test('Oben stehen drei Rollen, die übrigen hinter „Etwas anderes“', () => {
+  expect(ROLLEN_HAUPT).toEqual(['spieler', 'eltern', 'trainer']);
+  expect(ROLLEN.filter((x) => !ROLLEN_HAUPT.includes(x.r)).map((x) => x.r)).toEqual(['akademie', 'verein', 'profi', 'scout']);
+});
+
+test('Ohne Konto zählt der Jahrgang aus dem ersten Start für Ebene und Alter', () => {
+  const jahr = 2026;
+  expect(istKind({ konto: null, vorlieben: { rolle: null, jahrgang: null } }, jahr)).toBe(true);
+  expect(istKind({ konto: null, vorlieben: { rolle: 'spieler', jahrgang: 2014 } }, jahr)).toBe(true);
+  expect(istKind({ konto: null, vorlieben: { rolle: 'spieler', jahrgang: 2009 } }, jahr)).toBe(false);
+  // Eltern geben den Jahrgang ihres Kindes an, sind aber selbst kein Kind.
+  expect(istKind({ konto: null, vorlieben: { rolle: 'eltern', jahrgang: 2014 } }, jahr)).toBe(false);
+  setze({ vorlieben: { rolle: 'spieler', jahrgang: new Date().getFullYear() - 14 } });
+  expect(meineEbene(lies())).toBe(2);
 });

@@ -8,6 +8,7 @@ import { CAMP_DATEN } from '@/daten/camp';
 import { planStand } from '@/daten/plaene';
 import { useZustand } from '@/daten/zustand';
 import { offenFuerMich, serieWochen, uebungen } from '@/daten/aktionen';
+import { meineEbene } from '@/daten/einfuehrung';
 import { monatText } from '@/lib/zeit';
 import { Leise, Notiz, Titel, Ueberzeile } from '@/ui/Schrift';
 import { BILDER, Initialen, Knopf, Panel, Seite, Striche, Zeile, Zeilen } from '@/ui/Bausteine';
@@ -42,6 +43,9 @@ export default function Profil() {
           <Knopf titel="Konto anlegen" onPress={() => router.push('/anmelden?modus=neu')} />
           <Knopf titel="Anmelden" art="geist" onPress={() => router.push('/anmelden?modus=alt')} />
         </Panel>
+        <Zeilen>
+          <Zeile titel="Die KM1-Pyramide" wert={ebene(meineEbene(s)).nm} onPress={() => router.push('/weg')} letzte />
+        </Zeilen>
         <PlanReihe />
       </Seite>
     );
@@ -100,6 +104,7 @@ export default function Profil() {
       )}
 
       <Zeilen>
+        {kader ? null : <Zeile titel="Mein Weg" wert={l.nm} onPress={() => router.push('/weg')} />}
         <Zeile titel="Merkliste" wert={String(Object.keys(merk).length)} onPress={() => router.push('/merkliste')} />
         {buchung ? <Zeile titel={CAMP_DATEN.titel} wert={buchung.nr} onPress={() => router.push('/camp')} /> : null}
         <Zeile titel="Challenge" wert="Schlag den Coach" onPress={() => router.push('/challenge')} letzte />
