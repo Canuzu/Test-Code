@@ -1,12 +1,39 @@
 # KM1 Training — die echte App
 
-Die App für iPhone und Android, gebaut mit Expo (SDK 57) aus dem ersten
-Entwurf des Prototyps, der heute in `../original/index.html` liegt. Alles
-dahinter ist echt: Videos mit dem Player des Systems, Konten auf dem Server,
-Erinnerungen als Mitteilung auf dem Handy.
+Die App für iPhone und Android, gebaut mit Expo (SDK 57). Gestaltung und
+Texte kommen aus der App im Browser (`../app/index.html`): Farben, Inter für
+den Text, Anton für die großen Titel, Knöpfe als Pillen. Alles dahinter ist
+echt: Videos mit dem Player des Systems, Konten auf dem Server, Erinnerungen
+als Mitteilung auf dem Handy.
 
-Die Web-App in `../app/` ist seit September 2026 die frühere Mischung 2, mit
-Rollen, Teams, Videos und Laufbahn. Diese Fassung zieht als Nächstes nach.
+## Was sie kann
+
+- **Start** mit „Für dich“ (höchstens fünf Blöcke: Hinweise, die große Karte
+  mit Wochenziel oder Plan, neue Videos, die Challenge, ein Werbeplatz) und
+  „Folge ich“ (Neuigkeiten von KM1).
+- **Erster Start** mit drei Fragen: Rolle, Jahrgang, Trainingszeit. Der
+  Jahrgang wählt die Ebene, die Zeit wird zur Erinnerung.
+- **Technik** mit den Trainingsplänen oben, Suche und Filtern.
+- **Trainingspläne**: sechs Wochen, drei Einheiten, erste Woche mit Konto frei.
+- **Video** mit Kapiteln, Zeitlupe, Abhaken, Merkliste und „Mit mir
+  vergleichen“: filmen oder ein Video wählen, dann untereinander mit Kader,
+  Zeitlupe in drei Stufen, Bild für Bild. Das eigene Video wird nicht
+  hochgeladen.
+- **Camp buchen** mit Geschwisterrabatt, Notfallnummer und Fotofreigabe.
+  Ein Konto unter 16 läuft auf die E-Mail der Eltern; darüber bucht ein
+  Elternteil mit ausdrücklicher Bestätigung. Wer selbst ein Kind ist und kein
+  solches Konto hat, fragt seine Eltern über das Teilen-Menü.
+- **Profil** mit dem Ich, den Zahlen, dem laufenden Plan und den eigenen
+  Sachen; alles zum Einstellen hinter dem Zahnrad.
+- **Fehlerzustände**: Leiste ohne Netz, ein Video lädt von allein nach, wenn
+  das Netz zurück ist, „Erneut versuchen“, wenn es nicht lädt, und Anhalten
+  mit gemerkter Stelle bei Sperrbildschirm und Anruf.
+
+Noch nicht hier, nur in der App im Browser: die Bereiche für Trainer,
+Akademien, Vereine, Profis und Scouts mit Teams, Uploads, Feedback,
+Nachrichten, Laufbahn und Scouting. Der Server dafür steht
+(`../supabase/migrations/20260927120000_gemeinschaft.sql`), die Bildschirme
+kommen als Nächstes.
 
 ## Zwei Modi
 
@@ -17,6 +44,9 @@ Rollen, Teams, Videos und Laufbahn. Diese Fassung zieht als Nächstes nach.
 | Fortschritt, Merkliste | auf dem Gerät | in der Datenbank |
 | Videos | Testvideo | aus dem Speicher, sonst Testvideo |
 | Pro | zum Ansehen freischaltbar, ohne Zahlung | aus der Tabelle `abos` |
+| Trainingsplan | auf dem Gerät | `plan_laufend`, `plan_fortschritt` |
+| Campbuchung | auf dem Gerät, mit Buchungsnummer | `camp_buchen()`, zählt die Plätze |
+| Neuigkeiten | was in der App neu ist | Tabelle `neuigkeiten` |
 
 Der Server ist verbunden, sobald diese beiden Umgebungsvariablen gesetzt
 sind. Beide sind öffentlich; was sie dürfen, regelt die Datenbank.
@@ -61,6 +91,8 @@ aus, dazu die Regeln der Datenbank.
   in Expo Go geht es nicht.
 - **Der Upload für Trainer.** Bis dahin im Supabase-Dashboard, siehe
   `../supabase/README.md`.
+- **Ein Zahlungsanbieter für die Camps.** Bis dahin steht jede Buchung auf
+  „reserviert".
 
 ## Wo was liegt
 
@@ -72,7 +104,11 @@ aus, dazu die Regeln der Datenbank.
 | `src/daten/zustand.ts` | Der Zustand an einer Stelle |
 | `src/daten/katalog.ts` | Ebenen, Kategorien, Challenges, Preise, Texte |
 | `src/daten/katalog.json` | Die Videos ohne Server, erzeugt aus dem Prototyp |
-| `src/lib/thema.ts` | Farben, Schriften, Höhen aus dem Prototyp |
+| `src/daten/plaene.ts`, `plaene.json` | Die Trainingspläne und ihr Stand, die Pläne erzeugt aus der App im Browser |
+| `src/daten/camp.ts`, `camp.json` | Preis, Plätze und Prüfung der Campbuchung, die Zahlen erzeugt aus der App im Browser |
+| `src/daten/einfuehrung.ts` | Die drei Fragen beim ersten Start |
+| `src/daten/gemeinschaft.ts` | Neuigkeiten für „Folge ich“ |
+| `src/lib/thema.ts` | Farben, Schriften, Höhen aus der App im Browser |
 | `src/lib/erinnerung.ts` | Die Trainingserinnerung als Mitteilung |
 | `src/ui/` | Bausteine: Karten, Knöpfe, Pyramide, Player |
-| `src/__tests__/` | Tests für Erinnerung, Zeit und Fortschritt |
+| `src/__tests__/` | Tests für Erinnerung, Zeit, Fortschritt, Pläne, Camp und den ersten Start |

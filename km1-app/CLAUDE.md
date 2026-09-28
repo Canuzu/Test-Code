@@ -87,6 +87,22 @@ und Daten braucht.
   - Ein Erklärtext steht nur dort, wo jemand etwas entscheidet, und gibt dort
     ein Versprechen. Alles andere kommt hinter ein kleines i neben der
     Überschrift (`infoKnopf`).
+- Zum ersten Start, zu Plänen, Selbstaufnahme, Camp und Fehlerzuständen:
+  - Der erste Start fragt Rolle, Jahrgang und Trainingszeit
+    (`erstSchritte(r)`), nur für Gäste und nur einmal (`km1-erster-start` im
+    Speicher des Geräts).
+  - Die Trainingspläne stehen in `PLAENE`, die erste Woche ist mit Konto frei
+    (`planWocheFrei(w)`). `CAMP` und `PLAENE` liest
+    `supabase/werkzeug/startdaten.mjs` für Datenbank und Handy-App; nach einer
+    Änderung dort das Werkzeug laufen lassen.
+  - Die Selbstaufnahme verlässt das Gerät nie. Kein Upload, auch nicht später
+    „nur zum Speichern“: Dafür gibt es die Videos der Spieler mit Freigabe.
+  - Ein Camp bucht nur ein Erwachsener, bezahlt wird bei KM1, nicht über den
+    App Store.
+  - Kein Netz, ein Video, das nicht lädt, und das Anhalten beim Sperren
+    fängt der Player selbst ab (`playerFehler`, `netzZeigen`).
+- Die Handy-App in `mobile/` zieht jede Änderung hier nach, im selben Stil.
+  Was sie noch nicht hat, steht in `mobile/README.md`.
 - Jede Rolle hat ihr eigenes Menü, festgelegt in `tabsFuer()`. Wer ein Video
   sieht, steht allein in `darfSehen(u)`.
 - Wer wem schreiben darf, steht allein in `schreibRecht(von, an)`. Neue
@@ -109,8 +125,7 @@ keine hat einen Service Worker: So kommen sie sich nicht mit dem Speicher der
 App in die Quere, und `VERSION` in `app/sw.js` bleibt unberührt.
 
 - `original/` ist der erste Entwurf, bis September 2026 die App: Anton, Chivo
-  und JetBrains Mono wie auf der Website. Nach ihm ist noch die echte App in
-  `mobile/` gebaut.
+  und JetBrains Mono wie auf der Website.
 - `apple/` ist dieselbe App im Stil von Apple: Systemschrift, große
   Überschriften, blaue Knöpfe, Tableiste aus Glas.
 - `mischung/` nimmt achtzig Teile aus `apple/` und zwanzig aus dem ersten

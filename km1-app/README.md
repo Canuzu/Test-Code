@@ -17,7 +17,7 @@ Haken von KM1, und Videos von Kindern sehen nur Team, Familie und geprüfte Kont
 | `mischung/` | Die Mischung: der Aufbau von Apple mit dem Charakter von KM1 |
 | `mischung2/` | Nur noch eine Weiterleitung: die Mischung 2 ist seit September 2026 die App |
 | `artefakt.py` | Macht aus `app/` (oder mit `original`, `apple`, `mischung` aus den Studien) die Fassung für die Vorschau auf claude.ai |
-| `mobile/` | Die echte App für iPhone und Android (Expo), noch nach dem ersten Entwurf |
+| `mobile/` | Die echte App für iPhone und Android (Expo), im Stil der App; die Bereiche für Teams und Scouting folgen |
 | `supabase/` | Datenbank, Regeln, Startdaten und ihr Test |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, App Store |
 | `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
@@ -93,6 +93,11 @@ Alle lassen sich antippen, die Namen in der Vorführung sind erfunden:
 | Profis und Vereine | Eigene Rollen mit Prüfung und einer öffentlichen Seite. Der Profi Niklas Hartwig und der FC Rheinstadt sind erfunden. |
 | Folgen | Seiten von Profis, Vereinen, Akademien, Trainern und KM1. Kindern unter 16 folgt nur das eigene Team. |
 | Nachrichten | Mit Regeln: Kinder unter 16 schreiben nur mit Trainer, Mitspielern und Eltern, die Eltern lesen mit. Eltern derselben Mannschaft schreiben sich direkt. Profis und Vereine bekommen Anfragen von geprüften Konten, Fans folgen ihnen und schreiben nicht. |
+| Erster Start | Drei Fragen: wer man ist, welcher Jahrgang, wann trainiert wird. Der Jahrgang wählt die Ebene, die Zeit wird zur Erinnerung. Alles lässt sich überspringen und bleibt auf dem Gerät. |
+| Trainingspläne | Sechs Wochen, drei Einheiten pro Woche, zum Abhaken. Die erste Woche ist mit Konto frei, die übrigen mit Pro. Die nächste Einheit steht oben auf der Startseite. |
+| Selbstaufnahme | Unter jedem Video „Mit mir vergleichen“: filmen und sich direkt unter Kader sehen, in Zeitlupe und Bild für Bild. Das eigene Video bleibt auf dem Handy. |
+| Camp buchen | Kinder, Geschwisterrabatt, Notfallnummer, Fotos nur mit Zustimmung, verbindlich mit Buchungsnummer. Bezahlt wird direkt bei KM1, nicht über den App Store. Kinder fragen ihre Eltern. |
+| Fehlerzustände | Ohne Netz eine ruhige Leiste unten, ein Video, das nicht lädt, bekommt „Erneut versuchen“, und beim Sperren oder bei einem Anruf hält es an derselben Stelle an. |
 
 Die Sicht für die Vorführung wechselt man über die Ebene oben rechts. Was eine
 Rolle tut, sehen die anderen: Luis lädt hoch, Sandra gibt frei, Tim zählt nach
@@ -105,10 +110,15 @@ Zustand ist über die App selbst erreichbar, genau wie später im Betrieb:
 
 | Zustand | Weg dorthin |
 | --- | --- |
-| Gast | So startet die App |
+| Erster Start | So startet die App beim allerersten Öffnen. Noch einmal: Profil → Zahnrad → *Einführung ansehen* |
+| Gast | Nach den drei Fragen oder mit *Überspringen* |
 | Mit Konto | Start → *Konto anlegen*, oder ein Video mit Konto-Abzeichen antippen |
 | KM1 PRO | Eine Profi-Einheit antippen → *Mit KM1 Pro ansehen* → *7 Tage gratis testen* |
 | Dunkle Fassung | Profil → Zahnrad oben rechts → *Darstellung* |
+| Trainingsplan | Technik → *Trainingspläne* → einen Plan antippen → *Plan starten* |
+| Selbstaufnahme | Ein Video öffnen → *Mit mir vergleichen* → *Jetzt filmen* oder *Video auswählen* |
+| Camp buchen | Start → Karte *Herbstcamp Köln* → *Platz buchen*. Der Werbeplatz wechselt täglich mit dem Abo; steht dort Pro, führt Folge ich → *Neu bei KM1* → Herbstcamp → *Zum Camp* dorthin. Als Spieler steht dort *Meine Eltern fragen*. |
+| Kein Netz | Den Flugmodus einschalten, während die App offen ist |
 | Mit Einladung | *Konto anlegen* → Trainer, Scout oder Profi → *Mit Einladung* → *Vorführung: Code einsetzen*. Neue Codes legen Akademie und Verein unter Profil → *Leute einladen* an. |
 | Eine andere Rolle | Oben rechts auf die Ebene tippen und eine Sicht wählen, oder beim Anlegen des Kontos die Rolle wählen |
 | KM1 selbst | Beim Anmelden eine E-Mail mit „kader" verwenden, etwa `kader@km1-training.de`. Die Rolle hängt am Konto, nicht an einem Schalter. |
@@ -134,5 +144,7 @@ nicht.
 
 ## Stand
 
-Prototyp steht, die echte App ist noch nicht begonnen. Nächster Schritt und
-offene Entscheidungen stehen am Ende von `KONZEPT.md`.
+Die App im Browser ist vollständig bedienbar, die echte App in `mobile/` hat
+denselben Stand bei allem, was Kinder und Eltern brauchen, und der Server in
+`supabase/` setzt alle Regeln durch, ist aber noch nicht eingespielt. Was bis
+zu einem fertigen Produkt fehlt, steht in `WEG_ZUR_ZEHN.md`.

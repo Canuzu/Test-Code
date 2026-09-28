@@ -68,7 +68,10 @@ Dazu:
   hat, bleibt unbekannt.
 - **Pläne:** die erste Woche mit Konto, der Rest mit Pro.
 - **Camps** bucht nur ein Erwachsener, die Plätze zählt `camp_buchen()`
-  unter einer Sperre. „Bezahlt" setzt später nur der Webhook des
+  unter einer Sperre. Über das Konto eines Kindes bucht ein Elternteil nur,
+  wenn das Konto mit Einwilligung auf die Eltern läuft und die Buchung
+  ausdrücklich bestätigt, erziehungsberechtigt zu sein
+  (`p_erziehungsberechtigt`). „Bezahlt" setzt später nur der Webhook des
   Zahlungsanbieters.
 
 ## Einrichten, einmal
