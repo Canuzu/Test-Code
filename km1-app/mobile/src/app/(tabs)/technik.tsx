@@ -9,6 +9,7 @@ import { ohneTrennung } from '@/lib/zeit';
 import { Titel, Ueberzeile } from '@/ui/Schrift';
 import { Chip, Druck, Knopf, Leer, Seite, VideoKarte } from '@/ui/Bausteine';
 import { Runter, Suche } from '@/ui/Symbole';
+import { PlanReihe } from '@/ui/Plan';
 
 export default function Technik() {
   const { f } = useThema();
@@ -58,6 +59,8 @@ export default function Technik() {
           <Runter farbe={f.ink3} />
         </Druck>
       </View>
+
+      {filter.suche ? null : <PlanReihe />}
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -18 }}
         contentContainerStyle={{ paddingHorizontal: 18, paddingVertical: 4, gap: 8 }}>

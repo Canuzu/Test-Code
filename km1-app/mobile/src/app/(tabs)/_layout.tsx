@@ -30,13 +30,15 @@ function Kopfleiste() {
 
 export default function TabLayout() {
   const { f } = useThema();
+  // Etwas höher als die Vorgabe, sonst schneidet die Leiste die Namen unten ab.
+  const unten = useSafeAreaInsets().bottom;
   return (
     <Tabs screenOptions={{
       header: () => <Kopfleiste />,
       tabBarActiveTintColor: f.accentInk,
       tabBarInactiveTintColor: f.ink3,
-      tabBarStyle: { backgroundColor: f.veil, borderTopColor: f.line },
-      tabBarLabelStyle: { fontFamily: SCHRIFT.fett, fontSize: 11.5 },
+      tabBarStyle: { backgroundColor: f.veil, borderTopColor: f.line, height: 56 + unten, paddingTop: 4 },
+      tabBarLabelStyle: { fontFamily: SCHRIFT.mittel, fontSize: 11, lineHeight: 14 },
       sceneStyle: { backgroundColor: f.canvas },
     }}>
       <Tabs.Screen name="index" options={{ title: 'Start', tabBarIcon: ({ color }) => <TabStart farbe={color} /> }} />

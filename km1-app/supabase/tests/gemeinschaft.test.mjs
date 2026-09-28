@@ -336,6 +336,16 @@ test('Pläne: die erste Woche mit Konto, der Rest mit Pro oder über die Mannsch
 test('Camp: nur Erwachsene buchen, die Plätze zählen', async () => {
   await assert.rejects(als(luis, "select * from public.camp_buchen('herbst-koeln', $1, '0221 1234567', false, 'karte')",
     [JSON.stringify([{ vorname: 'Luis', jahrgang: jahr - 12 }])]), /Erwachsener/);
+  // Ein Kind ohne Einwilligung der Eltern bucht auch mit der Bestätigung nicht.
+  const ohne = await nutzer({ vorname: 'Ohne', geburtsjahr: jahr - 17 });
+  await assert.rejects(als(ohne, "select * from public.camp_buchen('herbst-koeln', $1, '0221 1234567', false, 'karte', true)",
+    [JSON.stringify([{ vorname: 'Ohne', jahrgang: 2014 }])]), /Erwachsener/);
+  // Das Konto von Luis läuft auf die E-Mail seiner Eltern. Mit der
+  // Bestätigung, erziehungsberechtigt zu sein, bucht ein Elternteil darüber.
+  const l = await eins(luis, "select * from public.camp_buchen('herbst-koeln', $1, '0221 1234567', false, 'karte', true)",
+    [JSON.stringify([{ vorname: 'Luis', jahrgang: 2014 }])]);
+  assert.equal(l.summe_cent, 24900);
+  await db.query('delete from public.camp_buchungen');
   const b = await eins(sandra, "select * from public.camp_buchen('herbst-koeln', $1, '0221 1234567', false, 'paypal')",
     [JSON.stringify([{ vorname: 'Luis', jahrgang: 2014 }, { vorname: 'Mila', jahrgang: 2017, hinweise: 'Nussallergie' }])]);
   assert.equal(b.summe_cent, 2 * 24900 - 2000);

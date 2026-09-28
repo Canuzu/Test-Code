@@ -30,6 +30,7 @@ const GRUND: Record<string, string> = {
   merkliste: 'Damit deine Merkliste erhalten bleibt, brauchst du ein Konto.',
   konto: 'Dieses Video gehört zu denen, für die ein kostenloses Konto reicht.',
   abo: 'Für ein Abo braucht es ein Konto, sonst weiß niemand, wem Pro gehört.',
+  camp: 'Zum Buchen braucht es ein Konto, damit die Bestätigung bei Ihnen ankommt.',
 };
 
 const JAHR = new Date().getFullYear();
@@ -42,7 +43,11 @@ export default function Anmelden() {
   const konto = useZustand((z) => z.konto);
   const [modus, setModus] = useState<Modus>(p.modus === 'alt' || p.modus === 'alter' ? p.modus : 'neu');
   const [schritt, setSchritt] = useState<Schritt>('jahrgang');
-  const [jahrgang, setJahrgang] = useState('');
+  /* Aus den Fragen beim ersten Start: der Jahrgang steht schon da, und
+     wer Eltern gewählt hat, wird nach dem Kind gefragt. */
+  const vorlieben = useZustand((z) => z.vorlieben);
+  const fuerKind = vorlieben.rolle === 'eltern';
+  const [jahrgang, setJahrgang] = useState(vorlieben.jahrgang && (fuerKind || vorlieben.rolle === 'spieler') ? String(vorlieben.jahrgang) : '');
   const [vorname, setVorname] = useState(konto?.vorname && konto.vorname !== 'Spieler' ? konto.vorname : '');
   const [email, setEmail] = useState('');
   const [passwort, setPasswort] = useState('');
@@ -157,10 +162,10 @@ export default function Anmelden() {
 
       {modus === 'neu' && schritt === 'jahrgang' && (
         <>
-          <Feld titel="In welchem Jahr bist du geboren?" value={jahrgang}
+          <Feld titel={fuerKind ? 'In welchem Jahr ist Ihr Kind geboren?' : 'In welchem Jahr bist du geboren?'} value={jahrgang}
             onChangeText={(t) => setJahrgang(t.replace(/\D/g, '').slice(0, 4))} placeholder="2012"
             keyboardType="number-pad" maxLength={4}
-            hilfe="Nur das Jahr. Unter 16 Jahren legen deine Eltern das Konto an." />
+            hilfe={fuerKind ? 'Nur das Jahr. Unter 16 läuft das Konto auf Ihre E-Mail-Adresse.' : 'Nur das Jahr. Unter 16 Jahren legen deine Eltern das Konto an.'} />
           <Knopf titel="Weiter" deaktiviert={!jahrgangOk}
             onPress={() => { setFehler(null); setSchritt(unter16(jg) ? 'kind' : 'selbst'); }} />
         </>

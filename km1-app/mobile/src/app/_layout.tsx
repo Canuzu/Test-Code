@@ -1,25 +1,59 @@
 /* Die Wurzel der App: Schriften laden, Daten holen, dann erst zeigen.
    Bis dahin steht der Startbildschirm mit dem Logo. */
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
+import NetInfo from '@react-native-community/netinfo';
 import { Stack } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import * as SystemUI from 'expo-system-ui';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SCHRIFT, SCHRIFTDATEIEN, useThema } from '@/lib/thema';
 import { start } from '@/daten/aktionen';
 import { erinnerungAktualisieren } from '@/daten/erinnern';
 import { setze, useZustand } from '@/daten/zustand';
 import { Hinweis } from '@/ui/Bausteine';
+import { OhneNetz } from '@/ui/Symbole';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+
+/* Ohne Netz steht unten eine ruhige Leiste. Was schon geladen ist, geht
+   weiter: Fortschritt, Merkliste und Pläne liegen auf dem Gerät. */
+function NetzLeiste() {
+  const { f } = useThema();
+  const unten = useSafeAreaInsets().bottom;
+  const offline = useZustand((z) => z.offline);
+  if (!offline) return null;
+  return (
+    <View pointerEvents="none" accessibilityLiveRegion="polite"
+      style={{ position: 'absolute', left: 0, right: 0, bottom: unten + 70, alignItems: 'center' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, maxWidth: '88%', backgroundColor: f.ink,
+        paddingHorizontal: 16, paddingVertical: 10, borderRadius: 99 }}>
+        <OhneNetz farbe={f.canvas} groesse={16} />
+        <Text style={{ fontFamily: SCHRIFT.fett, fontSize: 14, color: f.canvas }}>Kein Netz. Videos laden gerade nicht.</Text>
+      </View>
+    </View>
+  );
+}
 
 export default function Wurzel() {
   const [schriften, schriftFehler] = useFonts(SCHRIFTDATEIEN);
   const bereit = useZustand((z) => z.bereit);
   const { f, dunkel } = useThema();
+
+  /* Nur ein klares „nicht verbunden" zählt. Die Prüfung, ob das Internet
+     erreichbar ist, fragt einen fremden Server und irrt sich in manchen
+     Netzen; dann soll ein Video es trotzdem versuchen dürfen. */
+  useEffect(() => NetInfo.addEventListener((n) => { setze({ offline: n.isConnected === false }); }), []);
+  // Im Browser meldet NetInfo die Rückkehr des Netzes nicht überall; die
+  // Ereignisse des Fensters tun es.
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    const neu = () => setze({ offline: !navigator.onLine });
+    window.addEventListener('online', neu); window.addEventListener('offline', neu);
+    return () => { window.removeEventListener('online', neu); window.removeEventListener('offline', neu); };
+  }, []);
 
   useEffect(() => {
     start();
@@ -41,15 +75,15 @@ export default function Wurzel() {
   }, [fertig]);
   if (!fertig) return null;
 
-  const kopf = (titel: string) => ({ title: titel.toUpperCase() });
+  const kopf = (titel: string) => ({ title: titel });
   return (
     <SafeAreaProvider>
       <View style={{ flex: 1, backgroundColor: f.canvas }}>
         <StatusBar style={dunkel ? 'light' : 'dark'} />
         <Stack screenOptions={{
           headerStyle: { backgroundColor: f.canvas },
-          headerTintColor: f.ink,
-          headerTitleStyle: { fontFamily: SCHRIFT.monoFett, fontSize: 12 },
+          headerTintColor: f.accentInk,
+          headerTitleStyle: { fontFamily: SCHRIFT.fett, fontSize: 17, color: f.ink },
           headerShadowVisible: false,
           headerBackTitle: 'Zurück',
           headerBackButtonDisplayMode: 'default',
@@ -69,7 +103,13 @@ export default function Wurzel() {
           <Stack.Screen name="merkliste" options={kopf('Merkliste')} />
           <Stack.Screen name="challenge" options={kopf('Challenge')} />
           <Stack.Screen name="camp" options={kopf('Camp')} />
+          <Stack.Screen name="camp-buchen" options={{ presentation: 'modal', ...kopf('Platz buchen') }} />
+          <Stack.Screen name="einstellungen" options={kopf('Einstellungen')} />
+          <Stack.Screen name="plan/[id]" options={kopf('Trainingsplan')} />
+          <Stack.Screen name="vergleich/[slug]" options={{ presentation: 'modal', ...kopf('Vergleichen') }} />
+          <Stack.Screen name="willkommen" options={{ presentation: 'fullScreenModal', headerShown: false, gestureEnabled: false }} />
         </Stack>
+        <NetzLeiste />
         <Hinweis />
       </View>
     </SafeAreaProvider>

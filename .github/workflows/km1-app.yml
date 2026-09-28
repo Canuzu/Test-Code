@@ -46,4 +46,4 @@ jobs:
         working-directory: km1-app
         run: |
           node supabase/werkzeug/startdaten.mjs
-          git diff --exit-code -- supabase/seed.sql mobile/src/daten/katalog.json mobile/src/daten/plaene.json
+          git diff --exit-code -- supabase/seed.sql mobile/src/daten/katalog.json mobile/src/daten/plaene.json mobile/src/daten/camp.json

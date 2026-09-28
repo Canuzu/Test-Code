@@ -944,10 +944,14 @@ create table public.camp_buchungen (
   am         timestamptz not null default now()
 );
 
--- Buchen kann nur ein Erwachsener. Die Plätze werden unter einer Sperre
--- gezählt, damit zwei gleichzeitige Buchungen nicht denselben Platz
+-- Buchen kann nur ein Erwachsener. Konten von Kindern unter 16 laufen auf
+-- die E-Mail der Eltern (so legt die Handy-App sie an); über ein solches
+-- Konto bucht deshalb auch ein Elternteil, aber nur mit der ausdrücklichen
+-- Bestätigung, erziehungsberechtigt zu sein. Die Plätze werden unter einer
+-- Sperre gezählt, damit zwei gleichzeitige Buchungen nicht denselben Platz
 -- bekommen.
-create function public.camp_buchen(p_camp text, p_kinder jsonb, p_notfall text, p_fotos boolean, p_zahlung text)
+create function public.camp_buchen(p_camp text, p_kinder jsonb, p_notfall text, p_fotos boolean, p_zahlung text,
+                                   p_erziehungsberechtigt boolean default false)
 returns table (nr text, summe_cent int) language plpgsql security definer set search_path = ''
 as $$
 declare
@@ -957,7 +961,9 @@ declare
   summe int;
   neu text;
 begin
-  if public.meine_rolle() = 'spieler' then
+  if public.minderjaehrig(auth.uid())
+     and not (coalesce(p_erziehungsberechtigt, false)
+              and exists (select 1 from public.profiles p where p.id = auth.uid() and p.eltern_einwilligung_am is not null)) then
     raise exception 'Camps bucht ein Erwachsener.' using errcode = '42501';
   end if;
   select * into c from public.camps where id = p_camp for update;
@@ -1277,7 +1283,7 @@ revoke execute on function
   public.mitglied_entscheiden(uuid, uuid, boolean), public.upload_freigeben(uuid, boolean),
   public.zahl_bestaetigen(uuid), public.chat_starten(uuid), public.anfrage_entscheiden(uuid, boolean),
   public.station_bestaetigen(uuid, boolean), public.talentprofil_freigeben(uuid, boolean),
-  public.kontakt_entscheiden(uuid, boolean), public.camp_buchen(text, jsonb, text, boolean, text),
+  public.kontakt_entscheiden(uuid, boolean), public.camp_buchen(text, jsonb, text, boolean, text, boolean),
   public.profil_kurz(uuid)
   from public, anon;
 grant execute on function
@@ -1287,7 +1293,7 @@ grant execute on function
   public.mitglied_entscheiden(uuid, uuid, boolean), public.upload_freigeben(uuid, boolean),
   public.zahl_bestaetigen(uuid), public.chat_starten(uuid), public.anfrage_entscheiden(uuid, boolean),
   public.station_bestaetigen(uuid, boolean), public.talentprofil_freigeben(uuid, boolean),
-  public.kontakt_entscheiden(uuid, boolean), public.camp_buchen(text, jsonb, text, boolean, text),
+  public.kontakt_entscheiden(uuid, boolean), public.camp_buchen(text, jsonb, text, boolean, text, boolean),
   public.profil_kurz(uuid)
   to authenticated;
 revoke execute on function public.upload_vorbereiten() from public, anon, authenticated;

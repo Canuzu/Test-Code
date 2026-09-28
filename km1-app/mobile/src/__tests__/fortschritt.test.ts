@@ -10,7 +10,7 @@ const v = (slug: string) => videoFuer(slug)!;
 
 beforeEach(() => setze({ konto: null, done: {}, merk: {}, pro: false, abo: null, stelle: {}, zuletzt: null }));
 
-test('Zugang: Gast, Konto, Pro, Trainer', () => {
+test('Zugang: Gast, Konto, Pro, Kader', () => {
   expect(gesperrt(v('erste-beruehrung'))).toBe(false);
   expect(gesperrt(v('ballmitnahme'))).toBe(true);
   expect(gesperrt(v('profi-freistoss'))).toBe(true);
@@ -21,6 +21,8 @@ test('Zugang: Gast, Konto, Pro, Trainer', () => {
   setze({ pro: true });
   expect(gesperrt(v('profi-freistoss'))).toBe(false);
   setze({ pro: false, konto: { ...konto, rolle: 'trainer' } });
+  expect(gesperrt(v('profi-freistoss'))).toBe(true);     // Trainer einer Mannschaft brauchen Pro oder KM1 Team
+  setze({ konto: { ...konto, rolle: 'km1' } });
   expect(gesperrt(v('profi-freistoss'))).toBe(false);
 });
 

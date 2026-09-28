@@ -1,9 +1,10 @@
 // Schreibt aus den Videos, Plänen und dem Camp des Prototyps
-// (app/index.html) drei Dateien:
+// (app/index.html) vier Dateien:
 //   supabase/seed.sql               die Startdaten für die Datenbank
 //   mobile/src/daten/katalog.json   derselbe Katalog für die App, solange
 //                                   sie ohne Server läuft (Vorschau-Modus)
 //   mobile/src/daten/plaene.json    die Trainingspläne für die App
+//   mobile/src/daten/camp.json      Termin, Preis und Plätze des Camps
 // So bleibt der Prototyp die eine Quelle, bis Kader die echten Videos
 // hochlädt:  node supabase/werkzeug/startdaten.mjs
 import fs from 'node:fs';
@@ -126,4 +127,11 @@ const plaene = PLAENE.map((p, i) => ({
   wochen: p.wochen.map(w => w.map(e => ({ slug: e.v, aufgabe: e.a }))),
 }));
 fs.writeFileSync(path.join(hier, '../../mobile/src/daten/plaene.json'), JSON.stringify(plaene, null, 1) + '\n');
+// Das Camp für die App, mit denselben Zahlen wie in der Datenbank.
+const camp = {
+  id: CAMP.id, titel: CAMP.t, von: CAMP.von, bis: CAMP.bis, preis_cent: CAMP.preis * 100,
+  geschwister_rabatt_cent: CAMP.geschwister * 100, plaetze: CAMP.plaetze, frei: CAMP.frei,
+  jahrgang_von: campJahr - 15, jahrgang_bis: campJahr - 8,
+};
+fs.writeFileSync(path.join(hier, '../../mobile/src/daten/camp.json'), JSON.stringify(camp, null, 1) + '\n');
 console.log('seed.sql:', VIDEOS.length, 'Videos,', zeilen.length, 'Schritte,', PLAENE.length, 'Pläne mit', einheiten.length, 'Einheiten, 1 Camp');

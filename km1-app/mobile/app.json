@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#EEF2ED",
+    "backgroundColor": "#F1F4F0",
     "ios": {
       "bundleIdentifier": "de.km1training.app",
       "supportsTablet": false,
@@ -18,7 +18,7 @@
     "android": {
       "package": "de.km1training.app",
       "adaptiveIcon": {
-        "backgroundColor": "#EEF2ED",
+        "backgroundColor": "#F1F4F0",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -41,11 +41,19 @@
           "image": "./assets/splash-hell.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#EEF2ED",
+          "backgroundColor": "#F1F4F0",
           "dark": {
             "image": "./assets/splash-dunkel.png",
-            "backgroundColor": "#070D0B"
+            "backgroundColor": "#050907"
           }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Damit du ein Video von dir auswählen und neben Kader ansehen kannst. Es bleibt auf deinem Handy.",
+          "cameraPermission": "Damit du dich bei einer Übung filmen und neben Kader ansehen kannst. Das Video bleibt auf deinem Handy.",
+          "microphonePermission": "Beim Filmen nimmt das Handy auch den Ton auf. Das Video bleibt auf deinem Handy."
         }
       ],
       [

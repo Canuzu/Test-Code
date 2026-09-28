@@ -76,3 +76,38 @@ export const TabPyramide = ({ farbe, groesse = 23 }: P) => (
   </Svg>
 );
 export const TabProfil = Person;
+
+/* Das Zahnrad oben rechts im Profil. Dahinter liegt alles, was man
+   einstellt statt benutzt. */
+export const Zahnrad = ({ farbe, groesse = 22 }: P) => (
+  <Svg width={groesse} height={groesse} viewBox="0 0 24 24">
+    <Path fill={farbe} fillRule="evenodd" stroke={farbe} strokeWidth={1.2} strokeLinejoin="round"
+      d="M19.63 9.59 L22.06 9.79 L22.06 14.21 L19.63 14.41 L19.10 15.69 L20.67 17.55 L17.55 20.67 L15.69 19.10 L14.41 19.63 L14.21 22.06 L9.79 22.06 L9.59 19.63 L8.31 19.10 L6.45 20.67 L3.33 17.55 L4.90 15.69 L4.37 14.41 L1.94 14.21 L1.94 9.79 L4.37 9.59 L4.90 8.31 L3.33 6.45 L6.45 3.33 L8.31 4.90 L9.59 4.37 L9.79 1.94 L14.21 1.94 L14.41 4.37 L15.69 4.90 L17.55 3.33 L20.67 6.45 L19.10 8.31Z M8.60 12a3.40 3.40 0 1 0 6.80 0a3.40 3.40 0 1 0 -6.80 0Z" />
+  </Svg>
+);
+export const Kamera = ({ farbe, groesse = 20 }: P) => (
+  <Svg width={groesse} height={groesse} viewBox="0 0 24 24">
+    <Rect x="2.5" y="6.5" width="13" height="11" rx="2.2" {...linie(farbe, 1.9)} />
+    <Path d="M15.5 10.5l6-3.2v9.4l-6-3.2" {...linie(farbe, 1.9)} />
+  </Svg>
+);
+export const Kalender = ({ farbe, groesse = 20 }: P) => (
+  <Svg width={groesse} height={groesse} viewBox="0 0 24 24">
+    <Rect x="3.5" y="5" width="17" height="15" rx="2.2" {...linie(farbe, 1.9)} />
+    <Path d="M3.5 10h17M8 3v4M16 3v4" {...linie(farbe, 1.9)} />
+  </Svg>
+);
+export const Pause = ({ farbe, groesse = 20 }: P) => (
+  <Svg width={groesse} height={groesse} viewBox="0 0 24 24">
+    <Rect x="6" y="4.5" width="4.3" height="15" rx="1.3" fill={farbe} /><Rect x="13.7" y="4.5" width="4.3" height="15" rx="1.3" fill={farbe} />
+  </Svg>
+);
+export const OhneNetz = ({ farbe, groesse = 18 }: P) => (
+  <Svg width={groesse} height={groesse} viewBox="0 0 24 24">
+    <Path d="M2.5 8.8a14 14 0 0 1 19 0M5.8 12.3a9.2 9.2 0 0 1 12.4 0M9.2 15.8a4.4 4.4 0 0 1 5.6 0" {...linie(farbe, 2)} />
+    <Circle cx="12" cy="19.2" r="1.2" fill={farbe} /><Path d="M4 3.5l16 17" {...linie(farbe, 2)} />
+  </Svg>
+);
+export const Plus = ({ farbe, groesse = 18 }: P) => (
+  <Svg width={groesse} height={groesse} viewBox="0 0 24 24"><Path d="M12 5v14M5 12h14" {...linie(farbe, 2.2)} /></Svg>
+);

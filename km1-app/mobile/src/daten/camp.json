@@ -1,0 +1,12 @@
+{
+ "id": "herbst-koeln",
+ "titel": "Herbstcamp Köln",
+ "von": "2026-10-19",
+ "bis": "2026-10-23",
+ "preis_cent": 24900,
+ "geschwister_rabatt_cent": 2000,
+ "plaetze": 40,
+ "frei": 9,
+ "jahrgang_von": 2011,
+ "jahrgang_bis": 2018
+}

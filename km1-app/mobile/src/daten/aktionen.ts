@@ -10,10 +10,14 @@ import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { TAG_MS, wochenStart } from '@/lib/zeit';
 import { EINWILLIGUNG_FASSUNG, VORSCHAU_KATALOG, type Video } from './katalog';
+import { planSchluessel, planVon, planWocheFrei } from './plaene';
+import { CAMP_DATEN, campPruefen, campSumme, vorschauNummer, type CampFormular } from './camp';
+import { ebeneFuerJahrgang, erstSchritte } from './einfuehrung';
 import {
   geraetSpeichertKonto, hinweis, laden, lies, setze, zuruecksetzenNachAbmelden,
-  type Konto, type Zustand,
+  type Buchung, type Konto, type Rolle, type Zustand,
 } from './zustand';
+import type { Tag } from '@/lib/zeit';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -25,10 +29,14 @@ export const TESTVIDEO = process.env.EXPO_PUBLIC_TESTVIDEO_URL
 // ---------------------------------------------------------------------
 // Abgeleitetes. Reine Funktionen über dem Zustand.
 // ---------------------------------------------------------------------
-export const istTrainer = (s: Zustand) => s.konto?.rolle === 'trainer';
+/* Kader ist KM1 und sieht alles, auch die Profi-Einheiten. */
+export const istKader = (s: Zustand) => s.konto?.rolle === 'km1';
+/* Wer Spieler betreut, sichtet oder verwaltet, übt nicht selbst: kein
+   Wochenziel, keine Challenge. */
+export const uebtSelbst = (s: Zustand) => !s.konto || s.konto.rolle === 'spieler' || s.konto.rolle === 'eltern';
 
 export function gesperrt(v: Video, s: Zustand = lies()) {
-  if (istTrainer(s)) return false;
+  if (istKader(s)) return false;
   if (v.zugang === 'pro') return !s.pro;
   if (v.zugang === 'konto') return !s.konto;
   return false;
@@ -65,7 +73,7 @@ export function lvFortschritt(s: Zustand, nr: number) {
 }
 
 export function naechstesVideo(s: Zustand): Video | null {
-  const lv = s.konto ? s.konto.ebene : 1;
+  const lv = s.konto ? s.konto.ebene : s.vorlieben.jahrgang ? ebeneFuerJahrgang(s.vorlieben.jahrgang) : 1;
   const offen = s.katalog.filter((v) => !gesperrt(v, s) && !s.done[v.slug]);
   return offen.find((v) => v.ebene === lv) ?? offen[0] ?? null;
 }
@@ -95,19 +103,29 @@ async function katalogVomServer(): Promise<Video[]> {
 
 async function nutzerVomServer(user: User) {
   const sb = supabase!;
-  const [p, f, m, c, a] = await Promise.all([
+  const [p, f, m, c, a, pl, pf, b] = await Promise.all([
     sb.from('profiles').select('vorname,ebene,rolle,geburtsjahr,eltern_einwilligung_am,erstellt_am').eq('id', user.id).single(),
     sb.from('fortschritt').select('video_id,abgehakt_am'),
     sb.from('merkliste').select('video_id,am'),
     sb.from('challenge_ergebnisse').select('challenge,am'),
     sb.from('abos').select('aktiv,bis').maybeSingle(),
+    sb.from('plan_laufend').select('plan_id,gestartet_am').eq('user_id', user.id).maybeSingle(),
+    sb.from('plan_fortschritt').select('plan_id,woche,nr,am').eq('user_id', user.id),
+    sb.from('camp_buchungen').select('camp_id,nr,kinder,summe_cent,am,status').eq('eltern_id', user.id).neq('status', 'storniert'),
   ]);
-  for (const r of [p, f, m, c, a]) if (r.error) throw r.error;
+  for (const r of [p, f, m, c, a, pl, pf, b]) if (r.error) throw r.error;
   const s = lies(), slug = (id: string) => s.katalog.find((v) => v.id === id)?.slug;
   const done: Record<string, number> = {}, merk: Record<string, number> = {}, challenges: Record<string, number> = {};
   for (const r of f.data ?? []) { const k = slug(r.video_id); if (k && r.abgehakt_am) done[k] = Date.parse(r.abgehakt_am); }
   for (const r of m.data ?? []) { const k = slug(r.video_id); if (k) merk[k] = Date.parse(r.am); }
   for (const r of c.data ?? []) challenges[r.challenge] = Date.parse(r.am);
+  // Der Server zählt Wochen und Einheiten ab eins, die App ab null.
+  const plan = pl.data ? { id: pl.data.plan_id, ab: Date.parse(pl.data.gestartet_am), done: {} as Record<string, number> } : null;
+  for (const r of pf.data ?? []) if (plan && r.plan_id === plan.id) plan.done[planSchluessel(r.woche - 1, r.nr - 1)] = Date.parse(r.am);
+  const buchungen: Record<string, Buchung> = {};
+  for (const r of b.data ?? []) {
+    buchungen[r.camp_id] = { nr: r.nr, summe: r.summe_cent, am: Date.parse(r.am), kinder: r.kinder };
+  }
   const abo = a.data;
   const konto: Konto = {
     id: user.id, email: user.email ?? null,
@@ -116,7 +134,7 @@ async function nutzerVomServer(user: User) {
     eltern: !!p.data!.eltern_einwilligung_am, lokal: false,
   };
   setze({
-    konto, done, merk, challenges,
+    konto, done, merk, challenges, plan, buchungen,
     pro: !!abo && abo.aktiv && (!abo.bis || Date.parse(abo.bis) > Date.now()),
     abo: abo?.bis ? { preis: null, bis: Date.parse(abo.bis) } : null,
   });
@@ -174,11 +192,13 @@ export function meldung(e: unknown): string {
   return t || 'Das hat nicht geklappt.';
 }
 
-const trainerMail = (mail: string) => /kader|km1-training/i.test(mail);
+/* Im Vorschau-Modus ist Kader, wer sich mit seiner Adresse anmeldet. */
+const kaderMail = (mail: string) => /kader|km1-training/i.test(mail);
 
 function lokalesKonto(vorname: string, email: string, geburtsjahr: number | null, eltern: boolean): Konto {
   return {
-    id: 'vorschau', vorname, email, ebene: 1, rolle: trainerMail(email) ? 'trainer' : 'spieler',
+    id: 'vorschau', vorname, email, rolle: kaderMail(email) ? 'km1' : 'spieler',
+    ebene: geburtsjahr ? ebeneFuerJahrgang(geburtsjahr) : 1,
     seit: Date.now(), geburtsjahr, eltern, lokal: true,
   };
 }
@@ -199,7 +219,7 @@ export async function registrieren(d: Anmeldedaten): Promise<{ bestaetigen: bool
     options: {
       emailRedirectTo: Linking.createURL('/anmelden'),
       data: {
-        vorname: d.vorname.trim(), geburtsjahr: d.geburtsjahr,
+        rolle: 'spieler', vorname: d.vorname.trim(), geburtsjahr: d.geburtsjahr,
         eltern_einwilligung: d.eltern, einwilligung_fassung: d.eltern ? EINWILLIGUNG_FASSUNG : null,
       },
     },
@@ -284,7 +304,7 @@ export async function kontoLoeschen() {
     await supabase.auth.signOut({ scope: 'local' });
   }
   zuruecksetzenNachAbmelden();
-  setze({ stelle: {}, zuletzt: null });
+  setze({ stelle: {}, zuletzt: null, campWunsch: false });
 }
 
 // ---------------------------------------------------------------------
@@ -382,6 +402,116 @@ export function stelleMerken(slug: string, sek: number, dauer: number) {
    lässt sich Pro trotzdem ansehen, damit die Profi-Einheiten testbar sind. */
 export function proVorschau(preis: 'monat' | 'jahr') {
   setze({ pro: true, abo: { preis, bis: Date.now() + 7 * TAG_MS } });
+}
+
+// ---------------------------------------------------------------------
+// Der erste Start
+// ---------------------------------------------------------------------
+export type ErstAntworten = { rolle: Rolle | null; jahrgang: number; tage: Tag[]; zeit: string };
+
+/* Was die Antworten bewirken: der Jahrgang wählt die Ebene, aus der Zeit
+   wird die Erinnerung, und die Rolle ist beim Anlegen des Kontos schon
+   gewählt. Wer überspringt, bekommt nur die Frage nicht noch einmal. */
+export function ersterStartUebernehmen(a: ErstAntworten | null) {
+  if (!a) { setze({ ersterStart: true }); return; }
+  const folge = erstSchritte(a.rolle);
+  setze((z) => ({
+    ersterStart: true,
+    vorlieben: { rolle: a.rolle, jahrgang: folge.includes('jahrgang') ? a.jahrgang : z.vorlieben.jahrgang },
+    erinnerung: folge.includes('zeit') ? { an: a.tage.length > 0, tage: a.tage, zeit: a.zeit } : z.erinnerung,
+    filter: folge.includes('jahrgang') ? { ...z.filter, ebene: ebeneFuerJahrgang(a.jahrgang) } : z.filter,
+  }));
+}
+
+// ---------------------------------------------------------------------
+// Trainingspläne
+// ---------------------------------------------------------------------
+/* Einen Plan starten. Ein neuer Start fängt von vorn an, wie im Browser;
+   ein anderer laufender Plan endet dabei. */
+export async function planStarten(id: string) {
+  const vorher = lies(), k = vorher.konto;
+  if (!k) throw new Error('Kein Konto');
+  if (!planVon(id)) throw new Error('Diesen Plan gibt es nicht mehr.');
+  setze({ plan: { id, ab: Date.now(), done: {} } });
+  if (supabase && !k.lokal) {
+    const a = await supabase.from('plan_fortschritt').delete().eq('user_id', k.id).eq('plan_id', id);
+    const b = a.error ? a : await supabase.from('plan_laufend').upsert({ user_id: k.id, plan_id: id, gestartet_am: new Date().toISOString() });
+    if (b.error) { setze({ plan: vorher.plan }); throw new Error(meldung(b.error)); }
+  }
+}
+
+/* Eine Einheit abhaken oder den Haken zurücknehmen. Gesperrte Wochen
+   lassen sich nicht abhaken; der Server prüft das noch einmal. */
+export async function planHaken(w: number, e: number): Promise<{ an: boolean; geschafft: boolean }> {
+  const vorher = lies(), k = vorher.konto, lauf = vorher.plan;
+  if (!k || !lauf) throw new Error('Kein laufender Plan');
+  if (!planWocheFrei(w, vorher)) throw new Error('Diese Woche gehört zu KM1 Pro.');
+  const schluessel = planSchluessel(w, e), war = !!lauf.done[schluessel];
+  const done = { ...lauf.done };
+  if (war) delete done[schluessel]; else done[schluessel] = Date.now();
+  setze({ plan: { ...lauf, done } });
+  if (supabase && !k.lokal) {
+    const r = war
+      ? await supabase.from('plan_fortschritt').delete().eq('user_id', k.id).eq('plan_id', lauf.id).eq('woche', w + 1).eq('nr', e + 1)
+      : await supabase.from('plan_fortschritt').insert({ user_id: k.id, plan_id: lauf.id, woche: w + 1, nr: e + 1 });
+    if (r.error) { setze({ plan: lauf }); throw new Error(meldung(r.error)); }
+  }
+  const plan = planVon(lauf.id)!;
+  return { an: !war, geschafft: !war && Object.keys(done).length === plan.wochen.length * 3 };
+}
+
+export async function planBeenden() {
+  const vorher = lies(), k = vorher.konto;
+  setze({ plan: null });
+  if (supabase && k && !k.lokal) {
+    const r = await supabase.from('plan_laufend').delete().eq('user_id', k.id);
+    if (r.error) { setze({ plan: vorher.plan }); throw new Error(meldung(r.error)); }
+  }
+}
+
+// ---------------------------------------------------------------------
+// Camp
+// ---------------------------------------------------------------------
+/* Wer ein Camp buchen darf, wie auf dem Server: Erwachsene, und über das
+   Konto eines Kindes unter 18 ein Elternteil, wenn das Konto mit dessen
+   Einwilligung auf dessen E-Mail läuft. Dann bestätigt das Formular
+   ausdrücklich, dass ein Erziehungsberechtigter bucht. */
+const minderjaehrig = (k: Konto) => k.rolle === 'spieler' && (k.geburtsjahr == null || new Date().getFullYear() - k.geburtsjahr < 18);
+export const elternBuchenUeberKind = (k: Konto) => minderjaehrig(k) && k.eltern;
+export const darfCampBuchen = (k: Konto | null) => !!k && (!minderjaehrig(k) || k.eltern);
+
+/* Bucht verbindlich. Mit Server zählt die Datenbank die Plätze unter
+   einer Sperre und vergibt die Nummer; bezahlt ist erst, wenn der
+   Zahlungsanbieter es meldet. */
+export async function campBuchen(c: CampFormular): Promise<Buchung> {
+  const k = lies().konto;
+  if (!k) throw new Error('Zum Buchen braucht es ein Konto.');
+  if (!darfCampBuchen(k)) throw new Error('Camps bucht ein Erwachsener. Frag deine Eltern.');
+  const fehlt = campPruefen(c);
+  if (fehlt) throw new Error(fehlt);
+  const kinder = c.kinder.map((x) => ({ vorname: x.vorname.trim(), jahrgang: x.jahrgang, hinweise: x.hinweise.trim() }));
+  let buchung: Buchung;
+  if (supabase && !k.lokal) {
+    const { data, error } = await supabase.rpc('camp_buchen', {
+      p_camp: CAMP_DATEN.id, p_kinder: kinder, p_notfall: c.notfall.trim(), p_fotos: c.fotos, p_zahlung: c.zahlung,
+      p_erziehungsberechtigt: elternBuchenUeberKind(k),
+    });
+    if (error) throw new Error(meldung(error));
+    const r = Array.isArray(data) ? data[0] : data;
+    buchung = { nr: r.nr, summe: r.summe_cent, kinder, am: Date.now() };
+  } else {
+    buchung = { nr: vorschauNummer(), summe: campSumme(kinder.length), kinder, am: Date.now() };
+  }
+  setze((z) => ({ buchungen: { ...z.buchungen, [CAMP_DATEN.id]: buchung } }));
+  return buchung;
+}
+
+/* Wie viele Plätze noch frei sind. Ohne Server die Zahl aus camp.json. */
+export async function campPlaetzeFrei(): Promise<number> {
+  if (!supabase) return CAMP_DATEN.frei;
+  const { data, error } = await supabase.rpc('camp_plaetze_frei', { p_camp: CAMP_DATEN.id });
+  if (error || typeof data !== 'number') return CAMP_DATEN.frei;
+  return data;
 }
 
 // ---------------------------------------------------------------------

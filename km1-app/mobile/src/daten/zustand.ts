@@ -9,12 +9,24 @@ import { useSyncExternalStore } from 'react';
 import { VORSCHAU_KATALOG, type Video } from './katalog';
 import type { Tag } from '@/lib/zeit';
 
+/* Die Rollen wie auf dem Server. Kader ist 'km1' und sieht alles;
+   'trainer' ist der Trainer einer Mannschaft. */
+export type Rolle = 'spieler' | 'eltern' | 'trainer' | 'akademie' | 'verein' | 'profi' | 'scout' | 'km1';
+
+/* Der laufende Trainingsplan. Die Schlüssel in done sind Woche und
+   Einheit, beide ab null gezählt: '0-2' ist die dritte Einheit der
+   ersten Woche. */
+export type LaufenderPlan = { id: string; ab: number; done: Record<string, number> };
+
+export type CampKind = { vorname: string; jahrgang: number; hinweise: string };
+export type Buchung = { nr: string; kinder: CampKind[]; summe: number; am: number };
+
 export type Konto = {
   id: string;
   vorname: string;
   email: string | null;
   ebene: number;
-  rolle: 'spieler' | 'trainer';
+  rolle: Rolle;
   seit: number;
   geburtsjahr: number | null;
   eltern: boolean;          // hat ein Elternteil eingewilligt
@@ -41,6 +53,16 @@ export type Zustand = {
   hinweis: { text: string; nr: number } | null;
   /* Filter der Videothek. Nicht gespeichert: beim nächsten Start ist alles offen. */
   filter: { kat: string; ebene: number; suche: string };
+  /* Die drei Fragen beim ersten Start: ob sie gestellt wurden und was
+     geantwortet wurde. Bleibt auf dem Gerät, auch ohne Konto. */
+  ersterStart: boolean;
+  vorlieben: { rolle: Rolle | null; jahrgang: number | null };
+  startSicht: 'fuerdich' | 'folge';
+  plan: LaufenderPlan | null;
+  buchungen: Record<string, Buchung>;
+  campWunsch: boolean;
+  /* Nicht gespeichert: ob das Handy gerade Netz hat. */
+  offline: boolean;
 };
 
 const SCHLUESSEL = 'km1-zustand-v1';
@@ -53,6 +75,8 @@ function anfang(): Zustand {
     erinnerung: { an: true, tage: ['mi', 'sa'], zeit: '17:00' },
     hinweis: null,
     filter: { kat: 'alle', ebene: 0, suche: '' },
+    ersterStart: false, vorlieben: { rolle: null, jahrgang: null }, startSicht: 'fuerdich',
+    plan: null, buchungen: {}, campWunsch: false, offline: false,
   };
 }
 
@@ -81,9 +105,13 @@ let lokalesGeraet = true;   // mit Server false: Konto und Fortschritt nicht lok
 export function geraetSpeichertKonto(ja: boolean) { lokalesGeraet = ja; }
 
 function speichern() {
-  const immer = { thema: z.thema, erinnerung: z.erinnerung, stelle: z.stelle, zuletzt: z.zuletzt };
+  const immer = {
+    thema: z.thema, erinnerung: z.erinnerung, stelle: z.stelle, zuletzt: z.zuletzt,
+    ersterStart: z.ersterStart, vorlieben: z.vorlieben, startSicht: z.startSicht, campWunsch: z.campWunsch,
+  };
   const vorschau = lokalesGeraet
-    ? { konto: z.konto, done: z.done, merk: z.merk, challenges: z.challenges, pro: z.pro, abo: z.abo }
+    ? { konto: z.konto, done: z.done, merk: z.merk, challenges: z.challenges, pro: z.pro, abo: z.abo,
+        plan: z.plan, buchungen: z.buchungen }
     : {};
   try { localStorage.setItem(SCHLUESSEL, JSON.stringify({ ...immer, ...vorschau })); } catch {}
 }
@@ -93,17 +121,22 @@ export function laden() {
     const roh = localStorage.getItem(SCHLUESSEL);
     if (!roh) return;
     const g = JSON.parse(roh);
+    const immer: (keyof Zustand)[] = ['thema', 'erinnerung', 'stelle', 'zuletzt', 'ersterStart', 'vorlieben', 'startSicht', 'campWunsch'];
     const erlaubt: (keyof Zustand)[] = lokalesGeraet
-      ? ['thema', 'erinnerung', 'stelle', 'zuletzt', 'konto', 'done', 'merk', 'challenges', 'pro', 'abo']
-      : ['thema', 'erinnerung', 'stelle', 'zuletzt'];
+      ? [...immer, 'konto', 'done', 'merk', 'challenges', 'pro', 'abo', 'plan', 'buchungen']
+      : immer;
     const teil: Partial<Zustand> = {};
     for (const k of erlaubt) if (g[k] !== undefined) (teil as any)[k] = g[k];
+    // Frühere Fassungen kannten Kader als 'trainer'.
+    if (teil.konto && (teil.konto.rolle as string) === 'trainer' && /kader|km1-training/i.test(teil.konto.email ?? '')) {
+      teil.konto = { ...teil.konto, rolle: 'km1' };
+    }
     z = { ...z, ...teil };
   } catch {}
 }
 
 export function zuruecksetzenNachAbmelden() {
-  setze({ konto: null, done: {}, merk: {}, challenges: {}, pro: false, abo: null });
+  setze({ konto: null, done: {}, merk: {}, challenges: {}, pro: false, abo: null, plan: null, buchungen: {} });
 }
 
 let hinweisNr = 0;
