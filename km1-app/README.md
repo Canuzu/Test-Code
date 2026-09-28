@@ -17,7 +17,7 @@ Haken von KM1, und Videos von Kindern sehen nur Team, Familie und geprüfte Kont
 | `mischung/` | Die Mischung: der Aufbau von Apple mit dem Charakter von KM1 |
 | `mischung2/` | Nur noch eine Weiterleitung: die Mischung 2 ist seit September 2026 die App |
 | `artefakt.py` | Macht aus `app/` (oder mit `original`, `apple`, `mischung` aus den Studien) die Fassung für die Vorschau auf claude.ai |
-| `mobile/` | Die echte App für iPhone und Android (Expo), noch nach dem ersten Entwurf |
+| `mobile/` | Die echte App für iPhone und Android (Expo), im Stil der App; die Bereiche für Teams und Scouting folgen |
 | `supabase/` | Datenbank, Regeln, Startdaten und ihr Test |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, App Store |
 | `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
@@ -62,15 +62,23 @@ Titeln, Zahlen stehen in der runden Systemschrift.
 
 Jede Seite hat eine Aufgabe, gebaut nach dem Vorbild erfolgreicher Apps:
 
-- **Start:** Unter „Für dich“ steht, was heute dran ist: Hinweise in einer
-  Karte, die nächste Einheit mit dem Wochenziel, neue Videos, die Challenge und
-  ein einziger Werbeplatz. Neuigkeiten, Profis, Vereine und ihre Beiträge
-  stehen unter „Folge ich“.
+- **Start:** Die große Karte „Heute“ gibt genau eine Antwort darauf, was
+  dran ist: zuerst die Hausaufgabe vom Trainer, dann das angefangene Video,
+  dann die nächste Einheit im Plan, sonst der nächste Schritt auf dem eigenen
+  Weg. Darüber höchstens drei Hinweise, darunter neue Videos, die Challenge
+  und ein einziger Werbeplatz; Kinder sehen dort keine Werbung für Pro.
+  Neuigkeiten, Profis, Vereine und ihre Beiträge stehen unter „Folge ich“.
+- **Menü unten:** Wer selbst trainiert, hat Start, Üben, Team und Profil;
+  ohne Konto nur Start, Üben und Profil. Eltern haben Start, Familie, Üben und
+  Profil, die Videos ihres Kindes stehen in der Familie. Die Pyramide ist der
+  „Weg“: Er öffnet sich über die Ebene oben rechts und im Profil.
 - **Profil:** Das Ich, die eigenen Sachen und das Abo als eine Zeile. Alles
   zum Einstellen liegt hinter dem Zahnrad oben rechts.
 - **Team:** Ein Umschalter statt einer langen Seite, beim Trainer etwa
-  „Übersicht · Spieler · Beiträge“, bei den Eltern „Übersicht · Laufbahn ·
-  Schutz“.
+  „Übersicht · Spieler · Beiträge“, bei den Eltern „Übersicht · Videos ·
+  Laufbahn · Schutz“. Was jemand entscheiden soll (Freigaben, Beitritte,
+  Laufbahn bestätigen), steht als kurze Zeile da; entschieden wird im Blatt
+  dahinter.
 - **Erklärungen:** Ein kleines i neben der Überschrift statt Text unter jedem
   Block. Nur wo jemand entscheidet, etwa beim Hochladen oder Freigeben, steht
   der Satz direkt da.
@@ -83,7 +91,7 @@ Alle lassen sich antippen, die Namen in der Vorführung sind erfunden:
 | --- | --- |
 | Rollen und Haken | Spieler, Eltern, Trainer, Akademie, Verein, Profi, Scout und KM1. Wer mit Kindern arbeitet oder sie sichtet, bekommt den blauen Haken erst nach einer Prüfung. |
 | Einladungen | Vereine und Akademien prüft KM1 selbst. Sie laden ihre Trainer, Scouts und Profis mit einem Code ein und bürgen für sie, der Haken ist dann sofort da. Wer keinen Code hat, reicht Belege ein. KM1 sieht jede Einladung und kann jeden Haken wieder entziehen. |
-| Menüs pro Rolle | Spieler üben (Technik, Team, Pyramide), Eltern haben Familie und Videos, Trainer Team, Videos und Übungen, Akademien Teams und Talente, Vereine Seite und Nachwuchs, Scouts Talente, Beobachtet und Berichte, KM1 Prüfen, Inhalte und Meldungen. |
+| Menüs pro Rolle | Spieler haben Üben und Team, Eltern Familie und Üben, Trainer Team, Videos und Übungen, Akademien Teams und Talente, Vereine Seite und Nachwuchs, Scouts Talente, Beobachtet und Berichte, KM1 Prüfen, Inhalte und Meldungen. |
 | KM1 Team | Abo für Trainer und Akademien: Team per Code, Hausaufgaben, Fortschritt jedes Spielers, Rangliste |
 | Videos | Jeder lädt hoch, im Bereich Videos. Kinder wählen Trainer, Team, KM1 oder ihr Profil. Unter 16 geben die Eltern jedes Video frei, dann sehen es Team, Familie und geprüfte Konten. Ab 16 sieht ein Profilvideo jeder in KM1. Öffentlich posten nur geprüfte Konten. Feedback mit Zeitmarken. |
 | Reaktionen | Drei feste Zeichen statt Kommentaren, schreiben dürfen nur geprüfte Trainer. Melden und Blockieren an jedem Beitrag. |
@@ -93,10 +101,19 @@ Alle lassen sich antippen, die Namen in der Vorführung sind erfunden:
 | Profis und Vereine | Eigene Rollen mit Prüfung und einer öffentlichen Seite. Der Profi Niklas Hartwig und der FC Rheinstadt sind erfunden. |
 | Folgen | Seiten von Profis, Vereinen, Akademien, Trainern und KM1. Kindern unter 16 folgt nur das eigene Team. |
 | Nachrichten | Mit Regeln: Kinder unter 16 schreiben nur mit Trainer, Mitspielern und Eltern, die Eltern lesen mit. Eltern derselben Mannschaft schreiben sich direkt. Profis und Vereine bekommen Anfragen von geprüften Konten, Fans folgen ihnen und schreiben nicht. |
+| Erster Start | Drei Fragen: wer man ist, welcher Jahrgang, wann trainiert wird. Oben stehen Spieler, Eltern und Trainer, die übrigen Rollen hinter „Etwas anderes“. Der Jahrgang ist nie vorausgewählt und wählt die Ebene, die Zeit wird zur Erinnerung. Alles lässt sich überspringen und bleibt auf dem Gerät. |
+| Trainingspläne | Sechs Wochen, drei Einheiten pro Woche, zum Abhaken. Die erste Woche ist mit Konto frei, die übrigen mit Pro. Die nächste Einheit steht oben auf der Startseite. |
+| Selbstaufnahme | Unter jedem Video „Mit mir vergleichen“: filmen und sich direkt unter Kader sehen, in Zeitlupe und Bild für Bild. Das eigene Video bleibt auf dem Handy. |
+| Camp buchen | Kinder, Geschwisterrabatt, Notfallnummer, Fotos nur mit Zustimmung, verbindlich mit Buchungsnummer. Bezahlt wird direkt bei KM1, nicht über den App Store. Kinder fragen ihre Eltern. |
+| Fehlerzustände | Ohne Netz eine ruhige Leiste unten, ein Video, das nicht lädt, bekommt „Erneut versuchen“, und beim Sperren oder bei einem Anruf hält es an derselben Stelle an. |
 
-Die Sicht für die Vorführung wechselt man über die Ebene oben rechts. Was eine
-Rolle tut, sehen die anderen: Luis lädt hoch, Sandra gibt frei, Tim zählt nach
-und gibt Feedback.
+Die Vorführung ist für echte Nutzer unsichtbar. Sie kommt mit `?vorfuehrung`
+am Ende der Adresse,
+<https://canuzu.github.io/Test-Code/km1-app/?vorfuehrung>, und bleibt
+auf dem Gerät an, bis man sie im Blatt „Aus welcher Sicht?“ ausschaltet. In
+der Vorschau auf claude.ai ist sie immer an. Dann wechselt man die Sicht über
+die Ebene oben rechts. Was eine Rolle tut, sehen die anderen: Luis lädt hoch,
+Sandra gibt frei, Tim zählt nach und gibt Feedback.
 
 ## Was drin ist
 
@@ -105,12 +122,18 @@ Zustand ist über die App selbst erreichbar, genau wie später im Betrieb:
 
 | Zustand | Weg dorthin |
 | --- | --- |
-| Gast | So startet die App |
+| Erster Start | So startet die App beim allerersten Öffnen. Noch einmal: Profil → Zahnrad → *Einführung ansehen* |
+| Gast | Nach den drei Fragen oder mit *Überspringen* |
 | Mit Konto | Start → *Konto anlegen*, oder ein Video mit Konto-Abzeichen antippen |
 | KM1 PRO | Eine Profi-Einheit antippen → *Mit KM1 Pro ansehen* → *7 Tage gratis testen* |
 | Dunkle Fassung | Profil → Zahnrad oben rechts → *Darstellung* |
-| Mit Einladung | *Konto anlegen* → Trainer, Scout oder Profi → *Mit Einladung* → *Vorführung: Code einsetzen*. Neue Codes legen Akademie und Verein unter Profil → *Leute einladen* an. |
-| Eine andere Rolle | Oben rechts auf die Ebene tippen und eine Sicht wählen, oder beim Anlegen des Kontos die Rolle wählen |
+| Trainingsplan | Üben → *Trainingspläne* → einen Plan antippen → *Plan starten* |
+| Dein Weg | Oben rechts auf die Ebene tippen, oder Profil → *Mein Weg* |
+| Selbstaufnahme | Ein Video öffnen → *Mit mir vergleichen* → *Jetzt filmen* oder *Video auswählen* |
+| Camp buchen | Start → Karte *Herbstcamp Köln* → *Platz buchen*. Der Werbeplatz wechselt täglich mit dem Abo; steht dort Pro, führt Folge ich → *Neu bei KM1* → Herbstcamp → *Zum Camp* dorthin. Als Spieler steht dort *Meine Eltern fragen*. |
+| Kein Netz | Den Flugmodus einschalten, während die App offen ist |
+| Mit Einladung | *Konto anlegen* → Trainer, oder unter *Etwas anderes* Scout oder Profi → *Mit Einladung* → den Code eingeben, in der Vorführung *Vorführung: Code einsetzen*. Neue Codes legen Akademie und Verein unter Profil → *Leute einladen* an. |
+| Eine andere Rolle | Beim Anlegen des Kontos die Rolle wählen. In der Vorführung oben rechts auf die Ebene tippen und eine Sicht wählen. |
 | KM1 selbst | Beim Anmelden eine E-Mail mit „kader" verwenden, etwa `kader@km1-training.de`. Die Rolle hängt am Konto, nicht an einem Schalter. |
 
 Der Videoplayer ist eine Attrappe: die Leiste läuft, es liegt aber noch kein
@@ -134,5 +157,7 @@ nicht.
 
 ## Stand
 
-Prototyp steht, die echte App ist noch nicht begonnen. Nächster Schritt und
-offene Entscheidungen stehen am Ende von `KONZEPT.md`.
+Die App im Browser ist vollständig bedienbar, die echte App in `mobile/` hat
+denselben Stand bei allem, was Kinder und Eltern brauchen, und der Server in
+`supabase/` setzt alle Regeln durch, ist aber noch nicht eingespielt. Was bis
+zu einem fertigen Produkt fehlt, steht in `WEG_ZUR_ZEHN.md`.

@@ -1,5 +1,6 @@
-/* Die Pyramide: vier Ebenen, eine Richtung. Darunter der Pfad der
-   gewählten Ebene, fünf Wochen zum Abhaken. */
+/* Der Weg durch die Pyramide: vier Ebenen, eine Richtung. Darunter der
+   Pfad der gewählten Ebene, fünf Wochen zum Abhaken. Erreichbar über die
+   Ebene oben rechts und das Profil. */
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
@@ -13,13 +14,14 @@ import { Druck, Seite, Striche } from '@/ui/Bausteine';
 import { BlockKopf } from '@/ui/Reihe';
 import { Pyramide } from '@/ui/Pyramide';
 import { Haken } from '@/ui/Symbole';
+import { meineEbene } from '@/daten/einfuehrung';
 
-export default function PyramideSeite() {
+export default function Weg() {
   const { f } = useThema();
   const s = useZustand((z) => z);
   const { konto, done } = s;
   const [wahl, setWahl] = useState<number | null>(null);
-  const sel = wahl ?? konto?.ebene ?? 1;
+  const sel = wahl ?? meineEbene(s);
   const l = ebeneVon(sel), farbe = f.lv[sel - 1];
   const fz = lvFortschritt(s, sel);
   const liste = pfad(s, sel);

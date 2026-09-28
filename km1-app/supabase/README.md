@@ -7,10 +7,12 @@ Datenbank.
 
 | Datei | Inhalt |
 | --- | --- |
-| `migrations/20260923120000_grundlage.sql` | Tabellen, Regeln (RLS), Funktionen, Speicher |
-| `seed.sql` | Die 26 Videos mit ihren 79 Schritten aus dem Prototyp |
-| `werkzeug/startdaten.mjs` | Erzeugt `seed.sql` und den Katalog der App aus `app/index.html` |
-| `tests/regeln.test.mjs` | Prüft die Regeln in einer echten Postgres-Datenbank (PGlite) |
+| `migrations/20260923120000_grundlage.sql` | Videos, Fortschritt, Merkliste, Abo: Tabellen, Regeln (RLS), Funktionen, Speicher |
+| `migrations/20260927120000_gemeinschaft.sql` | Rollen mit Haken, Einladungen, Familie, Teams, Videos der Spieler, Nachrichten, Laufbahn, Scouting, Meldungen, Seiten, Pläne, Camps |
+| `seed.sql` | Die 26 Videos mit ihren 79 Schritten, die drei Trainingspläne und das Herbstcamp aus dem Prototyp |
+| `werkzeug/startdaten.mjs` | Erzeugt `seed.sql` und die Daten der App aus `app/index.html` |
+| `tests/regeln.test.mjs` | Prüft die Regeln der Grundlage in einer echten Postgres-Datenbank (PGlite) |
+| `tests/gemeinschaft.test.mjs` | Prüft die Regeln der Gemeinschaft, entlang der Geschichte aus der App |
 
 ## Was die Datenbank durchsetzt
 
@@ -24,11 +26,53 @@ Datenbank.
 - **Rolle, Ebene und Abo setzt niemand selbst.** Ändern darf ein Nutzer nur
   seinen Vornamen. Die Ebene steigt über `aufsteigen()`, wenn der Pfad
   abgehakt ist; das Abo schreibt später nur der Webhook von RevenueCat.
-- **Konto löschen** über `konto_loeschen()` nimmt Profil, Fortschritt,
-  Merkliste und Abo mit. Apple verlangt, dass das in der App geht.
+- **Konto löschen** über `konto_loeschen()` nimmt alles mit, was am Konto
+  hängt, auch Videos, Nachrichten, Buchungen und Meldungen. Apple verlangt,
+  dass das in der App geht.
 - **Videos im Speicher.** `videos-offen` ist öffentlich, `videos-geschuetzt`
   gibt Dateien nur über einen signierten Link heraus, der eine Stunde gilt —
   und nur an die, die das Video sehen dürfen.
+
+## Was die Gemeinschaft durchsetzt
+
+Dieselben drei Regeln wie in der App, hier auf dem Server:
+
+- **Geprüft wird, wer mit Kindern arbeitet oder sie sichtet.** Die Rolle
+  kommt aus der Anmeldung, KM1 wählt niemand selbst. Den Haken vergibt KM1
+  an Vereine und Akademien (`pruefung_entscheiden()`). Die laden ihre
+  Trainer, Scouts und Profis mit einem Code ein (`einladung_erstellen()`,
+  `einladung_einloesen()`) und bürgen für sie. KM1 kann jeden Haken wieder
+  entziehen (`haken_entziehen()`). Von Belegen wie dem Führungszeugnis wird
+  nur gespeichert, dass sie vorlagen.
+- **Kein Video eines Kindes im offenen Netz.** Lädt ein Kind unter 16 hoch,
+  wartet das Video auf die Eltern (`upload_freigeben()`). Wer es danach
+  sieht, entscheidet `darf_upload_sehen()`, wie `darfSehen(u)` in der App:
+  nur der Trainer, das Team mit Eltern, KM1, auf dem Profil auch geprüfte
+  Konten und ab 16 alle Angemeldeten. Gäste nie.
+- **Kein Fremder schreibt einem Kind.** `schreib_recht()` ist
+  `schreibRecht(von, an)` aus der App. Chats entstehen nur über
+  `chat_starten()`, Profis und Vereine bekommen Anfragen statt Nachrichten,
+  und die Eltern lesen die Chats ihres Kindes unter 16 mit.
+
+Dazu:
+
+- **Familie** über den Code aus der App des Kindes (`kind_verbinden()`).
+  Den Code liest nur das Kind selbst.
+- **Teams:** anlegen nur mit Haken, beitreten per Code, aufnehmen muss der
+  Trainer selbst. Mit KM1 Team (`abos.art = 'team'`) sind Profi-Einheiten und
+  Pläne für die ganze Mannschaft frei.
+- **Laufbahn:** unter 16 tragen die Eltern ein, der Trainer bestätigt.
+  Scouts sehen sie ab 16 oder mit Freigabe des Talentprofils durch die
+  Eltern. Kontakt geht nur an die Eltern.
+- **Meldungen** schreibt jeder, lesen und entscheiden nur KM1. Wer gemeldet
+  hat, bleibt unbekannt.
+- **Pläne:** die erste Woche mit Konto, der Rest mit Pro.
+- **Camps** bucht nur ein Erwachsener, die Plätze zählt `camp_buchen()`
+  unter einer Sperre. Über das Konto eines Kindes bucht ein Elternteil nur,
+  wenn das Konto mit Einwilligung auf die Eltern läuft und die Buchung
+  ausdrücklich bestätigt, erziehungsberechtigt zu sein
+  (`p_erziehungsberechtigt`). „Bezahlt" setzt später nur der Webhook des
+  Zahlungsanbieters.
 
 ## Einrichten, einmal
 
@@ -37,8 +81,8 @@ Datenbank.
    Frankfurt"; bei einer anderen Region muss der Satz in
    `mobile/src/app/datenschutz.tsx` angepasst werden.
 2. **Datenbank einspielen.** Im Dashboard unter *SQL Editor* den ganzen Inhalt
-   von `migrations/20260923120000_grundlage.sql` einfügen und ausführen.
-   Danach genauso `seed.sql`.
+   von `migrations/20260923120000_grundlage.sql` einfügen und ausführen,
+   danach `migrations/20260927120000_gemeinschaft.sql`, zuletzt `seed.sql`.
 3. **Anmeldung einstellen** unter *Authentication*:
    - *Sign In / Providers → Email*: „Confirm email" an, Mindestlänge des
      Passworts 8.
@@ -54,10 +98,10 @@ Datenbank.
      `https://<projekt>.supabase.co/auth/v1/callback`
    - Client-ID und Client-Secret in Supabase unter *Authentication → Sign In /
      Providers → Google* eintragen.
-5. **Kader zum Trainer machen**, nachdem er sich einmal angemeldet hat, im SQL
-   Editor:
+5. **Kader zu KM1 machen**, nachdem er sich einmal angemeldet hat, im SQL
+   Editor. Die Rolle `km1` kann sich niemand selbst geben:
    ```sql
-   update public.profiles set rolle = 'trainer'
+   update public.profiles set rolle = 'km1'
    where id = (select id from auth.users where email = 'kaders@adresse.de');
    ```
 6. **Die App verbinden.** Die Projekt-Adresse und der öffentliche Schlüssel

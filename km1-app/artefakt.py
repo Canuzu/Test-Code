@@ -27,8 +27,12 @@ ZUSATZ_APPLE = (
     '</style>\n'
 )
 
+# Die Vorschau ist zum Zeigen da: dort ist die Vorführung mit ihrer Wahl
+# der Sicht immer an. In der App kommt sie nur mit ?vorfuehrung.
+ZUSATZ_VORF = '<script>window.KM1_VORFUEHRUNG = true;</script>\n'
+
 FASSUNGEN = {
-    'app':   ('app/index.html',   'artefakt.html',       'KM1 Training', ZUSATZ_APPLE),
+    'app':   ('app/index.html',   'artefakt.html',       'KM1 Training', ZUSATZ_APPLE + ZUSATZ_VORF),
     'original': ('original/index.html', 'artefakt-original.html', 'KM1 Erster Entwurf', ''),
     'apple': ('apple/index.html', 'artefakt-apple.html', 'KM1 Apple-Stil',   ZUSATZ_APPLE),
     'mischung': ('mischung/index.html', 'artefakt-mischung.html', 'KM1 Mischung', ZUSATZ_APPLE),

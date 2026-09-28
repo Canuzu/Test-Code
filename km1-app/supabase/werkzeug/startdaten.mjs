@@ -1,7 +1,10 @@
-// Schreibt aus den Videos des Prototyps (app/index.html) zwei Dateien:
+// Schreibt aus den Videos, Plänen und dem Camp des Prototyps
+// (app/index.html) vier Dateien:
 //   supabase/seed.sql               die Startdaten für die Datenbank
 //   mobile/src/daten/katalog.json   derselbe Katalog für die App, solange
 //                                   sie ohne Server läuft (Vorschau-Modus)
+//   mobile/src/daten/plaene.json    die Trainingspläne für die App
+//   mobile/src/daten/camp.json      Termin, Preis und Plätze des Camps
 // So bleibt der Prototyp die eine Quelle, bis Kader die echten Videos
 // hochlädt:  node supabase/werkzeug/startdaten.mjs
 import fs from 'node:fs';
@@ -18,6 +21,8 @@ function block(anfang, ende) {
 }
 const VIDEOS = new Function('return ' + block('var VIDEOS = [', '];\n\nvar PFAD'))();
 const PFAD = new Function('return ' + block('var PFAD = {', '};\n'))();
+const PLAENE = new Function('return ' + block('var PLAENE = [', '];\n'))();
+const CAMP = new Function('return ' + block('var CAMP = {', '};\n'))();
 
 const woche = {};
 for (const lv of Object.keys(PFAD)) for (const u of PFAD[lv]) woche[u.id] = u.w;
@@ -66,6 +71,42 @@ sql += zeilen.join(',\n') + `
 ) as s(slug, nr, text, sekunde)
 join public.videos v on v.slug = s.slug;
 `;
+
+// Die Trainingspläne: sechs Wochen, drei Einheiten, jede mit Aufgabe.
+sql += `
+insert into public.plaene (id, titel, ebene, fuer, satz, minuten, reihenfolge)
+values
+${PLAENE.map((p, i) => `  (${[q(p.id), q(p.t), p.lv, q(p.fuer), q(p.satz), p.min, i + 1].join(', ')})`).join(',\n')}
+on conflict (id) do update set
+  titel = excluded.titel, ebene = excluded.ebene, fuer = excluded.fuer,
+  satz = excluded.satz, minuten = excluded.minuten, reihenfolge = excluded.reihenfolge;
+
+delete from public.plan_einheiten where plan_id in (${PLAENE.map(p => q(p.id)).join(', ')});
+
+insert into public.plan_einheiten (plan_id, woche, nr, video_id, aufgabe)
+select e.plan_id, e.woche, e.nr, v.id, e.aufgabe
+from (values
+`;
+const einheiten = [];
+for (const p of PLAENE) p.wochen.forEach((w, wi) => w.forEach((e, ei) =>
+  einheiten.push(`  (${q(p.id)}, ${wi + 1}, ${ei + 1}, ${q(e.v)}, ${q(e.a)})`)));
+sql += einheiten.join(',\n') + `
+) as e(plan_id, woche, nr, slug, aufgabe)
+join public.videos v on v.slug = e.slug;
+`;
+
+// Das Camp. Die Jahrgänge rechnen vom Jahr des Camps aus, nicht von heute,
+// damit die Datei jedes Jahr gleich bleibt.
+const campJahr = +CAMP.von.slice(0, 4);
+sql += `
+insert into public.camps (id, titel, von, bis, preis_cent, geschwister_rabatt_cent, plaetze, jahrgang_von, jahrgang_bis)
+values (${[q(CAMP.id), q(CAMP.t), q(CAMP.von), q(CAMP.bis), CAMP.preis * 100, CAMP.geschwister * 100, CAMP.plaetze,
+           campJahr - 15, campJahr - 8].join(', ')})
+on conflict (id) do update set
+  titel = excluded.titel, von = excluded.von, bis = excluded.bis, preis_cent = excluded.preis_cent,
+  geschwister_rabatt_cent = excluded.geschwister_rabatt_cent, plaetze = excluded.plaetze,
+  jahrgang_von = excluded.jahrgang_von, jahrgang_bis = excluded.jahrgang_bis;
+`;
 fs.writeFileSync(path.join(hier, '../seed.sql'), sql);
 
 const katalog = VIDEOS.map((v, i) => {
@@ -80,4 +121,17 @@ const katalog = VIDEOS.map((v, i) => {
 const ziel = path.join(hier, '../../mobile/src/daten/katalog.json');
 fs.mkdirSync(path.dirname(ziel), { recursive: true });
 fs.writeFileSync(ziel, JSON.stringify(katalog, null, 1) + '\n');
-console.log('seed.sql:', VIDEOS.length, 'Videos,', zeilen.length, 'Schritte');
+// Die Pläne für die App, solange sie ohne Server läuft.
+const plaene = PLAENE.map((p, i) => ({
+  id: p.id, titel: p.t, ebene: p.lv, fuer: p.fuer, satz: p.satz, minuten: p.min, reihenfolge: i + 1,
+  wochen: p.wochen.map(w => w.map(e => ({ slug: e.v, aufgabe: e.a }))),
+}));
+fs.writeFileSync(path.join(hier, '../../mobile/src/daten/plaene.json'), JSON.stringify(plaene, null, 1) + '\n');
+// Das Camp für die App, mit denselben Zahlen wie in der Datenbank.
+const camp = {
+  id: CAMP.id, titel: CAMP.t, von: CAMP.von, bis: CAMP.bis, preis_cent: CAMP.preis * 100,
+  geschwister_rabatt_cent: CAMP.geschwister * 100, plaetze: CAMP.plaetze, frei: CAMP.frei,
+  jahrgang_von: campJahr - 15, jahrgang_bis: campJahr - 8,
+};
+fs.writeFileSync(path.join(hier, '../../mobile/src/daten/camp.json'), JSON.stringify(camp, null, 1) + '\n');
+console.log('seed.sql:', VIDEOS.length, 'Videos,', zeilen.length, 'Schritte,', PLAENE.length, 'Pläne mit', einheiten.length, 'Einheiten, 1 Camp');

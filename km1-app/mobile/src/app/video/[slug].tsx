@@ -15,7 +15,7 @@ import { Abschnitt, Fliess, Klein, Titel, Ueberzeile } from '@/ui/Schrift';
 import { BILDER, Chip, Druck, Knopf, Leer, Poster, Seite } from '@/ui/Bausteine';
 import { Reihe, BlockKopf } from '@/ui/Reihe';
 import { setzeTempo, SpielerFlaeche, springeZu, useSpieler } from '@/ui/Spieler';
-import { Haken, Herz, Person, Schloss, Suche } from '@/ui/Symbole';
+import { Haken, Herz, Kamera, Person, Schloss, Suche } from '@/ui/Symbole';
 
 const zugangName = (z: Video['zugang']) => z === 'pro' ? 'Profi-Einheit' : z === 'konto' ? 'Mit Konto' : 'Ohne Anmeldung';
 const TEMPI = [0.5, 0.75, 1];
@@ -65,7 +65,7 @@ export default function VideoSeite() {
 
   return (
     <Seite>
-      <Stack.Screen options={{ title: KAT[v.kategorie].toUpperCase() }} />
+      <Stack.Screen options={{ title: KAT[v.kategorie] }} />
       {zu ? (
         <View style={{ marginHorizontal: -18, marginTop: -18 }}>
           <Poster v={v} verhaeltnis={16 / 9} radius={0} kinder={
@@ -79,7 +79,8 @@ export default function VideoSeite() {
           } />
         </View>
       ) : (
-        <SpielerFlaeche player={sp.player} status={sp.status} meldung={sp.meldung} erneut={sp.erneut} />
+        <SpielerFlaeche player={sp.player} status={sp.status} meldung={sp.meldung} ohneNetz={sp.ohneNetz} erneut={sp.erneut}
+          bildImBildWechsel={sp.bildImBildWechsel} />
       )}
 
       <View>
@@ -148,6 +149,11 @@ export default function VideoSeite() {
               beschriftung={gemerkt ? 'Aus der Merkliste nehmen' : 'Auf die Merkliste'}
               symbol={<Herz farbe={gemerkt ? f.accent : f.ink} gefuellt={gemerkt} />} />
           </View>
+
+          {konto?.rolle !== 'km1' && (
+            <Knopf art="geist" titel="Mit mir vergleichen" symbol={<Kamera farbe={f.accentInk} />}
+              onPress={() => { haptik('leicht'); router.push(`/vergleich/${v.slug}`); }} />
+          )}
 
           <View style={[{ flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: f.surface, borderRadius: RADIUS.karte,
             paddingHorizontal: 16, paddingVertical: 14 }, schwebt(f)]}>

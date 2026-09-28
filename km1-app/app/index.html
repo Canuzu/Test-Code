@@ -468,7 +468,7 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 }
 .hero .ht.mittel{font-size:31px}
 .hero .ht.eng{font-size:27px;line-height:1.02}
-.hero .hmeta{font-size:15px;color:rgba(255,255,255,.82);letter-spacing:-.01em}
+.hero .hmeta{font-size:15px;color:rgba(255,255,255,.82);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hero .hfuss{display:flex;align-items:center;gap:14px;margin-top:10px}
 .hero .hplay{
   display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;
@@ -707,6 +707,21 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 .player .poster::after{box-shadow:none;background:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,0) 40%,rgba(0,0,0,.45) 100%)}
 
 .zone{position:absolute;top:0;bottom:62px;width:40%;z-index:2}
+/* Das Video laedt nicht: eine Meldung ueber dem Bild und ein Knopf zum
+   Erneutversuchen, statt eines Players, der stumm stehen bleibt. */
+.pfehler{
+  position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  padding:16px 24px;text-align:center;color:#fff;background:rgba(0,0,0,.84);
+}
+#player:has(.pfehler) .pbtn,.dreh:has(.pfehler) .kino-play{display:none}
+.pfehler p{margin:0;font-size:15px;line-height:1.4;max-width:30ch}
+.pfehler .btn{width:auto;min-height:40px;padding:8px 20px}
+.netzleiste{
+  position:absolute;z-index:41;left:50%;bottom:calc(144px + var(--unten));transform:translateX(-50%);
+  width:max-content;max-width:calc(100% - 32px);padding:8px 14px;border-radius:999px;
+  background:#FF9500;color:#1C1300;font-size:13px;font-weight:600;letter-spacing:-.01em;text-align:center;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+}
 .zone.links{left:0}
 .zone.rechts{right:0}
 .sprung{
@@ -832,6 +847,9 @@ svg.dia{background:var(--dia-acc);background:linear-gradient(150deg,color-mix(in
 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:2px 0;margin-top:-16px;font-size:15px;letter-spacing:-.01em;color:var(--text-2)}
 .meta span{display:inline-flex;align-items:center;gap:6px}
 .meta span+span::before{content:"·";margin:0 2px 0 8px;color:var(--text-2)}
+/* Was nicht mehr in die Zeile passt, steht darunter, ohne Punkt davor. */
+.meta span.ganz{flex-basis:100%}
+.meta span.ganz::before{content:none}
 
 /* Die Schritte als Liste mit Nummern im Kreis. Der laufende Schritt
    bekommt das Blau. */
@@ -1160,6 +1178,13 @@ a.btn{text-decoration:none}
 
 /* Die Wochentage als Kreise. */
 .days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+/* Der erste Start: die Jahrgaenge als Raster, oben rechts „Ueberspringen". */
+.jahre{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:8px}
+.jahre .day{aspect-ratio:auto;height:46px;border-radius:14px;font-family:var(--rund);font-variant-numeric:tabular-nums}
+.sheet-head.erst{justify-content:space-between}
+.sheet-head.erst .kopf-t{pointer-events:none}
+.back-platz{width:44px;height:44px}
+.kopf-rechts{position:relative;z-index:1;min-height:44px;padding:0 6px;font-size:17px;color:var(--link);letter-spacing:-.02em}
 .day{
   aspect-ratio:1;min-height:44px;border-radius:50%;background:var(--fuell);color:var(--text);
   font-size:15px;font-weight:600;letter-spacing:-.01em;
@@ -1175,7 +1200,7 @@ a.btn{text-decoration:none}
   position:absolute;z-index:40;left:50%;bottom:calc(86px + var(--unten));
   transform:translate(-50%,16px) scale(.94);max-width:min(88%,420px);
   padding:12px 20px;border-radius:999px;text-align:center;
-  background:rgba(22,22,24,.86);color:#fff;font-size:15px;font-weight:600;letter-spacing:-.015em;
+  background:rgba(22,22,24,.94);color:#fff;font-size:15px;font-weight:600;letter-spacing:-.015em;
   -webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);
   box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12),0 12px 30px rgba(0,0,0,.25);
   opacity:0;pointer-events:none;transition:opacity .25s var(--ease),transform .5s var(--feder);
@@ -1183,7 +1208,7 @@ a.btn{text-decoration:none}
 /* Die Erklaerung hinter einem i: laenger als ein Toast, deshalb als Karte. */
 .toast.lang{width:min(88%,380px);border-radius:18px;padding:14px 18px;text-align:left;font-weight:500;line-height:1.4}
 /* Das kleine i neben einer Ueberschrift. */
-.infoknopf{display:inline-grid;place-items:center;width:32px;height:32px;margin:-8px -6px -8px 0;vertical-align:middle;color:var(--text-3);border-radius:50%}
+.infoknopf{position:relative;display:inline-grid;place-items:center;width:32px;height:32px;margin:-8px -6px -8px 0;vertical-align:middle;color:var(--text-3);border-radius:50%}
 .infoknopf svg{width:18px;height:18px}
 .infoknopf:active{background:var(--fuell)}
 .big .infoknopf{margin-left:2px}
@@ -1205,9 +1230,9 @@ a.btn{text-decoration:none}
 .coach.ich .n .haken{width:23px;height:23px;margin:0 0 0 6px;vertical-align:-3px}
 .lvchip .haken{width:15px;height:15px;margin:0 -2px 0 -1px;vertical-align:0}
 
-/* Die Ebene oben rechts ist ein Knopf: dahinter liegt die Wahl der
-   Sicht fuer die Vorfuehrung. */
-button.lvchip{transition:transform .25s var(--feder)}
+/* Die Ebene oben rechts ist ein Knopf: dahinter liegt der Weg durch die
+   Pyramide, nur in der Vorfuehrung die Wahl der Sicht. */
+button.lvchip{position:relative;transition:transform .25s var(--feder)}
 button.lvchip:active{transform:scale(.94)}
 .lvchip .pfeil{width:6px;height:6px;margin-left:1px;border-right:1.6px solid var(--text-2);border-bottom:1.6px solid var(--text-2);transform:translateY(-2px) rotate(45deg);border-radius:1px}
 
@@ -1222,7 +1247,7 @@ button.lvchip:active{transform:scale(.94)}
 .hinweise .hinweis{position:relative;border-radius:0;background:none;padding:12px 14px 12px 16px}
 .hinweise .hinweis+.hinweis::before{content:"";position:absolute;top:0;right:0;left:70px;border-top:.5px solid var(--trenn)}
 .hinweise .hinweis:active{transform:none;background:var(--fuell)}
-.hinweise .hinweis .s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hinweise .hinweis .s{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .hinweis{
   display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:14px;width:100%;
   padding:14px 14px 14px 16px;border-radius:var(--r-karte);background:var(--flaeche);text-align:left;
@@ -1257,6 +1282,9 @@ button.lvchip:active{transform:scale(.94)}
   box-shadow:none;
 }
 .rolle.zu{opacity:.5}
+.rolle.fest{grid-template-columns:32px minmax(0,1fr) auto}
+.rolle .aendern{font-size:15px;font-weight:500;color:var(--akzent)}
+.btn:disabled:not(.done){opacity:.4;pointer-events:none}
 
 /* Kleine Schilder fuer einen Zustand: wartet, geprueft, Feedback da. */
 .pille{
@@ -1357,6 +1385,39 @@ button.lvchip:active{transform:scale(.94)}
   width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
   background:var(--fuell);font-size:13px;font-weight:700;letter-spacing:0;color:var(--text);
 }
+.vg-paar{display:flex;flex-direction:column;gap:8px}
+.vg-feld{position:relative;width:100%;aspect-ratio:16/9;border-radius:var(--r-karte);overflow:hidden;background:#000;margin:0 auto}
+.vg-feld .poster{height:100%;aspect-ratio:auto;border-radius:0}
+.vg-feld.eigen{aspect-ratio:var(--ar,16/9);width:min(100%,calc(46svh * var(--ar,1.78)))}
+.vg-feld video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+.vg-feld.leer{display:grid;place-items:center;color:rgba(255,255,255,.5);background:var(--fuell)}
+:root[data-theme="dark"] .vg-feld.leer{background:#1E2824}
+.vg-feld.leer svg{width:36px;height:36px;color:var(--text-3)}
+.vg-name{position:absolute;top:10px;left:10px;z-index:2;padding:3px 10px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-size:13px;font-weight:600}
+.vg-zeit{position:absolute;right:10px;bottom:10px;z-index:2;padding:3px 8px;border-radius:8px;background:rgba(0,0,0,.55);color:#fff;font-family:var(--rund);font-size:13px;font-variant-numeric:tabular-nums}
+.vg-steuer{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px}
+.vg-steuer input[type=range]{width:100%;accent-color:var(--akzent)}
+.vg-t{font-family:var(--rund);font-size:15px;font-variant-numeric:tabular-nums;color:var(--text-2)}
+.vg-play{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--akzent);color:#fff}
+.vg-play svg{width:18px;height:18px}
+label.btn{cursor:pointer}
+.unit.plan{grid-template-columns:34px minmax(0,1fr) 44px;padding:6px 6px 6px 16px}
+.unit.plan.jetzt .tag{background:var(--akzent);color:#fff}
+.plan-v{display:block;min-width:0;padding:6px 0;text-align:left}
+.plan-haken{width:44px;height:44px;display:grid;place-items:center;color:var(--text-3)}
+.plan-haken svg{width:16px;height:16px}
+/* Ein Trainingsplan als Kachel in der Videothek. */
+.plankarte{
+  flex:0 0 min(72%,260px);display:flex;flex-direction:column;gap:6px;min-height:132px;padding:16px;text-align:left;
+  border-radius:var(--r-karte);color:#fff;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--c) 88%,#000) 0%,color-mix(in srgb,var(--c) 62%,#000) 100%);
+}
+.plankarte:active{transform:scale(.98)}
+.pk-kopf{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pk-lv{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;opacity:.86}
+.plankarte .pille{background:rgba(255,255,255,.22);color:#fff}
+.pk-t{margin-top:auto;font-family:var(--display);font-size:24px;line-height:1.02;text-transform:uppercase}
+.pk-m{font-size:13px;opacity:.86}
 .unit .tag.eilig{background:color-mix(in srgb,var(--akzent) 13%,transparent);color:var(--link)}
 
 /* Der Code zum Beitreten, gross und gut vorzulesen. */
@@ -1459,6 +1520,10 @@ button.fbz:active{background:var(--fuell)}
 /* Oben auf der Pruefseite: der Haken gross. */
 .haken-gross{display:grid;place-items:center;width:84px;height:84px;margin:4px auto 6px;color:var(--haken)}
 .haken-gross svg{width:100%;height:100%;filter:drop-shadow(0 12px 22px color-mix(in srgb,var(--haken) 40%,transparent))}
+/* Blau ist der Haken fuer gepruefte Konten. Ein erledigter Schritt ist
+   rot wie alles, was man selbst tut. */
+.haken-gross.erledigt{color:var(--akzent)}
+.haken-gross.erledigt svg{filter:none}
 
 /* Ein Beleg fuer die Pruefung: Zeile mit Haken, sobald er da ist. */
 .lrow .ok{color:var(--gruen);font-weight:600}
@@ -1491,7 +1556,9 @@ button.fbz:active{background:var(--fuell)}
 .leer.klein svg{width:40px;height:40px}
 
 /* Ein kleiner Verweis nur fuer die Vorfuehrung: gestrichelt umrandet,
-   damit niemand ihn fuer einen Teil der App haelt. */
+   damit niemand ihn fuer einen Teil der App haelt. Ohne Vorfuehrung
+   gibt es ihn nicht. */
+:root:not(.mit-vorfuehrung) .demo{display:none}
 .demo{
   display:inline-flex;align-items:center;justify-content:center;gap:6px;align-self:center;min-height:36px;padding:6px 14px;
   border-radius:999px;border:1.5px dashed var(--rand);font-size:13px;font-weight:600;color:var(--text-2);
@@ -1520,6 +1587,9 @@ button.poster{cursor:pointer}
   box-shadow:var(--glas-kante),0 2px 8px rgba(0,0,0,.06);transition:transform .25s var(--feder);
 }
 .postknopf:active{transform:scale(.92)}
+/* Zu sehen sind 32 Punkte, antippen laesst sich wie bei Apple verlangt
+   eine Flaeche von 44. */
+.postknopf::after,.lvchip::after,.infoknopf::after{content:"";position:absolute;inset:-6px}
 .postknopf svg{width:17px;height:17px}
 .postknopf .zaehler{position:absolute;top:-6px;right:-7px;min-width:18px;height:18px;padding:0 5px;font-size:11px;box-shadow:0 0 0 2px var(--seite)}
 .stat .v.lang{font-size:22px;line-height:1.36}
@@ -1871,6 +1941,9 @@ window.km1Start = (function(){
         </div>
       </header>
 
+      <!-- Ohne Netz sagt die App das, statt einfach leer zu bleiben. -->
+      <div class="netzleiste" id="netzleiste" role="status" aria-live="polite" hidden>Kein Netz. Videos laden gerade nicht.</div>
+
       <div class="screens" id="screens"></div>
 
       <nav class="tabs" id="tabs" aria-label="Hauptbereiche"></nav>
@@ -2056,6 +2129,44 @@ var PFAD = {
   4:[{w:1,id:'anlaufen'},{w:2,id:'schnittstelle'},{w:3,id:'standard-ecke'},{w:4,id:'finishing-mued'},{w:5,id:'regeneration'}]
 };
 
+/* Trainingsplaene: sechs Wochen, drei Einheiten pro Woche. Ein Plan hat
+   einen Anfang und ein Ende, eine Videosammlung nicht. Dasselbe Video
+   kommt mehrmals vor, jedes Mal mit einer anderen Aufgabe: erst
+   langsam, dann mit Tempo, am Ende unter Druck. Die erste Woche ist mit
+   Konto frei, danach gehoert der Plan zu KM1 Pro. */
+var PLAENE = [
+  {id:'grundlagen', t:'Grundlagen in sechs Wochen', lv:1, k:'annahme', fuer:'U8 bis U13', min:20,
+   satz:'Annehmen, passen, abstoppen und die Füße schnell machen. Die Basis für alles andere.',
+   wochen:[
+    [{v:'erste-beruehrung', a:'Langsam, 3 × 5 Minuten, beide Füße'},{v:'flacher-pass', a:'Gegen die Wand, 50 Pässe pro Fuß'},{v:'leiter', a:'Die ersten drei Muster, je 5 Durchgänge'}],
+    [{v:'abstoppen', a:'Stoppen, andribbeln, 20 Wiederholungen'},{v:'erste-beruehrung', a:'Mit Blick nach oben vor der Annahme'},{v:'leiter', a:'Alle sechs Muster, je 3 Durchgänge'}],
+    [{v:'flacher-pass', a:'Über 20 Meter, 30 Pässe pro Fuß'},{v:'abstoppen', a:'Mit Richtungswechsel nach dem Stoppen'},{v:'erste-beruehrung', a:'Annahme in die Bewegung'}],
+    [{v:'leiter', a:'Tempo steigern, auf Zeit'},{v:'flacher-pass', a:'Direkt spielen, ohne Annahme'},{v:'abstoppen', a:'Aus dem Lauf stoppen'}],
+    [{v:'erste-beruehrung', a:'Unter Zeitdruck: zwei Kontakte'},{v:'flacher-pass', a:'Mit dem schwachen Fuß, 50 Pässe'},{v:'leiter', a:'Muster nach Ansage'}],
+    [{v:'abstoppen', a:'Im Spiel zu zweit'},{v:'erste-beruehrung', a:'Annahme, Blick, Pass in einer Bewegung'},{v:'flacher-pass', a:'Test: 20 Pässe durch ein Hütchentor'}]
+   ]},
+  {id:'dribbling', t:'Dribbling mit Tempo', lv:2, k:'dribbling', fuer:'U10 bis U15', min:25,
+   satz:'Vom ersten Übersteiger bis zum 1 gegen 1: Tempowechsel statt Tricks.',
+   wochen:[
+    [{v:'uebersteiger', a:'Im Stand, 3 × 20 pro Seite'},{v:'abstoppen', a:'Stoppen und explodieren, 20 Mal'},{v:'leiter', a:'Schnelle Füße, 4 Muster'}],
+    [{v:'uebersteiger', a:'Im Gehen, dann im Trab'},{v:'ballmitnahme', a:'Mitnahme in den freien Raum'},{v:'leiter', a:'Mit Ball danach: 5 Meter Antritt'}],
+    [{v:'uebersteiger', a:'Mit Tempowechsel nach dem Trick'},{v:'eins-gegen-eins', a:'Gegen einen Hütchengegner'},{v:'abstoppen', a:'Richtungswechsel links und rechts'}],
+    [{v:'eins-gegen-eins', a:'Gegen einen Partner, halbes Tempo'},{v:'ballmitnahme', a:'Im Sprint, 10 Wiederholungen'},{v:'uebersteiger', a:'Doppelter Übersteiger'}],
+    [{v:'eins-gegen-eins', a:'Volles Tempo, 10 Duelle'},{v:'uebersteiger', a:'Mit dem schwachen Fuß'},{v:'ballmitnahme', a:'Mitnahme und Abschluss'}],
+    [{v:'eins-gegen-eins', a:'Im Spiel 2 gegen 2'},{v:'uebersteiger', a:'Test: 44 in 60 Sekunden'},{v:'abstoppen', a:'Alles zusammen, 15 Minuten'}]
+   ]},
+  {id:'flanke', t:'Flanke und Abschluss', lv:2, k:'flanken', fuer:'U10 bis U17', min:30,
+   satz:'Die Flanke, die ankommt, und der Abschluss, der sitzt. Zu zweit am schönsten.',
+   wochen:[
+    [{v:'flanke-innen', a:'Aus dem Stand, 20 pro Seite'},{v:'vollspann', a:'Flach aufs Tor, 20 Schüsse'},{v:'kopfball', a:'Aus der Hand, Timing üben'}],
+    [{v:'flanke-innen', a:'Aus dem Lauf, auf den Elfmeterpunkt'},{v:'vollspann', a:'Nach Ballmitnahme'},{v:'kopfball', a:'Mit Anlauf'}],
+    [{v:'innenrist-flanke', a:'Aus dem Halbfeld, 20 Flanken'},{v:'vollspann', a:'Mit dem schwachen Fuß'},{v:'flanke-innen', a:'Flach an den ersten Pfosten'}],
+    [{v:'innenrist-flanke', a:'Auf einen Partner im Lauf'},{v:'kopfball', a:'Nach Flanke vom Partner'},{v:'vollspann', a:'Direktabnahme'}],
+    [{v:'flanke-innen', a:'Unter Zeitdruck: drei Kontakte'},{v:'finishing-mued', a:'Abschluss nach Sprint'},{v:'kopfball', a:'Gegen einen Gegenspieler'}],
+    [{v:'innenrist-flanke', a:'Flanke und Abschluss zu zweit'},{v:'finishing-mued', a:'10 Abschlüsse nach Belastung'},{v:'flanke-innen', a:'Test: 7 von 10 kommen an'}]
+   ]}
+];
+
 /* Schlag den Coach. Ansehen, nachmachen, im Training zeigen. Wer im
    Team ist, laedt seinen Versuch geschuetzt hoch: das Video sieht nur
    der eigene Trainer, und die Zahl zaehlt erst, wenn er sie bestaetigt. */
@@ -2093,8 +2204,30 @@ var state = {
   versuch:{datei:null, zweck:'challenge', sicht:'trainer', zahl:'', busy:false},
   bericht:null, scoutPos:'alle', teilArt:'ebene', gelesen:{},
   demo:false, zuw:null, newsArt:0, scoutJg:'alle', hoch:null,
-  startSicht:'fuerdich', teamSicht:'uebersicht'
+  startSicht:'fuerdich', teamSicht:'uebersicht', plan:null, buchungen:{}, campForm:null
 };
+
+/* Die Vorfuehrung: jede Rolle zum Zeigen, mit erfundenen Namen. Echte
+   Nutzer sehen davon nichts. An geht sie mit ?vorfuehrung in der Adresse
+   und bleibt auf dem Geraet an, bis man sie in ihrem Blatt ausschaltet.
+   Die Vorschau auf claude.ai setzt KM1_VORFUEHRUNG und zeigt sie immer. */
+var VORF_KEY = 'km1-vorfuehrung';
+var VORF = (function(){
+  var q = '', an = window.KM1_VORFUEHRUNG === true;
+  try{ q = location.search + location.hash; }catch(e){}
+  try{
+    if(/vorfuehrung=aus/.test(q)) localStorage.setItem(VORF_KEY, '0');
+    else if(/vorfuehrung/.test(q)) localStorage.setItem(VORF_KEY, '1');
+    var s = localStorage.getItem(VORF_KEY);
+    return s === null ? an : s === '1';
+  }catch(e){ return an || (/vorfuehrung/.test(q) && !/vorfuehrung=aus/.test(q)); }
+})();
+document.documentElement.classList.toggle('mit-vorfuehrung', VORF);
+function vorfuehrungSetzen(an){
+  VORF = an;
+  try{ localStorage.setItem(VORF_KEY, an ? '1' : '0'); }catch(e){}
+  document.documentElement.classList.toggle('mit-vorfuehrung', an);
+}
 
 /* ============================================================
    Werkzeug
@@ -2353,16 +2486,11 @@ function karte(v){
 /* ============================================================
    Die vier Bereiche
    ============================================================ */
-/* Die Karte oben auf der Startseite: das angefangene Video, sonst das
-   naechste offene der eigenen Ebene. */
+/* Die Karte oben auf der Startseite beantwortet eine Frage: was heute
+   dran ist. Es gibt genau eine Antwort, in dieser Reihenfolge: die
+   Hausaufgabe vom Trainer, das angefangene Video, die naechste Einheit
+   im Plan, der naechste Schritt auf dem eigenen Weg. */
 function startKarte(){
-  var id = state.zuletzt, stelle = id && state.gesehen[id], v = id && byId(id);
-  if(v && stelle && !gesperrt(v)){
-    var d = sek(v.d);
-    return heroKarte(v, 'Weitertrainieren',
-      fmtZeit(d - stelle)+' übrig · '+lvOf(v.lv).nm,
-      Math.max(3, Math.round(stelle / d * 100)), wochenziel());
-  }
   /* Wer Spieler betreut oder sichtet, sieht oben die neueste
      Profi-Einheit: mit KM1 Team ist sie fuer die ganze Mannschaft frei. */
   if(istPruefRolle()){
@@ -2370,8 +2498,46 @@ function startKarte(){
     return heroKarte(pe, 'Neue Profi-Einheit',
       state.rolle === 'trainer' ? 'Als Hausaufgabe für dein ganzes Team frei' : pe.d+' · '+(pe.gast || 'Profi-Einheit'), 0);
   }
+  var eltern = drin() && state.rolle === 'eltern';
+  var vor = eltern ? 'Heute für '+KIND.vn : 'Heute';
+  /* Die Stelle, an der ein Video angehalten wurde, als Balken. */
+  var stand = function(v){
+    var st = state.gesehen[v.id];
+    return st && !gesperrt(v) ? Math.max(3, Math.round(st / sek(v.d) * 100)) : 0;
+  };
+  /* Oben steht nur „Heute", der Grund steht unter dem Titel. Rechts
+     oben sitzt der Ring, eine laengere Zeile liefe darunter. */
+  var ha = hausaufgabeOffen();
+  if(ha){
+    var hv = byId(ha.video);
+    return heroKarte(hv, vor, 'Hausaufgabe · '+ha.bisText+' · '+hv.d, stand(hv), wochenziel());
+  }
+  var id = state.zuletzt, v = id && byId(id);
+  if(v && state.gesehen[id] && !gesperrt(v)){
+    return heroKarte(v, vor, 'Angefangen · '+fmtZeit(sek(v.d) - state.gesehen[id])+' übrig', stand(v), wochenziel());
+  }
+  /* Wer einen Plan hat, sieht dessen naechste Einheit. */
+  var st = drin() && planStand();
+  if(st && st.naechste && planWocheFrei(st.naechste.w)){
+    return heroKarte(byId(st.naechste.ein.v), vor, 'Dein Plan · '+st.naechste.ein.a, 0, planRing(st));
+  }
   var n = naechstesVideo() || VIDEOS[0];
-  return heroKarte(n, drin() ? (state.rolle === 'eltern' ? KIND.vn+' als Nächstes' : 'Als Nächstes') : 'Fang hier an', n.d+' · '+lvOf(n.lv).nm, 0, wochenziel());
+  return heroKarte(n, drin() ? vor : 'Fang hier an', (drin() ? 'Nächster Schritt · ' : '')+n.d+' · '+lvOf(n.lv).nm, 0, wochenziel());
+}
+/* Die aelteste offene Hausaufgabe des Spielers oder, fuer die Eltern,
+   ihres Kindes. Ohne Team gibt es keine. */
+function hausaufgabeOffen(){
+  var r = state.rolle, t = (r === 'spieler' || r === 'eltern') ? meinTeam() : null;
+  if(!t || !t.aufgaben) return null;
+  var id = r === 'eltern' ? KIND.id : ichId();
+  var a = t.aufgaben.filter(function(x){ return !aufgabeFertig(x, id) && byId(x.video) && !gesperrt(byId(x.video)); })[0];
+  return a || null;
+}
+/* Mit Plan zaehlt der Ring die Einheiten der laufenden Planwoche. */
+function planRing(st){
+  var z = [0, 1, 2].filter(function(e){ return state.plan.done[planSchluessel(st.woche, e)]; }).length;
+  return '<span class="hziel" aria-label="Woche '+(st.woche + 1)+' des Plans, '+z+' von 3 Einheiten">'+ring(z / 3) +
+    '<span>Woche '+(st.woche + 1)+': '+z+' von 3</span></span>';
 }
 /* Das Wochenziel als kleiner Ring in der grossen Karte. Nur wer selbst
    uebt, und Eltern fuer ihr Kind; gezaehlt wird seit Montag, ohne Challenge. */
@@ -2478,7 +2644,11 @@ function campKarte(){
 function werbeplatz(){
   var r = drin() ? state.rolle : 'gast';
   if(r === 'scout' || r === 'profi' || r === 'verein' || r === 'km1') return '';
-  var abo = (r === 'trainer' || r === 'akademie') ? (state.teamAbo ? '' : teamKachel()) : (state.pro ? '' : proKachel(true));
+  /* Kinder bekommen auf der Startseite keine Werbung fuer ein Abo. Das
+   Camp buchen ohnehin die Eltern. Ohne Konto zaehlt der Jahrgang aus dem
+   ersten Start, und ohne den gilt man als Kind. */
+  var kind = (r === 'spieler' || r === 'gast') && alterVon(state.jahrgang) < 16;
+  var abo = (r === 'trainer' || r === 'akademie') ? (state.teamAbo ? '' : teamKachel()) : ((state.pro || kind) ? '' : proKachel(true));
   if(!abo) return campKarte();
   return new Date().getDate() % 2 ? campKarte() : abo;
 }
@@ -2507,7 +2677,7 @@ function screenTechnik(uebungen){
   return '<section class="screen">' +
     (uebungen
       ? '<div><p class="eyebrow">Für dein Team</p><h1 class="big">Übungen'+infoKnopf('uebungen', 'Tipp auf ein Video und weise es als Hausaufgabe zu. Profi-Einheiten sind mit KM1 Team für die ganze Mannschaft frei.')+'</h1></div>'
-      : '<div><p class="eyebrow">Videothek</p><h1 class="big">Technik</h1></div>') +
+      : '<div><p class="eyebrow">Videos und Pläne</p><h1 class="big">Üben</h1></div>') +
 
     '<div class="suchzeile">' +
       '<label class="search"><span class="vh">Videos durchsuchen</span>'+ICON.such+
@@ -2516,6 +2686,7 @@ function screenTechnik(uebungen){
         '<i class="pkt"></i>'+(eb ? h(eb.nm) : 'Ebene')+ICON.runter+'</button>' +
     '</div>' +
 
+    (uebungen || state.suche ? '' : planBlock()) +
     '<div class="chips">'+katChips+'</div>' +
 
     (state.laedt ? skelette(6) :
@@ -2526,6 +2697,76 @@ function screenTechnik(uebungen){
             ? '<button class="btn ghost" type="button" data-act="filterweg" style="width:auto">Filter zurücksetzen</button>' : '') +
         '</div>')) +
   '</section>';
+}
+
+/* ---------- Trainingsplaene ---------- */
+function planVon(id){ return PLAENE.filter(function(x){ return x.id === id; })[0]; }
+function planSchluessel(w, e){ return w+'-'+e; }
+/* Wie weit der laufende Plan ist: erledigte Einheiten, die aktuelle
+   Woche (die erste mit offener Einheit) und die naechste Einheit. */
+function planStand(){
+  var st = state.plan;
+  if(!st) return null;
+  var pl = planVon(st.id), fertig = 0, naechste = null;
+  pl.wochen.forEach(function(woche, w){
+    woche.forEach(function(ein, e){
+      if(st.done[planSchluessel(w, e)]) fertig++;
+      else if(!naechste) naechste = {w:w, e:e, ein:ein};
+    });
+  });
+  return {plan:pl, fertig:fertig, gesamt:pl.wochen.length * 3, naechste:naechste, woche:naechste ? naechste.w : pl.wochen.length - 1};
+}
+/* Die erste Woche ist frei, danach braucht es Pro. */
+function planWocheFrei(w){ return w === 0 || state.pro; }
+function planKarte(pl){
+  var an = state.plan && state.plan.id === pl.id, st = an ? planStand() : null;
+  return '<button class="plankarte" type="button" data-act="plan:'+pl.id+'" style="--c:'+lvFarbe(pl.lv)+'">' +
+    '<span class="pk-kopf"><span class="pk-lv">'+lvOf(pl.lv).nm+'</span>'+(an ? '<span class="pille">Läuft</span>' : '')+'</span>' +
+    '<span class="pk-t">'+h(pl.t)+'</span>' +
+    '<span class="pk-m">'+(st ? 'Woche '+(st.woche + 1)+' von '+pl.wochen.length+' · '+st.fertig+' von '+st.gesamt : pl.wochen.length+' Wochen · 3 × pro Woche · '+pl.fuer)+'</span>' +
+  '</button>';
+}
+function planBlock(){
+  return '<div class="block"><div class="block-head"><h2 class="sec">Trainingspläne</h2><span class="more">6 Wochen</span></div>' +
+    '<div class="row">'+PLAENE.map(planKarte).join('')+'</div></div>';
+}
+function sheetPlan(id){
+  var pl = planVon(id), an = state.plan && state.plan.id === id, st = an ? planStand() : null;
+  var eltern = drin() && state.rolle === 'eltern';
+  var wochen = pl.wochen.map(function(woche, w){
+    var frei = planWocheFrei(w);
+    return '<div class="block"><div class="block-head"><h2 class="sec leise">Woche '+(w + 1)+'</h2>' +
+        (frei ? '' : '<span class="more">'+ICON.lock+' Pro</span>')+'</div>' +
+      '<div class="path">'+woche.map(function(ein, e){
+        var v = byId(ein.v), fertig = an && !!state.plan.done[planSchluessel(w, e)];
+        var jetzt = st && st.naechste && st.naechste.w === w && st.naechste.e === e;
+        return '<div class="unit plan'+(jetzt ? ' jetzt' : '')+'">' +
+          '<span class="tag">'+(e + 1)+'</span>' +
+          '<button class="plan-v" type="button" data-act="'+(frei ? 'video:'+v.id : 'paywall')+'">' +
+            '<span class="t">'+h(v.t)+'</span><span class="s">'+h(ein.a)+'</span></button>' +
+          (an && frei
+            ? '<button class="plan-haken" type="button" data-act="planhaken:'+w+':'+e+'" aria-pressed="'+fertig+'" aria-label="Einheit '+(e + 1)+' in Woche '+(w + 1)+' erledigt">' +
+                '<span class="tick'+(fertig ? ' on' : '')+'">'+ICON.check+'</span></button>'
+            : '<span class="plan-haken leer">'+(frei ? '' : ICON.lock)+'</span>') +
+        '</div>';
+      }).join('')+'</div></div>';
+  }).join('');
+  var pips = '';
+  if(st) for(var i = 0; i < st.gesamt; i++) pips += '<i class="'+(i < st.fertig ? 'on' : '')+'"></i>';
+  return kopf('Trainingsplan') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">'+lvOf(pl.lv).nm+' · '+pl.fuer+'</p><h1 class="big">'+h(pl.t)+'</h1>' +
+        '<p class="sub">'+h(pl.satz)+'</p></div>' +
+      (st
+        ? '<div class="lvpanel" style="--c:'+lvFarbe(pl.lv)+'"><p class="note">'+(st.naechste ? 'Woche '+(st.woche + 1)+' von '+pl.wochen.length : 'Geschafft')+'</p>' +
+            '<span class="pips" style="--c:'+lvFarbe(pl.lv)+'">'+pips+'</span>' +
+            '<p class="sub" style="margin:0">'+st.fertig+' von '+st.gesamt+' Einheiten'+(st.naechste ? '' : '. Stark.')+'</p></div>'
+        : statsHtml([[pl.wochen.length, 'Wochen'], [pl.wochen.length * 3, 'Einheiten'], [pl.min, 'Minuten']])) +
+      (an ? '' : '<button class="btn" type="button" data-act="planstart:'+id+'">'+(eltern ? 'Für '+h(KIND.vn)+' starten' : 'Plan starten')+'</button>' +
+        '<p class="fine" style="margin-top:-16px">Die erste Woche ist mit Konto frei, die übrigen fünf gehören zu KM1 Pro.</p>') +
+      wochen +
+      (an ? '<button class="btn text" type="button" data-act="planende">Plan beenden</button>' : '') +
+    '</div>';
 }
 
 function pyramide(){
@@ -2568,7 +2809,13 @@ function pyramide(){
     '<path class="edge" d="M33.3 0.4L1.8 76.2M66.7 0.4L98.2 76.2M1.8 76.2h96.4"/>' + plates + '</svg>';
 }
 
-function screenPyramide(){
+/* Der Weg durch die Pyramide. Er steht nicht mehr in der Tableiste,
+   sondern hinter der Ebene oben rechts und im Profil. */
+function screenPyramide(){ return '<section class="screen schmal">' + wegInhalt() + '</section>'; }
+function sheetWeg(){
+  return kopf('Dein Weg') + '<div class="sheet-body" data-blatt="weg">' + wegInhalt() + '</div>';
+}
+function wegInhalt(){
   var l = lvOf(state.lvSel), f = lvFortschritt(state.lvSel);
   /* Die Zahl ueber der Liste zaehlt die Liste, nicht alle Videos der Ebene. */
   var anzahl = PFAD[state.lvSel].length;
@@ -2589,8 +2836,7 @@ function screenPyramide(){
   var pips = '';
   for(var i=0;i<f.gesamt;i++) pips += '<i class="'+(i<f.fertig?'on':'')+'"></i>';
 
-  return '<section class="screen schmal">' +
-    '<div><p class="eyebrow">Vier Ebenen, eine Richtung</p><h1 class="big">Die KM1-<br>Pyramide</h1>' +
+  return '<div><p class="eyebrow">Vier Ebenen, eine Richtung</p><h1 class="big">Die KM1-<br>Pyramide</h1>' +
     '</div>' +
     pyramide() +
     '<div class="lvpanel" style="--c:'+l.c+'">' +
@@ -2604,8 +2850,7 @@ function screenPyramide(){
     '<div class="block">' +
       '<div class="block-head"><h2 class="sec">Dein Pfad</h2><span class="more">'+anzahl+' Videos</span></div>' +
       '<div class="path">'+pfad+'</div>' +
-    '</div>' +
-  '</section>';
+    '</div>';
 }
 
 /* Hell, Dunkel oder Automatisch als ein kleiner Schalter. Die grosse
@@ -2629,6 +2874,7 @@ function sheetEinstellungen(){
         zeile('erinnerung', ICON.glocke, '#FF3B30', 'Erinnerung', erinnerungText()) +
       '</div>' +
       vorfuehrungBlock() +
+      (drin() ? '' : '<div class="rows mit-symbol">'+zeile('erststart', ICON.stern, '#FF9500', 'Einführung ansehen')+'</div>') +
       '<div class="rows mit-symbol">' +
         zeile('eltern', ICON.familie, '#34C759', 'Für Eltern') +
         zeile('daten', ICON.schild, '#007AFF', 'Datenschutz') +
@@ -2678,12 +2924,17 @@ function screenProfil(){
     return '<section class="screen schmal">' +
       '<div><p class="eyebrow">Gast</p><h1 class="big">Du schaust<br>ohne Konto zu.</h1>' +
       '</div>' +
+      '<div class="panel">' + liste([
+        'Die App merkt sich, was du geschafft hast',
+        'Dein Team: Hausaufgaben und Feedback von deinem Trainer',
+        'Die erste Woche jedes Trainingsplans'
+      ]) + '</div>' +
       '<div class="panel mitte">' +
-        '<span class="bild-kreis">'+ICON.tabProf+'</span>' +
         '<p class="note">Kostenlos</p>' +
         '<button class="btn" type="button" data-act="login:neu">Konto anlegen</button>' +
         '<button class="btn text" type="button" data-act="login:alt">Anmelden</button>' +
       '</div>' +
+      '<div class="rows mit-symbol">'+zeile('weg', ICON.tabPyr, lvOf(state.meinLv).c, 'Die KM1-Pyramide', lvOf(state.meinLv).nm)+'</div>' +
     '</section>';
   }
 
@@ -2816,7 +3067,7 @@ function sheetVideo(id){
         '<span><i class="dot" style="background:'+l.c+'"></i>Ebene '+v.lv+'</span>' +
         '<span>'+v.d+'</span>' +
         '<span>'+zugangName(v.zg)+'</span>' +
-        (v.gast ? '<span>Gast · '+h(v.gast)+'</span>' : '') +
+        (v.gast ? '<span class="ganz">Zu Gast: '+h(v.gast)+'</span>' : '') +
       '</div>' +
 
       /* Gesperrt steht die Beschreibung trotzdem da: ein Vorgeschmack,
@@ -2849,7 +3100,8 @@ function sheetVideo(id){
           '<button class="btn ghost merk'+(gemerkt?' an':'')+'" type="button" data-act="merk:'+v.id+'"' +
             ' aria-pressed="'+gemerkt+'" aria-label="'+(gemerkt?'Aus der Merkliste nehmen':'Auf die Merkliste')+'">' +
             ICON.herz+'</button>' +
-        '</div>') +
+        '</div>' +
+        (zu ? '' : '<button class="btn ghost" type="button" data-act="vergleich:'+v.id+'">'+ICON.kamera+' Mit mir vergleichen</button>')) +
         /* Kaders Foto nur bei Kader. Die Gaeste haben noch kein eigenes
            Bild, solange ihre Namen nicht feststehen. */
         '<div class="coach">' +
@@ -3142,9 +3394,78 @@ function sheetCamp(){
            'Abschlussturnier am Freitag mit Urkunde'
           ].map(function(t){return '<li>'+ICON.check+'<span>'+t+'</span></li>';}).join('') +
         '</ul></div>' +
-      '<a class="btn" href="https://km1-training.de" target="_blank" rel="noopener">Auf die Warteliste</a>' +
+      campKnopf() +
     '</div>';
 }
+
+/* ---------- Camp buchen ----------
+   Ein Camp ist eine Leistung auf dem Platz. Bezahlt wird deshalb direkt
+   bei KM1, nicht ueber den App Store, und ohne dessen Abgabe. Buchen
+   kann nur ein Erwachsener; Kinder fragen ihre Eltern. */
+/* JAHR steht erst im zweiten Skript, deshalb hier das Jahr selbst. */
+var CAMP = {id:'herbst-koeln', t:'Herbstcamp Köln', d:'19. bis 23. Oktober', von:'2026-10-19', bis:'2026-10-23',
+            preis:249, geschwister:20, plaetze:40, frei:9,
+            jgVon:new Date().getFullYear() - 15, jgBis:new Date().getFullYear() - 8};
+function euro(x){ return x.toFixed(2).replace('.', ',')+' €'; }
+function campKnopf(){
+  var b = state.buchungen[CAMP.id], r = drin() ? state.rolle : 'gast';
+  if(b) return '<div class="panel"><div class="pro-zeile"><span class="note">Gebucht</span><span class="pille gruen">'+h(b.nr)+'</span></div>' +
+    '<p class="sub" style="margin:0">'+h(b.kinder.map(function(k){ return k.vn; }).join(' und '))+' '+(b.kinder.length > 1 ? 'sind' : 'ist')+' dabei. Die Bestätigung ging an Ihre E-Mail.</p></div>';
+  var preis = '<div class="pro-zeile"><span class="note">'+euro(CAMP.preis)+' pro Kind</span><span class="pille orange">Noch '+CAMP.frei+' Plätze</span></div>';
+  if(r === 'spieler') return preis + (W.campWunsch
+    ? '<button class="btn done" type="button" disabled>'+ICON.check+' Deine Eltern sind gefragt</button>'
+    : '<button class="btn" type="button" data-act="campwunsch">Meine Eltern fragen</button>');
+  return preis + '<button class="btn" type="button" data-act="campbuchen">Platz buchen</button>';
+}
+function sheetCampBuchen(){
+  var c = state.campForm, sum = c.kinder.length * CAMP.preis - (c.kinder.length > 1 ? (c.kinder.length - 1) * CAMP.geschwister : 0);
+  var jahre = function(sel){ var o = ''; for(var j = CAMP.jgBis; j >= CAMP.jgVon; j--) o += '<option value="'+j+'"'+(j === sel ? ' selected' : '')+'>'+j+'</option>'; return o; };
+  return kopf('Platz buchen') +
+    '<div class="sheet-body">' +
+      '<div><p class="eyebrow">'+h(CAMP.t)+' · '+h(CAMP.d)+'</p><h1 class="big">Platz buchen</h1></div>' +
+      c.kinder.map(function(k, i){
+        return '<div class="block"><div class="block-head"><h2 class="sec">'+(i === 0 ? 'Ihr Kind' : 'Geschwisterkind')+'</h2>' +
+            (i > 0 ? '<button class="more" type="button" data-act="campkindweg:'+i+'">Entfernen</button>' : '')+'</div>' +
+          '<div class="field"><label for="cb-vn-'+i+'">Vorname</label><input id="cb-vn-'+i+'" type="text" value="'+h(k.vn)+'" autocomplete="off"></div>' +
+          '<div class="field"><label for="cb-jg-'+i+'">Jahrgang</label><span class="wahl"><select id="cb-jg-'+i+'">'+jahre(k.jg)+'</select></span></div>' +
+          '<div class="field"><label for="cb-hin-'+i+'">Allergien, Medikamente, Hinweise</label><textarea id="cb-hin-'+i+'" rows="2" placeholder="Optional">'+h(k.hin || '')+'</textarea></div>' +
+        '</div>';
+      }).join('') +
+      (c.kinder.length < 3 ? '<button class="btn ghost" type="button" data-act="campkindplus">Geschwisterkind dazu, '+euro(CAMP.geschwister)+' günstiger</button>' : '') +
+      '<div class="field"><label for="cb-not">Notfallnummer</label><input id="cb-not" type="tel" inputmode="tel" placeholder="z. B. 0170 1234567" value="'+h(c.notfall || '')+'"></div>' +
+      '<p class="fine" style="margin-top:-16px">Unter dieser Nummer erreicht Sie das Camp-Team während des Camps, von 9 bis 16 Uhr.</p>' +
+      '<div class="rows">' +
+        '<button class="lrow" type="button" role="switch" aria-checked="'+c.fotos+'" data-act="campfotos"><span>Fotos vom Camp dürfen in der App erscheinen</span><span class="schalter" aria-hidden="true"></span></button>' +
+        '<button class="lrow" type="button" role="switch" aria-checked="'+c.ok+'" data-act="campok"><span>Ich habe die Teilnahmebedingungen gelesen</span><span class="schalter" aria-hidden="true"></span></button>' +
+      '</div>' +
+      '<p class="fine" style="margin-top:-16px">Kostenlos stornierbar bis 14 Tage vor Beginn. Ohne Ihre Zustimmung erscheint kein Foto Ihres Kindes.</p>' +
+      '<div class="field"><label>Bezahlen</label><div class="seg">'+[['karte','Karte'],['paypal','PayPal'],['lastschrift','Lastschrift']].map(function(z){
+        return '<button type="button" data-act="campzahl:'+z[0]+'" aria-pressed="'+(c.zahl === z[0])+'">'+z[1]+'</button>';
+      }).join('')+'</div></div>' +
+      '<p class="fine" style="margin-top:-16px">Bezahlt wird direkt bei KM1, nicht über den App Store.</p>' +
+      '<button class="btn" type="button" data-act="campsenden">Verbindlich buchen · '+euro(sum)+'</button>' +
+    '</div>';
+}
+function campFelder(){
+  var c = state.campForm;
+  c.kinder.forEach(function(k, i){
+    var vn = document.getElementById('cb-vn-'+i), jg = document.getElementById('cb-jg-'+i), hin = document.getElementById('cb-hin-'+i);
+    if(vn) k.vn = vn.value.trim(); if(jg) k.jg = +jg.value; if(hin) k.hin = hin.value.trim();
+  });
+  var nt = document.getElementById('cb-not'); if(nt) c.notfall = nt.value.trim();
+}
+function sheetCampFertig(b){
+  return kopf('Gebucht') +
+    '<div class="sheet-body">' +
+      '<div class="pay-kopf"><span class="haken-gross erledigt">'+ICON.check+'</span>' +
+        '<p class="eyebrow">Buchung '+h(b.nr)+'</p><h1 class="big">Bis zum<br>19. Oktober!</h1>' +
+        '<p class="sub">'+h(b.kinder.map(function(k){ return k.vn; }).join(' und '))+' '+(b.kinder.length > 1 ? 'sind' : 'ist')+' im '+h(CAMP.t)+' dabei. Die Bestätigung und die Rechnung über '+euro(b.summe)+' gehen an Ihre E-Mail.</p></div>' +
+      liste(['Montag um 9 Uhr am Vereinsheim, mit Fußballschuhen und Trinkflasche', 'Abholen jeden Tag um 16 Uhr', 'Fragen gehen direkt an das Camp-Team von KM1']) +
+      '<div class="paar2"><button class="btn ghost" type="button" data-act="campkalender">'+ICON.kalender+' In den Kalender</button>' +
+        '<button class="btn ghost" type="button" data-act="back">Fertig</button></div>' +
+    '</div>';
+}
+
 
 function sheetDaten(){
   return kopf('Datenschutz') +
@@ -3155,6 +3476,7 @@ function sheetDaten(){
           ['E-Mail und Vorname, damit dein Konto existiert',
            'Deine Rolle und dein Team',
            'Welche Übungen du abgehakt hast und wo ein Video stehen geblieben ist',
+           'Bei einer Campbuchung: Vorname, Jahrgang und Hinweise zum Kind, die Notfallnummer und ob Fotos erlaubt sind. Bezahlt wird beim Zahlungsanbieter, KM1 sieht keine Kartendaten',
            'Videos, die du hochlädst. Sie sieht nur, wen du auswählst: dein Trainer, dein Team, KM1 oder, auf deinem Profil, von KM1 geprüfte Konten',
            'Deine Laufbahn: die Stationen und wer sie bestätigt hat',
            'Dein Talentprofil, wenn du es freigibst. Unter 16 entscheiden deine Eltern mit',
@@ -3279,6 +3601,7 @@ function sheetBedingungen(){
         'Wer ein anderes Kind filmt, braucht die Zustimmung von dessen Eltern.',
         'Videos von Kindern unter 16 sehen nur das Team, die Familie und von KM1 geprüfte Konten, und erst nach der Freigabe der Eltern. Öffentlich posten nur geprüfte Konten.',
         'Beleidigungen, Mobbing und alles, was Kinder gefährdet, führen zur Sperre. Was gemeldet wird, sieht sich KM1 innerhalb von 24 Stunden an.',
+        'Camps bucht ein Erwachsener. Bezahlt wird direkt bei KM1. Bis 14 Tage vor Beginn ist die Stornierung kostenlos, danach werden 50 Prozent fällig.',
         'Vereine und Akademien prüft KM1. Trainer, Scouts und Profis bekommen den Haken über die Einladung ihres Vereins, der für sie bürgt, oder nach Prüfung ihrer Belege durch KM1. KM1 kann jeden Haken jederzeit wieder entziehen.',
         'Kinder unter 16 schreiben nur mit ihrem Trainer und dem eigenen Team, die Eltern können mitlesen. Profis und Vereine bekommen keine Nachrichten von Fans.'
       ]) + '</div>' +
@@ -3465,7 +3788,7 @@ function steuerung(gross){
    dasselbe behaelt seine Stelle, auch wenn das Blatt neu gebaut wird. */
 function playerInline(o){
   /* Ein anderes Video steigt da ein, wo man aufgehoert hat. */
-  if(P.id !== o.id){ stopPlayer(); P.id = o.id; P.sek = state.gesehen[o.id] || 0; }
+  if(P.id !== o.id){ stopPlayer(); P.id = o.id; P.sek = state.gesehen[o.id] || 0; P.fehler = false; }
   P.titel = o.titel; P.poster = o.poster; P.dauer = o.dauer;
   return '<div class="player" id="player">' +
     '<div class="poster">'+o.poster+'</div>' +
@@ -3473,6 +3796,7 @@ function playerInline(o){
     '<button class="pbtn" type="button" data-act="play" aria-label="Abspielen"'+(P.laeuft ? ' hidden' : '')+'>' +
       '<span>'+ICON.play+'</span></button>' +
     steuerung(false) +
+    (P.fehler ? fehlerHtml() : '') +
   '</div>';
 }
 
@@ -3503,9 +3827,26 @@ function zeichnePlayer(){
   }
 }
 
+/* Ohne Netz laedt kein Video. Heute liegen die Dateien noch nicht
+   hinter der App; im Betrieb meldet dasselbe ein abgelaufener Link. */
+function playerFehler(an){
+  P.fehler = an;
+  [].forEach.call(document.querySelectorAll('#player, #kino .dreh'), function(f){
+    var alt = f.querySelector('.pfehler');
+    if(alt) alt.remove();
+    if(!an) return;
+    f.insertAdjacentHTML('beforeend', fehlerHtml());
+  });
+}
+function fehlerHtml(){
+  return '<div class="pfehler" role="alert"><p>Das Video lädt gerade nicht. Prüf dein Netz und versuch es noch einmal.</p>' +
+    '<button class="btn" type="button" data-act="nochmal">Erneut versuchen</button></div>';
+}
 function spiele(an){
   if(!P.id) return;
   var neu = (an === undefined) ? !P.laeuft : an;
+  if(neu && navigator.onLine === false){ haptik('fehler'); playerFehler(true); return; }
+  if(neu && P.fehler) playerFehler(false);
   if(P.takt){ clearInterval(P.takt); P.takt = null; }
   if(neu && P.sek >= P.dauer) P.sek = 0;
   P.laeuft = neu;
@@ -3573,6 +3914,23 @@ function scrubZu(e, sc){
   P.sek = pr * P.dauer;
   zeichnePlayer();
 }
+
+/* Anruf, Sperrbildschirm oder App gewechselt: das Video haelt an und
+   merkt sich die Stelle. Zurueck in der App steht der Knopf zum
+   Weiterspielen genau dort. */
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden && P.laeuft){ spiele(false); merkeStelle(); P.unterbrochen = true; }
+  else if(!document.hidden && P.unterbrochen){
+    P.unterbrochen = false;
+    toast('Angehalten bei '+fmtZeit(P.sek)+'. Tipp zum Weiterspielen.');
+  }
+});
+function netzZeigen(){
+  var l = document.getElementById('netzleiste');
+  if(l) l.hidden = navigator.onLine !== false;
+}
+window.addEventListener('offline', function(){ netzZeigen(); if(P.laeuft){ spiele(false); playerFehler(true); } });
+window.addEventListener('online', function(){ netzZeigen(); toast('Wieder online'); });
 
 /* ---------- Vollbild ---------- */
 function kinoAuf(){
@@ -3798,11 +4156,13 @@ function render(){
     }
   }
   renderTabs();
-  /* Oben rechts: die Ebene fuer Spieler, sonst die Rolle mit Haken.
-     Dahinter liegt die Wahl der Sicht fuer die Vorfuehrung. */
-  var chip = document.getElementById('lvchip');
-  chip.innerHTML = chipInhalt() + '<span class="pfeil" aria-hidden="true"></span>';
-  chip.setAttribute('aria-label', 'Sicht wechseln');
+  /* Oben rechts: die Ebene fuer Spieler und Gaeste, sie oeffnet den Weg.
+     Die anderen sehen ihre Rolle mit Haken, die zum Profil fuehrt. Nur in
+     der Vorfuehrung liegt dahinter die Wahl der Sicht. */
+  var chip = document.getElementById('lvchip'), ebeneOben = !drin() || state.rolle === 'spieler';
+  chip.innerHTML = chipInhalt() + (VORF ? '<span class="pfeil" aria-hidden="true"></span>' : '');
+  chip.setAttribute('data-act', VORF ? 'sicht' : (ebeneOben ? 'weg' : 'tab:profil'));
+  chip.setAttribute('aria-label', VORF ? 'Vorführung: Sicht wechseln' : (ebeneOben ? 'Dein Weg, Ebene '+lvOf(state.meinLv).nm : 'Profil'));
   postknopfZeichnen();
   var zr = document.getElementById('zahnrad');
   if(zr){ zr.hidden = state.tab !== 'profil'; if(!zr.innerHTML) zr.innerHTML = ICON.zahnrad; }
@@ -3862,6 +4222,9 @@ document.addEventListener('click', function(e){
        einem bestehenden anmeldet, ist im Entwurf Luis aus der U13. */
     var neuesKonto = state.loginModus === 'neu' && !trainer;
     var rl = trainer ? 'km1' : (neuesKonto ? state.wahlRolle : 'spieler');
+    /* Ohne Jahrgang keine Ebene. Er ist nie vorausgewaehlt. */
+    var jgFeld = document.getElementById('lg-jg');
+    if(neuesKonto && rl === 'spieler' && jgFeld && !jgFeld.value){ haptik('fehler'); toast('Wähl noch deinen Jahrgang'); jgFeld.focus(); return; }
     /* Ein falscher Einladungscode haelt das Anlegen auf, bevor es ein Konto gibt. */
     if(neuesKonto && einladbar(rl) && state.pruefWeg !== 'belege'){
       var codeFehler = einladungGueltig((document.getElementById('lg-code') || {}).value, rl, true);
@@ -3947,6 +4310,10 @@ document.addEventListener('click', function(e){
     if(pl) pl.scrollIntoView({block:'start', behavior:'smooth'});
   }
   else if(k==='kino'){ kinoAuf(); }
+  else if(k==='nochmal'){
+    if(navigator.onLine === false){ haptik('fehler'); toast('Noch kein Netz'); return; }
+    playerFehler(false); spiele(true);
+  }
   else if(k==='kinozu'){ kinoZu(); }
   else if(k==='tempo'){
     var li = document.getElementById('tempoliste');
@@ -4016,13 +4383,36 @@ document.addEventListener('click', function(e){
     closeSheet(); render();
     toast(state.erinnerung.an ? 'Erinnerung: '+erinnerungText() : 'Erinnerung aus');
   }
-  else if(k==='lv'){ state.lvSel = +v; render(); }
+  else if(k==='lv'){
+    state.lvSel = +v;
+    if(stack.length && /data-blatt="weg"/.test(stack[stack.length-1])) refreshSheet(sheetWeg()); else render();
+  }
+  else if(k==='weg'){ state.lvSel = state.meinLv; openSheet(sheetWeg()); }
   else if(k==='kat'){ state.kat = v; render(); }
   else if(k==='ebwahl'){ openSheet(sheetEbene()); }
   else if(k==='fltlv'){ state.fltLv = +v; if(stack.length) closeSheet(); render(); }
   else if(k==='filterweg'){ state.kat = 'alle'; state.fltLv = 0; state.suche = ''; haptik('leicht'); render(); }
   else if(k==='theme'){ state.theme = v; haptik('leicht'); applyTheme(); render(); blattAuffrischen(); }
   else if(k==='einstellungen'){ openSheet(sheetEinstellungen()); }
+  else if(k==='plan'){ openSheet(sheetPlan(v)); }
+  else if(k==='planstart'){
+    if(!drin()){ haptik('wand'); state.loginModus = 'neu'; openSheet(sheetLogin()); return; }
+    var alterPlan = state.plan;
+    state.plan = {id:v, start:Date.now(), done:{}};
+    haptik('aufstieg'); refreshSheet(sheetPlan(v)); render();
+    /* Eine offene Hausaufgabe steht auf der Startseite vor dem Plan. */
+    toast(alterPlan ? 'Neuer Plan gestartet. Der alte ist beendet.'
+      : (hausaufgabeOffen() ? 'Plan gestartet. Nach deiner Hausaufgabe steht die erste Einheit auf der Startseite.' : 'Plan gestartet. Die erste Einheit steht auf deiner Startseite.'));
+  }
+  else if(k==='planhaken'){
+    var pw = v.split(':'), key = planSchluessel(+pw[0], +pw[1]);
+    if(state.plan.done[key]) delete state.plan.done[key]; else state.plan.done[key] = Date.now();
+    var ps = planStand();
+    if(!ps.naechste){ haptik('aufstieg'); toast('Plan geschafft. Sechs Wochen, achtzehn Einheiten. Stark.'); }
+    else haptik(state.plan.done[key] ? 'erfolg' : 'leicht');
+    refreshSheet(sheetPlan(state.plan.id)); render();
+  }
+  else if(k==='planende'){ state.plan = null; haptik('leicht'); while(stack.length) closeSheet(); render(); toast('Plan beendet'); }
   else if(k==='info'){ haptik('leicht'); toast(INFO[v] || '', true); }
   else if(k==='teamsicht'){ state.teamSicht = v; haptik('tick'); letzterTab = null; render(); }
   else if(k==='spielereinladen'){ openSheet(sheetSpielerEinladen()); }
@@ -4034,6 +4424,38 @@ document.addEventListener('click', function(e){
   else if(k==='upvis'){ state.up.vis = v; refreshSheet(sheetUpload()); }
   else if(k==='publish'){ publish(); }
   else if(k==='camps'){ openSheet(sheetCamp()); }
+  else if(k==='campwunsch'){
+    W.campWunsch = true; haptik('erfolg'); refreshSheet(sheetCamp());
+    toast('Gefragt. Deine Eltern sehen es in ihrer App.');
+  }
+  else if(k==='campbuchen'){
+    if(!drin()){ haptik('wand'); state.loginModus = 'neu'; openSheet(sheetLogin()); return; }
+    var kind = state.rolle === 'eltern' && state.kindDa ? {vn:KIND.vn, jg:KIND.jg} : {vn:'', jg:JAHR - 10};
+    state.campForm = {kinder:[kind], notfall:'', fotos:false, ok:false, zahl:'karte'};
+    openSheet(sheetCampBuchen());
+  }
+  else if(k==='campkindplus'){ campFelder(); state.campForm.kinder.push({vn:'', jg:JAHR - 10}); haptik('leicht'); refreshSheet(sheetCampBuchen()); }
+  else if(k==='campkindweg'){ campFelder(); state.campForm.kinder.splice(+v, 1); haptik('leicht'); refreshSheet(sheetCampBuchen()); }
+  else if(k==='campfotos'){ campFelder(); state.campForm.fotos = !state.campForm.fotos; haptik('tick'); refreshSheet(sheetCampBuchen()); }
+  else if(k==='campok'){ campFelder(); state.campForm.ok = !state.campForm.ok; haptik('tick'); refreshSheet(sheetCampBuchen()); }
+  else if(k==='campzahl'){ campFelder(); state.campForm.zahl = v; haptik('tick'); refreshSheet(sheetCampBuchen()); }
+  else if(k==='campsenden'){
+    campFelder();
+    var cf = state.campForm;
+    var fehlt = cf.kinder.some(function(x){ return !x.vn; }) ? 'Der Vorname des Kindes fehlt'
+      : (!/[0-9]{6,}/.test(cf.notfall.replace(/\s|\/|-/g, '')) ? 'Die Notfallnummer fehlt'
+      : (!cf.ok ? 'Bestätigen Sie die Teilnahmebedingungen' : ''));
+    if(fehlt){ haptik('fehler'); toast(fehlt); return; }
+    var summe = cf.kinder.length * CAMP.preis - (cf.kinder.length - 1) * CAMP.geschwister;
+    var nr = 'HC-'+String(1000 + Math.floor(Math.random() * 9000));
+    state.buchungen[CAMP.id] = {nr:nr, kinder:cf.kinder.slice(), summe:summe, fotos:cf.fotos, zahl:cf.zahl};
+    CAMP.frei = Math.max(0, CAMP.frei - cf.kinder.length);
+    W.campWunsch = false;
+    haptik('aufstieg');
+    while(stack.length) closeSheet();
+    openSheet(sheetCampFertig(state.buchungen[CAMP.id])); render();
+  }
+  else if(k==='campkalender'){ haptik('erfolg'); toast('Im Kalender: 19. bis 23. Oktober, 9 bis 16 Uhr'); }
 });
 
 document.addEventListener('keydown', function(e){
@@ -4260,7 +4682,10 @@ function rolleSetzen(r, neu){
   state.rolle = r; state.demo = false; state.owner = false;
   state.ichId = (r === 'spieler') ? 'neu' : null;
   var jg = document.getElementById('lg-jg');
-  state.jahrgang = jg ? +jg.value : 2014;
+  if(jg && jg.value){
+    state.jahrgang = +jg.value; state.jgGewaehlt = true;
+    if(r === 'spieler') state.meinLv = state.lvSel = ebeneFuerJahrgang(state.jahrgang);
+  }
   state.imTeam = false; state.kindDa = false;
   state.geprueft = false; state.pruefung = null; state.belege = {}; state.gepruefDurch = null;
   state.teamAbo = false; state.teamPreis = (r === 'akademie') ? 'akademie' : 'team';
@@ -4305,8 +4730,8 @@ function wechsleSicht(r){
 
 /* Was oben rechts steht: die Ebene fuer Spieler, sonst die Rolle. */
 function chipInhalt(){
-  if(!drin()) return '<i style="background:var(--text-3)"></i>Gast';
-  if(state.rolle === 'spieler'){ var l = lvOf(state.meinLv); return '<i style="background:'+l.c+'"></i>'+l.nm; }
+  if(!drin() && VORF) return '<i style="background:var(--text-3)"></i>Gast';
+  if(!drin() || state.rolle === 'spieler'){ var l = lvOf(state.meinLv); return '<i style="background:'+l.c+'"></i>'+l.nm; }
   var x = ROLLEN[state.rolle];
   return '<i style="background:'+x.i+'"></i>'+x.nm+(mitHaken() ? haken() : '');
 }
@@ -4589,11 +5014,14 @@ function hinweiseStart(){
       var fb = W.uploads.filter(function(u){ return ichBin(u.von) && u.status === 'feedback' && !state.gelesen[u.id]; });
       if(fb.length) k.push({act:'clip:'+fb[0].id, ico:ICON.sprech, farbe:'#0A7AFF',
         t:vorname(t.trainer)+' hat dir Feedback gegeben', s:fb[0].titel, n:fb.length});
+      /* Die erste offene Hausaufgabe steht in der grossen Karte darunter,
+         eine zweite nur als Zahl. */
       var offen = t.aufgaben.filter(function(a){ return !aufgabeFertig(a, ichId()); });
-      if(offen.length) k.push({act:'video:'+offen[0].video, ico:ICON.kalender, farbe:'#FF9500',
-        t:'Hausaufgabe von '+vorname(t.trainer), s:byId(offen[0].video).t.replace(/­/g,'')+', '+offen[0].bisText});
+      if(offen.length > 1) k.push({act:'tab:team', ico:ICON.kalender, farbe:'#FF9500',
+        t:'Noch '+(offen.length - 1 === 1 ? 'eine Hausaufgabe' : (offen.length - 1)+' Hausaufgaben'), s:'Alle stehen im Team', n:offen.length - 1});
     }
   } else if(r === 'eltern'){
+    if(W.campWunsch && !state.buchungen[CAMP.id]) k.push({act:'camps', ico:ICON.kalender, farbe:'#FF9500', t:KIND.vn+' möchte ins Herbstcamp', s:CAMP.d+', '+euro(CAMP.preis)});
     var f = W.freigaben.length;
     if(!state.kindDa) k.push({act:'tab:team', ico:ICON.familie, farbe:'#34C759', t:'Verbinden Sie Ihr Kind', s:'Dann sehen Sie Hausaufgaben und Freigaben'});
     else if(f) k.push({act:'tab:team', ico:ICON.familie, farbe:'#34C759', t:(f === 1 ? 'Eine Freigabe wartet' : ZAHLWORT[f].replace(/^./, function(c){ return c.toUpperCase(); })+' Freigaben warten')+' auf Sie', s:KIND.vn+' braucht Ihre Zustimmung', n:f});
@@ -4774,36 +5202,63 @@ function rollenZeilen(){
       ? zeile('einladen:trainer', ICON.einladen, '#34C759', 'Leute einladen', offen ? offen+' offen' : '') : '';
     return '<div class="rows mit-symbol">' + seite + ein + merkZeile() + '</div>';
   }
-  var n = W.uploads.filter(function(u){ return ichBin(u.von); }).length;
+  var n = W.uploads.filter(function(u){ return ichBin(u.von); }).length, l = lvOf(state.meinLv);
   return '<div class="rows mit-symbol">' +
+    zeile('weg', ICON.tabPyr, l.c, 'Mein Weg', l.nm) +
     zeile('meinevideos', ICON.upl, '#FF9500', 'Meine Videos', n) +
     zeile('talentprofil', ICON.stern, '#AF52DE', 'Talentprofil', talentStatusWort()) +
     zeile('talent:'+ichId(), ICON.auge, '#0A7AFF', 'Mein Profil', 'Laufbahn') +
+    (state.plan ? zeile('plan:'+state.plan.id, ICON.kalender, '#34C759', 'Trainingsplan', 'Woche '+(planStand().woche + 1)+' von 6') : '') +
     merkZeile() +
     zeile('teilen:ebene', ICON.teilen, '#0A7AFF', 'Erfolg teilen', '') +
   '</div>';
 }
 function vorfuehrungBlock(){
+  if(!VORF) return '';
   var s = aktuelleSicht();
   var wer = s === 'gast' ? 'Gast' : (s ? DEMO[s].wer : 'Eigenes Konto');
   return '<div class="rows mit-symbol">' + zeile('sicht', ICON.auge, '#5856D6', 'Vorführung', h(wer)) + '</div>';
 }
 
-/* ---------- Anmeldung ---------- */
-function rollenWahl(){
-  return '<div class="field"><label>Ich bin</label><div class="rollen">' +
-    ['spieler','eltern','trainer','akademie','verein','profi','scout'].map(function(r){
-      var x = ROLLEN[r];
-      return '<button class="rolle" type="button" data-act="wahlrolle:'+r+'" aria-pressed="'+(state.wahlRolle === r)+'">' +
-        '<span class="ico" style="--i:'+x.i+'">'+x.ico+'</span>' +
-        '<span><span class="t">'+x.nm+'</span><span class="s">'+h(x.satz)+(x.pruef ? (einladbar(r) ? ' Mit Einladung deines Vereins oder Prüfung durch KM1.' : ' Mit Prüfung durch KM1.') : '')+'</span></span>' +
-        '<span class="kreis" aria-hidden="true"></span></button>';
-    }).join('') +
-  '</div></div>';
+/* ---------- Anmeldung ----------
+   Fast alle, die die App oeffnen, sind Kinder, Eltern oder Trainer. Die
+   vier uebrigen Rollen stehen hinter „Etwas anderes". */
+var ROLLEN_HAUPT = ['spieler','eltern','trainer'], ROLLEN_WEITERE = ['akademie','verein','profi','scout'];
+function rollenKnoepfe(aktiv, act, offen){
+  var knopf = function(r){
+    var x = ROLLEN[r];
+    return '<button class="rolle" type="button" data-act="'+act+':'+r+'" aria-pressed="'+(aktiv === r)+'">' +
+      '<span class="ico" style="--i:'+x.i+'">'+x.ico+'</span>' +
+      '<span><span class="t">'+x.nm+'</span><span class="s">'+h(x.satz)+'</span></span>' +
+      '<span class="kreis" aria-hidden="true"></span></button>';
+  };
+  var weitere = offen || ROLLEN_WEITERE.indexOf(aktiv) >= 0;
+  return '<div class="rollen">' + ROLLEN_HAUPT.map(knopf).join('') +
+    (weitere ? ROLLEN_WEITERE.map(knopf).join('')
+      : '<button class="rolle" type="button" data-act="'+act+'mehr">' +
+          '<span class="ico" style="--i:#8E8E93">'+ICON.mehr+'</span>' +
+          '<span><span class="t">Etwas anderes</span><span class="s">Akademie, Verein, Profi oder Scout</span></span>' +
+          '<span class="chev" aria-hidden="true"></span></button>') +
+  '</div>';
 }
+/* Beim Anlegen steht die Rolle aus dem ersten Start schon fest, als eine
+   Zeile zum Aendern statt der ganzen Liste. */
+function rollenWahl(){
+  if(state.rolleGewaehlt && !state.rollenOffen){
+    var x = ROLLEN[state.wahlRolle];
+    return '<div class="field"><label>Ich bin</label><div class="rollen">' +
+      '<button class="rolle fest" type="button" data-act="wahlrollemehr">' +
+        '<span class="ico" style="--i:'+x.i+'">'+x.ico+'</span>' +
+        '<span><span class="t">'+x.nm+'</span><span class="s">'+h(x.satz)+'</span></span>' +
+        '<span class="aendern">Ändern</span></button></div></div>';
+  }
+  return '<div class="field"><label>Ich bin</label>' + rollenKnoepfe(state.wahlRolle, 'wahlrolle', state.rollenOffen) + '</div>';
+}
+/* Der Jahrgang ist nie vorausgewaehlt. Wer einfach weitertippt, landete
+   sonst mit dem Jahrgang eines anderen auf der falschen Ebene. */
 function jahrgangFeld(){
-  var o = '';
-  for(var j = JAHR - 6; j >= JAHR - 19; j--) o += '<option value="'+j+'"'+(j === state.jahrgang ? ' selected' : '')+'>'+j+'</option>';
+  var o = state.jgGewaehlt ? '' : '<option value="" selected disabled>Bitte wählen</option>';
+  for(var j = JAHR - 6; j >= JAHR - 19; j--) o += '<option value="'+j+'"'+(state.jgGewaehlt && j === state.jahrgang ? ' selected' : '')+'>'+j+'</option>';
   return '<div class="field"><label for="lg-jg">Jahrgang</label><span class="wahl"><select id="lg-jg">'+o+'</select></span></div>';
 }
 
@@ -5011,21 +5466,38 @@ function spielerOhneTeam(){
 }
 
 /* ---------- Eltern ---------- */
-function freigabeKarte(f){
-  var ico, farbe, t, s, wer = '', ja = 'Freigeben', extra = '';
+/* Was eine Freigabe ist, einmal fuer die Zeile und einmal fuer das
+   Blatt, in dem die Eltern entscheiden. */
+function freigabeDaten(f){
+  var d = {wer:'', ja:'Freigeben', extra:''};
   if(f.art === 'talent'){
-    ico = ICON.stern; farbe = '#AF52DE'; t = 'Talentprofil für Scouts';
-    s = KIND.vn+' möchte, dass geprüfte Scouts das Profil sehen: Vorname, Jahrgang, Position und die Werte, die der Trainer bestätigt hat. Kontakt läuft nur über Sie.';
+    d.ico = ICON.stern; d.farbe = '#AF52DE'; d.t = 'Talentprofil für Scouts'; d.kurz = 'Geprüfte Scouts sollen das Profil sehen';
+    d.s = KIND.vn+' möchte, dass geprüfte Scouts das Profil sehen: Vorname, Jahrgang, Position und die Werte, die der Trainer bestätigt hat. Kontakt läuft nur über Sie.';
   } else if(f.art === 'upload'){
     var u = uploadVon(f.upload);
-    ico = ICON.upl; farbe = '#FF9500'; t = 'Video: '+u.titel+(u.zahl ? ' · '+u.zahl : '');
-    s = KIND.vn+' möchte einen Versuch hochladen. Sehen würde ihn: '+sichtLang(u.sicht)+'.';
-    extra = '<button class="btn text" type="button" data-act="clip:'+u.id+'" style="margin:-8px 0 -6px">Video ansehen</button>';
+    d.ico = ICON.upl; d.farbe = '#FF9500'; d.t = 'Video: '+u.titel+(u.zahl ? ' · '+u.zahl : ''); d.kurz = {trainer:'Nur für '+vorname(TEAM.trainer), team:'Für das Team', km1:'Für KM1', profil:'Für das Profil von '+KIND.vn}[u.sicht] || '';
+    d.s = KIND.vn+' möchte einen Versuch hochladen. Sehen würde ihn: '+sichtLang(u.sicht)+'.';
+    d.extra = '<button class="btn text" type="button" data-act="clip:'+u.id+'" style="margin:-8px 0 -6px">Video ansehen</button>';
   } else {
     var a = anfrageVon(f.anfrage);
-    ico = ICON.fernglas; farbe = '#5856D6'; t = 'Anfrage von '+a.scout; s = '„'+a.text+'“';
-    wer = '<span class="wer">Scout · '+h(a.org)+haken()+'</span>'; ja = 'Kontakt erlauben';
+    d.ico = ICON.fernglas; d.farbe = '#5856D6'; d.t = 'Anfrage von '+a.scout; d.s = '„'+a.text+'“'; d.kurz = 'Scout · '+a.org;
+    d.wer = '<span class="wer">Scout · '+h(a.org)+haken()+'</span>'; d.ja = 'Kontakt erlauben';
   }
+  return d;
+}
+function freigabeZeile(f){
+  var d = freigabeDaten(f);
+  return '<button class="lrow" type="button" data-act="freigabeauf:'+f.id+'">' +
+    '<span class="ico" style="--i:'+d.farbe+'">'+d.ico+'</span>' +
+    '<span>'+h(d.t)+'<small class="unter">'+h(d.kurz)+'</small></span><span class="r"></span></button>';
+}
+function sheetFreigabe(id){
+  var f = W.freigaben.filter(function(x){ return x.id === id; })[0];
+  return kopf('Freigabe') + '<div class="sheet-body">' +
+    (f ? freigabeKarte(f) : '<div class="leer klein">'+ICON.familie+'<p>Schon entschieden.</p></div>') + '</div>';
+}
+function freigabeKarte(f){
+  var d = freigabeDaten(f), ico = d.ico, farbe = d.farbe, t = d.t, s = d.s, wer = d.wer, ja = d.ja, extra = d.extra;
   return '<div class="freigabe">' +
     '<div class="fk"><span class="ico" style="--i:'+farbe+'">'+ico+'</span>' +
       '<span><span class="t">'+h(t)+'</span><span class="s">'+h(s)+'</span>'+wer+'</span></div>' +
@@ -5046,20 +5518,20 @@ function teamEltern(){
   var z = a.filter(function(x){ return aufgabeFertig(x, 'luis'); }).length;
   var f = W.freigaben;
   /* Was ansteht, woher Luis kommt, und was Sie fuer ihn einstellen. */
-  var wahl = teamWahl([['uebersicht','Übersicht'],['laufbahn','Laufbahn'],['schutz','Schutz']]);
+  var wahl = teamWahl([['uebersicht','Übersicht'],['videos','Videos'],['laufbahn','Laufbahn'],['schutz','Schutz']]);
   var inhalt = {
     uebersicht: statsHtml([[Math.min(dieseWoche(), 5)+'/5', 'Diese Woche'], [z+'/'+a.length, 'Haus&shy;aufgaben'], [serieWochen(), 'Wochen&shy;serie']]) +
     (f.length
       ? '<div class="block"><div class="block-head"><h2 class="sec">Wartet auf Sie</h2><span class="zaehler">'+f.length+'</span></div>' +
-          f.map(freigabeKarte).join('')+'</div>'
+          '<div class="rows mit-symbol">'+f.map(freigabeZeile).join('')+'</div></div>'
       : '<div class="leer klein">'+ICON.familie+'<p>Nichts offen. Sobald '+KIND.vn+' etwas hochladen möchte oder ein Scout anfragt, steht es hier.</p></div>') +
       aufgabenBlock('eltern'),
+    videos: kindVideos(),
     laufbahn: laufbahnBlockEltern(),
     schutz: '<div class="block"><h2 class="sec leise">Einstellungen für '+KIND.vn+'</h2><div class="rows">' +
       '<button class="lrow" type="button" role="switch" aria-checked="'+W.einst.upload+'" data-act="einst:upload">' +
         '<span>Videos nur mit meiner Freigabe</span><span class="schalter" aria-hidden="true"></span></button>' +
       '<button class="lrow" type="button" data-act="talentprofil"><span>Talentprofil</span><span class="r">'+talentStatusWort()+'</span></button>' +
-      '<button class="lrow" type="button" data-act="versuch:aufgabe"><span>Video für '+KIND.vn+' hochladen</span><span class="r"></span></button>' +
     '</div></div>' +
     '<div class="block"><h2 class="sec">Nachrichten'+infoKnopf('postfach', KIND.vn+' schreibt nur mit dem Trainer und dem eigenen Team, und Sie können jeden Chat lesen. Profis, Scouts und Fremde können nicht schreiben. Wer etwas möchte, fragt zuerst Sie.')+'</h2>' +
       '<div class="rows mit-symbol">'+zeile('nachrichten', ICON.sprech, '#34C759', 'Chats von '+KIND.vn, 'Nur Team und Trainer')+'</div></div>'
@@ -5092,15 +5564,20 @@ function spielerBlock(t){
         '<span>Alle '+ids.length+' Spieler</span><span class="r"></span></button>' : '') +
     '</div></div>';
 }
+function beitrittKarte(x){
+  return '<div class="freigabe"><div class="fk"><span class="ico" style="--i:#34C759">'+ICON.einladen+'</span>' +
+    '<span><span class="t">'+h(x.name)+'</span><span class="s">Hat den Code eingegeben. Jahrgang '+x.jg+', das Konto haben die Eltern angelegt.</span></span></div>' +
+    '<div class="paar2"><button class="btn ghost" type="button" data-act="aufnehmen:'+x.id+':nein">Ablehnen</button>' +
+    '<button class="btn" type="button" data-act="aufnehmen:'+x.id+':ja">Aufnehmen</button></div></div>';
+}
 function beitrittsBlock(t){
   if(!t.anfragen || !t.anfragen.length) return '';
   return '<div class="block"><div class="block-head"><h2 class="sec">Möchte beitreten</h2><span class="zaehler">'+t.anfragen.length+'</span></div>' +
-    t.anfragen.map(function(x){
-      return '<div class="freigabe"><div class="fk"><span class="ico" style="--i:#34C759">'+ICON.einladen+'</span>' +
-        '<span><span class="t">'+h(x.name)+'</span><span class="s">Hat den Code eingegeben. Jahrgang '+x.jg+', das Konto haben die Eltern angelegt.</span></span></div>' +
-        '<div class="paar2"><button class="btn ghost" type="button" data-act="aufnehmen:'+x.id+':nein">Ablehnen</button>' +
-        '<button class="btn" type="button" data-act="aufnehmen:'+x.id+':ja">Aufnehmen</button></div></div>';
-    }).join('') + '</div>';
+    '<div class="rows mit-symbol">'+t.anfragen.map(function(x){
+      return '<button class="lrow" type="button" data-act="entscheid:beitritt:'+x.id+'">' +
+        '<span class="ico" style="--i:#34C759">'+ICON.einladen+'</span>' +
+        '<span>'+h(x.name)+'<small class="unter">Jahrgang '+x.jg+', mit dem Code deines Teams</small></span><span class="r"></span></button>';
+    }).join('') + '</div></div>';
 }
 function einladenPanel(t){
   return '<div class="panel mitte">' +
@@ -5294,6 +5771,8 @@ function sheetSicht(){
       '<div class="rollen">'+reihe+'</div>' +
       '<div class="callout stille"><span class="h">Eine Geschichte in fünf Schritten</span>' +
         '<p>Luis lädt seinen Versuch hoch. Sandra gibt ihn frei. Tim zählt nach und gibt Feedback. Luis steht in der Rangliste und teilt es als Status. Was eine Rolle tut, sehen die anderen.</p></div>' +
+      '<button class="btn text" type="button" data-act="vorfaus">Vorführung ausschalten</button>' +
+      '<p class="fine">Danach sieht die App aus wie für jeden anderen. Wieder an geht sie mit ?vorfuehrung am Ende der Adresse.</p>' +
     '</div>';
 }
 
@@ -5361,6 +5840,204 @@ function sheetPruefung(){
       ]) +
       '<button class="btn" type="button" data-act="pruefsenden">Zur Prüfung einreichen</button>' +
     '</div>';
+}
+
+/* ---------- Selbstaufnahme mit Vergleich ----------
+   Das Kind filmt sich und sieht sich direkt unter Kader, in Zeitlupe
+   und Bild fuer Bild. Das eigene Video bleibt als lokale Datei im
+   Browser: kein Upload, keine Einwilligung, keine Moderation. Schliesst
+   man die App, ist es weg. Kaders Seite ist heute noch das Standbild;
+   sobald die Videos gedreht sind, laeuft sie im selben Takt mit. */
+var VG_TEMPI = [[1,'1×'],[0.5,'½×'],[0.25,'¼×']];
+function vergleichAuf(id){
+  var vg = state.vergleich;
+  if(!vg || vg.id !== id){
+    if(vg && vg.url) URL.revokeObjectURL(vg.url);
+    state.vergleich = {id:id, url:null, zeit:0, tempo:0.5, schritt:0, dauer:0};
+  }
+  openSheet(sheetVergleich());
+  vgVerbinden();
+}
+function sheetVergleich(){
+  var vg = state.vergleich, v = byId(vg.id);
+  var waehlen = function(klasse, text, kamera){
+    return '<label class="btn'+klasse+'">'+(kamera ? ICON.kamera+' ' : '')+text +
+      '<input class="vh" type="file" accept="video/*"'+(kamera ? ' capture="environment"' : '')+' data-vg="datei"></label>';
+  };
+  var versprechen = '<p class="fine">Dein Video bleibt auf diesem Handy. Es wird nicht hochgeladen, und niemand sonst sieht es.</p>';
+  var kader = '<div class="vg-feld"><span class="vg-name">Kader</span><div class="poster">'+posterOf(v)+'</div>' +
+    '<span class="vg-zeit" id="vg-kzeit">'+fmtZeit(kapitelSek(v, vg.schritt) + vg.zeit)+'</span></div>';
+  if(!vg.url){
+    return kopf('Vergleichen') +
+      '<div class="sheet-body">' +
+        '<div><p class="eyebrow">Nur auf diesem Handy</p><h1 class="big">Du und Kader</h1>' +
+          '<p class="sub">Film dich bei der Übung und sieh dich direkt unter Kader, in Zeitlupe und Bild für Bild.</p></div>' +
+        '<div class="vg-paar">'+kader +
+          '<div class="vg-feld leer"><span class="vg-name">Du</span>'+ICON.kamera+'</div></div>' +
+        waehlen('', 'Jetzt filmen', true) +
+        waehlen(' ghost', 'Video auswählen', false) +
+        versprechen +
+      '</div>';
+  }
+  return kopf('Vergleichen') +
+    '<div class="sheet-body">' +
+      '<div class="vg-paar">'+kader +
+        '<div class="vg-feld eigen"><span class="vg-name">Du</span>' +
+          '<video id="vg-eigen" src="'+vg.url+'" playsinline muted preload="auto"></video></div></div>' +
+      '<div class="vg-steuer">' +
+        '<button class="mini vg-play" type="button" data-act="vgplay" aria-label="Abspielen oder anhalten">'+ICON.play+'</button>' +
+        '<input id="vg-scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Stelle im Video">' +
+        '<span class="vg-t" id="vg-t">'+vgZeit(vg.zeit)+'</span>' +
+      '</div>' +
+      '<div class="paar2">' +
+        '<button class="btn ghost" type="button" data-act="vgbild:-1">Bild zurück</button>' +
+        '<button class="btn ghost" type="button" data-act="vgbild:1">Bild vor</button></div>' +
+      '<div class="field"><label>Tempo</label><div class="seg">'+VG_TEMPI.map(function(t){
+        return '<button type="button" data-act="vgtempo:'+t[0]+'" aria-pressed="'+(vg.tempo === t[0])+'">'+t[1]+'</button>';
+      }).join('')+'</div></div>' +
+      '<div class="field"><label>Kader ab</label><div class="seg">'+v.st.map(function(x, i){
+        return '<button type="button" data-act="vgschritt:'+i+'" aria-pressed="'+(vg.schritt === i)+'">Schritt '+(i + 1)+'</button>';
+      }).join('')+'</div></div>' +
+      '<div class="paar2">'+waehlen(' ghost', 'Neu filmen', true) +
+        '<button class="btn ghost" type="button" data-act="vgweg">Verwerfen</button></div>' +
+      versprechen +
+    '</div>';
+}
+/* Das eigene Video fuehrt den Takt, Kaders Zeit laeuft vom gewaehlten
+   Schritt an mit. */
+function vgVideo(){ return document.getElementById('vg-eigen'); }
+/* Eigene Clips sind kurz. Zehntelsekunden, damit Bild fuer Bild sichtbar wird. */
+function vgZeit(t){ return t < 60 ? t.toFixed(1).replace('.', ',')+' s' : fmtZeit(t); }
+function vgZeichnen(){
+  var el = vgVideo(), vg = state.vergleich;
+  if(!el || !vg) return;
+  var d = el.duration || 0;
+  vg.zeit = el.currentTime; vg.dauer = d;
+  var sc = document.getElementById('vg-scrub'); if(sc && d) sc.value = Math.round(el.currentTime / d * 1000);
+  var t = document.getElementById('vg-t'); if(t) t.textContent = vgZeit(el.currentTime);
+  var k = document.getElementById('vg-kzeit'); if(k) k.textContent = fmtZeit(kapitelSek(byId(vg.id), vg.schritt) + el.currentTime);
+  var pb = document.querySelector('.vg-play'); if(pb) pb.innerHTML = el.paused ? ICON.play : ICON.pause;
+}
+function vgVerbinden(){
+  var el = vgVideo(), vg = state.vergleich;
+  if(!el) return;
+  el.playbackRate = vg.tempo;
+  el.addEventListener('loadedmetadata', function(){
+    if(el.videoWidth && el.videoHeight) el.parentNode.style.setProperty('--ar', el.videoWidth / el.videoHeight);
+    if(vg.zeit && vg.zeit < el.duration) el.currentTime = vg.zeit;
+    vgZeichnen();
+  });
+  el.addEventListener('timeupdate', vgZeichnen);
+  el.addEventListener('play', function lauf(){
+    vgZeichnen();
+    if(!el.paused && document.body.contains(el)) requestAnimationFrame(lauf);
+  });
+  el.addEventListener('pause', vgZeichnen);
+  el.addEventListener('ended', vgZeichnen);
+}
+function vgNeu(){ refreshSheet(sheetVergleich()); vgVerbinden(); }
+document.addEventListener('change', function(e){
+  var t = e.target;
+  if(!t.matches || !t.matches('input[data-vg="datei"]') || !t.files || !t.files[0] || !state.vergleich) return;
+  var vg = state.vergleich;
+  if(vg.url) URL.revokeObjectURL(vg.url);
+  vg.url = URL.createObjectURL(t.files[0]); vg.zeit = 0;
+  haptik('erfolg'); vgNeu();
+});
+document.addEventListener('input', function(e){
+  if(e.target.id !== 'vg-scrub') return;
+  var el = vgVideo();
+  if(el && el.duration){ el.pause(); el.currentTime = e.target.value / 1000 * el.duration; vgZeichnen(); }
+});
+
+/* ---------- Der erste Start ----------
+   Drei kurze Fragen, dann weiss die App, fuer wen sie da ist: wer man
+   ist, welcher Jahrgang, wann trainiert wird. Alles laesst sich
+   ueberspringen, und nichts davon verlaesst das Geraet. */
+var ERST_KEY = 'km1-erster-start';
+function ersterStartGesehen(){ try{ return !!localStorage.getItem(ERST_KEY); }catch(e){ return false; } }
+function ersterStartMerken(){ try{ localStorage.setItem(ERST_KEY, '1'); }catch(e){} }
+function einfuehrungPruefen(){
+  if(drin() || stack.length || ersterStartGesehen()) return;
+  einfuehrungAuf();
+}
+function einfuehrungAuf(){
+  state.erst = {schritt:'rolle', rolle:null, andere:false, jg:state.jgGewaehlt ? state.jahrgang : null,
+                tage:state.erinnerung.tage.slice(), zeit:state.erinnerung.zeit};
+  openSheet(sheetErsterStart());
+}
+/* Wer selbst trainiert oder ein Kind hat, beantwortet alle drei Fragen.
+   Trainer nur die Zeit, alle anderen keine. */
+function erstSchritte(r){
+  if(r === 'spieler' || r === 'eltern') return ['rolle','jahrgang','zeit','fertig'];
+  if(r === 'trainer') return ['rolle','zeit','fertig'];
+  return ['rolle','fertig'];
+}
+/* Welche Ebene zum Alter passt: bis zur U13 Foundational, bis zur U15
+   Development, darueber Performance. */
+function ebeneFuerJahrgang(jg){
+  var alter = JAHR - jg;
+  return alter <= 12 ? 1 : (alter <= 14 ? 2 : 3);
+}
+var ERST_ZEITEN = ['16:00','17:00','18:00','19:00'];
+function sheetErsterStart(){
+  var e = state.erst, folge = erstSchritte(e.rolle), i = folge.indexOf(e.schritt);
+  var fragen = folge.length - 1, eltern = e.rolle === 'eltern';
+  var kopfzeile = '<div class="sheet-head erst">' +
+    (i > 0 ? '<button class="back" type="button" data-act="erstzurueck" aria-label="Zurück">'+ICON.back+'</button>' : '<span class="back-platz"></span>') +
+    '<span class="kopf-t">'+(e.schritt === 'fertig' ? '' : (e.rolle ? (i + 1)+' von '+fragen : 'Willkommen'))+'</span>' +
+    (e.schritt === 'fertig' ? '<span class="back-platz"></span>' : '<button class="kopf-rechts" type="button" data-act="erstweg">Überspringen</button>')+'</div>';
+  var inhalt;
+  if(e.schritt === 'rolle'){
+    inhalt = '<div><p class="eyebrow">Willkommen bei KM1</p><h1 class="big">Wer bist du?</h1></div>' +
+      rollenKnoepfe(e.rolle, 'erstrolle', e.andere);
+  } else if(e.schritt === 'jahrgang'){
+    var jahre = [];
+    for(var j = JAHR - 6; j >= JAHR - 19; j--) jahre.push(j);
+    var lv = e.jg ? lvOf(ebeneFuerJahrgang(e.jg)) : null;
+    inhalt = '<div><p class="eyebrow">'+(eltern ? 'Ihr Kind' : 'Du')+'</p><h1 class="big">'+(eltern ? 'Welcher Jahrgang ist Ihr Kind?' : 'Welcher Jahrgang bist du?')+'</h1></div>' +
+      '<div class="jahre">'+jahre.map(function(j){
+        return '<button class="day" type="button" data-act="erstjg:'+j+'" aria-pressed="'+(e.jg === j)+'">'+j+'</button>';
+      }).join('')+'</div>' +
+      (lv ? '<div class="lvpanel" style="--c:'+lv.c+'"><p class="note">'+lv.ag+'</p><p class="t">'+lv.nm+'</p>' +
+        '<p class="sub" style="margin:0">'+(eltern ? 'Damit fängt Ihr Kind an.' : 'Damit fängst du an.')+' '+h(lv.tx)+'</p></div>' : '') +
+      '<button class="btn" type="button" data-act="erstweiter"'+(lv ? '' : ' disabled')+'>Weiter</button>';
+  } else if(e.schritt === 'zeit'){
+    var frage = {eltern:'Wann trainiert Ihr Kind?', trainer:'Wann trainiert deine Mannschaft?'}[e.rolle] || 'Wann trainierst du?';
+    inhalt = '<div><p class="eyebrow">Erinnerung</p><h1 class="big">'+frage+'</h1></div>' +
+      '<div class="field"><label>An diesen Tagen</label><div class="days">'+TAGE.map(function(t){
+        return '<button class="day" type="button" data-act="erstag:'+t[0]+'" aria-pressed="'+(e.tage.indexOf(t[0]) >= 0)+'">'+t[1]+'</button>';
+      }).join('')+'</div></div>' +
+      '<div class="field"><label>Uhrzeit</label><div class="seg">'+ERST_ZEITEN.map(function(z){
+        return '<button type="button" data-act="erstzeit:'+z+'" aria-pressed="'+(e.zeit === z)+'">'+z+'</button>';
+      }).join('')+'</div></div>' +
+      '<button class="btn" type="button" data-act="erstweiter">Weiter</button>';
+  } else {
+    var zeilen = [ROLLEN[e.rolle].nm];
+    if(folge.indexOf('jahrgang') >= 0 && e.jg) zeilen.push('Jahrgang '+e.jg+', '+lvOf(ebeneFuerJahrgang(e.jg)).nm);
+    if(folge.indexOf('zeit') >= 0) zeilen.push(e.tage.length ? 'Erinnerung '+e.tage.map(tagName).join(' + ')+', '+e.zeit : 'Keine Erinnerung');
+    inhalt = '<div class="pay-kopf"><span class="haken-gross erledigt">'+ICON.check+'</span>' +
+        '<p class="eyebrow">Fertig</p><h1 class="big">Alles klar.</h1></div>' +
+      liste(zeilen.map(h)) +
+      (ROLLEN[e.rolle].pruef ? '<p class="fine">'+(einladbar(e.rolle) ? 'Mit dem Code deines Vereins bist du sofort geprüft.' : 'KM1 prüft euch, bevor ihr loslegt.')+'</p>' : '') +
+      '<button class="btn" type="button" data-act="erstkonto">Kostenloses Konto anlegen</button>' +
+      '<button class="btn text" type="button" data-act="erstweg">Erst mal umschauen</button>';
+  }
+  return kopfzeile + '<div class="sheet-body">'+inhalt+'</div>';
+}
+/* Was die Antworten bewirken: Jahrgang und Ebene, die Erinnerung und
+   die Rolle, die beim Anlegen des Kontos schon ausgewaehlt ist. */
+function erstUebernehmen(){
+  var e = state.erst, folge = erstSchritte(e.rolle);
+  if(e.rolle){ state.wahlRolle = e.rolle; state.rolleGewaehlt = true; state.rollenOffen = false; }
+  if(folge.indexOf('jahrgang') >= 0 && e.jg){
+    state.jahrgang = e.jg; state.jgGewaehlt = true;
+    state.meinLv = state.lvSel = ebeneFuerJahrgang(e.jg);
+  }
+  if(folge.indexOf('zeit') >= 0){
+    state.erinnerung.tage = e.tage.slice(); state.erinnerung.zeit = e.zeit; state.erinnerung.an = e.tage.length > 0;
+  }
+  ersterStartMerken();
 }
 
 /* ---------- Einladungen ----------
@@ -6219,6 +6896,7 @@ document.addEventListener('click', function(e){
 
   /* Vorfuehrung und Rollen */
   if(k === 'sicht'){ openSheet(sheetSicht()); }
+  else if(k === 'vorfaus'){ wechsleSicht('gast'); vorfuehrungSetzen(false); render(); toast('Vorführung aus'); }
   else if(k === 'sichtwahl'){ wechsleSicht(v); }
   else if(k === 'wahlrolle'){
     var fw = feldWerte(['lg-name','lg-mail','lg-pw','lg-jg','lg-code']);
@@ -6227,6 +6905,58 @@ document.addEventListener('click', function(e){
     feldWerteZurueck(fw);
   }
   else if(k === 'signin'){ /* der erste Klickfaenger meldet an */ }
+  else if(k === 'vergleich'){ stopPlayer(); vergleichAuf(v); }
+  else if(k === 'vgplay'){
+    var ve = vgVideo(); if(!ve) return;
+    if(ve.paused){ if(ve.ended) ve.currentTime = 0; ve.playbackRate = state.vergleich.tempo; ve.play(); } else ve.pause();
+    haptik('leicht');
+  }
+  else if(k === 'vgbild'){
+    var vb = vgVideo(); if(!vb) return;
+    vb.pause(); vb.currentTime = Math.max(0, Math.min(vb.duration || 0, vb.currentTime + (+v) / 30));
+    haptik('tick'); vgZeichnen();
+  }
+  else if(k === 'vgtempo'){ state.vergleich.tempo = +v; var vt = vgVideo(); if(vt) state.vergleich.zeit = vt.currentTime; haptik('tick'); vgNeu(); }
+  else if(k === 'vgschritt'){ state.vergleich.schritt = +v; var vs = vgVideo(); if(vs) state.vergleich.zeit = vs.currentTime; haptik('tick'); vgNeu(); }
+  else if(k === 'vgweg'){
+    var vw = state.vergleich; if(vw.url) URL.revokeObjectURL(vw.url);
+    vw.url = null; vw.zeit = 0; haptik('leicht'); refreshSheet(sheetVergleich()); toast('Verworfen. Es war nur auf diesem Handy.');
+  }
+  else if(k === 'erstrolle'){
+    state.erst.rolle = v; haptik('tick');
+    state.erst.schritt = erstSchritte(v)[1];
+    refreshSheet(sheetErsterStart());
+  }
+  else if(k === 'erstjg'){ state.erst.jg = +v; haptik('tick'); refreshSheet(sheetErsterStart()); }
+  else if(k === 'erstrollemehr'){ state.erst.andere = true; haptik('tick'); refreshSheet(sheetErsterStart()); }
+  else if(k === 'wahlrollemehr'){
+    var fm = feldWerte(['lg-name','lg-mail','lg-pw','lg-jg','lg-code']);
+    state.rollenOffen = true; haptik('tick');
+    refreshSheet(sheetLogin());
+    feldWerteZurueck(fm);
+  }
+  else if(k === 'erstag'){
+    var et = state.erst.tage, ei = et.indexOf(v);
+    if(ei >= 0) et.splice(ei, 1); else et.push(v);
+    et.sort(function(a, b){ return TAGE.map(function(x){ return x[0]; }).indexOf(a) - TAGE.map(function(x){ return x[0]; }).indexOf(b); });
+    haptik('tick'); refreshSheet(sheetErsterStart());
+  }
+  else if(k === 'erstzeit'){ state.erst.zeit = v; haptik('tick'); refreshSheet(sheetErsterStart()); }
+  else if(k === 'erstweiter' || k === 'erstzurueck'){
+    var ef = erstSchritte(state.erst.rolle), ex = ef.indexOf(state.erst.schritt) + (k === 'erstweiter' ? 1 : -1);
+    state.erst.schritt = ef[Math.max(0, Math.min(ef.length - 1, ex))];
+    haptik('leicht'); refreshSheet(sheetErsterStart());
+  }
+  else if(k === 'erstweg'){
+    if(state.erst && state.erst.rolle) erstUebernehmen(); else ersterStartMerken();
+    while(stack.length) closeSheet();
+  }
+  else if(k === 'erstkonto'){
+    erstUebernehmen();
+    while(stack.length) closeSheet();
+    state.loginModus = 'neu'; openSheet(sheetLogin());
+  }
+  else if(k === 'erststart'){ while(stack.length) closeSheet(); einfuehrungAuf(); }
   else if(k === 'pruefweg'){
     var fp = feldWerte(['lg-name','lg-mail','lg-pw','lg-jg','lg-code']);
     state.pruefWeg = v; haptik('tick');
@@ -6367,6 +7097,8 @@ document.addEventListener('click', function(e){
 
   /* Eltern */
   else if(k === 'freigabe'){ freigabeEntscheiden(teil[0], teil[1] === 'ja'); }
+  else if(k === 'freigabeauf'){ openSheet(sheetFreigabe(v)); }
+  else if(k === 'entscheid'){ openSheet(sheetEntscheid(teil[0], teil[1])); }
   else if(k === 'einst'){ W.einst[v] = !W.einst[v]; haptik('leicht'); render(); }
   else if(k === 'kindverbinden'){ state.kindDa = true; haptik('erfolg'); render(); toast('Verbunden mit '+KIND.vn); }
 
@@ -6393,6 +7125,7 @@ document.addEventListener('click', function(e){
       tm.spieler.push(x.id);
       haptik('erfolg'); toast(x.name+' ist jetzt in der '+tm.name);
     } else { haptik('leicht'); toast('Abgelehnt. '+vorname(x.name)+' kann neu anfragen.'); }
+    if(stack.length) closeSheet();
     render();
   }
   else if(k === 'zuweisen'){
@@ -7223,8 +7956,9 @@ document.addEventListener('click', function(e){
 
 /* ============================================================
    Menues, Videos und Laufbahn.
-   Jede Rolle hat ihr eigenes Menue: Technik und Pyramide sind fuer
-   Kinder, die selbst ueben. Hochladen darf jeder, im Bereich Videos.
+   Jede Rolle hat ihr eigenes Menue: Ueben ist fuer alle, die selbst
+   trainieren oder ein Kind haben. Hochladen darf jeder, im Bereich
+   Videos, Eltern in der Familie.
    Wer ein Video sieht, steht allein in darfSehen(): Videos von Kindern
    unter 16 sehen das Team, die Familie und von KM1 gepruefte Konten,
    erst nach der Freigabe der Eltern. Ab 16 sieht ein Video auf dem
@@ -7237,17 +7971,23 @@ function tabsFuer(){
   var r = drin() ? state.rolle : 'gast';
   var mitte = teamTab();
   var START = ['start','Start',ICON.tabStart], PROFIL = ['profil','Profil',ICON.tabProf];
-  var TECHNIK = ['technik','Technik',ICON.tabTech], PYRAMIDE = ['pyramide','Pyramide',ICON.tabPyr];
+  /* Die Videothek von KM1 heisst dort, wo man selbst trainiert, Ueben.
+     Die Pyramide liegt hinter der Ebene oben rechts und im Profil. */
+  var UEBEN = ['technik','Üben',ICON.tabTech];
   var VIDEOS_ = ['videos','Videos',ICON.kamera];
+  /* Ohne Konto gibt es kein Team: nur das, was man ohne Konto nutzen kann. */
+  if(r === 'gast') return [START, UEBEN, PROFIL];
   return ({
-    eltern:   [START, mitte, VIDEOS_, TECHNIK, PROFIL],
+    spieler:  [START, UEBEN, mitte, PROFIL],
+    /* Die Videos des Kindes stehen in der Familie, gleich neben den Freigaben. */
+    eltern:   [START, mitte, UEBEN, PROFIL],
     trainer:  [START, mitte, VIDEOS_, ['uebungen','Übungen',ICON.tabTech], PROFIL],
     akademie: [START, mitte, VIDEOS_, ['talente','Talente',ICON.stern], PROFIL],
     verein:   [START, mitte, VIDEOS_, ['nachwuchs','Nachwuchs',ICON.einladen], PROFIL],
     profi:    [START, mitte, VIDEOS_, PROFIL],
     scout:    [START, mitte, ['beobachtet','Beobachtet',ICON.stern], ['berichte','Berichte',ICON.dok], PROFIL],
     km1:      [START, mitte, ['inhalte','Inhalte',ICON.tabTech], ['meldungen','Meldungen',ICON.flagge], PROFIL]
-  })[r] || [START, TECHNIK, mitte, PYRAMIDE, PROFIL];
+  })[r] || [START, UEBEN, mitte, PROFIL];
 }
 
 /* ---------- Wer ein Video sieht ---------- */
@@ -7317,12 +8057,7 @@ function screenVideos(){
     : '<button class="btn" type="button" data-act="hochladen">'+ICON.upl+' Video hochladen</button>';
   var eigen = '';
   if(eltern){
-    var vl = state.kindDa ? W.uploads.filter(function(u){ return u.von === 'luis'; }) : [];
-    var offen = W.freigaben.filter(function(f){ return f.art === 'upload'; }).length;
-    eigen = (offen ? '<div class="rows mit-symbol">'+zeile('tab:team', ICON.familie, '#34C759', (offen === 1 ? 'Ein Video wartet' : offen+' Videos warten')+' auf Ihre Freigabe', '')+'</div>' : '') +
-      '<div class="block"><div class="block-head"><h2 class="sec">Videos von '+h(KIND.vn)+'</h2><span class="more">'+vl.length+'</span></div>' +
-      (vl.length ? '<div class="nliste">'+vl.map(function(u){ return uploadZeile(u); }).join('')+'</div>'
-                 : '<p class="fine">Noch keine Videos.</p>') + '</div>';
+    eigen = kindVideos();
   } else {
     var w = (r === 'trainer' && t) ? wartend(t) : [];
     var mc = meineClips();
@@ -7345,6 +8080,16 @@ function screenVideos(){
     (spieler.length ? '<div class="block"><div class="block-head"><h2 class="sec">Neu von Spielern</h2><span class="more">Auf ihren Profilen</span></div>' +
       '<div class="row">'+spieler.map(spielerVideoKarte).join('')+'</div></div>' : '') +
   '</section>';
+}
+
+/* Die Videos des Kindes, fuer die Eltern in der Familie. Was auf die
+   Freigabe wartet, steht in der Uebersicht. */
+function kindVideos(){
+  var vl = W.uploads.filter(function(u){ return u.von === 'luis'; });
+  return '<button class="btn ghost" type="button" data-act="versuch:profil">'+ICON.upl+' Video für '+h(KIND.vn)+' hochladen</button>' +
+    '<div class="block"><div class="block-head"><h2 class="sec">Videos von '+h(KIND.vn)+'</h2><span class="more">'+vl.length+'</span></div>' +
+    (vl.length ? '<div class="nliste">'+vl.map(function(u){ return uploadZeile(u); }).join('')+'</div>'
+               : '<p class="fine">Noch keine Videos.</p>') + '</div>';
 }
 
 /* ---------- Hochladen fuer Erwachsene ---------- */
@@ -7548,18 +8293,37 @@ function meineBestaetigungen(){
   var m = meineId();
   return W.bestaetigungen.filter(function(b){ return b.an === m && stationVon(b.spieler, b.station); });
 }
+/* Auf der Seite steht jede Bitte als Zeile, entschieden wird im Blatt. */
+function bestaetigungKarte(b){
+  var s = stationVon(b.spieler, b.station), p = spielerDaten(b.spieler) || {name:''};
+  return '<div class="freigabe"><div class="fk"><span class="ico" style="--i:#0A7AFF">'+ICON.stern+'</span>' +
+    '<span><span class="t">'+h(p.name)+': '+h(s.verein+' · '+s.team)+'</span>' +
+    '<span class="s">'+h(b.von)+' bittet um deine Bestätigung: '+s.von+' bis '+(s.bis || 'heute')+'. Mit Haken sehen Scouts, dass die Station stimmt.</span></span></div>' +
+    '<div class="paar2"><button class="btn ghost" type="button" data-act="bestaetigen:'+b.id+':nein">Stimmt nicht</button>' +
+    '<button class="btn" type="button" data-act="bestaetigen:'+b.id+':ja">Bestätigen</button></div></div>';
+}
 function bestaetigungenBlock(){
   var l = meineBestaetigungen();
   if(!l.length) return '';
   return '<div class="block"><div class="block-head"><h2 class="sec">Laufbahn bestätigen</h2><span class="zaehler">'+l.length+'</span></div>' +
-    l.map(function(b){
+    '<div class="rows mit-symbol">'+l.map(function(b){
       var s = stationVon(b.spieler, b.station), p = spielerDaten(b.spieler) || {name:''};
-      return '<div class="freigabe"><div class="fk"><span class="ico" style="--i:#0A7AFF">'+ICON.stern+'</span>' +
-        '<span><span class="t">'+h(p.name)+': '+h(s.verein+' · '+s.team)+'</span>' +
-        '<span class="s">'+h(b.von)+' bittet um deine Bestätigung: '+s.von+' bis '+(s.bis || 'heute')+'. Mit Haken sehen Scouts, dass die Station stimmt.</span></span></div>' +
-        '<div class="paar2"><button class="btn ghost" type="button" data-act="bestaetigen:'+b.id+':nein">Stimmt nicht</button>' +
-        '<button class="btn" type="button" data-act="bestaetigen:'+b.id+':ja">Bestätigen</button></div></div>';
-    }).join('')+'</div>';
+      return '<button class="lrow" type="button" data-act="entscheid:bestaetigung:'+b.id+'">' +
+        '<span class="ico" style="--i:#0A7AFF">'+ICON.stern+'</span>' +
+        '<span>'+h(p.name)+'<small class="unter">'+h(s.verein+' · '+s.team)+'</small></span><span class="r"></span></button>';
+    }).join('')+'</div></div>';
+}
+function sheetEntscheid(art, id){
+  var karte = '';
+  if(art === 'bestaetigung'){
+    var b = W.bestaetigungen.filter(function(x){ return x.id === id; })[0];
+    if(b) karte = bestaetigungKarte(b);
+  } else {
+    var t = meinTeam(), x = t && t.anfragen.filter(function(y){ return y.id === id; })[0];
+    if(x) karte = beitrittKarte(x);
+  }
+  return kopf(art === 'bestaetigung' ? 'Laufbahn' : 'Beitritt') + '<div class="sheet-body">' +
+    (karte || '<div class="leer klein">'+ICON.team+'<p>Schon entschieden.</p></div>') + '</div>';
 }
 /* Die Laufbahn im Familienbereich: eintragen und ansehen, wie andere sie sehen. */
 function laufbahnBlockEltern(){
@@ -7757,6 +8521,7 @@ document.addEventListener('click', function(e){
       st.quelle = 'eltern';
       haptik('leicht'); toast('Nicht bestätigt. Die Station bleibt als Angabe der Eltern stehen.');
     }
+    if(stack.length) closeSheet();
     render();
   }
   else if(k === 'beobachten'){
@@ -7785,6 +8550,7 @@ document.addEventListener('click', function(e){
    ============================================================ */
 applyTheme();
 render();
+netzZeigen();
 if(window.km1Start) window.km1Start.fertig('app');
 
 /* Punkt 11: die Platzhalterkarten. Den Zeitpunkt gibt jetzt der
@@ -7801,6 +8567,7 @@ if(window.km1Start) window.km1Start.fertig('app');
     state.laedt = false;
     letzterTab = null;      /* damit die Bloecke einmal aufblenden */
     render();
+    einfuehrungPruefen();
   };
   if(window.km1Start) window.km1Start.kurzVorSchluss(fertig);
   setTimeout(fertig, 2600);
