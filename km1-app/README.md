@@ -132,9 +132,11 @@ Zustand ist über die App selbst erreichbar, genau wie später im Betrieb:
 | Selbstaufnahme | Ein Video öffnen → *Mit mir vergleichen* → *Jetzt filmen* oder *Video auswählen* |
 | Camp buchen | Start → Karte *Herbstcamp Köln* → *Platz buchen*. Der Werbeplatz wechselt täglich mit dem Abo; steht dort Pro, führt Folge ich → *Neu bei KM1* → Herbstcamp → *Zum Camp* dorthin. Als Spieler steht dort *Meine Eltern fragen*. |
 | Kein Netz | Den Flugmodus einschalten, während die App offen ist |
-| Mit Einladung | *Konto anlegen* → Trainer, oder unter *Etwas anderes* Scout oder Profi → *Mit Einladung* → den Code eingeben, in der Vorführung *Vorführung: Code einsetzen*. Neue Codes legen Akademie und Verein unter Profil → *Leute einladen* an. |
+| Jede Rolle ausprobieren | In der Testphase bis zum Start: *Konto anlegen* → Rolle wählen, unter *Etwas anderes* auch Akademie, Verein, Profi, Scout und KM1. Kein Code, keine Belege, der Haken ist sofort da. |
+| Beispielkonten | Profil → Zahnrad → *Vorführung*, oder `?vorfuehrung` an die Adresse hängen, dann oben rechts eine Sicht wählen |
+| Mit Einladung | Mit `?testphase=aus` in der Adresse: *Konto anlegen* → Trainer, oder unter *Etwas anderes* Scout oder Profi → *Mit Einladung* → den Code eingeben, in der Vorführung *Vorführung: Code einsetzen*. Neue Codes legen Akademie und Verein unter Profil → *Leute einladen* an. |
 | Eine andere Rolle | Beim Anlegen des Kontos die Rolle wählen. In der Vorführung oben rechts auf die Ebene tippen und eine Sicht wählen. |
-| KM1 selbst | Beim Anmelden eine E-Mail mit „kader" verwenden, etwa `kader@km1-training.de`. Die Rolle hängt am Konto, nicht an einem Schalter. |
+| KM1 selbst | In der Testphase unter *Etwas anderes* → KM1. Nach dem Start nur mit einer E-Mail von KM1, etwa `kader@km1-training.de`: Die Rolle hängt am Konto, nicht an einem Schalter. |
 
 Der Videoplayer ist eine Attrappe: die Leiste läuft, es liegt aber noch kein
 Video dahinter. Alles andere reagiert wie in einer fertigen App.
