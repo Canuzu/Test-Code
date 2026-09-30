@@ -3,13 +3,13 @@
   "since": 2016,
   "sinceDate": "22.04.2016",
   "paSince": 10.00,
-  "totalSince": 165.12,
+  "totalSince": 165.16,
   "runningCost": 0.30,
   "perf": [
-    { "label": "1 Jahr", "v": 24.68 },
-    { "label": "3 Jahre", "v": 57.28 },
-    { "label": "5 Jahre", "v": 59.30 },
-    { "label": "seit Auflage", "v": 165.12 }
+    { "label": "1 Jahr", "v": 24.34 },
+    { "label": "3 Jahre", "v": 57.30 },
+    { "label": "5 Jahre", "v": 60.74 },
+    { "label": "seit Auflage", "v": 165.16 }
   ],
-  "updatedAt": "16.07.2026"
+  "updatedAt": "17.07.2026"
 }

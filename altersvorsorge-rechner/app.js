@@ -20,19 +20,19 @@ const FUND = {
   name: "Debeka Global Shares",
   sub: "Globaler Aktien-Dachfonds · ESG · Debeka Fondspolice",
   paSince: 10.00,       // % p.a. seit Auflegung 22.04.2016
-  totalSince: 165.12,   // % Gesamtentwicklung seit Auflegung
+  totalSince: 165.16,   // % Gesamtentwicklung seit Auflegung
   runningCost: 0.30,    // % p.a. laufende Fondskosten (0,025 %/Monat)
   since: 2016,
   sinceDate: "22.04.2016",
-  updatedAt: "16.07.2026",
+  updatedAt: "17.07.2026",
   // Öffentliche Wertentwicklung laut Debeka (Anteilswert, netto).
   // Diese Werte sind der Fallback; zur Laufzeit werden sie – wenn erreichbar –
   // aus fund-data.json überschrieben (siehe loadFundData()).
   perf: [
-    { label: "1 Jahr", v: 24.68 },
-    { label: "3 Jahre", v: 57.28 },
-    { label: "5 Jahre", v: 59.30 },
-    { label: "seit Auflage", v: 165.12 },
+    { label: "1 Jahr", v: 24.34 },
+    { label: "3 Jahre", v: 57.30 },
+    { label: "5 Jahre", v: 60.74 },
+    { label: "seit Auflage", v: 165.16 },
   ],
 };
 
@@ -131,8 +131,13 @@ function compute(s) {
   const start = parseDate(s.vertragsbeginn);
   const MS_YEAR = 365.25 * 86400000;
   const ageAtStart = geb && start ? (start - geb) / MS_YEAR : 0;
+  // Debeka rechnet die Aufschubzeit in ganzen Jahren: Rentenalter minus dem
+  // bei Vertragsbeginn zurueckgelegten (abgerundeten) Alter. Beispiel:
+  // Rentenalter 67, Eintrittsalter 32 -> 35 Jahre Aufschubzeit.
+  const eintrittsalter = geb && start ? Math.floor(ageAtStart) : 0;
+  const aufschubYears = Math.max(0, s.rentenalter - eintrittsalter);
+  const totalMonths = start ? aufschubYears * 12 : 0;
   const rentenDate = geb ? addYears(geb, s.rentenalter) : null;
-  const totalMonths = start && rentenDate ? Math.max(0, monthsBetween(start, rentenDate)) : 0;
   const years = totalMonths / 12; // Aufschubzeit in Jahren
 
   const fundNet = (s.rendite - s.ter) / 100;      // Fondsentwicklung minus Fondskosten
