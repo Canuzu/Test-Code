@@ -39,27 +39,42 @@ try {
 } catch (e) {}
 U.feder = U.feder || 'cubic-bezier(.34,1.45,.64,1)';
 
-/* ---------- Bühne skalieren ---------- */
-var K = 1, Q = 1;
+/* ---------- Bühne skalieren ----------
+   Mit zoom wird die Bühne in ihrer wirklichen Größe gezeichnet. Mit einer
+   Verkleinerung per transform zeichnen iPhones jede Ebene in voller Größe
+   mal Pixeldichte (1920 × 1080 × 3 × 3) und brechen am Speicher ab. Nur wo
+   der Browser zoom nicht kennt, bleibt es beim transform. */
+var K = 1;
+var MIT_ZOOM = false;
+try { MIT_ZOOM = !!(window.CSS && CSS.supports('zoom', '0.5')); } catch (e) {}
+if (MIT_ZOOM) root.classList.add('zoom');
+var HANDY = false;
+try { HANDY = matchMedia('(pointer: coarse)').matches; } catch (e) {}
 var leinwaende = [];   // alle Canvas mit Auflösung je nach Skalierung
 U.leinwand = function(cv, faktor){
-  var l = { cv: cv, ctx: cv.getContext('2d'), faktor: faktor || 1, q: 1, beiGroesse: null };
+  var l = { cv: cv, ctx: cv.getContext('2d'), faktor: faktor || 1, q: 1, beiGroesse: null, folie: cv.closest('.slide') };
   leinwaende.push(l); groesse(l); return l;
 };
+/* Die Leinwand einer Folie belegt nur Speicher, solange die Folie zu sehen ist. */
 function groesse(l){
-  var q = Math.max(.5, Math.min(2, K * (window.devicePixelRatio || 1))) * l.faktor;
+  var sichtbar = !l.folie || l.folie.classList.contains('active') || l.folie.classList.contains('leaving');
+  if (!sichtbar){ if (l.cv.width !== 1){ l.cv.width = 1; l.cv.height = 1; } l.q = 0; return; }
+  var q = Math.max(.5, Math.min(HANDY ? 1.25 : 2, K * (window.devicePixelRatio || 1))) * l.faktor;
+  if (l.q === q && l.cv.width === Math.round(1920 * q)) return;
   l.q = q; l.cv.width = Math.round(1920 * q); l.cv.height = Math.round(1080 * q);
   l.ctx.setTransform(q, 0, 0, q, 0, 0);
   if (l.beiGroesse) l.beiGroesse();
 }
+function leinwaendeVon(folie){ leinwaende.forEach(function(l){ if (l.folie === folie) groesse(l); }); }
 function skalieren(){
   K = Math.min(innerWidth / 1920, innerHeight / 1080);
-  stage.style.setProperty('--k', K);
-  leinwaende.forEach(groesse);
+  if (MIT_ZOOM) stage.style.zoom = K; else stage.style.setProperty('--k', K);
+  leinwaende.forEach(function(l){ l.q = -1; groesse(l); });
+  if (live.frame && live.ok) live.passen();
 }
 U.zuBuehne = function(clientX, clientY){
-  var r = stage.getBoundingClientRect();
-  return { x: (clientX - r.left) / r.width * 1920, y: (clientY - r.top) / r.height * 1080 };
+  var l = (innerWidth - 1920 * K) / 2, o = (innerHeight - 1080 * K) / 2;
+  return { x: (clientX - l) / K, y: (clientY - o) / K };
 };
 
 /* ---------- Buchstaben aufteilen ---------- */
@@ -241,10 +256,22 @@ live.an = function(beiFertig){
     setTimeout(function(){
       var ok = false;
       try { ok = !!(f.contentWindow && typeof f.contentWindow.wechsleSicht === 'function'); } catch (e) { ok = false; }
+      if (ok) live.passen();
       ende(ok);
     }, 900);
   });
   bildEl.parentNode.insertBefore(f, tippEl);
+};
+/* Gibt der Browser den zoom der Bühne nicht an die App im Rahmen weiter,
+   sähe die App nur ein Fenster von 390 × K Punkten. Dann bekommt der Rahmen
+   die Größe 390 / K und wird per transform wieder verkleinert. */
+live.passen = function(){
+  var f = live.frame; if (!f || !MIT_ZOOM) return;
+  f.style.width = ''; f.style.height = ''; f.style.transform = '';
+  var b = 0; try { b = f.contentWindow.innerWidth; } catch (e) { return; }
+  if (b && Math.abs(b - 390) > 8 && K > 0){
+    f.style.width = (390 / K) + 'px'; f.style.height = (844 / K) + 'px'; f.style.transform = 'scale(' + (1.0359 * K) + ')';
+  }
 };
 var gemerkt = null;
 function merken(){
@@ -374,6 +401,16 @@ function telefonFuer(f, s, art){
   if (p && p.bild) Tel.zeige(p.bild, art || p.art || 'blende', p);
 }
 
+/* Die Bildschirmfotos der nächsten Folie schon laden, aber nicht alle auf
+   einmal: Jedes Foto belegt entpackt gut fünf Megabyte. */
+function vorausLaden(n){
+  var f = folien[n]; if (!f) return;
+  var sz = szene(f), namen = [];
+  if (!sz.telefon) return;
+  for (var s = 0; s < schritteVon(f); s++){ var p = sz.telefon(s); if (p && p.bild && namen.indexOf(p.bild) < 0) namen.push(p.bild); }
+  U.vorladen(namen);
+}
+
 function geh(n, opt){
   opt = opt || {};
   n = U.clamp(n, 0, N - 1);
@@ -384,6 +421,8 @@ function geh(n, opt){
   zuruecksetzen(neu);
   neu.classList.add('active');
   if (alt){ alt.classList.remove('active'); alt.classList.add('leaving'); }
+  leinwaendeVon(neu);
+  vorausLaden(n + 1);
   akt = n; schritt = s;
   var sz = szene(neu);
   BG.zielL = sz.licht != null ? sz.licht : .55;
@@ -398,6 +437,7 @@ function geh(n, opt){
     laufend = null;
     if (alt){
       alt.classList.remove('leaving');
+      leinwaendeVon(alt);
       zuruecksetzen(alt);
       var sa = szene(alt);
       if (sa.verlassen) sa.verlassen();
@@ -452,10 +492,9 @@ function uebergang(alt, neu, art, dir, fertig){
     var p = U.clamp((performance.now() - t0) / dauer, 0, 1), e = U.inaus(p);
     alt.style.filter = 'brightness(' + (1 - .62 * e).toFixed(3) + ')';
     if (art === 'kreis'){
-      var r = e * 1180, sk = 1 + .06 * e, rl = r / sk;
+      var r = e * 1180, sk = 1 + .06 * e;
       neu.style.clipPath = 'circle(' + r.toFixed(1) + 'px at 960px 540px)';
       alt.style.transform = 'scale(' + sk.toFixed(4) + ')';
-      alt.style.clipPath = rl < 1 ? '' : "path(evenodd, 'M-40 -40H1960V1120H-40Z M" + (960 - rl).toFixed(1) + ' 540a' + rl.toFixed(1) + ' ' + rl.toFixed(1) + ' 0 1 0 ' + (2 * rl).toFixed(1) + ' 0a' + rl.toFixed(1) + ' ' + rl.toFixed(1) + ' 0 1 0 ' + (-2 * rl).toFixed(1) + " 0Z')";
       var n = 22;
       for (var i = 0; i < n; i++){ var w = Math.random() * 6.283; U.staubwolke(960 + Math.cos(w) * r, 540 + Math.sin(w) * r, 1, { v: 160, vx: Math.cos(w) * 260, vy: Math.sin(w) * 260, leben: .5, rot: .12, groesse: 4 }); }
     } else {

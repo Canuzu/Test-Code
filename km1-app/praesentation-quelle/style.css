@@ -41,6 +41,17 @@ img{max-width:none}
 #bg{z-index:0}
 #fx{z-index:20}
 #slides{position:absolute;inset:0}
+/* Mit zoom (siehe kern.js) liegt die Bühne in ihrer wirklichen Größe mittig. */
+.zoom #viewport{display:flex;align-items:center;justify-content:center}
+.zoom #stage{position:relative;left:auto;top:auto;margin:0;flex:none;transform:none}
+
+/* Auf dem Handy im Hochformat: ein Hinweis über der Bühne. */
+#drehen{display:none}
+@media (orientation:portrait) and (pointer:coarse){
+  #drehen{display:flex;position:fixed;left:16px;right:16px;top:calc(env(safe-area-inset-top,0px) + 28px);z-index:50;margin:0;gap:10px;align-items:center;justify-content:center;
+    font:600 15px/1.35 var(--text);color:var(--kreide2);text-align:center}
+  #drehen svg{width:22px;height:22px;flex:none;color:var(--rot)}
+}
 
 /* ---------- Folien ---------- */
 .slide{position:absolute;inset:0;visibility:hidden;overflow:hidden}
@@ -106,8 +117,8 @@ img{max-width:none}
 /* ---------- Telefon ---------- */
 #phoneLayer{position:absolute;inset:0;z-index:5;perspective:2600px;perspective-origin:50% 45%;pointer-events:none}
 #phoneShadow{position:absolute;left:0;top:0;width:560px;height:120px;margin:-60px 0 0 -280px;border-radius:50%;
-  background:radial-gradient(closest-side,rgba(0,0,0,.6),rgba(0,0,0,0));filter:blur(14px);will-change:transform,opacity}
-#phone{position:absolute;left:0;top:0;width:440px;height:960px;margin:-480px 0 0 -220px;transform-style:preserve-3d;will-change:transform,opacity}
+  background:radial-gradient(closest-side,rgba(0,0,0,.6),rgba(0,0,0,0));filter:blur(14px)}
+#phone{position:absolute;left:0;top:0;width:440px;height:960px;margin:-480px 0 0 -220px;transform-style:preserve-3d}
 #phone .rahmen{position:absolute;inset:0;border-radius:74px;
   background:linear-gradient(150deg,#4a514e 0%,#1b201e 18%,#0d100f 50%,#22282a 82%,#5a625f 100%);
   box-shadow:inset 0 0 0 2px rgba(255,255,255,.16),inset 0 0 0 10px #090b0a,0 70px 140px rgba(0,0,0,.6),0 24px 50px rgba(0,0,0,.45)}
@@ -128,7 +139,7 @@ img{max-width:none}
   linear-gradient(currentColor,currentColor) 10px 100%/3px 8px no-repeat,linear-gradient(currentColor,currentColor) 15px 100%/3px 11px no-repeat}
 #phone .insel{position:absolute;top:13px;left:50%;width:120px;height:35px;margin-left:-60px;border-radius:20px;background:#000;z-index:6}
 #phone .bild{position:absolute;left:0;top:50px;width:404px;height:874px;overflow:hidden;background:#F1F4F0}
-#phone .bild img{position:absolute;left:0;top:0;width:404px;height:874px;display:block;will-change:transform,clip-path,opacity}
+#phone .bild img{position:absolute;left:0;top:0;width:404px;height:874px;display:block}
 #phone .spiegel{position:absolute;left:18px;top:18px;width:404px;height:924px;border-radius:56px;z-index:7;pointer-events:none;
   background:linear-gradient(118deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,.04) 26%,rgba(255,255,255,0) 40%,rgba(255,255,255,0) 72%,rgba(255,255,255,.06) 100%)}
 #phone .tipp{position:absolute;z-index:8;width:90px;height:90px;margin:-45px 0 0 -45px;border-radius:50%;
@@ -186,8 +197,7 @@ img{max-width:none}
 #hilfe dd{margin:0;color:var(--kreide2)}
 
 /* ---------- Bausteine ---------- */
-.karte{border-radius:28px;background:rgba(17,26,22,.82);box-shadow:inset 0 0 0 1px rgba(242,245,241,.09),0 24px 60px rgba(0,0,0,.35);
-  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.karte{border-radius:28px;background:rgba(17,26,22,.92);box-shadow:inset 0 0 0 1px rgba(242,245,241,.09),0 24px 60px rgba(0,0,0,.35)}
 .symbol{display:grid;place-items:center;border-radius:22px;color:#fff;flex:none}
 .symbol svg{width:56%;height:56%}
 .pille{display:inline-flex;align-items:center;gap:12px;padding:14px 24px;border-radius:999px;font-size:26px;font-weight:600;
@@ -245,7 +255,7 @@ img{max-width:none}
 
 /* 5 Heute */
 .orbit-karte{position:absolute;left:0;top:0;width:340px;margin:-62px 0 0 -170px;padding:22px 24px;display:flex;gap:18px;align-items:center;box-sizing:border-box;
-  border-radius:24px;background:rgba(242,245,241,.96);color:#0B1511;box-shadow:0 26px 60px rgba(0,0,0,.45);will-change:transform,opacity}
+  border-radius:24px;background:rgba(242,245,241,.96);color:#0B1511;box-shadow:0 26px 60px rgba(0,0,0,.45)}
 .orbit-karte .symbol{width:66px;height:66px;border-radius:18px}
 .orbit-karte b{display:block;font-size:25px;line-height:1.2;font-weight:700}
 .orbit-karte span{display:block;margin-top:4px;font-size:21px;line-height:1.3;color:#57655F}
@@ -315,7 +325,7 @@ img{max-width:none}
 #vergleich .privat span{font-size:24px;line-height:1.4;color:var(--kreide2)}
 
 /* 11 Rollen */
-.orb{position:absolute;left:0;top:0;width:150px;height:170px;justify-content:flex-start;margin:-75px 0 0 -75px;display:flex;flex-direction:column;align-items:center;gap:12px;pointer-events:auto;will-change:transform,opacity}
+.orb{position:absolute;left:0;top:0;width:150px;height:170px;justify-content:flex-start;margin:-75px 0 0 -75px;display:flex;flex-direction:column;align-items:center;gap:12px;pointer-events:auto}
 .orb .symbol{width:118px;height:118px;border-radius:50%;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 0 0 3px rgba(255,255,255,.16);transition:box-shadow .4s}
 .orb span{font-size:24px;font-weight:700;white-space:nowrap;text-shadow:0 2px 12px rgba(0,0,0,.8)}
 .orb.an .symbol{box-shadow:0 0 0 6px rgba(242,245,241,.95),0 24px 60px rgba(0,0,0,.5)}
@@ -352,7 +362,7 @@ img{max-width:none}
 .knoten .abzeichen svg{width:28px;height:28px}
 .knoten .abzeichen.an{transform:scale(1)}
 .paket{position:absolute;left:0;top:0;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:18px;display:grid;place-items:center;
-  background:#AF52DE;color:#fff;box-shadow:0 14px 34px rgba(175,82,222,.5);z-index:2;will-change:transform}
+  background:#AF52DE;color:#fff;box-shadow:0 14px 34px rgba(175,82,222,.5);z-index:2}
 .paket svg{width:34px;height:34px}
 
 /* 15 Regeln */

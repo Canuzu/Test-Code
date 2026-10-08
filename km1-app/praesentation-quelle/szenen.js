@@ -37,7 +37,6 @@ var uhren = [];
 function spaeter(fn, ms){ var t = setTimeout(fn, U.reduziert ? 0 : ms); uhren.push(t); return t; }
 function uhrenWeg(){ uhren.forEach(clearTimeout); uhren = []; }
 
-U.vorladen(['luis-start', 'video', 'video-3', 'weg', 'plan', 'vergleich', 'sandra-start', 'tim-team', 'akademie', 'verein', 'profi', 'scout', 'km1', 'familie', 'freigabe']);
 
 /* Kreide als Textur für die großen Kapitelzeilen */
 (function(){

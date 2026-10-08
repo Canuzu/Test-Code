@@ -75,6 +75,13 @@ einzelne Datei mit allen Bildern und Schriften, die ohne Netz aufgeht. Die
 Bildschirmfotos in `praesentation/img/` stammen aus der App; ändert sich ein
 Bildschirm sichtbar, gehört ein neues Foto hinein.
 
+Die Bühne ist 1920 × 1080 Punkte groß und kommt mit `zoom` auf den
+Bildschirm, nicht mit `transform: scale`. Safari auf dem iPhone (und damit
+jeder Browser dort) zeichnet verkleinerte Ebenen in voller Größe mal
+Pixeldichte und bricht dann mit „Ein Fehler ist aufgetreten“ am Speicher ab.
+Aus demselben Grund belegen die Leinwände nur Speicher, solange ihre Folie zu
+sehen ist.
+
 ## Aufgeräumt
 
 Jede Seite hat eine Aufgabe, gebaut nach dem Vorbild erfolgreicher Apps:
