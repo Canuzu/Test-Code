@@ -16,6 +16,8 @@ Haken von KM1, und Videos von Kindern sehen nur Team, Familie und geprüfte Kont
 | `apple/` | Dieselbe App im Stil von Apple, als Designstudie |
 | `mischung/` | Die Mischung: der Aufbau von Apple mit dem Charakter von KM1 |
 | `mischung2/` | Nur noch eine Weiterleitung: die Mischung 2 ist seit September 2026 die App |
+| `praesentation/` | Die App als Präsentation in 22 Folien, liegt unter `…/km1-app/praesentation/` |
+| `praesentation-quelle/` | Die Quellen der Präsentation und `bauen.py`, das daraus `praesentation/index.html` macht |
 | `artefakt.py` | Macht aus `app/` (oder mit `original`, `apple`, `mischung` aus den Studien) die Fassung für die Vorschau auf claude.ai |
 | `mobile/` | Die echte App für iPhone und Android (Expo), im Stil der App; die Bereiche für Teams und Scouting folgen |
 | `supabase/` | Datenbank, Regeln, Startdaten und ihr Test |
@@ -57,6 +59,21 @@ Service Worker und bekommen keine neuen Funktionen.
 Die App selbst ist aus der Mischung entstanden, farbiger und ruhiger: Die
 Vorschaubilder tragen die Farbe ihrer Ebene, Anton steht nur in den großen
 Titeln, Zahlen stehen in der runden Systemschrift.
+
+## Die Präsentation
+
+Unter <https://canuzu.github.io/Test-Code/km1-app/praesentation/> liegt die App
+als Präsentation in 22 Folien, für Gespräche mit Vereinen, Eltern und Partnern.
+Weiter geht es mit → oder der Leertaste, zurück mit ←. F schaltet auf
+Vollbild, N zeigt die Notizen für den Vortrag, O alle Folien, T den Ton. Auf
+der Folie „Live“ läuft die echte App aus `app/` im Telefon; die Werte, die sie
+dafür im Speicher des Geräts setzt, legt die Präsentation danach zurück.
+
+Gebaut wird sie aus `praesentation-quelle/`: `python3 bauen.py` schreibt
+`praesentation/index.html`. Mit `--eine-datei <ziel>` entsteht zusätzlich eine
+einzelne Datei mit allen Bildern und Schriften, die ohne Netz aufgeht. Die
+Bildschirmfotos in `praesentation/img/` stammen aus der App; ändert sich ein
+Bildschirm sichtbar, gehört ein neues Foto hinein.
 
 ## Aufgeräumt
 

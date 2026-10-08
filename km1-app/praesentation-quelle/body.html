@@ -1,0 +1,356 @@
+<div id="viewport">
+<div id="stage" role="region" aria-roledescription="Präsentation" aria-label="KM1 Training">
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <div id="slides">
+
+  <!-- 1 Titel -->
+  <section class="slide" id="titel" data-titel="KM1 Training" data-kapitel="KM1 Training">
+    <canvas class="scene" id="c-titel" aria-hidden="true"></canvas>
+    <div class="vignette"></div>
+    <div class="titelblock">
+      <p class="eb mitte" data-a="rise" style="--d:1500ms">KM1 Fußballschule · Köln</p>
+      <h1 class="h1" data-a="chars" style="--d:1700ms;margin-top:30px">KM1 Training</h1>
+      <p class="unter" data-a="rise" style="--d:2500ms">Fußballtechnik zum Nachmachen.</p>
+      <p class="datum" data-a="fade" style="--d:2900ms">Die App · Oktober 2026</p>
+    </div>
+    <p class="tipp" data-a="fade" style="--d:3600ms">Weiter mit <b>→</b> oder Leertaste</p>
+  </section>
+
+  <!-- 2 Lücke -->
+  <section class="slide" id="luecke" data-titel="Und zwischen den Trainings?" data-kapitel="Das Problem" data-schritte="3">
+    <div class="foto" style="background-image:url(img/foto-leiter.webp)"></div>
+    <p class="eb pin" style="left:140px;top:120px" data-a="rise">Das Problem</p>
+    <h2 class="h1 pin" style="left:140px;top:170px;width:1500px" data-a="lines"><span class="ln"><span>Und zwischen den Trainings?</span></span></h2>
+    <p class="lead pin" style="left:140px;top:912px;width:1500px;max-width:none;color:#5FD3C9;font-weight:600" data-a="rise" data-s="2">KM1 Training füllt die Tage dazwischen: eine Übung, die passt, jeden Tag.</p>
+    <div class="woche" aria-label="Eine Beispielwoche">
+      <div class="tag" data-a="rise" style="--d:200ms"><span class="kurz">MO</span><div class="feld"><div class="leer">?</div><div class="voll">{{ICON:play}}Übung</div></div></div>
+      <div class="tag training" data-a="rise" style="--d:280ms"><span class="kurz">DI</span><div class="feld"><div class="leer">Training</div></div></div>
+      <div class="tag" data-a="rise" style="--d:360ms"><span class="kurz">MI</span><div class="feld"><div class="leer">?</div><div class="voll">{{ICON:play}}Übung</div></div></div>
+      <div class="tag training" data-a="rise" style="--d:440ms"><span class="kurz">DO</span><div class="feld"><div class="leer">Training</div></div></div>
+      <div class="tag" data-a="rise" style="--d:520ms"><span class="kurz">FR</span><div class="feld"><div class="leer">?</div><div class="voll">{{ICON:play}}Übung</div></div></div>
+      <div class="tag" data-a="rise" style="--d:600ms"><span class="kurz">SA</span><div class="feld"><div class="leer">?</div><div class="voll">{{ICON:pokal}}Challenge</div></div></div>
+      <div class="tag" data-a="rise" style="--d:680ms"><span class="kurz">SO</span><div class="feld"><div class="leer">?</div><div class="voll">{{ICON:play}}Übung</div></div></div>
+    </div>
+    <div class="probleme">
+      <div class="problem karte" data-a="rise" data-s="1" style="--d:0ms"><span class="h3" style="color:#FF9500">Kinder</span><p>üben allein, mit irgendeinem Clip aus dem Netz.</p></div>
+      <div class="problem karte" data-a="rise" data-s="1" style="--d:140ms"><span class="h3" style="color:#34C759">Eltern</span><p>wissen nicht, was ihr Kind kann und wer zuschaut.</p></div>
+      <div class="problem karte" data-a="rise" data-s="1" style="--d:280ms"><span class="h3" style="color:var(--lv1)">Trainer</span><p>sehen nicht, wer zwischen den Einheiten übt.</p></div>
+    </div>
+  </section>
+
+  <!-- 3 Idee -->
+  <section class="slide" id="idee" data-titel="Die Idee" data-kapitel="Die Idee">
+    <p class="eb pin" style="left:140px;top:120px" data-a="rise">Die Idee</p>
+    <h2 class="h1 pin" style="left:140px;top:170px;width:1150px;font-size:112px" data-a="lines"><span class="ln"><span>Kaders Training</span></span><span class="ln" style="--j:1"><span>für die Hosentasche.</span></span></h2>
+    <p class="lead pin" style="left:140px;top:440px;width:1000px" data-a="rise" style="--d:300ms">Die App der KM1 Fußballschule aus Köln. Jede Übung Schritt für Schritt, für jedes Alter. <b>Trainer, Team und Eltern sind mit drin.</b></p>
+    <div class="saeulen">
+      <div class="saeule karte" data-a="rise" style="--d:500ms"><div class="symbol" style="background:#FF9500">{{ICON:tabStart}}</div><b>Üben</b><span>Videos in Schritten, die Pyramide, Trainingspläne</span></div>
+      <div class="saeule karte" data-a="rise" style="--d:620ms"><div class="symbol" style="background:#0D7C75">{{ICON:team}}</div><b>Gemeinsam</b><span>Team, Trainer, Eltern, Vereine und Scouts</span></div>
+      <div class="saeule karte" data-a="rise" style="--d:740ms"><div class="symbol" style="background:#0A7AFF">{{ICON:schild}}</div><b>Geschützt</b><span>Feste Regeln für jedes Kind, auf dem Server</span></div>
+    </div>
+    <div class="kader" data-a="rise" style="--d:900ms"><img src="img/foto-kader.webp" alt="Kader"><span><b>Kader</b> · Gründer und Trainer der KM1 Fußballschule</span></div>
+  </section>
+
+  <!-- 4 Kapitel 1 -->
+  <section class="slide kapitelfolie" id="k1" data-titel="Für Spieler" data-kapitel="01 · Für Spieler" data-wechsel="kreis">
+    <div class="tafel"></div>
+    <canvas class="scene" id="c-k1" aria-hidden="true"></canvas>
+    <div class="nummer" data-a="drop" style="--d:200ms">01</div>
+    <h2 class="titelzeile" data-a="chars" style="--d:450ms">Für Spieler</h2>
+    <p class="zeile" data-a="rise" style="--d:1100ms">Jeden Tag wissen, was dran ist. Und sehen, wie man es macht.</p>
+  </section>
+
+  <!-- 5 Heute -->
+  <section class="slide" id="heute" data-titel="Eine Frage. Eine Antwort." data-kapitel="01 · Für Spieler" data-schritte="2">
+    <p class="eb pin" style="left:140px;top:110px" data-a="rise">Die Startseite</p>
+    <h2 class="h2 pin" style="left:140px;top:156px;width:1300px" data-a="lines"><span class="ln"><span>Eine Frage. Eine Antwort.</span></span></h2>
+    <p class="lead pin" style="left:140px;top:270px;width:560px" data-a="rise" style="--d:250ms">„Was trainiere ich heute?“ Die große Karte zeigt immer <b>genau eine Aufgabe</b>, nie vier.</p>
+    <div class="orbit-karte" data-orbit="0"><div class="symbol" style="background:#FF9500">{{ICON:kalender}}</div><div><b>Hausaufgabe von Tim</b><span>Übersteiger, bis Freitag</span></div></div>
+    <div class="orbit-karte" data-orbit="1"><div class="symbol" style="background:#C81E14">{{ICON:play}}</div><div><b>Weitertrainieren</b><span>Die Flanke, 2:10 übrig</span></div></div>
+    <div class="orbit-karte" data-orbit="2"><div class="symbol" style="background:#34C759">{{ICON:kalender}}</div><div><b>Dein Plan</b><span>Woche 2, Einheit 1</span></div></div>
+    <div class="orbit-karte" data-orbit="3"><div class="symbol" style="background:#0D7C75">{{ICON:stern}}</div><div><b>Nächster Schritt</b><span>Foundational, Woche 4</span></div></div>
+    <div class="puls-ring" id="heute-ring"></div>
+    <div class="reihe" aria-label="Die Reihenfolge">
+      <p class="mono" data-a="rise" data-s="1" style="--d:1400ms">Die Reihenfolge</p>
+      <div class="stufe" data-a="right" data-s="1" style="--d:1500ms"><i>1</i>Hausaufgabe vom Trainer</div>
+      <div class="stufe" data-a="right" data-s="1" style="--d:1620ms"><i>2</i>Das angefangene Video</div>
+      <div class="stufe" data-a="right" data-s="1" style="--d:1740ms"><i>3</i>Die nächste Einheit im Plan</div>
+      <div class="stufe" data-a="right" data-s="1" style="--d:1860ms"><i>4</i>Der nächste Schritt auf dem Weg</div>
+    </div>
+  </section>
+
+  <!-- 6 Video -->
+  <section class="slide" id="video" data-titel="In Schritten zum Nachmachen" data-kapitel="01 · Für Spieler" data-schritte="2">
+    <p class="eb pin" style="left:960px;top:120px" data-a="rise">Jedes Video</p>
+    <h2 class="h2 pin" style="left:960px;top:166px;width:860px" data-a="lines"><span class="ln"><span>In Schritten</span></span><span class="ln" style="--j:1"><span>zum Nachmachen.</span></span></h2>
+    <div class="zeitachse karte" data-a="rise" style="--d:300ms">
+      <div class="kopf"><b>Übersteiger · 5:48</b><div class="tempi" aria-label="Tempo"><span>1×</span><span>½×</span><span>¼×</span></div></div>
+      <div class="spur"><div class="lauf"></div><i class="kap" style="left:6.03%"></i><i class="kap" style="left:37.36%"></i><i class="kap" style="left:68.68%"></i><div class="kopfpunkt"></div></div>
+      <div class="schritte">
+        <div class="schritt" style="left:0"><b>0:21</b>Mit Tempo auf den Gegner zu</div>
+        <div class="schritt" style="left:270px"><b>2:10</b>Den Fuß außen um den Ball führen</div>
+        <div class="schritt" style="left:540px"><b>3:59</b>Mit dem Außenrist wegdrücken</div>
+      </div>
+    </div>
+    <div class="merkmale">
+      <div class="merkmal karte" data-a="rise" style="--d:500ms"><div class="symbol" style="background:#C81E14">{{ICON:play}}</div><div><b>Zeitlupe</b><span>Bis ¼ so schnell, Bild für Bild.</span></div></div>
+      <div class="merkmal karte" data-a="rise" style="--d:600ms"><div class="symbol" style="background:#0A7AFF">{{ICON:sprech}}</div><div><b>Kapitel</b><span>Ein Tipp springt an die Stelle.</span></div></div>
+      <div class="merkmal karte" id="merkmal-fehler" data-a="rise" style="--d:700ms"><div class="symbol" style="background:#FF9500">{{ICON:auge}}</div><div><b>Häufiger Fehler</b><span>Den macht fast jeder am Anfang.</span></div></div>
+      <div class="merkmal karte" data-a="rise" style="--d:800ms"><div class="symbol" style="background:#34C759">{{ICON:check}}</div><div><b>Abhaken</b><span>Geschafft, und der Weg füllt sich.</span></div></div>
+    </div>
+  </section>
+
+  <!-- 7 Pyramide -->
+  <section class="slide" id="pyramide" data-titel="Die KM1-Pyramide" data-kapitel="01 · Für Spieler">
+    <canvas class="scene" id="c-pyramide" role="img" aria-label="Die KM1-Pyramide mit vier Ebenen: Foundational, Development, Performance und Professional"></canvas>
+    <p class="eb pin" style="left:140px;top:120px" data-a="rise">Vier Ebenen, eine Richtung</p>
+    <h2 class="h2 pin" style="left:140px;top:166px;width:1200px" data-a="lines"><span class="ln"><span>Die KM1-Pyramide.</span></span></h2>
+    <p class="lead pin" style="left:140px;top:280px;width:1180px;max-width:none" data-a="rise" style="--d:200ms">Der Jahrgang wählt die Ebene. Jede Ebene hat einen Pfad aus fünf Einheiten. Geschafft und abgehakt: <b>Aufstieg</b>.</p>
+  </section>
+
+  <!-- 8 Pläne -->
+  <section class="slide" id="plaene" data-titel="Trainingspläne" data-kapitel="01 · Für Spieler">
+    <p class="eb pin" style="left:140px;top:120px" data-a="rise">Trainingspläne</p>
+    <h2 class="h2 pin" style="left:140px;top:166px;width:1200px" data-a="lines"><span class="ln"><span>Sechs Wochen.</span></span><span class="ln" style="--j:1"><span>Drei Einheiten pro Woche.</span></span></h2>
+    <div class="plankarten">
+      <div class="plankarte" data-a="rise" style="--d:300ms;background:linear-gradient(150deg,#1F9A91,#0D5F58)"><small>Foundational · U8 bis U13</small><b>Grundlagen in sechs Wochen</b><span>20 Minuten pro Einheit</span></div>
+      <div class="plankarte" data-a="rise" style="--d:420ms;background:linear-gradient(150deg,#56A642,#2C6A21)"><small>Development · U10 bis U15</small><b>Dribbling mit Tempo</b><span>25 Minuten pro Einheit</span></div>
+      <div class="plankarte" data-a="rise" style="--d:540ms;background:linear-gradient(150deg,#56A642,#2C6A21)"><small>Development · U10 bis U17</small><b>Flanke und Abschluss</b><span>30 Minuten pro Einheit</span></div>
+    </div>
+    <div class="raster" aria-label="Sechs Wochen mit je drei Einheiten" data-a="fade" style="--d:600ms">{{RASTER}}</div>
+    <div class="legende" data-a="rise" style="--d:900ms"><span><i style="background:#5FB04A"></i>Woche 1 mit kostenlosem Konto</span><span><i style="background:linear-gradient(135deg,#E8433A,#FF9F0A)"></i>Woche 2 bis 6 mit KM1 Pro</span></div>
+  </section>
+
+  <!-- 9 Vergleich -->
+  <section class="slide" id="vergleich" data-titel="Du und Kader" data-kapitel="01 · Für Spieler">
+    <p class="eb pin" style="left:900px;top:120px" data-a="rise">Mit mir vergleichen</p>
+    <h2 class="h2 pin" style="left:900px;top:166px;width:900px" data-a="lines"><span class="ln"><span>Du und Kader.</span></span><span class="ln" style="--j:1"><span>Bild für Bild.</span></span></h2>
+    <div class="paneele">
+      <div class="paneel" data-a="rise" style="--d:300ms"><span class="marke">KADER</span><svg viewBox="0 0 410 260" aria-hidden="true"><path class="zz" d="M40 150 L120 90 L190 170 L260 90 L330 170 L380 120" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 12"/><circle class="ball" r="13" fill="#fff"/></svg><span class="uhr zahl">0:00</span></div>
+      <div class="paneel du" data-a="rise" style="--d:420ms"><span class="marke">DU</span><svg viewBox="0 0 410 260" aria-hidden="true"><path class="zz" d="M40 150 L120 90 L190 170 L260 90 L330 170 L380 120" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 12"/><circle class="ball" r="13" fill="#FFB020"/></svg><span class="uhr zahl">0:00</span></div>
+    </div>
+    <div class="tempo" data-a="rise" style="--d:550ms">Im selben Takt: <span>1×</span><span>½×</span><span>¼×</span><span>Bild für Bild</span></div>
+    <div class="privat karte" data-a="rise" style="--d:700ms">
+      <svg class="weg" viewBox="0 0 300 110" aria-hidden="true">
+        <rect x="8" y="14" width="52" height="86" rx="12" fill="none" stroke="#F2F5F1" stroke-width="4"/>
+        <path d="M70 57 H196" stroke="rgba(242,245,241,.35)" stroke-width="4" stroke-dasharray="6 10" stroke-linecap="round"/>
+        <path d="M210 26 V88" stroke="#EE4A40" stroke-width="7" stroke-linecap="round"/>
+        <path d="M244 70 a18 18 0 0 1 4 -35 a24 24 0 0 1 44 6 a15 15 0 0 1 -2 29 z" fill="none" stroke="rgba(242,245,241,.35)" stroke-width="4"/>
+        <rect class="paketchen" x="70" y="47" width="24" height="20" rx="5" fill="#FFB020"/>
+      </svg>
+      <div><b>Das Video bleibt auf dem Handy.</b><span>Kein Upload, auch nicht später. Vergleichen geht trotzdem in Zeitlupe und Bild für Bild.</span></div>
+    </div>
+  </section>
+
+  <!-- 10 Kapitel 2 -->
+  <section class="slide kapitelfolie" id="k2" data-titel="Gemeinsam" data-kapitel="02 · Gemeinsam" data-wechsel="kreis">
+    <div class="tafel"></div>
+    <canvas class="scene" id="c-k2" aria-hidden="true"></canvas>
+    <div class="nummer" data-a="drop" style="--d:200ms">02</div>
+    <h2 class="titelzeile" data-a="chars" style="--d:450ms">Gemeinsam</h2>
+    <p class="zeile" data-a="rise" style="--d:1100ms">Spieler, Eltern, Trainer und Vereine in einer App. Jeder sieht, was ihn angeht.</p>
+  </section>
+
+  <!-- 11 Rollen -->
+  <section class="slide" id="rollen" data-titel="Acht Rollen" data-kapitel="02 · Gemeinsam" data-schritte="9">
+    <p class="eb pin" style="left:140px;top:120px" data-a="rise">Eine App, acht Rollen</p>
+    <h2 class="h2 pin" style="left:140px;top:166px;width:1000px" data-a="lines"><span class="ln"><span>Jede Rolle sieht ihre App.</span></span></h2>
+    <div class="legende" data-a="rise" style="--d:400ms">
+      <div class="wechsel"><p class="eb" id="rolle-eb">Acht Rollen</p><h3 class="h2" id="rolle-name">Ein Netz</h3><p id="rolle-satz">Tippe auf eine Rolle oder blättere weiter.</p></div>
+    </div>
+    {{ORBS}}
+    <p class="fuss" data-a="fade" style="--d:800ms">Alle Namen sind erfunden. Echte Profis und Vereine kommen nur mit ihrer Zustimmung hinein.</p>
+  </section>
+
+  <!-- 12 Trainer -->
+  <section class="slide" id="trainer" data-titel="Für Trainer" data-kapitel="02 · Gemeinsam">
+    <div class="faecher" id="fach-l" style="left:1150px;top:560px"><img src="img/s-tim-rangliste.webp" alt="Rangliste im Team"></div>
+    <div class="faecher" id="fach-r" style="left:1700px;top:560px"><img src="img/s-tim-videos.webp" alt="Videos, die auf Feedback warten"></div>
+    <p class="eb pin" style="left:140px;top:120px" data-a="rise">Für Trainer</p>
+    <h2 class="h1 pin" style="left:140px;top:170px;width:940px;font-size:108px" data-a="lines"><span class="ln"><span>Das Team</span></span><span class="ln" style="--j:1"><span>trainiert weiter.</span></span></h2>
+    <p class="lead pin" style="left:140px;top:400px;width:820px;font-size:30px" data-a="rise" style="--d:200ms">Auch an den Tagen, an denen du nicht auf dem Platz stehst.</p>
+    <div class="liste">
+      <div class="zeilepunkt" data-a="left" style="--d:400ms"><div class="symbol" style="background:#FF9500">{{ICON:kalender}}</div><div><b>Hausaufgaben</b><span>direkt beim passenden Video, mit Frist</span></div></div>
+      <div class="zeilepunkt" data-a="left" style="--d:520ms"><div class="symbol" style="background:#0D7C75">{{ICON:sprech}}</div><div><b>Feedback auf Videos</b><span>auf die Sekunde genau, nur für den Spieler</span></div></div>
+      <div class="zeilepunkt" data-a="left" style="--d:640ms"><div class="symbol" style="background:#D39B00">{{ICON:pokal}}</div><div><b>Rangliste</b><span>für jede Challenge. Kaders Marke: 43</span></div></div>
+    </div>
+    <p class="preis pille" data-a="rise" style="--d:800ms">KM1 Team · 12,99 € im Monat je Mannschaft · Spieler zahlen nichts</p>
+  </section>
+
+  <!-- 13 Eltern -->
+  <section class="slide" id="eltern" data-titel="Für Eltern" data-kapitel="02 · Gemeinsam" data-schritte="3">
+    <p class="eb pin" style="left:140px;top:120px" data-a="rise">Für Eltern</p>
+    <h2 class="h1 pin" style="left:140px;top:170px;width:1180px" data-a="lines"><span class="ln"><span>Nichts passiert</span></span><span class="ln" style="--j:1"><span>ohne Sie.</span></span></h2>
+    <p class="lead pin" style="left:140px;top:430px;width:1160px;max-width:none;font-size:30px" data-a="rise" style="--d:200ms">Unter 16 geben die Eltern jedes Video und das Talentprofil frei. Sie sehen Hausaufgaben, Laufbahn und jeden Chat ihres Kindes.</p>
+    <div class="fluss" data-a="fade" style="--d:400ms">
+      <svg viewBox="0 0 1160 330" aria-hidden="true"><path id="fluss-weg" d="M140 64 C 330 64, 390 64, 580 64 S 830 64, 1020 64" fill="none" stroke="rgba(242,245,241,.18)" stroke-width="4" stroke-dasharray="4 14" stroke-linecap="round"/></svg>
+      <div class="knoten" style="left:140px;top:0"><div class="kreis" style="background:#FF9500">LM<span class="abzeichen" style="background:#AF52DE" id="ab-luis">{{ICON:stern}}</span></div><b>Luis, 12</b><span>möchte, dass Scouts sein Profil sehen</span></div>
+      <div class="knoten" style="left:580px;top:0"><div class="kreis" style="background:#34C759">SM<span class="abzeichen" style="background:#8E8E93" id="ab-sandra">{{ICON:lock}}</span></div><b>Sandra, seine Mutter</b><span id="sandra-satz">entscheidet, ob das geht</span></div>
+      <div class="knoten" style="left:1020px;top:0"><div class="kreis" style="background:#5856D6">MB<span class="abzeichen" style="background:var(--haken)" id="ab-scout">{{ICON:check}}</span></div><b>Geprüfte Scouts</b><span>sehen das Profil erst danach. Kontakt nur über die Eltern.</span></div>
+      <div class="paket" id="paket">{{ICON:stern}}</div>
+    </div>
+  </section>
+
+  <!-- 14 Kapitel 3 -->
+  <section class="slide kapitelfolie" id="k3" data-titel="Sicher" data-kapitel="03 · Sicher" data-wechsel="kreis">
+    <div class="tafel"></div>
+    <canvas class="scene" id="c-k3" aria-hidden="true"></canvas>
+    <div class="nummer" data-a="drop" style="--d:200ms">03</div>
+    <h2 class="titelzeile" data-a="chars" style="--d:450ms">Sicher</h2>
+    <p class="zeile" data-a="rise" style="--d:1100ms">Jedes Kind geschützt. Auf dem Server, nicht nur auf dem Bildschirm.</p>
+  </section>
+
+  <!-- 15 Regeln -->
+  <section class="slide" id="regeln" data-titel="Drei Regeln" data-kapitel="03 · Sicher" data-schritte="3">
+    <svg class="schild" viewBox="0 0 740 740" aria-hidden="true">
+      <defs><radialGradient id="glut" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#3B9BFF" stop-opacity=".28"/><stop offset="1" stop-color="#3B9BFF" stop-opacity="0"/></radialGradient></defs>
+      <circle cx="370" cy="370" r="360" fill="url(#glut)" class="glut"/>
+      <circle class="ring" data-r="0" cx="370" cy="370" r="330" fill="none" stroke="#3B9BFF" stroke-width="10" stroke-linecap="round"/>
+      <circle class="ring" data-r="1" cx="370" cy="370" r="262" fill="none" stroke="#3B9BFF" stroke-width="10" stroke-linecap="round"/>
+      <circle class="ring" data-r="2" cx="370" cy="370" r="194" fill="none" stroke="#3B9BFF" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="370" cy="370" r="128" fill="#0B1511" stroke="rgba(242,245,241,.12)" stroke-width="3"/>
+    </svg>
+    <img class="pin" src="img/symbol.webp" alt="" style="left:432px;top:482px;width:176px;height:176px;border-radius:50%;object-fit:cover" data-a="pop">
+    <p class="eb pin" style="left:980px;top:120px" data-a="rise">Drei Regeln, überall</p>
+    <h2 class="h2 pin" style="left:980px;top:166px;width:860px" data-a="lines"><span class="ln"><span>Was für jedes</span></span><span class="ln" style="--j:1"><span>Kind gilt.</span></span></h2>
+    <div class="regelliste">
+      <div class="regel" data-a="right" data-s="0" style="--d:500ms"><i>1</i><div><b>Geprüft wird, wer mit Kindern arbeitet.</b><span>Trainer, Scouts, Profis, Vereine und Akademien tragen erst nach der Prüfung den Haken.</span></div></div>
+      <div class="regel" data-a="right" data-s="1"><i>2</i><div><b>Kein Video eines Kindes im offenen Netz.</b><span>Unter 16 geben die Eltern jedes Video frei. Sehen dürfen es nur Team, Familie und geprüfte Konten.</span></div></div>
+      <div class="regel" data-a="right" data-s="2"><i>3</i><div><b>Kein Fremder schreibt einem Kind.</b><span>Unter 16 nur mit Trainer, Team und Eltern, und die Eltern lesen mit.</span></div></div>
+    </div>
+    <p class="fuss" data-a="fade" data-s="2" style="--d:600ms">Durchgesetzt in der Datenbank mit Row Level Security. 36 Tests prüfen die Regeln gegen eine echte Datenbank.</p>
+  </section>
+
+  <!-- 16 Haken -->
+  <section class="slide" id="haken" data-titel="Der blaue Haken" data-kapitel="03 · Sicher" data-schritte="2">
+    <p class="eb pin" style="left:140px;top:120px" data-a="rise">Der blaue Haken</p>
+    <h2 class="h2 pin" style="left:140px;top:166px;width:1200px" data-a="lines"><span class="ln"><span>Vertrauen in einer Kette.</span></span></h2>
+    <p class="lead pin" style="left:140px;top:280px;width:1180px;max-width:none;font-size:30px" data-a="rise" style="--d:200ms">KM1 prüft Vereine und Akademien selbst. Die bürgen für ihre Leute.</p>
+    <div class="kette">
+      <svg viewBox="0 0 1200 380" aria-hidden="true"><path id="kette-weg" d="M131 300 C 230 380, 330 380, 431 300 S 630 220, 731 300 S 930 380, 1031 300" fill="none" stroke="rgba(59,155,255,.28)" stroke-width="4" stroke-dasharray="4 12" stroke-linecap="round"/></svg>
+      <div class="glied karte" style="left:0" data-a="rise" style="--d:300ms"><span class="ok">{{ICON:check}}</span><div class="symbol" style="background:#C81E14">{{ICON:schild}}</div><b>KM1 prüft</b><span>Register, Kinderschutzkonzept und einen Anruf</span></div>
+      <div class="glied karte" style="left:300px" data-a="rise" style="--d:400ms"><span class="ok">{{ICON:check}}</span><div class="symbol" style="background:#AF52DE">{{ICON:akademie}}</div><b>Verein oder Akademie</b><span>bürgt mit einem Code für jede Person</span></div>
+      <div class="glied karte" style="left:600px" data-a="rise" style="--d:500ms"><span class="ok">{{ICON:check}}</span><div class="symbol" style="background:#0D7C75">{{ICON:team}}</div><b>Trainer, Scout, Profi</b><span>trägt den Haken sofort</span></div>
+      <div class="glied karte" style="left:900px" data-a="rise" style="--d:600ms"><span class="ok">{{ICON:check}}</span><div class="symbol" style="background:#34C759">{{ICON:familie}}</div><b>Eltern und Kinder</b><span>sehen, wem sie trauen können</span></div>
+      <div class="reise" id="reise">{{ICON:check}}</div>
+    </div>
+    <div class="code" data-a="rise" data-s="1"><span class="chip" id="code-chip"></span><span>Ohne Einladung prüft KM1 die Belege von Hand, etwa das erweiterte Führungszeugnis.</span></div>
+  </section>
+
+  <!-- 17 Kapitel 4 -->
+  <section class="slide kapitelfolie" id="k4" data-titel="Der Plan" data-kapitel="04 · Der Plan" data-wechsel="kreis">
+    <div class="tafel"></div>
+    <canvas class="scene" id="c-k4" aria-hidden="true"></canvas>
+    <div class="nummer" data-a="drop" style="--d:200ms">04</div>
+    <h2 class="titelzeile" data-a="chars" style="--d:450ms">Der Plan</h2>
+    <p class="zeile" data-a="rise" style="--d:1100ms">Geschäftsmodell, Technik und der Weg zum Anpfiff.</p>
+  </section>
+
+  <!-- 18 Geschäft -->
+  <section class="slide" id="geschaeft" data-titel="Geschäftsmodell" data-kapitel="04 · Der Plan">
+    <p class="eb pin" style="left:128px;top:120px" data-a="rise">Geschäftsmodell</p>
+    <h2 class="h2 pin" style="left:128px;top:166px;width:1700px;font-size:84px" data-a="lines"><span class="ln"><span>Kostenlos starten. Für die Profis zahlen.</span></span></h2>
+    <div class="tische">
+      <div class="preiskarte" style="--d:200ms"><div class="hinten"><img src="img/symbol.webp" alt=""></div><div class="vorn"><small>Für alle</small><b>Kostenlos</b><div class="betrag zahl">0<sup>€</sup></div><div class="je">ohne Abo</div><ul><li>Die Hälfte der Videos ohne Anmeldung</li><li>Die andere Hälfte mit Konto</li><li>Woche 1 jedes Plans</li></ul></div></div>
+      <div class="preiskarte pro" style="--d:330ms"><div class="hinten"><img src="img/symbol.webp" alt=""></div><div class="vorn"><small>Für Spieler</small><b>KM1 Pro</b><div class="betrag zahl" data-zahl="6,99">6,99<sup>€</sup></div><div class="je">im Monat, oder 59 € im Jahr</div><ul><li>Einheiten mit aktiven Profis</li><li>Alle sechs Wochen der Pläne</li><li>Sieben Tage gratis</li></ul></div></div>
+      <div class="preiskarte team" style="--d:460ms"><div class="hinten"><img src="img/symbol.webp" alt=""></div><div class="vorn"><small>Für Trainer</small><b>KM1 Team</b><div class="betrag zahl" data-zahl="12,99">12,99<sup>€</sup></div><div class="je">im Monat je Mannschaft</div><ul><li>Profi-Einheiten fürs ganze Team</li><li>Spieler zahlen nichts</li><li>Vier Wochen gratis</li></ul></div></div>
+      <div class="preiskarte team" style="--d:590ms"><div class="hinten"><img src="img/symbol.webp" alt=""></div><div class="vorn"><small>Für Akademien</small><b>KM1 Akademie</b><div class="betrag zahl" data-zahl="79">79<sup>€</sup></div><div class="je">im Monat</div><ul><li>Bis zu zehn Mannschaften</li><li>Trainer und Talente an einem Ort</li></ul></div></div>
+      <div class="preiskarte" style="--d:720ms"><div class="hinten"><img src="img/symbol.webp" alt=""></div><div class="vorn"><small>Für Familien</small><b>Camps</b><div class="betrag zahl" data-zahl="249">249<sup>€</sup></div><div class="je">pro Kind, fünf Tage</div><ul><li>In der App buchen</li><li>Geschwister 20 € günstiger</li><li>Bezahlt bei KM1, nicht im App Store</li></ul></div></div>
+    </div>
+    <p class="fuss" data-a="fade" style="--d:1400ms">Kinder sehen auf der Startseite keine Werbung für ein Abo. Ein Camp bucht immer ein Erwachsener.</p>
+  </section>
+
+  <!-- 19 Technik -->
+  <section class="slide" id="technik" data-titel="Was drinsteckt" data-kapitel="04 · Der Plan">
+    <p class="eb pin" style="left:140px;top:120px" data-a="rise">Was drinsteckt</p>
+    <h2 class="h2 pin" style="left:140px;top:166px;width:1600px" data-a="lines"><span class="ln"><span>Gebaut wie ein fertiges Produkt.</span></span></h2>
+    <div class="tafelwand" data-a="rise" style="--d:200ms" role="table" aria-label="Zahlen zur App">
+      <div class="tafelzeile" role="row"><span class="etikett" role="cell">Rollen</span><span class="flaps" role="cell" data-flap="8" data-breite="7" aria-label="8"></span></div>
+      <div class="tafelzeile" role="row"><span class="etikett" role="cell">Ebenen der Pyramide</span><span class="flaps" role="cell" data-flap="4" data-breite="7" aria-label="4"></span></div>
+      <div class="tafelzeile" role="row"><span class="etikett" role="cell">Einheiten je Trainingsplan</span><span class="flaps" role="cell" data-flap="18" data-breite="7" aria-label="18"></span></div>
+      <div class="tafelzeile" role="row"><span class="etikett" role="cell">Automatische Tests</span><span class="flaps" role="cell" data-flap="67" data-breite="7" aria-label="67"></span></div>
+      <div class="tafelzeile" role="row"><span class="etikett" role="cell">Zeichen Code</span><span class="flaps" role="cell" data-flap="910.000" data-breite="7" aria-label="rund 910.000"></span></div>
+    </div>
+    <div class="bauteile">
+      <div class="bauteil karte" data-a="right" style="--d:500ms"><div class="symbol" style="background:#C81E14">{{ICON:auge}}</div><div><b>App im Browser</b><span>Live und installierbar, jede Rolle bedienbar.</span></div></div>
+      <div class="bauteil karte" data-a="right" style="--d:620ms"><div class="symbol" style="background:#0A7AFF">{{ICON:kamera}}</div><div><b>iPhone und Android</b><span>Eine echte App mit Expo, Player des Systems, Erinnerungen.</span></div></div>
+      <div class="bauteil karte" data-a="right" style="--d:740ms"><div class="symbol" style="background:#34C759">{{ICON:schild}}</div><div><b>Server</b><span>Supabase mit Postgres. Die Regeln stehen in der Datenbank.</span></div></div>
+    </div>
+  </section>
+
+  <!-- 20 Weg -->
+  <section class="slide" id="weg" data-titel="Der Weg zum Anpfiff" data-kapitel="04 · Der Plan">
+    <p class="eb pin" style="left:140px;top:120px" data-a="rise">Der Weg zum Anpfiff</p>
+    <h2 class="h2 pin" style="left:140px;top:166px;width:1640px" data-a="lines"><span class="ln"><span>Die App steht. Jetzt kommen</span></span><span class="ln" style="--j:1"><span>Kamera, Verträge und Zusagen.</span></span></h2>
+    <div class="feld" id="weg-feld">{{WEG}}</div>
+  </section>
+
+  <!-- 21 Live -->
+  <section class="slide" id="live" data-titel="Die App, live" data-kapitel="Probier sie aus">
+    <p class="eb pin" style="left:140px;top:120px" data-a="rise">Probier sie aus</p>
+    <h2 class="h1 pin" style="left:140px;top:170px;width:900px;font-size:160px" data-a="lines"><span class="ln"><span>Die App.</span></span><span class="ln" style="--j:1"><span class="rot">Live.</span></span></h2>
+    <p class="lead pin" style="left:140px;top:494px;width:860px;font-size:30px" data-a="rise" style="--d:200ms" id="live-satz">Keine Aufnahme: Die App läuft hier wirklich. Wähl eine Rolle, dann tippen und wischen.</p>
+    <div class="rollenwahl" data-a="rise" style="--d:400ms">{{LIVECHIPS}}</div>
+    <div class="qr" data-a="rise" style="--d:600ms"><div class="code" aria-label="QR-Code zur App">{{QR}}</div><div><b>Auf dem eigenen Handy</b><span>canuzu.github.io/<br>Test-Code/km1-app</span></div></div>
+  </section>
+
+  <!-- 22 Finale -->
+  <section class="slide" id="finale" data-titel="Danke" data-kapitel="KM1 Training">
+    <canvas class="scene" id="c-finale" aria-hidden="true"></canvas>
+    <div class="oben">
+      <p class="eb mitte" data-a="rise" data-s="0" style="--d:2300ms">KM1 Fußballschule · Köln</p>
+      <h2 class="h1" data-a="chars" style="--d:2450ms;margin-top:26px">Danke.</h2>
+    </div>
+    <p class="unten" data-a="rise" style="--d:3000ms"><b>KM1 Training</b> · Fußballtechnik zum Nachmachen<br>km1-training.de · canuzu.github.io/Test-Code/km1-app</p>
+    <button class="schuss" id="schuss" aria-label="Noch ein Schuss aufs Tor"></button>
+  </section>
+
+  </div>
+
+  <div id="phoneLayer" aria-hidden="true">
+    <div id="phoneShadow"></div>
+    <div id="phone">
+      <div class="live-pille">LIVE</div>
+      <div class="rahmen"></div>
+      <i class="knopf k1"></i><i class="knopf k2"></i><i class="knopf k3"></i><i class="knopf k4"></i>
+      <div class="glas">
+        <div class="status"><span>9:41</span><span class="sig"><b></b><i></i></span></div>
+        <div class="insel"></div>
+        <div class="bild" id="phone-bild"></div>
+        <div class="tipp" id="phone-tipp"></div>
+        <div class="toast" id="phone-toast"></div>
+      </div>
+      <div class="spiegel"></div>
+    </div>
+  </div>
+
+  <canvas id="fx" aria-hidden="true"></canvas>
+
+  <div id="hud">
+    <span class="kapitel" id="hud-kapitel">KM1 Training</span>
+    <div class="bahn" id="hud-bahn"><div class="linie"></div><div class="gelaufen" id="hud-gelaufen"></div><svg class="ball" id="hud-ball" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#F2F5F1"/><path d="M12 7.3l3.6 2.6-1.4 4.2H9.8L8.4 9.9z" fill="#0B1511"/><path d="M12 7.3V1.4M15.6 9.9l5.4-1.8M14.2 14.1l3.3 4.6M9.8 14.1l-3.3 4.6M8.4 9.9 3 8.1" stroke="#0B1511" stroke-width="1.4" fill="none"/></svg></div>
+    <span class="nr zahl" id="hud-nr">1 / 22</span>
+    <div class="knoepfe">
+      <button type="button" id="b-ton" aria-pressed="false" title="Ton (T)">Ton</button>
+      <button type="button" id="b-notizen" aria-pressed="false" title="Notizen (N)">Notizen</button>
+      <button type="button" id="b-alle" title="Übersicht (O)">Alle</button>
+      <button type="button" id="b-voll" title="Vollbild (F)">Vollbild</button>
+    </div>
+  </div>
+
+  <aside class="panel" id="notizen" aria-live="polite"><h4>Notizen</h4><div id="notiz-text"></div></aside>
+  <nav class="panel" id="uebersicht" aria-label="Alle Folien"></nav>
+  <div class="panel" id="hilfe" role="dialog" aria-label="Tasten">
+    <h4>Tasten</h4>
+    <dl>
+      <dt>→ Leertaste</dt><dd>weiter</dd>
+      <dt>←</dt><dd>zurück</dd>
+      <dt>F</dt><dd>Vollbild</dd>
+      <dt>N</dt><dd>Notizen für dich</dd>
+      <dt>O</dt><dd>alle Folien</dd>
+      <dt>T</dt><dd>Ton an oder aus</dd>
+      <dt>Wischen</dt><dd>auf dem Handy oder Tablet</dd>
+    </dl>
+  </div>
+</div>
+</div>
