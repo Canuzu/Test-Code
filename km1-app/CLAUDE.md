@@ -170,6 +170,7 @@ Commit-Nachrichten werden umschrieben (ae, oe, ue), im übrigen Text nicht.
 | `apple/index.html` | Designstudie im Stil von Apple, liegt unter `…/km1-app/apple/` |
 | `mischung/index.html` | Die Mischung aus Apple-Stil und KM1-Charakter, liegt unter `…/km1-app/mischung/` |
 | `mischung2/index.html` | Nur eine Weiterleitung auf die App |
+| `praesentation/` | Die App als Präsentation in 22 Folien, liegt unter `…/km1-app/praesentation/`; gebaut aus `praesentation-quelle/` mit `python3 bauen.py` |
 | `artefakt.py` | Macht aus `app/index.html` die Fassung für die Vorschau auf claude.ai, mit `original`, `apple` oder `mischung` aus den Studien |
 | `KONZEPT.md` | Architektur, Datenmodell, Abo, Designsystem, Weg ins App Store |
 | `WEG_ZUR_ZEHN.md` | Was zwischen dem heutigen Stand und einem fertigen Produkt liegt |
