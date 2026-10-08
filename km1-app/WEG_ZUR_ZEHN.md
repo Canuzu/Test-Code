@@ -143,6 +143,11 @@ lohnt sich jetzt.
 - **„Mit Apple anmelden".** Sobald eine andere Anmeldung über Dritte angeboten
   wird (Google, Facebook), muss Apple als gleichwertige Möglichkeit daneben
   stehen. Wer nur E-Mail anbietet, ist fein raus.
+- **Die Testphase beenden.** Bis zum Start kann in der App im Browser jeder
+  jede Rolle ohne Einladungscode und ohne Belege ausprobieren, KM1
+  eingeschlossen (`TESTPHASE` in `app/index.html`). Vor dem ersten echten
+  Nutzer steht dort `false`. Sonst trägt jeder Fremde den Haken, der sagt,
+  dass KM1 ihn geprüft hat, und kann Kindern nahekommen.
 
 ---
 
