@@ -2223,15 +2223,6 @@ var VORF = (function(){
   }catch(e){ return an || (/vorfuehrung/.test(q) && !/vorfuehrung=aus/.test(q)); }
 })();
 document.documentElement.classList.toggle('mit-vorfuehrung', VORF);
-/* Die Testphase: Solange die App nicht im Laden ist, kann jeder jede
-   Rolle ausprobieren, ohne Einladungscode und ohne Belege. Der Haken ist
-   sofort da, und KM1 steht unter „Etwas anderes" mit in der Liste. Vor
-   dem Start wird TESTPHASE auf false gesetzt, dann gilt wieder: Code vom
-   Verein oder Pruefung durch KM1. Mit ?testphase=aus in der Adresse sieht
-   man schon heute, wie es spaeter ist. */
-var TESTPHASE = (function(){
-  try{ return !/testphase=aus/.test(location.search + location.hash); }catch(e){ return true; }
-})();
 function vorfuehrungSetzen(an){
   VORF = an;
   try{ localStorage.setItem(VORF_KEY, an ? '1' : '0'); }catch(e){}
@@ -4235,7 +4226,7 @@ document.addEventListener('click', function(e){
     var jgFeld = document.getElementById('lg-jg');
     if(neuesKonto && rl === 'spieler' && jgFeld && !jgFeld.value){ haptik('fehler'); toast('Wähl noch deinen Jahrgang'); jgFeld.focus(); return; }
     /* Ein falscher Einladungscode haelt das Anlegen auf, bevor es ein Konto gibt. */
-    if(neuesKonto && !TESTPHASE && einladbar(rl) && state.pruefWeg !== 'belege'){
+    if(neuesKonto && einladbar(rl) && state.pruefWeg !== 'belege'){
       var codeFehler = einladungGueltig((document.getElementById('lg-code') || {}).value, rl, true);
       if(codeFehler){ haptik('fehler'); toast(codeFehler); return; }
     }
@@ -4266,7 +4257,6 @@ document.addEventListener('click', function(e){
     else if(n === 'pro'){ haptik('erfolg'); openSheet(sheetPaywall()); toast('Angemeldet'); }
     else if(n === 'teamabo'){ haptik('erfolg'); openSheet(sheetTeamAbo()); toast('Angemeldet'); }
     else if(state.gepruefDurch){ haptik('aufstieg'); toast('Angemeldet. Der Haken ist da, '+state.gepruefDurch+' bürgt für dich.'); }
-    else if(TESTPHASE && ROLLEN[state.rolle].pruef && state.geprueft){ haptik('aufstieg'); toast('Angemeldet. In der Testphase ist der Haken sofort da.'); }
     else { haptik('erfolg'); toast('Angemeldet'); }
   }
   else if(k==='logout'){
@@ -4702,12 +4692,8 @@ function rolleSetzen(r, neu){
   state.eigenesTeam = null;
   /* Mit dem Code des Vereins ist der Haken sofort da. Geprueft wurde er
      schon beim Anmelden, bevor es das Konto gab. */
-  var e = !TESTPHASE && einladbar(r) && state.pruefWeg !== 'belege' && einladungFuer((document.getElementById('lg-code') || {}).value);
+  var e = einladbar(r) && state.pruefWeg !== 'belege' && einladungFuer((document.getElementById('lg-code') || {}).value);
   if(e) einladungEinloesen(e);
-  /* In der Testphase ist jede Rolle sofort so, wie sie nach der Pruefung
-     ist. KM1 sieht dazu alle Videos. */
-  if(TESTPHASE && ROLLEN[r].pruef) state.geprueft = true;
-  if(TESTPHASE && r === 'km1') state.pro = true;
   if(r === 'spieler') W.neuName = state.konto.name;
   /* „Moin Akademie Rheinblick." waere ein Satz zu lang. */
   if(r === 'akademie' || r === 'verein') state.konto.vn = 'zusammen';
@@ -5174,14 +5160,14 @@ function pruefPanel(){
     return '<div class="panel">' +
       '<div class="pro-zeile"><span class="note" style="display:flex;align-items:center">'+(durch ? 'Über Einladung geprüft' : 'Von KM1 geprüft')+haken()+'</span><span class="pille blau">Aktiv</span></div>' +
       '<p class="sub" style="margin:0">'+(durch ? h(durch)+' hat dich eingeladen und bürgt für dich, KM1 hat '+h(durch)+' geprüft.'
-        : (state.demo ? PRUEF_TEXT[state.rolle] : (TESTPHASE ? 'In der Testphase ist der Haken sofort da, ohne Code und ohne Belege.' : 'Deine Belege sind geprüft.')))+' Den Haken sehen alle, die mit dir zu tun haben.</p>' +
+        : (state.demo ? PRUEF_TEXT[state.rolle] : 'Deine Belege sind geprüft.'))+' Den Haken sehen alle, die mit dir zu tun haben.</p>' +
     '</div>';
   }
   if(state.pruefung === 'laeuft'){
     return '<div class="panel">' +
       '<div class="pro-zeile"><span class="note">Prüfung</span><span class="pille orange">Läuft</span></div>' +
       '<p class="sub" style="margin:0">KM1 prüft deine Belege von Hand, meist innerhalb von zwei Werktagen.</p>' +
-      pruefOkKnopf() +
+      '<button class="demo" type="button" data-act="pruefok">Vorführung: Prüfung abschließen</button>' +
     '</div>';
   }
   var was = {trainer:'Ohne Haken kann niemand deinem Team beitreten.', akademie:'Ohne Haken legt ihr keine Teams an.', scout:'Ohne Haken siehst du keine Talente.',
@@ -5192,14 +5178,6 @@ function pruefPanel(){
     '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">' +
       (code ? '<button class="btn klein" type="button" data-act="codeeingeben">Ich habe einen Code</button>' : '') +
       '<button class="btn klein'+(code ? ' ghost' : '')+'" type="button" data-act="pruefung">Prüfung beantragen</button></div></div>';
-}
-
-/* Die Pruefung abschliessen, ohne auf KM1 zu warten: in der Testphase
-   fuer alle, sonst nur in der Vorfuehrung. */
-function pruefOkKnopf(){
-  return TESTPHASE
-    ? '<button class="btn klein" type="button" data-act="pruefok" style="align-self:flex-start">Testphase: gleich prüfen</button>'
-    : '<button class="demo" type="button" data-act="pruefok">Vorführung: Prüfung abschließen</button>';
 }
 
 /* KM1 Team als Kachel, fuer eine Akademie ohne Abo. */
@@ -5236,9 +5214,7 @@ function rollenZeilen(){
   '</div>';
 }
 function vorfuehrungBlock(){
-  /* In der Testphase laesst sich die Vorfuehrung auch ohne Adresse
-     einschalten, damit jeder die Beispielkonten ansehen kann. */
-  if(!VORF) return TESTPHASE ? '<div class="rows mit-symbol">' + zeile('vorfan', ICON.auge, '#5856D6', 'Vorführung', 'Aus') + '</div>' : '';
+  if(!VORF) return '';
   var s = aktuelleSicht();
   var wer = s === 'gast' ? 'Gast' : (s ? DEMO[s].wer : 'Eigenes Konto');
   return '<div class="rows mit-symbol">' + zeile('sicht', ICON.auge, '#5856D6', 'Vorführung', h(wer)) + '</div>';
@@ -5247,7 +5223,7 @@ function vorfuehrungBlock(){
 /* ---------- Anmeldung ----------
    Fast alle, die die App oeffnen, sind Kinder, Eltern oder Trainer. Die
    vier uebrigen Rollen stehen hinter „Etwas anderes". */
-var ROLLEN_HAUPT = ['spieler','eltern','trainer'], ROLLEN_WEITERE = ['akademie','verein','profi','scout'].concat(TESTPHASE ? ['km1'] : []);
+var ROLLEN_HAUPT = ['spieler','eltern','trainer'], ROLLEN_WEITERE = ['akademie','verein','profi','scout'];
 function rollenKnoepfe(aktiv, act, offen){
   var knopf = function(r){
     var x = ROLLEN[r];
@@ -5261,7 +5237,7 @@ function rollenKnoepfe(aktiv, act, offen){
     (weitere ? ROLLEN_WEITERE.map(knopf).join('')
       : '<button class="rolle" type="button" data-act="'+act+'mehr">' +
           '<span class="ico" style="--i:#8E8E93">'+ICON.mehr+'</span>' +
-          '<span><span class="t">Etwas anderes</span><span class="s">'+(TESTPHASE ? 'Akademie, Verein, Profi, Scout oder KM1' : 'Akademie, Verein, Profi oder Scout')+'</span></span>' +
+          '<span><span class="t">Etwas anderes</span><span class="s">Akademie, Verein, Profi oder Scout</span></span>' +
           '<span class="chev" aria-hidden="true"></span></button>') +
   '</div>';
 }
@@ -5477,8 +5453,7 @@ function spielerOhneTeam(){
           '<p class="sub">Er nimmt jede Anfrage selbst an. Erst dann siehst du das Team und das Team dich.</p></div>'
       : '<div class="panel">' +
           '<div class="field"><label for="team-code">Code vom Trainer</label>' +
-            '<input id="team-code" type="text" autocapitalize="characters" autocomplete="off" placeholder="z. B. RHB-U13-7K4Q"'+(TESTPHASE ? ' value="RHB-U13-7K4Q"' : '')+'></div>' +
-          (TESTPHASE ? '<p class="fine" style="margin-top:-4px">Testphase: Der Code der U13 vom SC Rheinblick steht schon drin.</p>' : '') +
+            '<input id="team-code" type="text" autocapitalize="characters" autocomplete="off" placeholder="z. B. RHB-U13-7K4Q"></div>' +
           '<button class="btn" type="button" data-act="beitreten">Beitreten</button>' +
           '<p class="fine">Dein Trainer nimmt jede Anfrage selbst an. Erst dann siehst du das Team und das Team dich.</p>' +
         '</div>') +
@@ -5729,7 +5704,7 @@ function teamScout(){
       '<div class="leer">'+ICON.fernglas +
         '<p>Talente siehst du erst, wenn KM1 dich geprüft hat. So kommt niemand an die Profile von Kindern, der dort nichts zu suchen hat.</p>' +
         (state.pruefung === 'laeuft'
-          ? '<span class="pille orange">Prüfung läuft</span>'+pruefOkKnopf()
+          ? '<span class="pille orange">Prüfung läuft</span><button class="demo" type="button" data-act="pruefok">Vorführung: Prüfung abschließen</button>'
           : '<button class="btn" type="button" data-act="pruefung" style="width:auto">Prüfung beantragen</button>') +
       '</div>' +
     '</section>';
@@ -6044,8 +6019,7 @@ function sheetErsterStart(){
     inhalt = '<div class="pay-kopf"><span class="haken-gross erledigt">'+ICON.check+'</span>' +
         '<p class="eyebrow">Fertig</p><h1 class="big">Alles klar.</h1></div>' +
       liste(zeilen.map(h)) +
-      (ROLLEN[e.rolle].pruef ? '<p class="fine">'+(TESTPHASE ? 'In der Testphase brauchst du keinen Code, der Haken ist sofort da.'
-        : (einladbar(e.rolle) ? 'Mit dem Code deines Vereins bist du sofort geprüft.' : 'KM1 prüft euch, bevor ihr loslegt.'))+'</p>' : '') +
+      (ROLLEN[e.rolle].pruef ? '<p class="fine">'+(einladbar(e.rolle) ? 'Mit dem Code deines Vereins bist du sofort geprüft.' : 'KM1 prüft euch, bevor ihr loslegt.')+'</p>' : '') +
       '<button class="btn" type="button" data-act="erstkonto">Kostenloses Konto anlegen</button>' +
       '<button class="btn text" type="button" data-act="erstweg">Erst mal umschauen</button>';
   }
@@ -6109,14 +6083,7 @@ function einladungEinloesen(e){
 /* Der zweite Schritt beim Anlegen: wie der Haken kommt. */
 function pruefWegHtml(){
   var r = state.wahlRolle;
-  if(TESTPHASE && r === 'km1') return '<div class="callout stille"><span class="h">Testphase</span>' +
-    '<p>So sieht die App für das Team von KM1 aus: prüfen, freigeben, Neuigkeiten schreiben. Nach dem Start bekommt diese Rolle nur, wer bei KM1 arbeitet.</p></div>';
   if(!(ROLLEN[r] || {}).pruef) return '';
-  if(TESTPHASE){
-    return '<div class="callout stille"><span class="h">Testphase</span>' +
-      '<p>Bis die App startet, brauchst du keinen Code und keine Belege. Der Haken ist sofort da, damit du alles ausprobieren kannst. ' +
-      (einladbar(r) ? 'Später kommt hier die Wahl: mit der Einladung deines Vereins oder mit Belegen, die KM1 prüft.' : 'Später prüft KM1 euch vorher selbst.')+'</p></div>';
-  }
   if(!einladbar(r)){
     var was = r === 'verein' ? 'Vereinsregister, Bestätigung der Liga' : 'Registerauszug, Kinderschutzkonzept';
     var wen = r === 'verein' ? 'Trainer, Scouts und Profis' : 'Trainer und Scouts';
@@ -6929,7 +6896,6 @@ document.addEventListener('click', function(e){
 
   /* Vorfuehrung und Rollen */
   if(k === 'sicht'){ openSheet(sheetSicht()); }
-  else if(k === 'vorfan'){ vorfuehrungSetzen(true); render(); refreshSheet(sheetSicht()); toast('Vorführung an: Wähl eine Sicht'); }
   else if(k === 'vorfaus'){ wechsleSicht('gast'); vorfuehrungSetzen(false); render(); toast('Vorführung aus'); }
   else if(k === 'sichtwahl'){ wechsleSicht(v); }
   else if(k === 'wahlrolle'){
