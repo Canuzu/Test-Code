@@ -1,17 +1,16 @@
 /* =========================================================================
    Debeka Global Shares – Altersvorsorge-Rechner  ·  Vanilla JS, keine Abh.
    -------------------------------------------------------------------------
-   Rechnet primär mit dem Debeka Global Shares (globaler Aktien-Dachfonds,
-   ESG, internes Sondervermögen der Debeka Fondspolice).
+   Rechnet mit dem Debeka Global Shares in der Debeka Fondspolice (Tarif
+   CA6I, Kombination „Chance Invest“).
 
-   Rechenmodell (monatliche Verzinsung):
-     · effektive Rendite p.a. = erwartete Rendite − laufende Fondskosten
-       − optionale Effektivkosten der Police
-     · Sparrate kann jährlich dynamisch steigen (z. B. Inflationsausgleich)
-     · Steuer bei Auszahlung: Abgeltungsteuer 25 % + Soli = 26,375 % auf den
-       Kursgewinn, gemindert um die Teilfreistellung (Aktienfonds 30 %)
-     · reale Kaufkraft = Netto-Endvermögen / (1 + Inflation)^Jahre
-     · Entnahmephase: nachschüssige Rentenformel über die gewünschte Dauer
+   Rechenmodell (monatlich):
+     · Fondsentwicklung = erwartete Rendite − laufende Fondskosten
+     · Abschlusskosten (% der Beitragssumme, 5 Jahre gezillmert) und
+       Verwaltungskosten (% je Beitrag) laut § 17, kalibriert auf Debeka
+     · Aufschubzeit in ganzen Jahren: Rentenalter − Eintrittsalter
+     · Kapitalabfindung: Hälfte des Gewinns × persönlicher Steuersatz
+     · Lebenslange Rente = Fondsguthaben / 10.000 × Rentenfaktor
    ========================================================================= */
 
 /* --------------------- Fonds-Stammdaten (öffentlich) ------------------- */
@@ -137,7 +136,8 @@ function compute(s) {
   const eintrittsalter = geb && start ? Math.floor(ageAtStart) : 0;
   const aufschubYears = Math.max(0, s.rentenalter - eintrittsalter);
   const totalMonths = start ? aufschubYears * 12 : 0;
-  const rentenDate = geb ? addYears(geb, s.rentenalter) : null;
+  // Rentenbeginn = Vertragsbeginn + Aufschubzeit (ganze Jahre, wie Debeka).
+  const rentenDate = start ? addYears(start, aufschubYears) : null;
   const years = totalMonths / 12; // Aufschubzeit in Jahren
 
   const fundNet = (s.rendite - s.ter) / 100;      // Fondsentwicklung minus Fondskosten
@@ -207,7 +207,7 @@ function compute(s) {
   }
 
   return {
-    years, ageAtStart, totalMonths, beitragsMonths, rentenDate,
+    years, ageAtStart, eintrittsalter, totalMonths, beitragsMonths, rentenDate,
     effAnnual, series, brutto, contributed, gewinn, kosten, steuer, netto,
     monatsrente, steigStart, lebensrente, nMonths,
   };
@@ -227,544 +227,669 @@ function irr(premiums, startkapital, totalMonths, target) {
   return (lo + hi) / 2;
 }
 
-/* ============================ UI Markup ============================== */
+/* ============================ UI ===================================== */
+const $ = (id) => document.getElementById(id);
+const ICON = {
+  sun: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5V4M12 20v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M1.5 12H4M20 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></svg>`,
+  moon: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>`,
+  chev: `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`,
+  up: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`,
+};
+const SPAR_CHIPS = [50, 100, 200, 300, 500];
+const PRESET_SUB = { hist: "Ø seit " + FUND.since, solide: "Solide", vorsichtig: "Vorsichtig" };
+
 function shell() {
-  const presets = RENDITE_PRESETS
-    .map((p) => `<button type="button" data-preset="${p.key}" data-v="${p.v}">${p.label}</button>`)
-    .join("");
+  const presets = RENDITE_PRESETS.map((p) =>
+    `<button type="button" data-v="${p.v}" aria-pressed="false"><b>${p.v} %</b><small>${PRESET_SUB[p.key] || p.label}</small></button>`).join("");
+  const chips = SPAR_CHIPS.map((v) =>
+    `<button type="button" class="chip" data-chip="${v}" aria-pressed="false">${v} €</button>`).join("");
 
   return `
-  <div class="wrap">
-    <header class="masthead">
-      <div class="brand">
-        <div class="brand-mark">
-          <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 48 L26 32 L37 40 L54 16" fill="none" stroke="#ecfeff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="54" cy="16" r="5.5" fill="#fde68a"/></svg>
+  <header class="band" id="band">
+    <canvas class="band-canvas" id="bandCanvas" aria-hidden="true"></canvas>
+    <div class="band-inner">
+      <nav class="topbar">
+        <span class="wordmark" role="img" aria-label="Debeka">Debeka</span>
+        <span class="topbar-sep" aria-hidden="true"></span>
+        <span class="topbar-title">Vorsorge-Rechner</span>
+        <button class="theme-btn" id="themeBtn" type="button"><span id="themeIcon"></span><span id="themeTxt">Dunkel</span></button>
+      </nav>
+      <div class="band-grid">
+        <div class="band-copy">
+          <p class="eyebrow rise" style="--d:.05s">Fondspolice · Tarif ${POLICY.tarif} · Chance Invest</p>
+          <h1 class="band-title rise" style="--d:.12s">Debeka <span>Global Shares</span></h1>
+          <p class="band-lead rise" style="--d:.2s">Rechne live durch, was aus deinem Sparplan bis zur Rente wird – mit den aktuellen Fondsdaten und den Kosten des Tarifs, abgestimmt auf die Debeka-Musterrechnung.</p>
+          <dl class="band-facts rise" style="--d:.28s">
+            <div><dt>Rendite p. a. seit ${FUND.since}</dt><dd id="fPa">–</dd></div>
+            <div><dt>Seit Auflegung ${FUND.sinceDate}</dt><dd id="fTotal">–</dd></div>
+            <div><dt>Laufende Fondskosten</dt><dd id="fTer">–</dd></div>
+          </dl>
         </div>
-        <div>
-          <h1>Vorsorge-Rechner</h1>
-          <p>Debeka Global Shares · Endvermögen, Steuern &amp; Monatsrente – live</p>
-        </div>
-      </div>
-      <div class="mast-right">
-        <span class="debeka-word" role="img" aria-label="Debeka">Debeka</span>
-        <button class="theme-toggle" id="themeBtn" type="button" aria-label="Design wechseln">
-          <span id="themeIcon"></span><span id="themeTxt">Dunkel</span>
-        </button>
-      </div>
-    </header>
-
-    <div class="grid">
-      <!-- ======== Eingaben ======== -->
-      <section class="card panel" aria-label="Eingaben">
-        <div class="section-title">Dein Sparplan</div>
-
-        ${field("Monatliche Sparrate", "sparrate", "€", "Dein monatlicher Beitrag in den Fonds – entspricht dem Inkassobeitrag der Fondspolice.", "money")}
-        ${field("Startkapital", "startkapital", "€", "Einmalbetrag, mit dem du heute startest (optional).", "money")}
-
-        ${slider("Jährliche Dynamik", "dynamik", 0, 10, 0.5, "%",
-          "Um diesen Prozentsatz erhöhst du deine Sparrate jedes Jahr – z. B. zum Ausgleich von Gehalts- und Preissteigerungen.")}
-
-        <div class="divider"></div>
-        <div class="section-title">Zeithorizont</div>
-        ${dateField("Geburtsdatum", "geburtsdatum", "Dein genaues Geburtsdatum – daraus ergeben sich Alter, Aufschubzeit und der Rentenbeginn monatsgenau.")}
-        <div class="split" style="margin-top:0">
-          ${dateField("Vertragsbeginn", "vertragsbeginn", "Ab wann der Vertrag startet (i. d. R. heute). Ab hier wird angespart.")}
-          ${field("Rentenbeginn mit", "rentenalter", "J.", "Alter, zu dem die Rentenzahlung beginnt (z. B. 67).", "int")}
-        </div>
-
-        <div class="divider"></div>
-        <div class="section-title">Fondspolice</div>
-        <div class="field">
-          <div class="field-label">Garantie-/Fondskombination
-            <i class="info" data-tip="„Chance Invest“ ist die chancenorientierte Kombination der Debeka-Fondspolice: volle Anlage im Debeka Global Shares, ohne Beitragsgarantie."></i>
-          </div>
-          <div class="ro-field"><span>Chance Invest</span><span class="ro-tag">Fonds pur</span></div>
-        </div>
-        ${field("Beitragszahlungsdauer", "beitragsdauer", "J.", "Über wie viele Jahre zahlst du Beiträge? Danach bleibt das Kapital bis zum Rentenbeginn investiert. Höchstens die Aufschubzeit (Jahre bis zur Rente).", "int")}
-        ${selectField("Rentengarantiezeit", "garantiezeit", "Zeitraum, in dem die Rente auch nach dem Tod an Hinterbliebene weitergezahlt wird.", [[0, "keine"], [5, "5 Jahre"], [10, "10 Jahre"], [15, "15 Jahre"], [20, "20 Jahre"]])}
-
-        <div class="divider"></div>
-        <div class="section-title">Rendite &amp; Kosten des Fonds</div>
-
-        <div class="field">
-          <div class="field-label">Renditeannahme
-            <i class="info" data-tip="Womit möchtest du rechnen? „Historisch“ = Wertentwicklung des Debeka Global Shares seit Auflegung 2016. Vergangenheit ist keine Garantie – niedrigere Szenarien sind vorsichtiger."></i>
-          </div>
-          <div class="seg" id="renditePreset" role="group" aria-label="Renditeannahme">${presets}</div>
-        </div>
-
-        ${slider("Erwartete Rendite p.a.", "rendite", 1, 12, 0.1, "%",
-          "Angenommene durchschnittliche Wertentwicklung pro Jahr. Der Debeka Global Shares erzielte seit Auflegung 2016 rund 9,99 % p.a. – frei anpassbar.")}
-        ${slider("Laufende Fondskosten", "ter", 0, 2, 0.05, "%",
-          "Kosten des Debeka Global Shares: rund 0,30 % pro Jahr. Sie schmälern die Fondsentwicklung direkt.")}
-        ${slider("Abschlusskosten", "abschluss", 0, 4, 0.1, "%",
-          "Abschluss-/Vertriebskosten des Tarifs CA6I (§ 17) in % der Beitragssumme, über die ersten 5 Jahre verrechnet (Zillmer). Gesetzlicher Höchstsatz 2,5 %. Voreingestellt auf die Debeka-Musterrechnung – exakter Wert laut Angebot.")}
-        ${slider("Verwaltungskosten", "verwaltung", 0, 15, 0.1, "%",
-          "Laufende Verwaltungskosten des Tarifs CA6I (§ 17) als Anteil jedes Beitrags. Voreingestellt auf die Debeka-Musterrechnung – exakter Wert laut Angebot.")}
-        ${slider("Inflation p.a.", "inflation", 0, 5, 0.1, "%",
-          "Erwartete jährliche Geldentwertung. Sie bestimmt, wie viel dein Vermögen später real wert ist.")}
-
-        <div class="divider"></div>
-        <div class="section-title">Steuern bei Auszahlung</div>
-        ${slider("Persönlicher Steuersatz", "steuersatz", 0, 45, 1, "%",
-          "Dein persönlicher Einkommensteuersatz. Bei Kapitalauszahlung ab Alter 62 und mindestens 12 Jahren Laufzeit wird nur die Hälfte des Gewinns damit besteuert (§ 20 EStG).")}
-        <div class="taxbox">
-          <div class="taxbox-row"><span>Kapitalabfindung (ab 62 &amp; ≥ 12 J.)</span><b>½ Gewinn × Satz</b></div>
-          <div class="taxbox-row"><span>Lebenslange Rente</span><b>nur Ertragsanteil</b></div>
-          <div class="field-hint">Rentenversicherung: Bei Kapitalauszahlung ab 62 und mindestens 12 Jahren Laufzeit ist nur die Hälfte des Gewinns mit deinem persönlichen Steuersatz zu versteuern (§ 20 EStG) – so wird das „Netto-Endvermögen“ oben berechnet. Die lebenslange Rente wird stattdessen nur mit dem niedrigen Ertragsanteil besteuert.</div>
-        </div>
-
-        <div class="divider"></div>
-        <div class="section-title">Später: Rente</div>
-        ${field("Garantierter Rentenfaktor", "rentenfaktor", "€/10.000", "So zahlt der Fondsrentenvertrag aus (§ 34/§ 47): pro 10.000 € Fondsguthaben eine lebenslange Monatsrente in dieser Höhe. Voreingestellt auf die Debeka-Musterrechnung – der garantierte Wert steht in deinem Angebot.", "money")}
-        ${slider("Auszahldauer (Alternative)", "entnahmeJahre", 5, 40, 1, "Jahre",
-          "Nur für die Alternative „Kapitalverzehr“: Über wie viele Jahre würde das Kapital stattdessen verrentet, bis es aufgebraucht ist?")}
-        ${slider("Rendite in der Rente", "renditeRente", 0, 7, 0.1, "%",
-          "Das verbleibende Kapital bleibt in der Auszahlphase meist konservativer angelegt und wirft weiter Rendite ab.")}
-        ${selectField("Steigende Rente", "rentensteigerung", "Optional: eine jährlich steigende Rente startet niedriger, wächst dann aber jedes Jahr um den gewählten Prozentsatz – ein Inflationsausgleich in der Rente.", [[0, "keine (konstante Rente)"], [1, "+1 % pro Jahr"], [2, "+2 % pro Jahr"], [3, "+3 % pro Jahr"]])}
-      </section>
-
-      <!-- ======== Ergebnisse ======== -->
-      <div>
-        <!-- Fondskarte -->
-        <section class="fundcard" aria-label="Fonds">
-          <div class="fund-head">
-            <div class="fund-badge">DGS</div>
-            <div class="fund-headmain">
-              <div class="fund-name">${FUND.name}</div>
-              <div class="fund-sub">${FUND.sub}</div>
-            </div>
-            <span class="debeka-logo" role="img" aria-label="Debeka">Debeka</span>
-          </div>
-          <div class="fund-facts">
-            <div class="ff"><span class="ff-v">${num2.format(FUND.paSince)} %</span><span class="ff-k">Rendite p.a. seit ${FUND.since}<sup>*</sup></span></div>
-            <div class="ff"><span class="ff-v">+${num2.format(FUND.totalSince)} %</span><span class="ff-k">Gesamt seit Auflegung</span></div>
-            <div class="ff"><span class="ff-v">${num2.format(FUND.runningCost)} %</span><span class="ff-k">Laufende Fondskosten</span></div>
-          </div>
-          <div class="fund-perf">
-            <div class="fp-title"><span>Historische Wertentwicklung</span><span class="fp-cap">Anteilswert, netto</span></div>
-            ${perfBars()}
-          </div>
-          <div class="fund-note"><sup>*</sup> Öffentliche Wertentwicklung seit Auflegung ${FUND.sinceDate} laut Debeka · Stand: <span id="fundStand">${FUND.updatedAt}</span>. Vergangene Wertentwicklung ist keine Garantie für die Zukunft.</div>
-        </section>
-
-        <section class="card hero" aria-label="Ergebnis">
-          <div class="panel">
-            <div class="hero-grid">
-              <div class="hero-mini">
-                <div>
-                  <div class="hero-label">Eingezahlt gesamt</div>
-                  <div class="amount" id="rContrib">–</div>
-                </div>
-                <div>
-                  <div class="hero-label">Brutto-Endvermögen</div>
-                  <div class="amount" id="rBrutto">–</div>
-                </div>
-                <div>
-                  <div class="hero-label">− Steuern bei Auszahlung</div>
-                  <div class="amount neg" id="rTax">–</div>
-                </div>
-              </div>
-              <div class="hero-sep"></div>
-              <div class="hero-big">
-                <div class="hero-label">Netto-Endvermögen mit <span id="rAge">67</span></div>
-                <div class="amount" id="rNetto">–</div>
-                <div class="sub" id="rGain">–</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div class="tiles">
-          <div class="tile accent-blue">
-            <div class="k"><span class="dot" style="background:var(--blue-500)"></span>Eigenleistung</div>
-            <div class="v" id="tContrib">–</div>
-          </div>
-          <div class="tile accent-teal">
-            <div class="k"><span class="dot" style="background:var(--green-500)"></span>Kursgewinn</div>
-            <div class="v" id="tGain">–</div>
-          </div>
-          <div class="tile accent-amber">
-            <div class="k"><span class="dot" style="background:var(--green-500)"></span>Zinseszins-Anteil</div>
-            <div class="v" id="tRatio">–</div>
-          </div>
-          <div class="tile accent-rose">
-            <div class="k"><span class="dot" style="background:var(--green-500)"></span>Effektive Rendite</div>
-            <div class="v" id="tEff">–</div>
-          </div>
-        </div>
-
-        <div class="meta-strip">
-          <div class="ms"><span class="ms-k">Kombination</span><span class="ms-v">Chance Invest</span></div>
-          <div class="ms"><span class="ms-k">Alter bei Start</span><span class="ms-v" id="mAge">–</span></div>
-          <div class="ms"><span class="ms-k">Rentenbeginn</span><span class="ms-v" id="mRb">–</span></div>
-          <div class="ms"><span class="ms-k">Aufschubzeit</span><span class="ms-v" id="mAuf">–</span></div>
-          <div class="ms"><span class="ms-k">Beitragsdauer</span><span class="ms-v" id="mBd">–</span></div>
-          <div class="ms"><span class="ms-k">Rentengarantiezeit</span><span class="ms-v" id="mGz">–</span></div>
-        </div>
-
-        <!-- Chart -->
-        <section class="card panel chart-card" aria-label="Vermögensentwicklung">
-          <div class="chart-head">
-            <h3>Vermögensentwicklung bis zur Rente</h3>
-            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-              <div class="legend">
-                <span class="item"><span class="swatch" style="background:var(--blue-500)"></span>Einzahlungen</span>
-                <span class="item"><span class="swatch" style="background:var(--green-500)"></span>Kursgewinn</span>
-                <span class="item"><span class="swatch" style="background:var(--text-3);opacity:.7"></span>Kaufkraft</span>
-              </div>
-              <button class="pill-btn" id="realBtn" type="button">Kaufkraft anzeigen</button>
-            </div>
-          </div>
-          <div class="chart-wrap" id="chartWrap">
-            <svg class="chart" id="chart" viewBox="0 0 760 340" preserveAspectRatio="none" role="img" aria-label="Diagramm der Vermögensentwicklung"></svg>
-            <div class="tooltip" id="tip"></div>
-          </div>
-        </section>
-
-        <!-- Optionen bei Rentenbeginn (volle Breite) -->
-        <section class="card panel pension chart-card" aria-label="Optionen bei Rentenbeginn">
-          <div class="section-title">Deine Wahl bei Rentenbeginn mit <span id="pAge">67</span></div>
-          <div class="opt-grid opt-grid-wide">
-            <div class="opt">
-              <div class="opt-k">Lebenslange Rente · garantierter Rentenfaktor</div>
-              <div class="opt-v big" id="pLebens">–</div>
-              <div class="opt-sub" id="pLebensSub">–</div>
-            </div>
-            <div class="opt">
-              <div class="opt-k">… oder Kapitalabfindung inkl. Fondsguthaben</div>
-              <div class="opt-v" id="pKapital">–</div>
-              <div class="opt-sub" id="pKapitalSub">–</div>
-            </div>
-            <div class="opt">
-              <div class="opt-k">Alternativ: Kapitalverzehr über <span id="pJahre">25</span> Jahre</div>
-              <div class="opt-v" id="pRente">–</div>
-              <div class="opt-sub" id="pRenteSub">–</div>
-            </div>
-            <div class="opt hide" id="pSteigBox">
-              <div class="opt-k">Steigende Rente · Startbetrag</div>
-              <div class="opt-v" id="pSteig">–</div>
-              <div class="opt-sub" id="pSteigSub">–</div>
-            </div>
-          </div>
-          <div class="field-hint" id="pGar" style="margin-top:12px"></div>
-          <div class="field-hint" id="pTod" style="margin-top:6px"></div>
-          <div class="note">
-            Modell auf Basis Tarif ${POLICY.tarif} (Bedingungen ${POLICY.bedingungen}) mit
-            Abschluss-, Verwaltungs- und Fondskosten; die Kostensätze sind auf die
-            Debeka-Musterrechnung kalibriert (50 €/Monat, 34 J., 5 % → 43.758 € / 127,31 €) und frei
-            anpassbar. Alle Beträge sind – wie bei Debeka – Brutto vor persönlicher Steuer.
-            Unabhängige, unverbindliche Modellrechnung, keine Anlage-/Steuerberatung und kein Angebot
-            der Debeka; maßgeblich sind die Bedingungen und dein persönliches Angebot. Erträge
-            schwanken, vergangene Wertentwicklungen sind kein Indikator für die Zukunft.
-          </div>
-        </section>
-
-        <div class="footer">Rechner für den Debeka Global Shares · Fondsdaten der Debeka · unabhängige Modellrechnung, kein Angebot der Debeka.</div>
+        <aside class="perf-card rise" style="--d:.36s" aria-label="Historische Wertentwicklung">
+          <div class="perf-head"><span>Wertentwicklung</span><span class="perf-stand">Stand ${FUND.updatedAt}</span></div>
+          ${perfBars()}
+          <p class="perf-note">Anteilswert netto laut Debeka. Vergangene Wertentwicklung ist keine Garantie für die Zukunft.</p>
+        </aside>
       </div>
     </div>
-  </div>`;
+  </header>
+
+  <main class="cockpit">
+    <section class="card inputs rise" style="--d:.3s" aria-label="Eingaben">
+      <div class="inputs-head">
+        <div><h2>Dein Sparplan</h2><p>Ändere einen Wert – alles rechnet sofort mit.</p></div>
+        <span class="live"><i></i>Live</span>
+      </div>
+
+      ${acc("plan", "Beitrag", true, `
+        <div class="field">
+          ${label("Monatlicher Beitrag", "Dein monatlicher Beitrag in die Fondspolice (Inkassobeitrag). Er fließt nach Kosten in den Debeka Global Shares.", "in_sparrate")}
+          <div class="inp xl"><input id="in_sparrate" inputmode="decimal" autocomplete="off" data-key="sparrate" data-kind="money" /><span class="unit">€ / Monat</span></div>
+          <div class="chips" role="group" aria-label="Schnellauswahl Beitrag">${chips}</div>
+        </div>
+        ${field("Startkapital", "startkapital", "€", "Optionaler Einmalbetrag, mit dem du heute startest.", "money")}
+        ${slider("Jährliche Dynamik", "dynamik", 0, 10, 0.5, "%", "Um diesen Prozentsatz steigt dein Beitrag jedes Jahr – z. B. als Ausgleich für Gehalts- und Preissteigerungen.")}
+      `)}
+
+      ${acc("zeit", "Zeitraum", true, `
+        ${dateField("Geburtsdatum", "geburtsdatum", "Daraus ergibt sich dein Eintrittsalter bei Vertragsbeginn (zurückgelegte volle Jahre).")}
+        <div class="split">
+          ${dateField("Vertragsbeginn", "vertragsbeginn", "Ab wann der Vertrag läuft – meist der Erste des nächsten Monats.")}
+          ${field("Rente ab", "rentenalter", "Jahren", "Alter, mit dem die Rente beginnt. Die Aufschubzeit rechnet Debeka in ganzen Jahren: Rentenalter minus Eintrittsalter.", "int")}
+        </div>
+        ${field("Beitragszahlungsdauer", "beitragsdauer", "Jahre", "So lange zahlst du Beiträge. Danach bleibt das Guthaben bis zum Rentenbeginn investiert. Höchstens die Aufschubzeit.", "int")}
+      `)}
+
+      ${acc("rendite", "Rendite", true, `
+        <div class="field">
+          <div class="f-label"><span>Renditeannahme</span>${info("Womit möchtest du rechnen? 10 % entspricht der Wertentwicklung des Debeka Global Shares seit Auflegung 2016. Niedrigere Werte sind vorsichtiger – die Zukunft ist nicht garantiert.")}</div>
+          <div class="seg seg-presets" id="renditePreset" role="group" aria-label="Renditeannahme"><span class="seg-ind" aria-hidden="true"></span>${presets}</div>
+        </div>
+        ${slider("Erwartete Rendite p. a.", "rendite", 1, 12, 0.1, "%", "Angenommene durchschnittliche Wertentwicklung des Fonds pro Jahr, vor Fondskosten.")}
+        ${slider("Inflation p. a.", "inflation", 0, 5, 0.1, "%", "Erwartete Geldentwertung. Sie bestimmt die Kaufkraft-Ansicht im Diagramm.")}
+      `)}
+
+      ${acc("kosten", "Kosten & Tarif", false, `
+        <div class="field">
+          <div class="f-label"><span>Garantie-/Fondskombination</span>${info("„Chance Invest“ ist die chancenorientierte Kombination der Debeka Fondspolice: volle Anlage im Debeka Global Shares, ohne Beitragsgarantie.")}</div>
+          <div class="ro-field"><span>Chance Invest</span><span class="tag">Fonds pur</span></div>
+        </div>
+        ${selectField("Rentengarantiezeit", "garantiezeit", "Stirbst du nach Rentenbeginn, läuft die Rente bis zum Ende dieser Zeit an deine Hinterbliebenen weiter.", [[0, "keine"], [5, "5 Jahre"], [10, "10 Jahre"], [15, "15 Jahre"], [20, "20 Jahre"]])}
+        ${slider("Laufende Fondskosten", "ter", 0, 2, 0.05, "%", "Kosten des Debeka Global Shares, rund 0,30 % pro Jahr. Sie mindern die Fondsentwicklung direkt.")}
+        ${slider("Abschlusskosten", "abschluss", 0, 4, 0.1, "%", "Abschluss- und Vertriebskosten (§ 17) in % der Beitragssumme, verteilt auf die ersten 5 Jahre. Voreingestellt auf die Debeka-Musterrechnung.")}
+        ${slider("Verwaltungskosten", "verwaltung", 0, 15, 0.1, "%", "Laufende Verwaltungskosten (§ 17) als Anteil jedes Beitrags. Voreingestellt auf die Debeka-Musterrechnung.")}
+      `)}
+
+      ${acc("steuer", "Steuern", false, `
+        ${slider("Persönlicher Steuersatz", "steuersatz", 0, 45, 1, "%", "Dein Einkommensteuersatz im Alter. Bei Kapitalauszahlung ab 62 und mindestens 12 Jahren Laufzeit wird nur die Hälfte des Gewinns damit besteuert (§ 20 EStG).")}
+        <div class="taxbox">
+          <div class="taxbox-row"><span>Kapitalabfindung (ab 62, ≥ 12 J.)</span><b>½ Gewinn × Satz</b></div>
+          <div class="taxbox-row"><span>Lebenslange Rente</span><b>nur Ertragsanteil</b></div>
+          <p class="hint">So entsteht das Netto-Endvermögen oben. Die lebenslange Rente wird nur mit dem niedrigen Ertragsanteil besteuert.</p>
+        </div>
+      `)}
+
+      ${acc("rente", "Rentenphase", false, `
+        ${field("Rentenfaktor", "rentenfaktor", "€ je 10.000 €", "Pro 10.000 € Fondsguthaben zahlt der Vertrag diese Monatsrente lebenslang (§ 34/§ 47). Den garantierten Wert findest du in deinem Angebot.", "money")}
+        ${selectField("Steigende Rente", "rentensteigerung", "Optional: Die Rente startet niedriger und steigt dann jedes Jahr um den gewählten Satz.", [[0, "keine (konstante Rente)"], [1, "+1 % pro Jahr"], [2, "+2 % pro Jahr"], [3, "+3 % pro Jahr"]])}
+        ${slider("Auszahldauer (Kapitalverzehr)", "entnahmeJahre", 5, 40, 1, "J.", "Für die Alternative Kapitalverzehr: über wie viele Jahre das Kapital ausgezahlt würde.")}
+        ${slider("Rendite in der Rente", "renditeRente", 0, 7, 0.1, "%", "Verzinsung des Restkapitals während der Auszahlung.")}
+      `)}
+    </section>
+
+    <section class="result rise" id="resultCard" style="--d:.38s" aria-label="Ergebnis">
+      <div class="result-glow" aria-hidden="true"></div>
+      <div class="result-top">
+        <span class="result-label">Netto-Endvermögen mit <b id="rAge">67</b></span>
+        <span class="result-chip" id="rDate">–</span>
+      </div>
+      <div class="result-main">
+        <div>
+          <div class="result-amount" id="rNetto" aria-live="polite">–</div>
+          <div class="result-gain"><span class="up" aria-hidden="true">${ICON.up}</span><span><span id="rGain">–</span> Gewinn</span></div>
+          <p class="result-mult">Aus jedem eingezahlten Euro werden <b id="rMult">–</b></p>
+        </div>
+        <div class="ring-wrap">
+          <svg class="ring" viewBox="0 0 140 140" aria-hidden="true">
+            <circle class="ring-track" cx="70" cy="70" r="58"/>
+            <circle class="ring-con" id="ringCon" cx="70" cy="70" r="58"/>
+            <circle class="ring-gain" id="ringGain" cx="70" cy="70" r="58"/>
+          </svg>
+          <div class="ring-center"><b id="ringPct">–</b><span>Gewinnanteil</span></div>
+          <div class="ring-legend"><span><i class="sw con-dark"></i>Eigenleistung</span><span><i class="sw gain-dark"></i>Gewinn</span></div>
+        </div>
+      </div>
+      <dl class="result-stats">
+        <div><dt>Eingezahlt gesamt</dt><dd id="rContrib">–</dd></div>
+        <div><dt>Brutto-Endvermögen</dt><dd class="gain" id="rBrutto">–</dd></div>
+        <div><dt>Steuern bei Auszahlung</dt><dd id="rTax">–</dd></div>
+        <div><dt>Rendite nach Kosten</dt><dd class="gain" id="rEff">–</dd></div>
+      </dl>
+      <div class="result-rente">
+        <span>Lebenslange Rente ab <b id="rAge2">67</b></span>
+        <strong><span id="rRente">–</span><small> / Monat</small></strong>
+      </div>
+    </section>
+
+    <section class="card pad chart-card rise" style="--d:.46s" aria-label="Vermögensentwicklung">
+      <div class="card-head">
+        <div><h3>Vermögensentwicklung bis zur Rente</h3><p class="card-sub" id="chartSub">Jahr für Jahr – fahre über die Kurve.</p></div>
+        <div class="seg" id="viewSeg" role="group" aria-label="Ansicht"><span class="seg-ind" aria-hidden="true"></span><button type="button" data-view="nom" aria-pressed="true">Nominal</button><button type="button" data-view="real" aria-pressed="false">Kaufkraft</button></div>
+      </div>
+      <div class="legend"><span><i class="sw gain"></i><span id="lgBal">Fondsguthaben</span></span><span><i class="sw con"></i>Eingezahlt</span></div>
+      <div class="chart-wrap" id="chartWrap">
+        <svg class="chart" id="chart" role="img" aria-label="Diagramm der Vermögensentwicklung"></svg>
+        <div class="chart-tip" id="chartTip"></div>
+      </div>
+    </section>
+
+    <section class="card pad timeline-card" aria-label="Vertragsverlauf">
+      <div class="card-head"><div><h3>Dein Vertrag im Zeitverlauf</h3><p class="card-sub">Aufschubzeit in ganzen Jahren, wie im Debeka-System</p></div></div>
+      <div class="tl" id="tl">
+        <div class="tl-mark top start"><em>Vertragsbeginn</em><b id="tlStartAge">–</b><span id="tlStartDate">–</span></div>
+        <div class="tl-mark top end" style="left:80%"><em>Rentenbeginn</em><b id="tlRbAge">–</b><span id="tlRbDate">–</span></div>
+        <div class="tl-mark bottom mid" id="tlEnd"><em>Beitragsende</em><b id="tlEndAge">–</b><span id="tlEndDate">–</span></div>
+        <div class="tl-track">
+          <span class="tl-seg pay" id="tlPay"><em>Beitragsphase</em></span>
+          <span class="tl-seg rest" id="tlRest"><em>beitragsfrei</em></span>
+          <span class="tl-seg rente"><em>Rente</em></span>
+        </div>
+      </div>
+      <dl class="facts">
+        <div><dt>Alter bei Start</dt><dd id="mAge">–</dd></div>
+        <div><dt>Aufschubzeit</dt><dd id="mAuf">–</dd></div>
+        <div><dt>Beitragsdauer</dt><dd id="mBd">–</dd></div>
+        <div><dt>Garantiezeit</dt><dd id="mGz">–</dd></div>
+      </dl>
+    </section>
+
+    <section class="card pad options-card" aria-label="Optionen bei Rentenbeginn">
+      <div class="card-head"><div><h3>Deine Wahl bei Rentenbeginn mit <span id="pAge">67</span></h3><p class="card-sub">Kapitalwahlrecht (§ 45): Du entscheidest erst, wenn es so weit ist.</p></div></div>
+      <div class="opts" id="opts" data-n="3">
+        <article class="opt featured"><span class="opt-badge">Garantiert lebenslang</span><h4>Lebenslange Rente</h4><div class="opt-v"><span id="pLebens">–</span><small>/ Monat</small></div><p id="pLebensSub">–</p></article>
+        <article class="opt"><h4>Kapitalabfindung</h4><div class="opt-v" id="pKapital">–</div><p id="pKapitalSub">–</p></article>
+        <article class="opt"><h4>Kapitalverzehr über <span id="pJahre">25</span> Jahre</h4><div class="opt-v"><span id="pRente">–</span><small>/ Monat</small></div><p id="pRenteSub">–</p></article>
+        <article class="opt" id="pSteigBox" hidden><h4>Steigende Rente · Start</h4><div class="opt-v"><span id="pSteig">–</span><small>/ Monat</small></div><p id="pSteigSub">–</p></article>
+      </div>
+      <ul class="opt-notes">
+        <li>Todesfall vor Rentenbeginn: Das aktuelle Fondsguthaben geht an deine Hinterbliebenen (§ 35).</li>
+        <li>„Chance Invest“ ist die volle Fondsanlage – ohne Garantierente und ohne garantierte Kapitalabfindung.</li>
+      </ul>
+    </section>
+
+    <footer class="fineprint">
+      <p><strong>So rechnet der Rechner:</strong> Modell auf Basis Tarif ${POLICY.tarif} (Bedingungen ${POLICY.bedingungen}) mit Abschluss-, Verwaltungs- und Fondskosten. Die Kostensätze sind auf die Debeka-Musterrechnung kalibriert (50 € im Monat, 5 % p. a.: 35 Jahre → 46.316 €, 34 Jahre → 43.758 €) und frei anpassbar. Die Aufschubzeit zählt wie bei Debeka in ganzen Jahren.</p>
+      <p>Unabhängige, unverbindliche Modellrechnung – keine Anlage- oder Steuerberatung und kein Angebot der Debeka. Maßgeblich sind die Versicherungsbedingungen und dein persönliches Angebot. Fondsdaten: Debeka, Stand <span id="fundStand">${FUND.updatedAt}</span>. Erträge schwanken; vergangene Wertentwicklungen sind kein verlässlicher Indikator für die Zukunft.</p>
+    </footer>
+  </main>
+
+  <div class="dock" id="dock" aria-hidden="true">
+    <span class="dock-k">Netto<span class="dock-hide"> mit <span id="dAge">67</span></span></span>
+    <b class="dock-v" id="dNetto">–</b>
+    <span class="dock-sep" aria-hidden="true"></span>
+    <span class="dock-k">Rente</span>
+    <b class="dock-v gain" id="dRente">–</b>
+    <button class="dock-up" id="dockUp" type="button" tabindex="-1" aria-label="Zum Ergebnis">${ICON.up}</button>
+  </div>
+  <div class="tip-pop" id="tipPop" role="tooltip"></div>`;
 }
 
-/* Horizontale Balken der öffentlichen Fonds-Wertentwicklung. */
 function perfBars() {
-  const max = Math.max(...FUND.perf.map((p) => p.v));
-  return FUND.perf.map((p) => {
-    const w = (p.v / max);
+  const max = Math.max(1, ...FUND.perf.map((p) => p.v));
+  return FUND.perf.map((p, i) => {
+    const w = Math.max(0, p.v / max).toFixed(3);
+    const sign = p.v >= 0 ? "+" : "";
     return `<div class="perf-row"><span class="pr-lab">${p.label}</span>` +
-      `<span class="pr-bar"><i style="--w:${w.toFixed(3)}"></i></span>` +
-      `<span class="pr-val">+${num2.format(p.v)} %</span></div>`;
+      `<span class="pr-bar"><i style="--w:${w};--d:${(0.55 + i * 0.1).toFixed(2)}s"></i></span>` +
+      `<span class="pr-val">${sign}${num2.format(p.v)} %</span></div>`;
   }).join("");
 }
 
-function field(label, key, unit, tip, kind) {
-  return `
-  <div class="field">
-    <div class="field-label">${label} <i class="info" data-tip="${tip}"></i></div>
-    <div class="input-shell">
-      <input id="in_${key}" inputmode="${kind === "int" ? "numeric" : "decimal"}" data-key="${key}" data-kind="${kind}" aria-label="${label}" />
-      <span class="unit">${unit}</span>
-    </div>
-  </div>`;
+function info(tip) {
+  return `<button type="button" class="info" data-tip="${tip}" aria-label="Erklärung: ${tip}"></button>`;
 }
-
-function dateField(label, key, tip) {
-  return `
-  <div class="field">
-    <div class="field-label">${label} <i class="info" data-tip="${tip}"></i></div>
-    <div class="input-shell">
-      <input type="date" id="in_${key}" data-key="${key}" data-kind="date" aria-label="${label}" />
-    </div>
-  </div>`;
+function label(text, tip, forId) {
+  return `<div class="f-label"><label for="${forId}">${text}</label>${info(tip)}</div>`;
 }
-
-function selectField(label, key, tip, opts) {
+function field(lbl, key, unit, tip, kind) {
+  return `<div class="field">${label(lbl, tip, "in_" + key)}
+    <div class="inp"><input id="in_${key}" inputmode="${kind === "int" ? "numeric" : "decimal"}" autocomplete="off" data-key="${key}" data-kind="${kind}" /><span class="unit">${unit}</span></div></div>`;
+}
+function dateField(lbl, key, tip) {
+  return `<div class="field">${label(lbl, tip, "in_" + key)}
+    <div class="inp"><input type="date" id="in_${key}" data-key="${key}" data-kind="date" /></div></div>`;
+}
+function selectField(lbl, key, tip, opts) {
   const o = opts.map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
-  return `
-  <div class="field">
-    <div class="field-label">${label} <i class="info" data-tip="${tip}"></i></div>
-    <select class="sel" id="in_${key}" data-key="${key}" data-kind="select" aria-label="${label}">${o}</select>
+  return `<div class="field">${label(lbl, tip, "in_" + key)}
+    <div class="sel-wrap"><select class="sel" id="in_${key}" data-key="${key}" data-kind="select">${o}</select></div></div>`;
+}
+function slider(lbl, key, min, max, step, unit, tip) {
+  return `<div class="field"><div class="slider-row">${label(lbl, tip, "in_" + key)}<output class="val" id="lbl_${key}" for="in_${key}"></output></div>
+    <input type="range" id="in_${key}" data-key="${key}" data-kind="range" data-unit="${unit}" min="${min}" max="${max}" step="${step}" /></div>`;
+}
+function acc(id, title, open, body) {
+  return `<div class="acc${open ? " open" : ""}">
+    <button class="acc-head" type="button" aria-expanded="${open}" aria-controls="acc_${id}">
+      <span class="acc-title">${title}</span><span class="acc-sum" id="sum_${id}"></span><span class="acc-chev" aria-hidden="true">${ICON.chev}</span>
+    </button>
+    <div class="acc-body" id="acc_${id}"${open ? "" : " inert"}><div class="acc-inner"><div class="acc-pad">${body}</div></div></div>
   </div>`;
 }
 
-function slider(label, key, min, max, step, unit, tip) {
-  return `
-  <div class="field">
-    <div class="slider-head">
-      <div class="field-label" style="margin:0">${label} <i class="info" data-tip="${tip}"></i></div>
-      <span class="slider-val" id="lbl_${key}"></span>
-    </div>
-    <input type="range" id="in_${key}" data-key="${key}" data-kind="range" data-unit="${unit}" min="${min}" max="${max}" step="${step}" aria-label="${label}" />
-  </div>`;
+/* ============================ Animation ============================== */
+const shown = {};
+const tweens = new Map();
+let rafId = 0;
+
+function tween(key, to, apply, dur) {
+  const from = key in shown ? shown[key] : 0;
+  if (reduceMotion || !dur || from === to) {
+    tweens.delete(key);
+    shown[key] = to;
+    apply(to);
+    return;
+  }
+  tweens.set(key, { from, to, apply, start: performance.now(), dur });
+  if (!rafId) rafId = requestAnimationFrame(stepTweens);
+}
+function stepTweens(now) {
+  for (const [key, t] of tweens) {
+    const p = Math.min(1, (now - t.start) / t.dur);
+    const e = 1 - Math.pow(1 - p, 4);
+    const v = t.from + (t.to - t.from) * e;
+    shown[key] = v;
+    t.apply(v);
+    if (p >= 1) tweens.delete(key);
+  }
+  rafId = tweens.size ? requestAnimationFrame(stepTweens) : 0;
+}
+function setText(id, v) { const el = $(id); if (el && el.textContent !== v) el.textContent = v; }
+function count(key, value, dur, fmt, ...ids) {
+  tween(key, value, (v) => { const s = fmt(v); ids.forEach((id) => setText(id, s)); }, dur);
 }
 
 /* ============================ Rendering ============================== */
 let R = null;
-const anim = {}; // laufende Count-up-Animationen je Element-ID
+const fmtMY = (d) => (d ? dtf.format(d) : "–");
+const addMonths = (d, n) => new Date(d.getFullYear(), d.getMonth() + n, d.getDate());
 
 function refreshInputs() {
   document.querySelectorAll("[data-key]").forEach((el) => {
     const k = el.dataset.key, kind = el.dataset.kind;
     if (kind === "range") {
       el.value = state[k];
-      const pos = (state[k] - el.min) / (el.max - el.min) * 100;
+      const pos = ((state[k] - el.min) / (el.max - el.min)) * 100;
       el.style.setProperty("--fill", pos + "%");
-      const unit = el.dataset.unit;
-      const disp = Number.isInteger(state[k]) ? state[k] : num1.format(state[k]);
-      document.getElementById("lbl_" + k).textContent =
-        unit === "%" ? disp + " %" : disp + " " + unit;
+      const disp = Number.isInteger(state[k]) ? String(state[k]) : num1.format(state[k]);
+      setText("lbl_" + k, disp + " " + el.dataset.unit);
     } else if (kind === "select") {
       el.value = String(state[k]);
     } else if (kind === "date") {
-      el.value = state[k];
+      if (el.value !== state[k]) el.value = state[k];
     } else if (document.activeElement !== el) {
       el.value = new Intl.NumberFormat("de-DE").format(state[k]);
     }
   });
-  document.querySelectorAll("#renditePreset button").forEach((b) => {
-    b.setAttribute("aria-pressed", String(Math.abs(parseFloat(b.dataset.v) - state.rendite) < 0.001));
+  document.querySelectorAll("#renditePreset button").forEach((b) =>
+    b.setAttribute("aria-pressed", String(Math.abs(parseFloat(b.dataset.v) - state.rendite) < 0.001)));
+  document.querySelectorAll("[data-chip]").forEach((b) =>
+    b.setAttribute("aria-pressed", String(+b.dataset.chip === state.sparrate)));
+  placeIndicators();
+}
+
+function placeIndicators() {
+  document.querySelectorAll(".seg").forEach((seg) => {
+    const ind = seg.querySelector(".seg-ind");
+    const act = seg.querySelector('button[aria-pressed="true"]');
+    if (!ind) return;
+    if (!act) { ind.style.opacity = "0"; return; }
+    ind.style.opacity = "1";
+    ind.style.width = act.offsetWidth + "px";
+    ind.style.transform = `translateX(${act.offsetLeft}px)`;
   });
 }
 
-function render(animate) {
+function render(mode) {
   R = compute(state);
   refreshInputs();
+  const dur = mode === "load" ? 1600 : mode === "drag" ? 340 : 760;
 
-  setMoney("rContrib", R.contributed, animate);
-  setMoney("rBrutto", R.brutto, animate);
-  setText("rTax", "−" + money(R.steuer));
-  setMoney("rNetto", R.netto, animate);
-  setText("rAge", state.rentenalter);
-  const gainEl = document.getElementById("rGain");
-  if (gainEl) gainEl.innerHTML = `Davon <b style="color:#86efac">${money(R.gewinn)}</b> Gewinn – dein Geld arbeitet für dich.`;
+  count("netto", R.netto, dur, money, "rNetto", "dNetto");
+  count("gewinn", R.gewinn, dur, money, "rGain");
+  count("contrib", R.contributed, dur, money, "rContrib");
+  count("brutto", R.brutto, dur, money, "rBrutto", "pKapital");
+  count("steuer", R.steuer, dur, (v) => "−" + money(v), "rTax");
+  count("eff", R.effAnnual, dur, (v) => num2.format(v) + " %", "rEff");
+  count("mult", R.contributed > 0 ? R.brutto / R.contributed : 0, dur, (v) => num2.format(v) + " €", "rMult");
+  count("rente", R.lebensrente, dur, money, "rRente", "pLebens");
+  tween("dRente", R.lebensrente, (v) => setText("dRente", money(v)), dur);
+  tween("ring", R.brutto > 0 ? R.gewinn / R.brutto : 0, paintRing, dur);
 
-  setText("tContrib", money(R.contributed));
-  setText("tGain", money(R.gewinn));
-  const ratio = R.brutto > 0 ? (R.gewinn / R.brutto) * 100 : 0;
-  setText("tRatio", pct1(ratio));
-  setText("tEff", pct1(R.effAnnual));
+  [["rAge"], ["rAge2"], ["pAge"], ["dAge"]].forEach(([id]) => setText(id, String(state.rentenalter)));
+  setText("rDate", "Rentenbeginn " + fmtMY(R.rentenDate));
 
-  // Vertrags-Eckdaten
-  setText("mAge", formatYM(Math.round(R.ageAtStart * 12)));
-  setText("mRb", state.rentenalter + " J." + (R.rentenDate ? " · " + dtf.format(R.rentenDate) : ""));
-  setText("mAuf", formatYM(R.totalMonths));
-  setText("mBd", formatYM(R.beitragsMonths));
-  setText("mGz", state.garantiezeit > 0 ? state.garantiezeit + " J." : "keine");
-
-  // Optionen bei Rentenbeginn
-  setText("pAge", state.rentenalter);
-  setText("pLebens", money(R.lebensrente) + " / Monat");
-  setText("pLebensSub", `garantiert lebenslang · Rentenfaktor ${num2.format(state.rentenfaktor)} € je 10.000 €`);
-  setText("pKapital", money(R.brutto));
-  setText("pKapitalSub", `netto nach Steuer: ${money(R.netto)}`);
-  setText("pJahre", state.entnahmeJahre);
-  setText("pRente", money(R.monatsrente) + " / Monat");
-  setText("pRenteSub", `Kapital in ${state.entnahmeJahre} Jahren aufgebraucht · ${pct1(state.renditeRente)} Restrendite`);
-  const steigBox = document.getElementById("pSteigBox");
-  if (state.rentensteigerung > 0) {
-    steigBox.classList.remove("hide");
-    setText("pSteig", money(R.steigStart) + " / Monat");
-    setText("pSteigSub", `Start – steigt +${state.rentensteigerung} % pro Jahr`);
-  } else {
-    steigBox.classList.add("hide");
-  }
-  setText("pGar", "Garantierente & garantierte Kapitalabfindung: keine – „Chance Invest“ ist die volle Fondsanlage ohne Beitragsgarantie.");
-  setText("pTod", "Todesfall vor Rentenbeginn: das aktuelle Fondsguthaben geht an die Hinterbliebenen (§ 35).");
-
-  setText("eEff", pct1(R.effAnnual));
-
-  drawChart();
+  renderTimeline();
+  renderOptions(dur);
+  renderSummaries();
+  updateChart(mode === "load" ? 1500 : dur);
 }
 
-function setText(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+const RING_C = 2 * Math.PI * 58;
+function paintRing(g) {
+  const gap = g > 0.01 && g < 0.99 ? 4 : 0;
+  const conLen = Math.max(0, (1 - g) * RING_C - gap);
+  const gainLen = Math.max(0, g * RING_C - gap);
+  const con = $("ringCon"), gain = $("ringGain");
+  con.setAttribute("stroke-dasharray", `${conLen.toFixed(2)} ${RING_C.toFixed(2)}`);
+  gain.setAttribute("stroke-dasharray", `${gainLen.toFixed(2)} ${RING_C.toFixed(2)}`);
+  gain.setAttribute("stroke-dashoffset", (-(1 - g) * RING_C).toFixed(2));
+  setText("ringPct", Math.round(g * 100) + " %");
+}
 
-/* Weiche Count-up-Animation für die großen Ergebniszahlen. */
-function setMoney(id, target, animate) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (!animate || reduceMotion) { el.textContent = money(target); return; }
-  if (anim[id]) cancelAnimationFrame(anim[id].raf);
-  const from = anim[id] ? anim[id].cur : target * 0.82;
-  const start = performance.now(), dur = 480;
-  const tick = (now) => {
-    const t = Math.min(1, (now - start) / dur);
-    const e = 1 - Math.pow(1 - t, 3);
-    const cur = from + (target - from) * e;
-    el.textContent = money(cur);
-    anim[id] = { cur, raf: t < 1 ? requestAnimationFrame(tick) : 0 };
-  };
-  anim[id] = { cur: from, raf: requestAnimationFrame(tick) };
+const TL_SPAN = 80; // Anteil der Leiste für die Aufschubzeit (in %)
+function renderTimeline() {
+  const start = parseDate(state.vertragsbeginn);
+  const pay = R.totalMonths ? R.beitragsMonths / R.totalMonths : 1;
+  $("tlPay").style.width = TL_SPAN * pay + "%";
+  $("tlRest").style.width = TL_SPAN * (1 - pay) + "%";
+  setText("tlStartAge", R.eintrittsalter + " J.");
+  setText("tlStartDate", fmtMY(start));
+  setText("tlRbAge", R.eintrittsalter + Math.round(R.years) + " J.");
+  setText("tlRbDate", fmtMY(R.rentenDate));
+  const endEl = $("tlEnd");
+  endEl.hidden = pay > 0.97 || !start;
+  $("tl").classList.toggle("no-end", endEl.hidden);
+  if (!endEl.hidden) {
+    setText("tlEndAge", R.eintrittsalter + Math.round(R.beitragsMonths / 12) + " J.");
+    setText("tlEndDate", fmtMY(addMonths(start, R.beitragsMonths)));
+    positionEndMark(pay);
+  }
+  setText("mAge", formatYM(Math.round(R.ageAtStart * 12)));
+  setText("mAuf", formatYM(R.totalMonths));
+  setText("mBd", formatYM(R.beitragsMonths));
+  setText("mGz", state.garantiezeit > 0 ? state.garantiezeit + " Jahre" : "keine");
+}
+function positionEndMark(pay) {
+  const tl = $("tl"), el = $("tlEnd");
+  const W = tl.clientWidth, w = el.offsetWidth;
+  const x = (TL_SPAN / 100) * pay * W;
+  const left = Math.max(0, Math.min(W - w, x - w / 2));
+  el.style.left = left + "px";
+  el.style.transform = "none";
+  el.style.setProperty("--stem", Math.max(4, Math.min(w - 6, x - left - 1)) + "px");
+}
+
+function renderOptions(dur) {
+  setText("pLebensSub", `Rentenfaktor ${num2.format(state.rentenfaktor)} € je 10.000 € · Garantiezeit ${state.garantiezeit > 0 ? state.garantiezeit + " J." : "keine"}`);
+  setText("pKapitalSub", `einmalig ausgezahlt · nach Steuer ${money(R.netto)}`);
+  setText("pJahre", String(state.entnahmeJahre));
+  count("verzehr", R.monatsrente, dur, money, "pRente");
+  setText("pRenteSub", `${state.entnahmeJahre} Jahre lang · ${pct1(state.renditeRente)} Restrendite`);
+  const steig = state.rentensteigerung > 0;
+  $("pSteigBox").hidden = !steig;
+  $("opts").dataset.n = steig ? "4" : "3";
+  if (steig) {
+    count("steig", R.steigStart, dur, money, "pSteig");
+    setText("pSteigSub", `steigt danach jedes Jahr um ${state.rentensteigerung} %`);
+  }
+}
+
+function renderSummaries() {
+  setText("sum_plan", money(state.sparrate) + " / Monat");
+  setText("sum_zeit", formatYM(R.totalMonths) + " bis zur Rente");
+  setText("sum_rendite", pct1(state.rendite) + " p. a.");
+  setText("sum_kosten", `${num2.format(state.ter)} · ${num1.format(state.abschluss)} · ${num1.format(state.verwaltung)} %`);
+  setText("sum_steuer", state.steuersatz + " % Steuersatz");
+  setText("sum_rente", "Faktor " + num2.format(state.rentenfaktor));
 }
 
 /* ============================ Chart ================================= */
-const CW = 760, CH = 340, PAD_L = 8, PAD_R = 8, PAD_T = 22, PAD_B = 30;
+const N = 96;
+let G = null, chartShown = null;
 
 function niceMax(v) {
   if (v <= 0) return 1000;
   const pow = Math.pow(10, Math.floor(Math.log10(v)));
-  const steps = [1, 1.5, 2, 2.5, 3, 4, 5, 7.5, 10];
-  for (const s of steps) if (s * pow >= v) return s * pow;
+  for (const s of [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (s * pow >= v) return s * pow;
   return 10 * pow;
 }
-
-function drawChart() {
-  const svg = document.getElementById("chart");
-  const s = R.series;
-  const useReal = state.realView;
-
-  const balArr = s.map((p) => (useReal ? p.real : p.balance));
-  const conArr = s.map((p) => Math.min(p.contributed, useReal ? p.real : p.balance));
-  const maxY = niceMax(Math.max(...balArr) * 1.08);
-  const n = s.length;
-
-  const x = (i) => PAD_L + (i / Math.max(1, n - 1)) * (CW - PAD_L - PAD_R);
-  const y = (v) => PAD_T + (1 - v / maxY) * (CH - PAD_T - PAD_B);
-
-  const lineTo = (arr) => arr.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("");
-  const areaFill = (arr) => lineTo(arr) + `L${x(n - 1).toFixed(1)},${y(0).toFixed(1)}L${x(0).toFixed(1)},${y(0).toFixed(1)}Z`;
-
-  let grid = "", ylabels = "";
-  const ticks = 4;
-  for (let t = 0; t <= ticks; t++) {
-    const val = (maxY / ticks) * t;
-    const yy = y(val).toFixed(1);
-    grid += `<line x1="${PAD_L}" y1="${yy}" x2="${CW - PAD_R}" y2="${yy}" class="gline"/>`;
-    ylabels += `<text x="${PAD_L + 2}" y="${(+yy - 5).toFixed(1)}" class="ylab">${compactEur(val)}</text>`;
-  }
-
-  let xlabels = "";
-  const step = Math.max(1, Math.round((n - 1) / 6));
-  for (let i = 0; i < n; i += step) {
-    xlabels += `<text x="${x(i).toFixed(1)}" y="${CH - 8}" class="xlab" text-anchor="middle">${Math.round(s[i].age)}</text>`;
-  }
-  const lastI = n - 1;
-  xlabels += `<text x="${x(lastI).toFixed(1)}" y="${CH - 8}" class="xlab" text-anchor="end">${Math.round(s[lastI].age)}</text>`;
-
-  // Endpunkt-Label
-  const endV = balArr[lastI], endX = x(lastI), endY = y(endV);
-  const labY = Math.max(PAD_T + 8, endY - 12);
-  const endLabel = `
-    <g class="end-marker">
-      <circle cx="${endX.toFixed(1)}" cy="${endY.toFixed(1)}" r="4.5" fill="var(--green-500)" stroke="var(--card)" stroke-width="2"/>
-      <rect x="${(endX - 78).toFixed(1)}" y="${(labY - 14).toFixed(1)}" width="74" height="19" rx="6" fill="var(--green-600)"/>
-      <text x="${(endX - 41).toFixed(1)}" y="${(labY - 0.5).toFixed(1)}" text-anchor="middle" class="end-text">${compactEur(endV)}</text>
-    </g>`;
-
-  const drawAnim = reduceMotion ? "" : `<style>
-    @keyframes dash { to { stroke-dashoffset: 0; } }
-    .balStroke, .conStroke { stroke-dasharray: 2600; stroke-dashoffset: 2600; animation: dash 1.1s ease-out forwards; }
-    .end-marker { animation: fade .5s ease .9s both; } @keyframes fade { from { opacity: 0 } to { opacity: 1 } }
-  </style>`;
-
-  svg.innerHTML = `
-    <defs>
-      <linearGradient id="gGain" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="var(--green-500)" stop-opacity="0.55"/>
-        <stop offset="100%" stop-color="var(--green-500)" stop-opacity="0.04"/>
-      </linearGradient>
-      <linearGradient id="gCon" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="var(--blue-500)" stop-opacity="0.5"/>
-        <stop offset="100%" stop-color="var(--blue-500)" stop-opacity="0.05"/>
-      </linearGradient>
-    </defs>
-    <style>
-      .gline{stroke:var(--border);stroke-width:1;stroke-dasharray:3 5;}
-      .ylab,.xlab{fill:var(--text-3);font-size:11px;font-weight:600;font-family:var(--font);}
-      .balStroke{stroke:var(--green-500);stroke-width:3;fill:none;stroke-linejoin:round;stroke-linecap:round;}
-      .conStroke{stroke:var(--blue-500);stroke-width:2.5;fill:none;stroke-linejoin:round;stroke-linecap:round;}
-      .end-text{fill:#fff;font-size:11px;font-weight:800;font-family:var(--font);}
-    </style>
-    ${drawAnim}
-    ${grid}
-    <path d="${areaFill(balArr)}" fill="url(#gGain)"/>
-    <path d="${areaFill(conArr)}" fill="url(#gCon)"/>
-    <path d="${lineTo(balArr)}" class="balStroke"/>
-    <path d="${lineTo(conArr)}" class="conStroke"/>
-    ${ylabels}${xlabels}${endLabel}
-    <g id="hoverG" style="opacity:0">
-      <line id="hLine" y1="${PAD_T}" y2="${CH - PAD_B}" stroke="var(--text-3)" stroke-width="1" stroke-dasharray="3 3"/>
-      <circle id="hBal" r="5.5" fill="var(--green-500)" stroke="var(--card)" stroke-width="2.5"/>
-      <circle id="hCon" r="5" fill="var(--blue-500)" stroke="var(--card)" stroke-width="2.5"/>
-    </g>
-    <rect id="hitbox" x="0" y="0" width="${CW}" height="${CH}" fill="transparent" style="cursor:crosshair"/>
-  `;
-
-  attachHover(svg, s, x, y, useReal);
-}
-
 function compactEur(v) {
-  if (v >= 1e6) return num1.format(v / 1e6).replace(",0", "") + " Mio";
-  if (v >= 1000) return Math.round(v / 1000) + "k €";
+  if (v >= 1e6) return num1.format(v / 1e6).replace(",0", "") + " Mio. €";
+  if (v >= 1000) return Math.round(v / 1000) + " Tsd. €";
   return Math.round(v) + " €";
 }
 
-function attachHover(svg, s, x, y, useReal) {
-  const wrap = document.getElementById("chartWrap");
-  const tip = document.getElementById("tip");
-  const g = document.getElementById("hoverG");
-  const hLine = document.getElementById("hLine");
-  const hBal = document.getElementById("hBal");
-  const hCon = document.getElementById("hCon");
-  const hit = document.getElementById("hitbox");
-  const n = s.length;
+function chartTarget() {
+  const s = R.series, n = s.length;
+  const bal = s.map((p) => (state.realView ? p.real : p.balance));
+  const con = s.map((p, i) => Math.min(p.contributed, bal[i]));
+  const resample = (arr) => {
+    const out = new Array(N);
+    for (let j = 0; j < N; j++) {
+      const t = (j / (N - 1)) * (n - 1);
+      const i0 = Math.floor(t), i1 = Math.min(n - 1, i0 + 1), f = t - i0;
+      out[j] = arr[i0] + (arr[i1] - arr[i0]) * f;
+    }
+    return out;
+  };
+  return {
+    bal: resample(bal), con: resample(con),
+    maxY: niceMax(Math.max(...bal) * 1.14),
+    age0: R.eintrittsalter, years: R.years,
+    beFrac: R.totalMonths ? R.beitragsMonths / R.totalMonths : 1,
+  };
+}
+function lerpChart(a, b, p) {
+  const L = (x, y) => x + (y - x) * p;
+  return {
+    bal: b.bal.map((v, j) => L(a.bal[j], v)),
+    con: b.con.map((v, j) => L(a.con[j], v)),
+    maxY: L(a.maxY, b.maxY), age0: L(a.age0, b.age0),
+    years: L(a.years, b.years), beFrac: L(a.beFrac, b.beFrac),
+  };
+}
+function updateChart(dur) {
+  const target = chartTarget();
+  if (!chartShown) chartShown = { ...target, bal: target.bal.map(() => 0), con: target.con.map(() => 0) };
+  const from = { ...chartShown, bal: chartShown.bal.slice(), con: chartShown.con.slice() };
+  shown.chart = 0;
+  tween("chart", 1, (p) => { chartShown = lerpChart(from, target, p); paintChart(chartShown); }, dur);
+}
 
-  function move(ev) {
-    const rect = svg.getBoundingClientRect();
-    const px = ((ev.touches ? ev.touches[0].clientX : ev.clientX) - rect.left) / rect.width * CW;
-    let i = Math.round(((px - PAD_L) / (CW - PAD_L - PAD_R)) * (n - 1));
-    i = Math.max(0, Math.min(n - 1, i));
-    const p = s[i];
-    const bal = useReal ? p.real : p.balance;
-    const con = Math.min(p.contributed, bal);
-    const xx = x(i);
-
-    g.style.opacity = "1";
-    hLine.setAttribute("x1", xx); hLine.setAttribute("x2", xx);
-    hBal.setAttribute("cx", xx); hBal.setAttribute("cy", y(bal));
-    hCon.setAttribute("cx", xx); hCon.setAttribute("cy", y(con));
-
-    const gain = Math.max(0, bal - p.contributed);
-    tip.innerHTML = `
-      <div class="t-age">Alter ${Math.round(p.age)} · in ${Math.round(p.year)} Jahr${Math.round(p.year) === 1 ? "" : "en"}</div>
-      <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--green-500)"></span>${useReal ? "Kaufkraft" : "Gesamt"}</span><span class="val">${money(bal)}</span></div>
-      <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--blue-500)"></span>Eingezahlt</span><span class="val">${money(p.contributed)}</span></div>
-      <div class="t-row"><span class="lab"><span class="swatch" style="background:var(--green-500)"></span>Gewinn</span><span class="val">${money(gain)}</span></div>`;
-
-    const wpx = (xx / CW) * wrap.clientWidth;
-    const topPx = (y(bal) / CH) * wrap.clientHeight;
-    tip.style.opacity = "1";
-    const half = tip.offsetWidth / 2;
-    const left = Math.max(half + 4, Math.min(wrap.clientWidth - half - 4, wpx));
-    tip.style.left = left + "px";
-    tip.style.top = Math.max(tip.offsetHeight + 8, topPx - 12) + "px";
+function buildChart() {
+  const wrap = $("chartWrap"), svg = $("chart");
+  const W = Math.max(260, Math.round(wrap.clientWidth));
+  const H = W < 520 ? 250 : W < 760 ? 300 : 340;
+  G = { W, H, l: 2, r: 2, t: 30, b: 30 };
+  const ih = H - G.t - G.b;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("width", W);
+  svg.setAttribute("height", H);
+  let grid = "", ylab = "", xlab = "";
+  for (let k = 0; k <= 4; k++) {
+    const y = G.t + ih - (ih * k) / 4;
+    grid += `<line class="c-grid${k === 0 ? " base" : ""}" x1="${G.l}" x2="${W - G.r}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/>`;
+    if (k > 0) ylab += `<text class="c-ylab" id="cy${k}" x="${G.l + 2}" y="${(y - 7).toFixed(1)}"></text>`;
   }
-  function leave() { g.style.opacity = "0"; tip.style.opacity = "0"; }
+  for (let k = 0; k <= 5; k++) {
+    const x = G.l + (k / 5) * (W - G.l - G.r);
+    const anchor = k === 0 ? "start" : k === 5 ? "end" : "middle";
+    xlab += `<text class="c-xlab" id="cx${k}" x="${x.toFixed(1)}" y="${H - 8}" text-anchor="${anchor}"></text>`;
+  }
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="gBal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="st-gain-a"/><stop offset="1" class="st-gain-b"/></linearGradient>
+      <linearGradient id="gCon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="st-con-a"/><stop offset="1" class="st-con-b"/></linearGradient>
+    </defs>
+    ${grid}
+    <path id="cAreaBal" fill="url(#gBal)"/>
+    <path id="cAreaCon" fill="url(#gCon)"/>
+    <path id="cLineCon" class="c-con"/>
+    <path id="cLineBal" class="c-bal"/>
+    ${ylab}${xlab}
+    <g id="cBe"><line class="c-be" id="cBeL" y1="${G.t}" y2="${G.t + ih}"/><text class="c-bet" id="cBeT" y="${G.t + ih - 8}" text-anchor="end">Beitragsende</text></g>
+    <g>
+      <circle class="c-end-halo" id="cEndH" r="7"/>
+      <circle class="c-end-dot" id="cEndD" r="6"/>
+      <rect class="c-end-pill" id="cEndP" rx="10" height="26"/>
+      <text class="c-end-text" id="cEndT"></text>
+    </g>
+    <g class="c-hov" id="cHov"><line class="c-hline" id="cHL" y1="${G.t}" y2="${G.t + ih}"/><circle class="c-hdot-c" id="cHC" r="5"/><circle class="c-hdot-b" id="cHB" r="6.5"/></g>`;
+}
 
-  hit.addEventListener("mousemove", move);
-  hit.addEventListener("mouseleave", leave);
-  hit.addEventListener("touchstart", move, { passive: true });
-  hit.addEventListener("touchmove", move, { passive: true });
-  hit.addEventListener("touchend", leave);
+function paintChart(c) {
+  if (!G) return;
+  const iw = G.W - G.l - G.r, ih = G.H - G.t - G.b;
+  const X = (j) => G.l + (j / (N - 1)) * iw;
+  const Y = (v) => G.t + (1 - Math.max(0, v) / c.maxY) * ih;
+  let dB = "", dC = "";
+  for (let j = 0; j < N; j++) {
+    const x = X(j).toFixed(1);
+    dB += (j ? "L" : "M") + x + "," + Y(c.bal[j]).toFixed(1);
+    dC += (j ? "L" : "M") + x + "," + Y(c.con[j]).toFixed(1);
+  }
+  const base = `L${X(N - 1).toFixed(1)},${(G.t + ih).toFixed(1)}L${X(0).toFixed(1)},${(G.t + ih).toFixed(1)}Z`;
+  $("cAreaBal").setAttribute("d", dB + base);
+  $("cAreaCon").setAttribute("d", dC + base);
+  $("cLineBal").setAttribute("d", dB);
+  $("cLineCon").setAttribute("d", dC);
+
+  for (let k = 1; k <= 4; k++) setText("cy" + k, compactEur((c.maxY * k) / 4));
+  for (let k = 0; k <= 5; k++) {
+    const age = Math.round(c.age0 + (k / 5) * c.years);
+    setText("cx" + k, k === 0 ? "Alter " + age : String(age));
+  }
+
+  const be = $("cBe");
+  if (c.beFrac < 0.97) {
+    const bx = G.l + c.beFrac * iw;
+    be.style.display = "";
+    $("cBeL").setAttribute("x1", bx.toFixed(1));
+    $("cBeL").setAttribute("x2", bx.toFixed(1));
+    $("cBeT").setAttribute("x", (bx - 6).toFixed(1));
+  } else {
+    be.style.display = "none";
+  }
+
+  const ex = X(N - 1), ey = Y(c.bal[N - 1]);
+  ["cEndH", "cEndD"].forEach((id) => { $(id).setAttribute("cx", ex.toFixed(1)); $(id).setAttribute("cy", ey.toFixed(1)); });
+  const t = $("cEndT");
+  setText("cEndT", money(c.bal[N - 1]));
+  const tw = t.getComputedTextLength() + 22;
+  const px = Math.max(G.l, ex - tw - 12);
+  const py = Math.max(2, ey - 40);
+  const pill = $("cEndP");
+  pill.setAttribute("x", px.toFixed(1));
+  pill.setAttribute("y", py.toFixed(1));
+  pill.setAttribute("width", tw.toFixed(1));
+  t.setAttribute("x", (px + 11).toFixed(1));
+  t.setAttribute("y", (py + 17.5).toFixed(1));
+}
+
+function bindChartHover() {
+  const svg = $("chart"), tip = $("chartTip");
+  const hide = () => { $("cHov") && $("cHov").classList.remove("on"); tip.classList.remove("on"); };
+  const move = (clientX) => {
+    if (!R || !G || !chartShown) return;
+    const rect = svg.getBoundingClientRect();
+    const scale = G.W / rect.width;
+    const iw = G.W - G.l - G.r, ih = G.H - G.t - G.b;
+    const s = R.series, n = s.length;
+    const px = (clientX - rect.left) * scale;
+    const i = Math.max(0, Math.min(n - 1, Math.round(((px - G.l) / iw) * (n - 1))));
+    const p = s[i];
+    const bal = state.realView ? p.real : p.balance;
+    const con = Math.min(p.contributed, bal);
+    const X = G.l + (n > 1 ? i / (n - 1) : 1) * iw;
+    const Y = (v) => G.t + (1 - v / chartShown.maxY) * ih;
+    $("cHL").setAttribute("x1", X); $("cHL").setAttribute("x2", X);
+    $("cHB").setAttribute("cx", X); $("cHB").setAttribute("cy", Y(bal));
+    $("cHC").setAttribute("cx", X); $("cHC").setAttribute("cy", Y(con));
+    $("cHov").classList.add("on");
+    const year = Math.round(p.year);
+    tip.innerHTML = `
+      <div class="tt-h">Alter ${R.eintrittsalter + year} <span>· nach ${year} Jahr${year === 1 ? "" : "en"}</span></div>
+      <div class="tt-r"><span><i class="sw gain"></i>${state.realView ? "Kaufkraft" : "Fondsguthaben"}</span><b>${money(bal)}</b></div>
+      <div class="tt-r"><span><i class="sw con"></i>Eingezahlt</span><b>${money(p.contributed)}</b></div>
+      <div class="tt-r gain"><span>Gewinn</span><b>+${money(Math.max(0, bal - p.contributed))}</b></div>`;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    const xPx = X / scale, yPx = Y(bal) / scale;
+    let left = xPx + 18;
+    if (left + tw > rect.width) left = xPx - tw - 18;
+    const top = Math.max(0, Math.min(rect.height - th, yPx - th / 2));
+    tip.style.transform = `translate(${Math.max(0, left)}px, ${top}px)`;
+    tip.classList.add("on");
+  };
+  svg.addEventListener("pointermove", (e) => move(e.clientX));
+  svg.addEventListener("pointerdown", (e) => move(e.clientX));
+  svg.addEventListener("pointerleave", hide);
+}
+
+/* ======================= Kopfband-Animation ========================== */
+function bandFx() {
+  const cv = $("bandCanvas"), band = $("band");
+  const ctx = cv.getContext && cv.getContext("2d");
+  if (!ctx) return;
+  let w = 0, h = 0, raf = 0, visible = true;
+  const lines = Array.from({ length: 8 }, (_, i) => ({
+    k: 0.3 + i * 0.075, g: 2.1 + (i % 3) * 0.45, amp: 5 + i * 1.6,
+    ph: i * 1.9, sp: 0.18 + (i % 4) * 0.05, a: 0.07 + (i % 3) * 0.035,
+  }));
+  const dots = Array.from({ length: 10 }, (_, i) => ({
+    line: i % lines.length, off: (i * 0.137) % 1, v: 0.016 + (i % 5) * 0.004, green: i % 3 === 0,
+  }));
+  const size = () => {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    w = cv.clientWidth; h = cv.clientHeight;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+  const yAt = (L, x, t) => {
+    const u = x / w;
+    const growth = (Math.exp(L.g * u) - 1) / (Math.exp(L.g) - 1);
+    return h * (1.02 - L.k * growth) + Math.sin(u * 5.5 + t * L.sp + L.ph) * L.amp;
+  };
+  const draw = (now) => {
+    const t = now / 1000;
+    ctx.clearRect(0, 0, w, h);
+    ctx.lineWidth = 1.3;
+    for (const L of lines) {
+      ctx.beginPath();
+      for (let x = 0; x <= w + 8; x += 8) {
+        const y = yAt(L, x, t);
+        if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = `rgba(255,255,255,${L.a})`;
+      ctx.stroke();
+    }
+    for (const d of dots) {
+      const L = lines[d.line];
+      const u = (d.off + t * d.v) % 1;
+      const x = u * w, y = yAt(L, x, t);
+      const r = 10 + u * 10;
+      const rgb = d.green ? "150,245,190" : "255,255,255";
+      const fade = Math.sin(u * Math.PI);
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, `rgba(${rgb},${0.85 * fade})`);
+      grad.addColorStop(0.18, `rgba(${rgb},${0.35 * fade})`);
+      grad.addColorStop(1, `rgba(${rgb},0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
+  const loop = (now) => { draw(now); raf = requestAnimationFrame(loop); };
+  const start = () => { if (!raf && visible && !document.hidden && !reduceMotion) raf = requestAnimationFrame(loop); };
+  const stop = () => { cancelAnimationFrame(raf); raf = 0; };
+  size();
+  draw(4000);
+  if (reduceMotion) return;
+  new ResizeObserver(() => { size(); draw(performance.now()); }).observe(band);
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; visible ? start() : stop(); }).observe(band);
+  document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
+  start();
 }
 
 /* ============================ Events ================================ */
@@ -773,7 +898,6 @@ function parseNum(str) {
   const v = parseFloat(cleaned);
   return isNaN(v) ? 0 : v;
 }
-
 const LIMITS = {
   startkapital: [0, 10000000], sparrate: [0, 100000], dynamik: [0, 10],
   rentenalter: [30, 90], rendite: [1, 12], ter: [0, 2],
@@ -784,74 +908,156 @@ const LIMITS = {
 function clamp(k, v) { const [lo, hi] = LIMITS[k] || [-Infinity, Infinity]; return Math.min(hi, Math.max(lo, v)); }
 
 function bind() {
-  const app = document.getElementById("app");
+  const app = $("app");
 
   app.addEventListener("input", (e) => {
     const el = e.target;
     if (!el.dataset || !el.dataset.key) return;
     const k = el.dataset.key, kind = el.dataset.kind;
-    if (kind === "range") {
-      state[k] = clamp(k, parseFloat(el.value));
-      render(false);
-    } else if (kind === "select") {
-      state[k] = parseFloat(el.value);
-      render(true);
-    } else if (kind === "date") {
-      state[k] = el.value;
-      render(false);
-    } else {
+    if (kind === "range") { state[k] = clamp(k, parseFloat(el.value)); render("drag"); }
+    else if (kind === "select") { state[k] = parseFloat(el.value); render("change"); }
+    else if (kind === "date") { if (el.value) { state[k] = el.value; render("change"); } }
+    else {
       let v = parseNum(el.value);
       if (kind === "int") v = Math.round(v);
       state[k] = v;
-      render(false);
+      render("drag");
     }
   });
 
   app.addEventListener("blur", (e) => {
-    const el = e.target;
-    const kind = el.dataset && el.dataset.kind;
+    const el = e.target, kind = el.dataset && el.dataset.kind;
     if (el.dataset && el.dataset.key && kind !== "range" && kind !== "select" && kind !== "date") {
       state[el.dataset.key] = clamp(el.dataset.key, state[el.dataset.key]);
-      render(true);
+      render("change");
     }
   }, true);
 
-  document.getElementById("renditePreset").addEventListener("click", (e) => {
-    const b = e.target.closest("button"); if (!b) return;
-    state.rendite = clamp("rendite", parseFloat(b.dataset.v)); render(true);
+  app.addEventListener("click", (e) => {
+    const head = e.target.closest(".acc-head");
+    if (head) {
+      const accEl = head.parentElement, open = !accEl.classList.contains("open");
+      accEl.classList.toggle("open", open);
+      head.setAttribute("aria-expanded", String(open));
+      accEl.querySelector(".acc-body").inert = !open;
+      if (open) requestAnimationFrame(placeIndicators);
+      return;
+    }
+    const chip = e.target.closest("[data-chip]");
+    if (chip) { state.sparrate = +chip.dataset.chip; render("change"); return; }
+    const preset = e.target.closest("#renditePreset button");
+    if (preset) { state.rendite = clamp("rendite", parseFloat(preset.dataset.v)); render("change"); return; }
+    const view = e.target.closest("#viewSeg button");
+    if (view) {
+      state.realView = view.dataset.view === "real";
+      document.querySelectorAll("#viewSeg button").forEach((b) => b.setAttribute("aria-pressed", String(b === view)));
+      setText("lgBal", state.realView ? "Kaufkraft in heutigen Euro" : "Fondsguthaben");
+      setText("chartSub", state.realView
+        ? `Bereinigt um ${pct1(state.inflation)} Inflation pro Jahr.`
+        : "Jahr für Jahr – fahre über die Kurve.");
+      placeIndicators();
+      updateChart(800);
+    }
   });
 
-  document.getElementById("realBtn").addEventListener("click", (e) => {
-    state.realView = !state.realView;
-    e.currentTarget.textContent = state.realView ? "Nominal anzeigen" : "Kaufkraft anzeigen";
-    e.currentTarget.classList.toggle("active", state.realView);
-    drawChart();
-  });
+  $("themeBtn").addEventListener("click", toggleTheme);
+  $("dockUp").addEventListener("click", () =>
+    $("resultCard").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" }));
 
-  document.getElementById("themeBtn").addEventListener("click", toggleTheme);
-  window.addEventListener("resize", () => R && drawChart());
+  const dock = $("dock");
+  new IntersectionObserver(([e]) => {
+    const show = e.intersectionRatio < 0.12;
+    dock.classList.toggle("show", show);
+    dock.setAttribute("aria-hidden", String(!show));
+    $("dockUp").tabIndex = show ? 0 : -1;
+  }, { threshold: [0, 0.12, 0.3] }).observe($("resultCard"));
+
+  let lastW = 0;
+  new ResizeObserver(() => {
+    const w = $("chartWrap").clientWidth;
+    if (w && w !== lastW) {
+      lastW = w;
+      buildChart();
+      if (chartShown) paintChart(chartShown);
+    }
+    placeIndicators();
+    if (R && !$("tlEnd").hidden) positionEndMark(R.totalMonths ? R.beitragsMonths / R.totalMonths : 1);
+  }).observe($("app"));
+
+  bindChartHover();
+  bindTips();
+}
+
+function bindTips() {
+  const pop = $("tipPop");
+  let cur = null;
+  const place = (el) => {
+    const r = el.getBoundingClientRect();
+    const pw = pop.offsetWidth, ph = pop.offsetHeight;
+    const left = Math.max(8, Math.min(window.innerWidth - pw - 8, r.left + r.width / 2 - pw / 2));
+    let top = r.top - ph - 10;
+    if (top < 8) top = r.bottom + 10;
+    pop.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
+  };
+  const show = (el) => { cur = el; pop.textContent = el.dataset.tip; pop.classList.add("show"); place(el); };
+  const hide = () => { cur = null; pop.classList.remove("show"); };
+  document.addEventListener("pointerover", (e) => {
+    const el = e.target.closest && e.target.closest(".info");
+    if (el && e.pointerType === "mouse") show(el);
+  });
+  document.addEventListener("pointerout", (e) => {
+    const el = e.target.closest && e.target.closest(".info");
+    if (el && e.pointerType === "mouse" && !el.contains(e.relatedTarget)) hide();
+  });
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest && e.target.closest(".info");
+    if (el) { if (cur === el && e.pointerType !== "mouse") hide(); else show(el); }
+    else if (cur) hide();
+  });
+  document.addEventListener("focusin", (e) => {
+    const el = e.target.closest && e.target.closest(".info");
+    if (el && el.matches(":focus-visible")) show(el);
+  });
+  document.addEventListener("focusout", (e) => { if (e.target === cur) hide(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") hide(); });
+  window.addEventListener("scroll", () => cur && hide(), { passive: true, capture: true });
 }
 
 /* ============================ Theme ================================= */
-const sun = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 1v3M12 20v3M4.2 4.2l2 2M17.8 17.8l2 2M1 12h3M20 12h3M4.2 19.8l2-2M17.8 6.2l2-2"/></svg>`;
-const moon = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>`;
-
-function applyTheme(t) {
-  document.documentElement.setAttribute("data-theme", t);
-  document.getElementById("themeIcon").innerHTML = t === "dark" ? sun : moon;
-  document.getElementById("themeTxt").textContent = t === "dark" ? "Hell" : "Dunkel";
-  try { localStorage.setItem("av-theme", t); } catch (e) {}
-  if (R) drawChart();
+const darkMQ = matchMedia("(prefers-color-scheme: dark)");
+function isDark() {
+  const a = document.documentElement.getAttribute("data-theme");
+  return a ? a === "dark" : darkMQ.matches;
 }
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute("data-theme") || "light";
-  applyTheme(cur === "dark" ? "light" : "dark");
+function updateThemeBtn() {
+  const d = isDark();
+  $("themeIcon").innerHTML = d ? ICON.sun : ICON.moon;
+  setText("themeTxt", d ? "Hell" : "Dunkel");
+  $("themeBtn").setAttribute("aria-label", d ? "Helles Design einschalten" : "Dunkles Design einschalten");
+}
+function toggleTheme(ev) {
+  const next = isDark() ? "light" : "dark";
+  const apply = () => {
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("av-theme", next); } catch (e) { /* Speicher gesperrt */ }
+    updateThemeBtn();
+  };
+  if (!document.startViewTransition || reduceMotion) { apply(); return; }
+  const x = ev && ev.clientX ? ev.clientX : window.innerWidth - 60;
+  const y = ev && ev.clientY ? ev.clientY : 40;
+  const r = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+  const vt = document.startViewTransition(apply);
+  vt.ready.then(() => {
+    document.documentElement.animate(
+      { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },
+      { duration: 700, easing: "cubic-bezier(0.22, 1, 0.36, 1)", pseudoElement: "::view-transition-new(root)" });
+  }).catch(() => {});
 }
 
 /* ============================ Init ================================= */
-/* Lädt die aktuellen Fondszahlen aus fund-data.json (auf GitHub Pages / eigenem
-   Server). Offline oder in der Artifact-Vorschau (CSP) schlägt der Abruf fehl –
-   dann bleiben die oben eingebauten Werte stehen. */
+/* Lädt die aktuellen Fondszahlen aus fund-data.json (GitHub Pages). Offline
+   oder in der Artifact-Vorschau schlägt der Abruf fehl – dann bleiben die
+   eingebauten Werte stehen. */
 async function loadFundData() {
   try {
     const ctrl = new AbortController();
@@ -877,17 +1083,22 @@ async function loadFundData() {
 }
 
 async function init() {
-  await loadFundData();
-  state.ter = FUND.runningCost;   // Fondskosten-Default aus (evtl.) aktuellen Daten
-  document.getElementById("app").innerHTML = shell();
-  bind();
-  let t = "light";
   try {
-    t = localStorage.getItem("av-theme")
-      || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-  } catch (e) {}
-  applyTheme(t);
-  render(true);
+    const t = localStorage.getItem("av-theme");
+    if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t);
+  } catch (e) { /* Speicher gesperrt */ }
+  await loadFundData();
+  state.ter = FUND.runningCost;
+  $("app").innerHTML = shell();
+  updateThemeBtn();
+  darkMQ.addEventListener && darkMQ.addEventListener("change", updateThemeBtn);
+  buildChart();
+  bind();
+  render("load");
+  count("fPa", FUND.paSince, 1400, (v) => num2.format(v) + " %", "fPa");
+  count("fTotal", FUND.totalSince, 1600, (v) => "+" + num2.format(v) + " %", "fTotal");
+  count("fTer", FUND.runningCost, 1200, (v) => num2.format(v) + " %", "fTer");
+  bandFx();
 }
 
 init();
