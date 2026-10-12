@@ -3,38 +3,36 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#03101b">
+<meta name="theme-color" content="#ffffff">
 <meta name="description" content="Präsentation des Vorsorge-Rechners für den Debeka Global Shares.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23009ee0'/%3E%3Cpath d='M12 46 L26 34 L36 40 L52 18' fill='none' stroke='%23ffffff' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='52' cy='18' r='5' fill='%23ffffff'/%3E%3C/svg%3E">
 <title>Vorsorge-Rechner Präsentation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Manrope:wght@400..800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&display=swap">
 <style>
-/* Bühne 1920×1080, skaliert auf jedes Fenster. Eine durchgehende Partikelwelt
-   (Canvas) hinter allen Folien, die sich je Folie neu formt. */
+/* Helle Bühne 1920×1080 in Debeka-Blau/Weiß. Ruhig, viel Weißraum, eine
+   Schrift. Partikel nur dort, wo sie etwas zeigen (Globus, Geldstrom, Danke). */
 :root {
-  --bg: #03101b;
-  --bg-2: #061b2d;
-  --panel: rgba(11, 37, 64, 0.72);
-  --panel-solid: #0b2540;
-  --line: rgba(150, 205, 245, 0.16);
-  --line-2: rgba(150, 205, 245, 0.28);
-  --ink: #eef6fc;
-  --ink-2: #a8c0d4;
-  --ink-3: #7590a8;
+  --bg: #ffffff;
+  --tile: #f2f6fa;
+  --tile-2: #e9f1f8;
+  --line: #e1e9f0;
+  --ink: #0b1f33;
+  --ink-2: #4a5b6d;
+  --ink-3: #7d8ea0;
   --blue: #009ee0;
-  --blue-2: #38bdf8;
+  --blue-em: #0083c9;
+  --blue-ink: #0071ab;
   --blue-deep: #0077b6;
-  --sky: #8fd9fa;
-  --green: #4ade80;
-  --green-2: #22c55e;
-  --green-deep: #15803d;
-  --font-display: "Bricolage Grotesque", "Manrope", system-ui, sans-serif;
-  --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --blue-soft: #e6f5fc;
+  --green: #15803d;
+  --green-fill: #22c55e;
+  --green-soft: #ecfdf3;
+  --mint: #a7f3d0;
+  --font: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  color-scheme: dark;
+  color-scheme: light;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -43,7 +41,7 @@ body {
   overflow: hidden;
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-body);
+  font-family: var(--font);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -51,67 +49,41 @@ h1, h2, h3, p, ul { margin: 0; padding: 0; }
 ul { list-style: none; }
 em { font-style: normal; }
 button { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--blue-2); outline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
 
-/* ---------- Hintergrund ---------- */
-#aurora { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
-#aurora i {
-  position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.55;
-  animation: drift 26s ease-in-out infinite alternate;
-}
-#aurora i:nth-child(1) { width: 62vw; height: 62vw; left: -18vw; top: -26vw; background: radial-gradient(closest-side, rgba(0, 120, 190, 0.55), transparent); }
-#aurora i:nth-child(2) { width: 52vw; height: 52vw; right: -16vw; bottom: -24vw; background: radial-gradient(closest-side, rgba(0, 158, 224, 0.35), transparent); animation-duration: 32s; animation-direction: alternate-reverse; }
-#aurora i:nth-child(3) { width: 34vw; height: 34vw; right: 18vw; top: 8vw; background: radial-gradient(closest-side, rgba(34, 197, 94, 0.12), transparent); animation-duration: 38s; }
-@keyframes drift { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(6vw, 4vw, 0) scale(1.12); } }
 #fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-#grain {
-  position: fixed; inset: 0; pointer-events: none; opacity: 0.5;
-  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 6, 14, 0.75));
-}
 
 /* ---------- Bühne ---------- */
 #viewport { position: fixed; inset: 0; overflow: hidden; }
 #stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
-.slide { position: absolute; inset: 0; visibility: hidden; pointer-events: none; }
+.slide { position: absolute; inset: 0; visibility: hidden; pointer-events: none; background: var(--bg); }
 .slide.is-active { visibility: visible; pointer-events: auto; }
+.slide.fxslide { background: transparent; }
 .notes { display: none; }
 
 /* ---------- Typografie ---------- */
-.head { position: absolute; left: 140px; top: 104px; width: 1640px; }
+.head { position: absolute; left: 140px; top: 112px; width: 1640px; }
 .head.narrow { width: 640px; }
-.kicker {
-  display: flex; align-items: center; gap: 18px;
-  font-size: 22px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sky);
-}
-.kicker::before { content: ""; width: 46px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, var(--blue), var(--green)); }
-.h2 {
-  margin-top: 22px;
-  font-family: var(--font-display); font-weight: 700; font-size: 84px; line-height: 1.02; letter-spacing: -0.035em;
-}
-.display { font-family: var(--font-display); font-weight: 700; font-size: 150px; line-height: 0.93; letter-spacing: -0.048em; }
-.h2 em, .display em, .lead em, .answer em, .callout em, .statement em, .close-line em {
-  background: linear-gradient(100deg, #4ade80, #a7f3d0 60%, #4ade80);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-.lead { font-size: 34px; line-height: 1.45; color: var(--ink-2); }
+.eyebrow { font-size: 30px; font-weight: 700; color: var(--blue-ink); letter-spacing: -0.005em; }
+.h2 { margin-top: 14px; font-weight: 800; font-size: 84px; line-height: 1.04; letter-spacing: -0.045em; color: var(--ink); }
+.display { font-weight: 800; font-size: 140px; line-height: 0.98; letter-spacing: -0.055em; color: var(--ink); }
+.h2 em, .display em, .answer em, .callout em, .statement em, .close-line em { color: var(--blue-em); }
+.lead { font-size: 34px; line-height: 1.45; color: var(--ink-2); letter-spacing: -0.01em; }
 .sub { margin-top: 18px; font-size: 30px; color: var(--ink-2); }
 .foot { position: absolute; left: 140px; bottom: 48px; width: 1640px; font-size: 22px; line-height: 1.45; color: var(--ink-3); }
 .green { color: var(--green); }
 
-/* Wort-für-Wort-Auftritt */
 .split .w { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.04em 0.02em 0.14em; margin: -0.04em -0.02em -0.14em; }
-.split .w > span { display: inline-block; transform: translate3d(0, 115%, 0) rotate(5deg); transform-origin: 0 100%; transition: transform 1.15s var(--ease); transition-delay: calc(var(--wi) * 75ms + 260ms); }
+.split .w > span { display: inline-block; transform: translate3d(0, 105%, 0); transition: transform 1.1s var(--ease); transition-delay: calc(var(--wi) * 60ms + 200ms); }
 .slide.play .split .w > span { transform: none; }
 
-/* Auftritte */
-.in { opacity: 0; transform: translate3d(0, 46px, 0); transition: opacity 0.9s var(--ease), transform 1.2s var(--ease), filter 1.2s var(--ease); transition-delay: calc(var(--i, 0) * 90ms + 180ms); }
-.in[data-in="left"] { transform: translate3d(-70px, 0, 0); }
-.in[data-in="right"] { transform: translate3d(70px, 0, 0); }
-.in[data-in="scale"] { transform: scale(0.92); }
-.in[data-in="blur"] { transform: translate3d(0, 24px, 0) scale(1.04); filter: blur(18px); }
-.in[data-in="pop"] { transform: scale(0.5); transition-timing-function: var(--ease), var(--spring), var(--ease); }
-.slide.play .in { opacity: 1; transform: none; filter: none; }
-[data-step] { opacity: 0; transform: translate3d(0, 34px, 0); transition: opacity 0.8s var(--ease), transform 1s var(--ease); }
+.in { opacity: 0; transform: translate3d(0, 28px, 0); transition: opacity 0.9s var(--ease), transform 1.1s var(--ease); transition-delay: calc(var(--i, 0) * 80ms + 160ms); }
+.in[data-in="left"] { transform: translate3d(-40px, 0, 0); }
+.in[data-in="right"] { transform: translate3d(40px, 0, 0); }
+.in[data-in="scale"] { transform: scale(0.96); }
+.in[data-in="fade"] { transform: none; }
+.slide.play .in { opacity: 1; transform: none; }
+[data-step] { opacity: 0; transform: translate3d(0, 24px, 0); transition: opacity 0.8s var(--ease), transform 1s var(--ease); }
 [data-step].shown { opacity: 1; transform: none; }
 
 /* Zählwerk */
@@ -121,260 +93,249 @@ button { font: inherit; color: inherit; }
 .odo-strip span, .odo-ch { display: block; height: 1.15em; line-height: 1.15em; }
 .odo-ch { display: inline-block; }
 
-/* Glas */
-.glass {
-  background: linear-gradient(160deg, rgba(20, 60, 96, 0.62), rgba(8, 30, 52, 0.7));
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  -webkit-backdrop-filter: blur(18px) saturate(1.2);
-  backdrop-filter: blur(18px) saturate(1.2);
-  box-shadow: 0 40px 80px -40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
+.tile { background: var(--tile); border-radius: 32px; }
 
 /* ---------- 1 Titel ---------- */
 .topline { position: absolute; left: 140px; top: 92px; display: flex; align-items: center; gap: 18px; }
-.wordmark { font-family: var(--font-body); font-weight: 800; font-style: italic; font-size: 44px; letter-spacing: -0.035em; color: #fff; }
-.tl-sep { width: 2px; height: 32px; background: rgba(255, 255, 255, 0.3); }
+.wordmark { font-weight: 800; font-style: italic; font-size: 46px; letter-spacing: -0.04em; color: var(--blue); }
+.tl-sep { width: 2px; height: 32px; background: var(--line); }
 .tl-txt { font-size: 26px; font-weight: 600; color: var(--ink-2); }
-.cover-meta { position: absolute; right: 140px; top: 100px; display: flex; align-items: center; gap: 16px; font-size: 22px; font-weight: 700; color: var(--ink-2); }
-.cover-meta .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
-.cover-copy { position: absolute; left: 140px; top: 292px; width: 1320px; }
-.cover-copy .kicker { margin-bottom: 34px; }
-.cover-copy .lead { margin-top: 44px; width: 980px; }
-.hint { position: absolute; right: 140px; bottom: 72px; font-size: 22px; color: var(--ink-3); display: flex; align-items: center; gap: 12px; }
-kbd { font-family: var(--font-body); font-size: 20px; font-weight: 800; padding: 4px 12px; border-radius: 8px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, 0.05); color: var(--ink); }
+.cover-meta { position: absolute; right: 140px; top: 104px; font-size: 22px; font-weight: 600; color: var(--ink-3); }
+.cover-copy { position: absolute; left: 140px; top: 236px; width: 1640px; text-align: center; }
+.cover-copy .eyebrow { margin-bottom: 26px; }
+.cover-copy .lead { margin: 40px auto 0; width: 1100px; }
+.cover-curve { position: absolute; left: 0; top: 724px; width: 1920px; height: 356px; overflow: visible; }
+.cc-line { fill: none; stroke: url(#ccS); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 2.8s cubic-bezier(.45, 0, .2, 1) 0.9s; }
+.cc-fill { fill: url(#ccF); opacity: 0; transition: opacity 1.6s var(--ease) 2.2s; }
+.slide.play .cc-line { stroke-dashoffset: 0; }
+.slide.play .cc-fill { opacity: 1; }
+.hint { position: absolute; right: 140px; bottom: 64px; font-size: 22px; color: var(--ink-3); display: flex; align-items: center; gap: 12px; }
+kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--tile); color: var(--ink-2); }
 
 /* ---------- 2 Ausgangslage ---------- */
-.pains { position: absolute; left: 140px; top: 410px; width: 1040px; display: grid; gap: 38px; }
-.pains li { position: relative; padding-left: 40px; font-size: 34px; line-height: 1.42; color: var(--ink-2); }
-.pains li::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 4px; border-radius: 4px; background: linear-gradient(var(--blue), rgba(0, 158, 224, 0.1)); }
-.pains b { color: var(--ink); font-weight: 800; }
-.answer { position: absolute; left: 140px; top: 838px; width: 1640px; display: flex; align-items: center; gap: 30px; padding: 30px 40px; }
-.answer-icon { flex: none; width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(140deg, #22c55e, #15803d); box-shadow: 0 0 40px rgba(74, 222, 128, 0.5); }
-.answer p { font-size: 40px; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; }
+.tiles3 { position: absolute; left: 140px; top: 400px; width: 1640px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+.tiles3 .tile { padding: 44px 44px 48px; }
+.tile-ic { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; background: #fff; margin-bottom: 30px; }
+.tiles3 h3 { font-size: 36px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.15; }
+.tiles3 p { margin-top: 14px; font-size: 28px; line-height: 1.45; color: var(--ink-2); }
+.answer { position: absolute; left: 140px; top: 832px; width: 1640px; display: flex; align-items: center; justify-content: center; gap: 26px; }
+.answer-icon { flex: none; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--blue); }
+.answer p { font-size: 44px; font-weight: 800; letter-spacing: -0.03em; }
 
 /* ---------- 3 Fonds ---------- */
-.fund-lead { position: absolute; left: 140px; top: 296px; width: 900px; font-size: 32px; }
-.bigstat { position: absolute; left: 132px; top: 478px; }
-.bigstat .odo { font-size: 230px; font-weight: 800; letter-spacing: -0.05em; color: var(--green); text-shadow: 0 0 60px rgba(74, 222, 128, 0.35); }
-.bigstat p { margin-top: 2px; padding-left: 10px; font-size: 30px; color: var(--ink-2); }
-.perfrow { position: absolute; left: 140px; top: 826px; width: 940px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+.fund-lead { position: absolute; left: 140px; top: 300px; width: 860px; font-size: 32px; }
+.bigstat { position: absolute; left: 130px; top: 470px; }
+.bigstat .odo { font-size: 230px; font-weight: 800; letter-spacing: -0.06em; color: var(--green); }
+.bigstat p { padding-left: 12px; font-size: 30px; color: var(--ink-2); }
+.perfrow { position: absolute; left: 140px; top: 820px; width: 960px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
 .perf { display: grid; gap: 6px; }
-.perf-k { font-size: 22px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
-.perf-v { font-size: 42px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.perf-bar { height: 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
-.perf-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--blue), var(--green)); transform-origin: left; transform: scaleX(0); transition: transform 1.6s var(--ease); transition-delay: calc(var(--i) * 90ms + 500ms); }
+.perf-k { font-size: 22px; font-weight: 600; color: var(--ink-3); }
+.perf-v { font-size: 42px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.perf-bar { margin-top: 4px; height: 6px; border-radius: 6px; background: var(--tile-2); overflow: hidden; }
+.perf-bar i { display: block; height: 100%; border-radius: inherit; background: var(--blue); transform-origin: left; transform: scaleX(0); transition: transform 1.6s var(--ease); transition-delay: calc(var(--i) * 90ms + 500ms); }
+.perf:last-child .perf-bar i { background: var(--green-fill); }
 .slide.play .perf-bar i { transform: scaleX(var(--w)); }
+.globe-cap { position: absolute; left: 1440px; top: 918px; transform: translateX(-50%); font-size: 24px; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
 
 /* ---------- 4 Zeitraffer ---------- */
-.tlx-chart { position: absolute; left: 120px; top: 318px; width: 1100px; height: 550px; }
+.tlx-chart { position: absolute; left: 120px; top: 320px; width: 1100px; height: 550px; }
 .tlx-chart svg { width: 100%; height: 100%; overflow: visible; }
-.tlx-grid { stroke: rgba(150, 205, 245, 0.12); stroke-dasharray: 3 8; }
-.tlx-base { stroke: rgba(150, 205, 245, 0.3); }
-.tlx-lab { fill: var(--ink-3); font-family: var(--font-body); font-size: 22px; font-weight: 600; }
-.tlx-lineBal { fill: none; stroke: var(--green); stroke-width: 5; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 12px rgba(74, 222, 128, 0.55)); }
-.tlx-lineCon { fill: none; stroke: var(--blue-2); stroke-width: 3.5; stroke-linejoin: round; }
-.tlx-head { fill: var(--green); }
-.tlx-halo { fill: var(--green); opacity: 0.25; }
-.tlx-play { stroke: rgba(238, 246, 252, 0.35); stroke-dasharray: 4 6; }
+.tlx-grid { stroke: #e3eaf1; }
+.tlx-base { stroke: #c9d6e2; }
+.tlx-lab { fill: var(--ink-3); font-family: var(--font); font-size: 22px; font-weight: 600; }
+.tlx-lineBal { fill: none; stroke: #16a34a; stroke-width: 5; stroke-linejoin: round; stroke-linecap: round; }
+.tlx-lineCon { fill: none; stroke: #0a86c4; stroke-width: 3.5; stroke-linejoin: round; }
+.tlx-head { fill: #16a34a; stroke: #fff; stroke-width: 4; }
+.tlx-play { stroke: #c9d6e2; stroke-dasharray: 4 6; }
 .tlx-ann { opacity: 0; transition: opacity 0.8s var(--ease); }
 .tlx-ann.on { opacity: 1; }
-.tlx-annG { fill: var(--green); font-family: var(--font-body); font-size: 26px; font-weight: 800; }
-.tlx-annB { fill: var(--blue-2); font-family: var(--font-body); font-size: 24px; font-weight: 700; }
+.tlx-annG { fill: var(--green); font-family: var(--font); font-size: 26px; font-weight: 800; }
+.tlx-annB { fill: var(--blue-ink); font-family: var(--font); font-size: 24px; font-weight: 700; }
+.tlx-share { position: absolute; left: 130px; top: 40px; font-size: 26px; font-weight: 700; color: var(--ink); padding: 12px 22px; border-radius: 999px; background: var(--green-soft); opacity: 0; transform: translateY(10px); transition: opacity 0.6s var(--ease), transform 0.8s var(--ease); }
+.tlx-share.on { opacity: 1; transform: none; }
+.tlx-share b { color: var(--green); }
 .tlx-side { position: absolute; left: 1300px; top: 330px; width: 480px; display: grid; gap: 22px; }
-.tlx-side .lbl { display: block; font-size: 22px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
-.tlx-side b { display: block; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
-.tlx-age b { font-family: var(--font-display); font-size: 128px; letter-spacing: -0.05em; line-height: 1; }
-.tlx-bal b { font-size: 68px; color: var(--green); text-shadow: 0 0 40px rgba(74, 222, 128, 0.35); }
+.tlx-side .lbl { display: block; font-size: 24px; font-weight: 600; color: var(--ink-3); }
+.tlx-side b { display: block; font-weight: 800; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.tlx-age b { font-size: 128px; letter-spacing: -0.06em; line-height: 1; }
+.tlx-bal b { font-size: 68px; color: var(--green); }
 .tlx-stat b { font-size: 42px; }
 .tlx-stat b.green { color: var(--green); }
-.tlx-share { position: absolute; left: 130px; top: 40px; font-size: 26px; font-weight: 700; color: var(--ink); padding: 12px 22px; border-radius: 999px; background: rgba(74, 222, 128, 0.12); border: 1px solid rgba(74, 222, 128, 0.35); opacity: 0; transform: scale(0.8); transition: opacity 0.6s var(--ease), transform 0.8s var(--spring); }
-.tlx-share.on { opacity: 1; transform: none; }
-.tlx-share b { display: inline; font-size: 26px; color: var(--green); }
 .scen { position: absolute; left: 140px; top: 884px; width: 1640px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.scen > div { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 18px 28px; border-radius: 20px; border: 1px solid var(--line); background: rgba(11, 37, 64, 0.6); }
-.scen span { font-size: 24px; font-weight: 700; color: var(--ink-2); }
-.scen b { font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
-.scen .hot { border-color: rgba(74, 222, 128, 0.5); background: rgba(21, 128, 61, 0.18); }
+.scen > div { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 20px 30px; border-radius: 22px; background: var(--tile); }
+.scen span { font-size: 24px; font-weight: 600; color: var(--ink-2); }
+.scen b { font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.scen .hot { background: var(--green-soft); }
 .scen .hot b { color: var(--green); }
 #zeit .foot { bottom: 22px; }
 
 /* ---------- 5 Früh starten ---------- */
 .race { position: absolute; left: 140px; top: 410px; width: 1640px; display: grid; gap: 40px; }
 .race-row { display: grid; grid-template-columns: 300px 1fr 320px; align-items: center; gap: 36px; }
-.race-lbl b { display: block; font-size: 42px; font-weight: 800; letter-spacing: -0.02em; }
+.race-lbl b { display: block; font-size: 42px; font-weight: 800; letter-spacing: -0.03em; }
 .race-lbl span { display: block; margin-top: 4px; font-size: 22px; color: var(--ink-3); }
-.race-track { height: 74px; border-radius: 20px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); overflow: hidden; }
-.race-bar { display: flex; height: 100%; width: calc(var(--w) * 100%); transform-origin: left; transform: scaleX(0); transition: transform 2s var(--ease); transition-delay: calc(var(--r) * 350ms + 600ms); border-radius: 18px; overflow: hidden; }
+.race-track { height: 72px; border-radius: 20px; background: var(--tile); overflow: hidden; }
+.race-bar { display: flex; height: 100%; width: calc(var(--w) * 100%); transform-origin: left; transform: scaleX(0); transition: transform 2s var(--ease); transition-delay: calc(var(--r) * 350ms + 600ms); border-radius: 20px; overflow: hidden; }
 .slide.play .race-bar { transform: scaleX(1); }
-.race-bar .con { width: calc(var(--c) * 100%); background: linear-gradient(90deg, #0b5e8e, #0a86c4); }
-.race-bar .gain { flex: 1; background: linear-gradient(90deg, #16a34a, #4ade80); box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.15); }
-.race-row .odo { justify-self: end; font-size: 56px; font-weight: 800; letter-spacing: -0.03em; }
+.race-bar .con { width: calc(var(--c) * 100%); background: #0a86c4; }
+.race-bar .gain { flex: 1; background: linear-gradient(90deg, #22c55e, #4ade80); }
+.race-row .odo { justify-self: end; font-size: 56px; font-weight: 800; letter-spacing: -0.04em; }
 .race-row:first-child .odo { color: var(--green); }
-.legend { position: absolute; right: 140px; top: 330px; display: flex; gap: 28px; font-size: 22px; font-weight: 700; color: var(--ink-2); }
+.legend { position: absolute; right: 140px; top: 330px; display: flex; gap: 28px; font-size: 22px; font-weight: 600; color: var(--ink-2); }
 .legend span { display: inline-flex; align-items: center; gap: 10px; }
 .sw { width: 16px; height: 16px; border-radius: 5px; display: inline-block; }
 .sw.con { background: #0a86c4; }
 .sw.gain { background: #22c55e; }
-.callout { position: absolute; left: 140px; top: 860px; width: 1640px; display: flex; align-items: center; gap: 34px; padding: 26px 40px; }
-.callout-num { font-family: var(--font-display); font-size: 88px; font-weight: 800; letter-spacing: -0.05em; color: var(--green); line-height: 1; }
-.callout p { font-size: 36px; font-weight: 700; line-height: 1.3; }
+.callout { position: absolute; left: 140px; top: 860px; width: 1640px; display: flex; align-items: center; justify-content: center; gap: 30px; padding: 28px 40px; border-radius: 28px; background: var(--green-soft); }
+.callout-num { font-size: 80px; font-weight: 800; letter-spacing: -0.05em; color: var(--green); line-height: 1; }
+.callout p { font-size: 36px; font-weight: 700; line-height: 1.3; letter-spacing: -0.02em; }
+.callout em { color: var(--green); }
 
 /* ---------- Browser-Rahmen ---------- */
-.browser { position: absolute; border-radius: 22px; overflow: hidden; background: #0a1a2a; box-shadow: 0 0 0 1px rgba(160, 210, 255, 0.16), 0 70px 140px -50px rgba(0, 0, 0, 0.9), 0 0 120px -30px rgba(0, 158, 224, 0.45); }
-.browser-bar { height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 20px; background: linear-gradient(#12293e, #0d2134); border-bottom: 1px solid rgba(160, 210, 255, 0.1); }
+.browser { position: absolute; border-radius: 20px; overflow: hidden; background: #fff; box-shadow: 0 0 0 1px rgba(11, 31, 51, 0.08), 0 50px 100px -40px rgba(11, 31, 51, 0.35), 0 18px 36px -24px rgba(11, 31, 51, 0.25); }
+.browser-bar { height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 20px; background: #f1f4f7; border-bottom: 1px solid #e3e8ee; }
 .browser-bar i { width: 13px; height: 13px; border-radius: 50%; background: #ff5f57; }
 .browser-bar i:nth-child(2) { background: #febc2e; }
 .browser-bar i:nth-child(3) { background: #28c840; }
-.browser-bar .url { flex: 1; margin: 0 90px; height: 28px; border-radius: 8px; background: rgba(255, 255, 255, 0.06); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; color: var(--ink-3); }
+.browser-bar .url { flex: 1; margin: 0 90px; height: 28px; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--ink-3); }
 .browser img { display: block; width: 100%; }
 
-/* ---------- 6 App-Enthüllung ---------- */
+/* ---------- 6 App ---------- */
 .app-lead { margin-top: 30px; font-size: 30px; }
-.reveal-stage { position: absolute; left: 700px; top: 186px; width: 1100px; height: 734px; perspective: 2400px; }
-.reveal-tilt { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateY(calc(var(--mx) * -5deg)) rotateX(calc(var(--my) * 4deg)); transition: transform 0.2s linear; }
-.reveal-frame { position: absolute; inset: 0; transform: rotateX(34deg) translate3d(0, 220px, -200px) scale(0.86); opacity: 0; transition: transform 1.8s var(--ease), opacity 1s var(--ease); transition-delay: 0.35s; }
+.reveal-stage { position: absolute; left: 700px; top: 186px; width: 1100px; height: 734px; perspective: 2600px; }
+.reveal-tilt { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateY(calc(var(--mx) * -3deg)) rotateX(calc(var(--my) * 2deg)); transition: transform 0.25s linear; }
+.reveal-frame { position: absolute; inset: 0; transform: rotateX(22deg) translate3d(0, 160px, -120px) scale(0.92); opacity: 0; transition: transform 1.6s var(--ease), opacity 1s var(--ease); transition-delay: 0.3s; }
 .slide.play .reveal-frame { transform: none; opacity: 1; }
 .reveal-frame .browser { inset: 0; }
-.sheen { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(112deg, transparent 38%, rgba(255, 255, 255, 0.16) 50%, transparent 62%); transform: translateX(-130%); }
-.slide.play .sheen { animation: sheen 1.8s var(--ease) 1.5s both; }
-@keyframes sheen { to { transform: translateX(130%); } }
 .chip-pos { position: absolute; }
-.chip {
-  position: relative; display: inline-flex; align-items: center; gap: 12px; padding: 14px 22px; border-radius: 999px;
-  font-size: 24px; font-weight: 800; white-space: nowrap;
-  background: rgba(9, 32, 54, 0.82); border: 1px solid var(--line-2); box-shadow: 0 20px 40px -18px rgba(0, 0, 0, 0.8);
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-}
-.chip i { width: 12px; height: 12px; border-radius: 50%; background: var(--green); box-shadow: 0 0 14px var(--green); }
-.chip-float { animation: bob 6s ease-in-out infinite alternate; }
-@keyframes bob { from { transform: translate3d(0, -8px, 0); } to { transform: translate3d(0, 10px, 0); } }
+.chip { display: inline-flex; align-items: center; gap: 12px; padding: 14px 24px; border-radius: 999px; font-size: 24px; font-weight: 700; white-space: nowrap; color: var(--ink); background: #fff; box-shadow: 0 0 0 1px rgba(11, 31, 51, 0.06), 0 16px 34px -16px rgba(11, 31, 51, 0.35); }
+.chip i { width: 10px; height: 10px; border-radius: 50%; background: var(--blue); }
 
 /* ---------- 7 Rundgang ---------- */
 .tour-cap { position: absolute; left: 140px; top: 250px; width: 470px; }
-.tour-count { font-size: 24px; font-weight: 700; color: var(--ink-3); }
-.tour-count b { font-family: var(--font-display); font-size: 96px; color: var(--ink); letter-spacing: -0.04em; font-weight: 700; margin-right: 6px; }
+.tour-count { font-size: 24px; font-weight: 600; color: var(--ink-3); }
+.tour-count b { font-size: 96px; color: var(--ink); letter-spacing: -0.05em; font-weight: 800; margin-right: 6px; }
 .tour-texts { position: relative; margin-top: 18px; height: 420px; }
-.tour-text { position: absolute; inset: 0; opacity: 0; transform: translate3d(0, 30px, 0); transition: opacity 0.6s var(--ease), transform 0.9s var(--ease); }
+.tour-text { position: absolute; inset: 0; opacity: 0; transform: translate3d(0, 24px, 0); transition: opacity 0.6s var(--ease), transform 0.9s var(--ease); }
 .tour-text.on { opacity: 1; transform: none; transition-delay: 0.25s; }
-.tour-text.off { opacity: 0; transform: translate3d(0, -30px, 0); }
-.tour-text h3 { font-family: var(--font-display); font-size: 58px; font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; }
+.tour-text.off { opacity: 0; transform: translate3d(0, -24px, 0); }
+.tour-text h3 { font-size: 58px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; }
 .tour-text p { margin-top: 22px; font-size: 30px; line-height: 1.45; color: var(--ink-2); }
 .tour-bars { display: flex; gap: 10px; margin-top: 14px; }
-.tour-bars i { flex: 1; height: 5px; border-radius: 5px; background: rgba(255, 255, 255, 0.1); overflow: hidden; position: relative; }
-.tour-bars i::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, var(--blue), var(--green)); transform: scaleX(0); transform-origin: left; transition: transform 0.8s var(--ease); }
+.tour-bars i { flex: 1; height: 5px; border-radius: 5px; background: var(--tile-2); overflow: hidden; position: relative; }
+.tour-bars i::after { content: ""; position: absolute; inset: 0; background: var(--blue); transform: scaleX(0); transform-origin: left; transition: transform 0.8s var(--ease); }
 .tour-bars i.on::after { transform: scaleX(1); }
 .tour-frame { left: 680px; top: 164px; width: 1120px; height: 746px; }
-.tour-view { position: relative; height: 700px; overflow: hidden; }
+.tour-view { position: relative; height: 700px; overflow: hidden; background: #edf3f8; }
 .tour-page { position: absolute; left: 0; top: 0; width: 1440px; transform-origin: 0 0; transition: transform 1.5s var(--ease); will-change: transform; }
 .tour-page img { width: 1440px; display: block; }
-.spot { position: absolute; left: 0; top: 0; width: 100px; height: 100px; border-radius: 26px; box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.95), 0 0 50px 6px rgba(56, 189, 248, 0.45), 0 0 0 4000px rgba(3, 16, 27, 0.62); transition: left 1.5s var(--ease), top 1.5s var(--ease), width 1.5s var(--ease), height 1.5s var(--ease), opacity 0.6s; pointer-events: none; }
-.spot::after { content: ""; position: absolute; inset: -3px; border-radius: inherit; border: 3px solid rgba(56, 189, 248, 0.9); animation: pulse 2.2s ease-out infinite; }
-@keyframes pulse { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.08); opacity: 0; } }
+.spot { position: absolute; left: 0; top: 0; width: 100px; height: 100px; border-radius: 26px; box-shadow: 0 0 0 3px var(--blue), 0 0 0 4000px rgba(255, 255, 255, 0.6); transition: left 1.5s var(--ease), top 1.5s var(--ease), width 1.5s var(--ease), height 1.5s var(--ease), opacity 0.6s; pointer-events: none; }
 
 /* ---------- 8 Handy ---------- */
 .feat { position: absolute; left: 140px; top: 420px; width: 720px; display: grid; gap: 40px; }
 .feat li { display: grid; grid-template-columns: 76px 1fr; gap: 26px; align-items: start; }
-.feat-ic { width: 76px; height: 76px; border-radius: 22px; display: grid; place-items: center; background: linear-gradient(150deg, rgba(0, 158, 224, 0.3), rgba(0, 119, 182, 0.12)); border: 1px solid var(--line-2); }
-.feat b { display: block; font-size: 34px; font-weight: 800; letter-spacing: -0.015em; }
+.feat-ic { width: 76px; height: 76px; border-radius: 22px; display: grid; place-items: center; background: var(--blue-soft); }
+.feat b { display: block; font-size: 34px; font-weight: 800; letter-spacing: -0.025em; }
 .feat span { display: block; margin-top: 6px; font-size: 27px; line-height: 1.4; color: var(--ink-2); }
-.phones { position: absolute; left: 980px; top: 120px; width: 820px; height: 860px; perspective: 2200px; }
-.phones-tilt { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateY(calc(var(--mx) * 8deg)) rotateX(calc(var(--my) * -5deg)); transition: transform 0.2s linear; }
-.phone { position: absolute; width: 360px; height: 760px; border-radius: 58px; padding: 13px; background: linear-gradient(150deg, #2b3d50, #0d1a27 40%, #1c2c3c); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.12), 0 60px 110px -40px rgba(0, 0, 0, 0.95); }
-.phone::before { content: ""; position: absolute; top: 26px; left: 50%; width: 104px; height: 30px; margin-left: -52px; border-radius: 20px; background: #03080d; z-index: 2; }
-.phone img { width: 334px; height: 734px; border-radius: 46px; object-fit: cover; object-position: top; display: block; }
-.phone-a { left: 40px; top: 60px; }
-.phone-b { left: 420px; top: 20px; }
-.phone-wrap-a { position: absolute; inset: 0; transform: rotateY(22deg) rotateZ(-4deg) translate3d(0, 0, -40px); transform-style: preserve-3d; }
-.phone-wrap-b { position: absolute; inset: 0; transform: rotateY(-16deg) rotateZ(3deg) translate3d(0, 0, 80px); transform-style: preserve-3d; }
-.phone-a, .phone-b { animation: bob 7s ease-in-out infinite alternate; }
-.phone-b { animation-delay: -3s; }
+.phones { position: absolute; left: 980px; top: 120px; width: 820px; height: 860px; perspective: 2400px; }
+.phones-tilt { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateY(calc(var(--mx) * 4deg)) rotateX(calc(var(--my) * -3deg)); transition: transform 0.25s linear; }
+.phone { position: absolute; width: 360px; height: 760px; border-radius: 58px; padding: 12px; background: linear-gradient(150deg, #3a4654, #1b232c 45%, #2c3742); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.18), 0 50px 90px -40px rgba(11, 31, 51, 0.6); }
+.phone::before { content: ""; position: absolute; top: 25px; left: 50%; width: 104px; height: 30px; margin-left: -52px; border-radius: 20px; background: #05090d; z-index: 2; }
+.phone img { width: 336px; height: 736px; border-radius: 47px; object-fit: cover; object-position: top; display: block; }
+.phone-a { left: 40px; top: 70px; }
+.phone-b { left: 420px; top: 30px; }
+.phone-wrap-a { position: absolute; inset: 0; transform: rotateY(18deg) rotateZ(-3deg) translate3d(0, 0, -40px); transform-style: preserve-3d; }
+.phone-wrap-b { position: absolute; inset: 0; transform: rotateY(-12deg) rotateZ(2deg) translate3d(0, 0, 70px); transform-style: preserve-3d; }
 
-/* ---------- 9 Genauigkeit ---------- */
-.cmp { position: absolute; left: 140px; top: 352px; width: 1640px; padding: 14px 44px 20px; }
+/* ---------- 9 Genauigkeit (Akzentfolie) ---------- */
+.slide.accent { background: linear-gradient(135deg, #0094d6, #0077b6 55%, #00639a); color: #fff; }
+.accent .eyebrow { color: #bfe7fa; }
+.accent .h2 { color: #fff; }
+.accent .h2 em, .accent .statement em { color: var(--mint); }
+.accent .foot { color: rgba(255, 255, 255, 0.72); }
+.cmp { position: absolute; left: 140px; top: 352px; width: 1640px; padding: 12px 44px 18px; border-radius: 32px; background: rgba(255, 255, 255, 0.1); }
 .cmp-head, .cmp-row { display: grid; grid-template-columns: 340px 450px 450px 1fr; align-items: center; gap: 24px; }
-.cmp-head { padding: 18px 0; border-bottom: 1px solid var(--line); font-size: 22px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.cmp-head { padding: 20px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.22); font-size: 24px; font-weight: 600; color: rgba(255, 255, 255, 0.78); }
 .cmp-row { padding: 28px 0; }
-.cmp-row + .cmp-row { border-top: 1px solid var(--line); }
-.cmp-lbl { font-size: 30px; color: var(--ink-2); }
-.cmp-lbl b { display: block; font-size: 40px; color: var(--ink); font-weight: 800; letter-spacing: -0.02em; }
-.cmp-row .odo { font-size: 62px; font-weight: 800; letter-spacing: -0.03em; }
-.cmp-row .odo.green { color: var(--green); text-shadow: 0 0 30px rgba(74, 222, 128, 0.35); }
-.dev { justify-self: start; white-space: nowrap; display: inline-flex; align-items: center; gap: 14px; padding: 12px 22px 12px 12px; border-radius: 999px; font-size: 34px; font-weight: 800; background: rgba(74, 222, 128, 0.12); border: 1px solid rgba(74, 222, 128, 0.4); opacity: 0; transform: scale(0.4); transition: opacity 0.5s var(--ease), transform 0.9s var(--spring); }
-.dev i { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: var(--green-2); }
+.cmp-row + .cmp-row { border-top: 1px solid rgba(255, 255, 255, 0.22); }
+.cmp-lbl { font-size: 28px; color: rgba(255, 255, 255, 0.8); }
+.cmp-lbl b { display: block; font-size: 40px; color: #fff; font-weight: 800; letter-spacing: -0.03em; }
+.cmp-row .odo { font-size: 62px; font-weight: 800; letter-spacing: -0.04em; }
+.cmp-row .odo.mint { color: var(--mint); }
+.dev { justify-self: start; white-space: nowrap; display: inline-flex; align-items: center; gap: 14px; padding: 10px 22px 10px 10px; border-radius: 999px; font-size: 32px; font-weight: 800; background: #fff; color: var(--ink); opacity: 0; transform: scale(0.6); transition: opacity 0.5s var(--ease), transform 0.8s var(--ease); }
+.dev i { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--green-fill); }
 .slide.play .dev { opacity: 1; transform: none; }
 .slide.play .cmp-row:nth-child(2) .dev { transition-delay: 2.9s; }
 .slide.play .cmp-row:nth-child(3) .dev { transition-delay: 3.3s; }
-.statement { position: absolute; left: 140px; top: 820px; width: 1500px; font-size: 38px; font-weight: 700; line-height: 1.35; letter-spacing: -0.01em; }
+.statement { position: absolute; left: 140px; top: 820px; width: 1500px; font-size: 38px; font-weight: 700; line-height: 1.35; letter-spacing: -0.02em; }
 
 /* ---------- 10 Unter der Haube ---------- */
 .node-at { position: absolute; transform: translate(-50%, -50%); }
-.node { width: 330px; padding: 24px 28px; }
-.node b { display: block; font-size: 30px; font-weight: 800; letter-spacing: -0.015em; line-height: 1.2; }
+.node { width: 330px; padding: 26px 30px; border-radius: 28px; background: rgba(242, 246, 250, 0.94); box-shadow: 0 0 0 1px rgba(11, 31, 51, 0.04); }
+.node b { display: block; font-size: 30px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.2; }
 .node span { display: block; margin-top: 8px; font-size: 23px; line-height: 1.4; color: var(--ink-2); }
-.node .tag { display: inline-block; margin-bottom: 10px; font-size: 20px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sky); }
-.node.cost .tag { color: #fbbf24; }
-.node.out { border-color: rgba(74, 222, 128, 0.45); }
+.node .tag { display: block; margin: 0 0 8px; font-size: 22px; font-weight: 700; color: var(--blue-ink); }
+.node.cost .tag { color: #b45309; }
+.node.out { background: rgba(236, 253, 243, 0.96); }
 .node.out .tag { color: var(--green); }
 
 /* ---------- 11 Rentenwahl ---------- */
-.opts { position: absolute; left: 140px; top: 360px; width: 1640px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; perspective: 1800px; }
-.opt { position: relative; padding: 46px 40px 40px; transform-origin: 50% 100%; transform: rotateX(-70deg) translate3d(0, 40px, -60px); opacity: 0; transition: transform 1.4s var(--ease), opacity 0.8s var(--ease); transition-delay: calc(var(--i) * 160ms + 450ms); }
+.opts { position: absolute; left: 140px; top: 370px; width: 1640px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; }
+.opt { position: relative; padding: 48px 40px 42px; border-radius: 32px; background: var(--tile); opacity: 0; transform: translate3d(0, 40px, 0); transition: transform 1.2s var(--ease), opacity 0.8s var(--ease); transition-delay: calc(var(--i) * 130ms + 400ms); }
 .slide.play .opt { transform: none; opacity: 1; }
-.opt h3 { font-size: 32px; font-weight: 800; color: var(--ink-2); letter-spacing: -0.01em; }
-.opt .odo { margin-top: 18px; font-size: 76px; font-weight: 800; letter-spacing: -0.04em; color: var(--green); }
+.opt h3 { font-size: 32px; font-weight: 700; color: var(--ink-2); letter-spacing: -0.02em; }
+.opt .odo { margin-top: 18px; font-size: 76px; font-weight: 800; letter-spacing: -0.05em; color: var(--green); }
 .opt .per { font-size: 28px; font-weight: 700; color: var(--ink-3); margin-left: 8px; }
 .opt p { margin-top: 18px; font-size: 25px; line-height: 1.45; color: var(--ink-2); }
-.opt.featured { border-color: rgba(74, 222, 128, 0.55); box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.25), 0 40px 90px -40px rgba(34, 197, 94, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1); background: linear-gradient(165deg, rgba(21, 128, 61, 0.35), rgba(8, 30, 52, 0.75) 60%); }
-.badge { position: absolute; top: -20px; left: 36px; padding: 8px 18px; border-radius: 999px; font-size: 20px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; background: var(--green-deep); color: #fff; box-shadow: 0 10px 30px -10px rgba(34, 197, 94, 0.8); }
-.opt-notes { position: absolute; left: 140px; top: 838px; width: 1640px; display: flex; gap: 48px; font-size: 26px; color: var(--ink-2); }
+.opt.featured { background: var(--green-soft); box-shadow: inset 0 0 0 2px rgba(34, 197, 94, 0.45); }
+.badge { position: absolute; top: -18px; left: 36px; padding: 7px 18px; border-radius: 999px; font-size: 21px; font-weight: 700; background: var(--green); color: #fff; }
+.opt-notes { position: absolute; left: 140px; top: 846px; width: 1640px; display: flex; gap: 48px; font-size: 26px; color: var(--ink-2); }
 .opt-notes span { display: inline-flex; align-items: center; gap: 12px; }
 
 /* ---------- 12 Live ---------- */
 .live-cap { position: absolute; left: 140px; top: 420px; width: 460px; display: grid; gap: 28px; }
 .live-cap p { font-size: 30px; line-height: 1.45; color: var(--ink-2); }
-.live-url { font-size: 24px; font-weight: 700; color: var(--sky); user-select: all; }
+.live-url { font-size: 24px; font-weight: 700; color: var(--blue-ink); user-select: all; }
 .live-frame { left: 660px; top: 150px; width: 1140px; height: 759px; }
-.live-view { position: relative; width: 1140px; height: 713px; overflow: hidden; background: #050f18; }
-.live-view iframe { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; border: 0; transform: scale(0.79167); transform-origin: 0 0; background: #050f18; }
+.live-view { position: relative; width: 1140px; height: 713px; overflow: hidden; background: #f4f8fb; }
+.live-view iframe { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; border: 0; transform: scale(0.79167); transform-origin: 0 0; background: #f4f8fb; }
 .live-view img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
-.live-badge { position: absolute; right: 140px; top: 104px; display: inline-flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--green); }
-.live-badge i { width: 12px; height: 12px; border-radius: 50%; background: var(--green); animation: blink 1.6s ease-in-out infinite; }
-@keyframes blink { 50% { opacity: 0.2; } }
+.live-badge { position: absolute; right: 140px; top: 118px; display: inline-flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 700; color: var(--green); }
+.live-badge i { width: 12px; height: 12px; border-radius: 50%; background: var(--green-fill); }
 
 /* ---------- 13 Schluss ---------- */
-.close-copy { position: absolute; left: 0; right: 0; top: 650px; display: grid; justify-items: center; gap: 30px; text-align: center; }
-.close-line { font-family: var(--font-display); font-size: 64px; font-weight: 700; letter-spacing: -0.03em; }
-.close-link { display: inline-flex; align-items: center; gap: 18px; padding: 18px 30px; border-radius: 999px; font-size: 26px; font-weight: 700; color: var(--ink); text-decoration: none; border: 1px solid var(--line-2); background: rgba(9, 32, 54, 0.7); }
-.close-link b { color: var(--sky); font-weight: 800; }
+.close-copy { position: absolute; left: 0; right: 0; top: 660px; display: grid; justify-items: center; gap: 30px; text-align: center; }
+.close-line { font-size: 64px; font-weight: 800; letter-spacing: -0.045em; }
+.close-link { display: inline-flex; align-items: center; gap: 18px; padding: 18px 32px; border-radius: 999px; font-size: 26px; font-weight: 700; color: var(--ink); text-decoration: none; background: var(--tile); }
+.close-link b { color: var(--blue-ink); font-weight: 800; }
 .close-fine { position: absolute; left: 140px; right: 140px; bottom: 48px; text-align: center; font-size: 22px; color: var(--ink-3); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
 /* ---------- Steuerung ---------- */
-#progress { position: fixed; left: 0; bottom: 0; height: 3px; width: 100%; transform-origin: 0 50%; transform: scaleX(0); background: linear-gradient(90deg, var(--blue), var(--green)); box-shadow: 0 0 14px rgba(74, 222, 128, 0.6); transition: transform 0.9s var(--ease); z-index: 20; }
+#progress { position: fixed; left: 0; bottom: 0; height: 3px; width: 100%; transform-origin: 0 50%; transform: scaleX(0); background: var(--blue); transition: transform 0.9s var(--ease); z-index: 20; }
 #hud { position: fixed; right: 18px; bottom: 14px; display: flex; align-items: center; gap: 8px; z-index: 21; transition: opacity 0.5s, transform 0.5s var(--ease); }
 #hud.idle { opacity: 0; transform: translateY(8px); pointer-events: none; }
-#hud button { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line); background: rgba(9, 28, 46, 0.75); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--ink-2); display: grid; place-items: center; cursor: pointer; transition: background 0.2s, color 0.2s; }
-#hud button:hover { background: rgba(0, 119, 182, 0.55); color: #fff; }
-#counter { min-width: 76px; text-align: center; font-size: 14px; font-weight: 800; letter-spacing: 0.06em; color: var(--ink-2); font-variant-numeric: tabular-nums; }
-#chapter { position: fixed; left: 20px; bottom: 16px; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); z-index: 21; transition: opacity 0.5s; }
+#hud button { width: 40px; height: 40px; border-radius: 12px; border: 0; background: rgba(242, 246, 250, 0.92); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: var(--ink-2); display: grid; place-items: center; cursor: pointer; box-shadow: 0 0 0 1px rgba(11, 31, 51, 0.06); transition: background 0.2s, color 0.2s; }
+#hud button:hover { background: var(--blue-deep); color: #fff; }
+#counter { min-width: 76px; text-align: center; font-size: 14px; font-weight: 700; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+#chapter { position: fixed; left: 20px; bottom: 16px; font-size: 13px; font-weight: 600; color: var(--ink-3); z-index: 21; transition: opacity 0.5s; }
 #hud.idle ~ #chapter { opacity: 0; }
-#toast { position: fixed; left: 50%; bottom: 34px; transform: translate(-50%, 20px); opacity: 0; z-index: 30; padding: 12px 22px; border-radius: 14px; font-size: 14px; font-weight: 600; color: var(--ink-2); background: rgba(9, 28, 46, 0.86); border: 1px solid var(--line); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: opacity 0.6s, transform 0.6s var(--ease); white-space: nowrap; max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis; }
+#toast { position: fixed; left: 50%; bottom: 34px; transform: translate(-50%, 20px); opacity: 0; z-index: 30; padding: 12px 22px; border-radius: 14px; font-size: 14px; font-weight: 600; color: var(--ink-2); background: rgba(255, 255, 255, 0.96); box-shadow: 0 0 0 1px rgba(11, 31, 51, 0.06), 0 16px 34px -16px rgba(11, 31, 51, 0.3); transition: opacity 0.6s, transform 0.6s var(--ease); white-space: nowrap; max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis; }
 #toast.on { opacity: 1; transform: translate(-50%, 0); }
 #toast kbd { font-size: 12px; padding: 2px 7px; border-radius: 6px; }
-#notesPanel { position: fixed; left: 50%; bottom: 70px; width: min(900px, calc(100% - 32px)); transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 25; padding: 20px 24px; border-radius: 18px; font-size: 16px; line-height: 1.55; color: var(--ink); background: rgba(6, 22, 38, 0.94); border: 1px solid var(--line-2); box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8); transition: opacity 0.4s, transform 0.5s var(--ease); }
+#notesPanel { position: fixed; left: 50%; bottom: 70px; width: min(900px, calc(100% - 32px)); transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 25; padding: 20px 24px; border-radius: 18px; font-size: 16px; line-height: 1.55; color: var(--ink); background: rgba(255, 255, 255, 0.98); box-shadow: 0 0 0 1px rgba(11, 31, 51, 0.08), 0 30px 60px -20px rgba(11, 31, 51, 0.35); transition: opacity 0.4s, transform 0.5s var(--ease); }
 #notesPanel.on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
-#notesPanel h4 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sky); }
-#overview { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 40px 16px; background: rgba(2, 10, 18, 0.82); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); opacity: 0; pointer-events: none; transition: opacity 0.45s; overflow: auto; }
+#notesPanel h4 { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--blue-ink); }
+#overview { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 40px 16px; background: rgba(255, 255, 255, 0.86); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); opacity: 0; pointer-events: none; transition: opacity 0.45s; overflow: auto; }
 #overview.on { opacity: 1; pointer-events: auto; }
 #ovGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; width: min(1180px, 100%); }
-#ovGrid button { text-align: left; padding: 18px 18px 20px; border-radius: 16px; border: 1px solid var(--line); background: rgba(11, 37, 64, 0.7); cursor: pointer; opacity: 0; transform: translateY(20px) scale(0.96); transition: opacity 0.5s var(--ease), transform 0.6s var(--ease), border-color 0.2s, background 0.2s; transition-delay: calc(var(--k) * 30ms); }
+#ovGrid button { text-align: left; padding: 18px 18px 20px; border-radius: 18px; border: 0; background: var(--tile); cursor: pointer; opacity: 0; transform: translateY(16px); transition: opacity 0.5s var(--ease), transform 0.6s var(--ease), background 0.2s; transition-delay: calc(var(--k) * 30ms); }
 #overview.on #ovGrid button { opacity: 1; transform: none; }
-#ovGrid button:hover { border-color: var(--blue-2); background: rgba(0, 119, 182, 0.35); }
-#ovGrid button.cur { border-color: var(--green); }
-#ovGrid small { display: block; font-size: 12px; font-weight: 800; letter-spacing: 0.12em; color: var(--sky); }
-#ovGrid span { display: block; margin-top: 8px; font-size: 17px; font-weight: 700; line-height: 1.3; }
-#ovTitle { grid-column: 1 / -1; font-family: var(--font-display); font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+#ovGrid button:hover { background: var(--blue-soft); }
+#ovGrid button.cur { box-shadow: inset 0 0 0 2px var(--blue); }
+#ovGrid small { display: block; font-size: 13px; font-weight: 700; color: var(--blue-ink); }
+#ovGrid span { display: block; margin-top: 8px; font-size: 17px; font-weight: 700; line-height: 1.3; color: var(--ink); }
+#ovTitle { grid-column: 1 / -1; font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 6px; color: var(--ink); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition-duration: 0.01s !important; transition-delay: 0s !important; }
@@ -383,60 +344,66 @@ kbd { font-family: var(--font-body); font-size: 20px; font-weight: 800; padding:
 </head>
 <body>
 
-<div id="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 <canvas id="fx" aria-hidden="true"></canvas>
-<div id="grain" aria-hidden="true"></div>
-
 <div id="viewport">
 <div id="stage">
 
 <!-- 1 · Titel -->
-<section class="slide" id="cover" data-fx="curve" data-title="Vorsorge, die man sehen kann">
-  <div class="topline in" style="--i:0"><span class="wordmark">Debeka</span><span class="tl-sep"></span><span class="tl-txt">Vorsorge-Rechner</span></div>
-  <div class="cover-meta in" style="--i:2"><span>Debeka Global Shares</span><span class="dot"></span><span>Tarif CA6I</span><span class="dot"></span><span>Stand 17.07.2026</span></div>
+<section class="slide" id="cover" data-title="Vorsorge, die man sehen kann">
+  <div class="topline in" data-in="fade" style="--i:0"><span class="wordmark">Debeka</span><span class="tl-sep"></span><span class="tl-txt">Vorsorge-Rechner</span></div>
+  <p class="cover-meta in" data-in="fade" style="--i:1">Tarif CA6I · Stand 17.07.2026</p>
   <div class="cover-copy">
-    <p class="kicker in" style="--i:1">Debeka Fondspolice · Chance Invest</p>
-    <h1 class="display split">Vorsorge, die man <em>sehen</em> kann.</h1>
-    <p class="lead in" style="--i:8">Der Vorsorge-Rechner für den Debeka Global Shares: live, anschaulich und auf den Euro genau wie das Debeka-System.</p>
+    <p class="eyebrow in" style="--i:1">Debeka Global Shares</p>
+    <h1 class="display split">Vorsorge, die man<br><em>sehen</em> kann.</h1>
+    <p class="lead in" style="--i:8">Der Vorsorge-Rechner für die Debeka Fondspolice: live, anschaulich und auf den Euro genau wie das Debeka-System.</p>
   </div>
-  <p class="hint in" style="--i:12">Weiter mit <kbd>→</kbd> oder Klick</p>
+  <svg class="cover-curve" viewBox="0 0 1920 356" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="ccS" x1="0" y1="0" x2="1920" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#0077b6"/><stop offset="0.62" stop-color="#009ee0"/><stop offset="1" stop-color="#22c55e"/></linearGradient>
+      <linearGradient id="ccF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#009ee0" stop-opacity="0.12"/><stop offset="1" stop-color="#009ee0" stop-opacity="0"/></linearGradient>
+    </defs>
+    <path class="cc-fill" d="M0,330.0 L32,329.3 L64,328.5 L96,327.7 L128,326.9 L160,326.0 L192,325.0 L224,324.0 L256,323.0 L288,321.9 L320,320.7 L352,319.5 L384,318.2 L416,316.9 L448,315.5 L480,314.0 L512,312.4 L544,310.8 L576,309.0 L608,307.2 L640,305.2 L672,303.2 L704,301.0 L736,298.8 L768,296.4 L800,293.9 L832,291.3 L864,288.5 L896,285.6 L928,282.5 L960,279.2 L992,275.8 L1024,272.2 L1056,268.4 L1088,264.4 L1120,260.2 L1152,255.8 L1184,251.1 L1216,246.2 L1248,241.1 L1280,235.6 L1312,229.9 L1344,223.9 L1376,217.5 L1408,210.8 L1440,203.8 L1472,196.4 L1504,188.5 L1536,180.3 L1568,171.7 L1600,162.5 L1632,152.9 L1664,142.8 L1696,132.2 L1728,120.9 L1760,109.1 L1792,96.7 L1824,83.6 L1856,69.8 L1888,55.3 L1920,40.0 L1920,356 L0,356 Z"/>
+    <path class="cc-line" pathLength="1" d="M0,330.0 L32,329.3 L64,328.5 L96,327.7 L128,326.9 L160,326.0 L192,325.0 L224,324.0 L256,323.0 L288,321.9 L320,320.7 L352,319.5 L384,318.2 L416,316.9 L448,315.5 L480,314.0 L512,312.4 L544,310.8 L576,309.0 L608,307.2 L640,305.2 L672,303.2 L704,301.0 L736,298.8 L768,296.4 L800,293.9 L832,291.3 L864,288.5 L896,285.6 L928,282.5 L960,279.2 L992,275.8 L1024,272.2 L1056,268.4 L1088,264.4 L1120,260.2 L1152,255.8 L1184,251.1 L1216,246.2 L1248,241.1 L1280,235.6 L1312,229.9 L1344,223.9 L1376,217.5 L1408,210.8 L1440,203.8 L1472,196.4 L1504,188.5 L1536,180.3 L1568,171.7 L1600,162.5 L1632,152.9 L1664,142.8 L1696,132.2 L1728,120.9 L1760,109.1 L1792,96.7 L1824,83.6 L1856,69.8 L1888,55.3 L1920,40.0"/>
+  </svg>
+  <p class="hint in" data-in="fade" style="--i:14">Weiter mit <kbd>→</kbd> oder Klick</p>
   <aside class="notes">Begrüßung. Heute zeige ich euch den Vorsorge-Rechner für den Debeka Global Shares. Die Idee in einem Satz: Vorsorge wird sichtbar. Statt Tabellen sieht man live, was aus dem eigenen Beitrag wird – und die Zahlen stimmen auf den Euro mit dem Debeka-System überein.</aside>
 </section>
 
 <!-- 2 · Ausgangslage -->
-<section class="slide" id="problem" data-fx="swirl" data-fx1="grid" data-steps="1" data-title="Die Ausgangslage">
-  <div class="head"><p class="kicker in" style="--i:0">Die Ausgangslage</p><h2 class="h2 split">Vorsorge fühlt sich <em>weit weg</em> an.</h2></div>
-  <ul class="pains">
-    <li class="in" data-in="left" style="--i:5"><b>Tabellen statt Gefühl.</b> Ein Angebot zeigt Zahlen, aber nicht, wie aus dem Beitrag Jahr für Jahr Vermögen wird.</li>
-    <li class="in" data-in="left" style="--i:6"><b>Zinseszins bleibt unsichtbar.</b> Was 30 Jahre Wachstum bewirken, kann sich kaum jemand vorstellen.</li>
-    <li class="in" data-in="left" style="--i:7"><b>Fragen bleiben offen.</b> Rente oder Kapital? Was bleibt nach Steuern?</li>
-  </ul>
-  <div class="answer glass" data-step="1">
-    <span class="answer-icon"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
-    <p>Der Vorsorge-Rechner macht das <em>in Sekunden sichtbar</em> – mit den echten Zahlen des Debeka Global Shares.</p>
+<section class="slide" id="problem" data-steps="1" data-title="Die Ausgangslage">
+  <div class="head"><p class="eyebrow in" style="--i:0">Die Ausgangslage</p><h2 class="h2 split">Vorsorge fühlt sich <em>weit weg</em> an.</h2></div>
+  <div class="tiles3">
+    <div class="tile in" style="--i:5"><span class="tile-ic"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0077b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M9 4v16M15 4v16"/></svg></span><h3>Tabellen statt Gefühl</h3><p>Ein Angebot zeigt Zahlen, aber nicht, wie aus dem Beitrag Jahr für Jahr Vermögen wird.</p></div>
+    <div class="tile in" style="--i:6"><span class="tile-ic"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0077b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M4 17c5 0 9-2 15-12"/></svg></span><h3>Zinseszins bleibt unsichtbar</h3><p>Was 30 Jahre Wachstum bewirken, kann sich kaum jemand vorstellen.</p></div>
+    <div class="tile in" style="--i:7"><span class="tile-ic"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0077b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14"/><path d="M12 17.5h.01"/></svg></span><h3>Fragen bleiben offen</h3><p>Rente oder Kapital? Und was bleibt nach Steuern?</p></div>
+  </div>
+  <div class="answer" data-step="1">
+    <span class="answer-icon"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+    <p>Der Vorsorge-Rechner macht das <em>in Sekunden sichtbar</em>.</p>
   </div>
   <aside class="notes">Warum braucht es das? Vorsorge ist abstrakt. Ein Angebot mit Tabellen erzeugt kein Gefühl dafür, was über Jahrzehnte passiert. Der Zinseszins ist der stärkste Effekt – aber unsichtbar. Und die praktischen Fragen – Rente oder Kapital, was bleibt nach Steuern – bleiben oft offen. [Klick] Genau das beantwortet der Rechner: in Sekunden, sichtbar, mit echten Fondsdaten.</aside>
 </section>
 
 <!-- 3 · Fonds -->
-<section class="slide" id="fonds" data-fx="globe" data-title="Der Fonds: Debeka Global Shares">
-  <div class="head"><p class="kicker in" style="--i:0">Der Fonds</p><h2 class="h2 split">Debeka <em>Global</em> Shares</h2></div>
+<section class="slide fxslide" id="fonds" data-fx="globe" data-title="Der Fonds: Debeka Global Shares">
+  <div class="head"><p class="eyebrow in" style="--i:0">Der Fonds</p><h2 class="h2 split">Debeka <em>Global</em> Shares</h2></div>
   <p class="lead fund-lead in" style="--i:4">Globaler Aktien-Dachfonds mit ESG-Ausrichtung – die Anlage hinter der Debeka Fondspolice „Chance Invest“.</p>
-  <div class="bigstat in" data-in="blur" style="--i:5"><div class="odo" data-v="10,00 %" data-delay="0.7"></div><p>Rendite pro Jahr seit Auflegung am 22.04.2016</p></div>
+  <div class="bigstat in" data-in="fade" style="--i:5"><div class="odo" data-v="10,00 %" data-delay="0.7"></div><p>Rendite pro Jahr seit Auflegung am 22.04.2016</p></div>
   <div class="perfrow">
     <div class="perf in" style="--i:8"><span class="perf-k">1 Jahr</span><span class="perf-v">+24,34 %</span><span class="perf-bar"><i style="--w:0.147;--i:8"></i></span></div>
     <div class="perf in" style="--i:9"><span class="perf-k">3 Jahre</span><span class="perf-v">+57,30 %</span><span class="perf-bar"><i style="--w:0.347;--i:9"></i></span></div>
     <div class="perf in" style="--i:10"><span class="perf-k">5 Jahre</span><span class="perf-v">+60,74 %</span><span class="perf-bar"><i style="--w:0.368;--i:10"></i></span></div>
     <div class="perf in" style="--i:11"><span class="perf-k">Seit Auflegung</span><span class="perf-v green">+165,16 %</span><span class="perf-bar"><i style="--w:1;--i:11"></i></span></div>
   </div>
-  <p class="foot in" style="--i:13">Anteilswert netto laut Debeka, Stand 17.07.2026 · Laufende Fondskosten 0,30 % p. a. · Vergangene Wertentwicklung ist keine Garantie für die Zukunft.</p>
+  <p class="globe-cap in" data-in="fade" style="--i:12">Weltweit investiert</p>
+  <p class="foot in" data-in="fade" style="--i:13">Anteilswert netto laut Debeka, Stand 17.07.2026 · Laufende Fondskosten 0,30 % p. a. · Vergangene Wertentwicklung ist keine Garantie für die Zukunft.</p>
   <aside class="notes">Das Herz ist der Debeka Global Shares: ein weltweit anlegender Aktien-Dachfonds mit ESG-Ausrichtung. Seit Auflegung im April 2016 rund 10 Prozent pro Jahr, insgesamt plus 165 Prozent. Die laufenden Fondskosten liegen bei nur 0,30 Prozent. Wichtig: Vergangenheit ist keine Garantie – deshalb rechnet der Rechner auch mit vorsichtigeren Szenarien.</aside>
 </section>
 
 <!-- 4 · Zeitraffer -->
-<section class="slide" id="zeit" data-fx="field" data-dim="0.55" data-steps="1" data-title="Die Kraft der Zeit">
-  <div class="head"><p class="kicker in" style="--i:0">Die Kraft der Zeit</p><h2 class="h2 split">100 € im Monat. <em>37 Jahre</em> lang.</h2></div>
-  <div class="tlx-chart in" data-in="scale" style="--i:3"><svg id="tlxSvg" viewBox="0 0 1100 550" aria-label="Zeitraffer der Vermögensentwicklung von 30 bis 67"></svg><p class="tlx-share" id="tlxShare"><b>73 %</b> des Endvermögens sind Gewinn</p></div>
+<section class="slide" id="zeit" data-steps="1" data-title="Die Kraft der Zeit">
+  <div class="head"><p class="eyebrow in" style="--i:0">Die Kraft der Zeit</p><h2 class="h2 split">100 € im Monat. <em>37 Jahre</em> lang.</h2></div>
+  <div class="tlx-chart in" data-in="fade" style="--i:3"><svg id="tlxSvg" viewBox="0 0 1100 550" aria-label="Zeitraffer der Vermögensentwicklung von 30 bis 67"></svg><p class="tlx-share" id="tlxShare"><b>73 %</b> des Endvermögens sind Gewinn</p></div>
   <div class="tlx-side">
     <div class="tlx-age in" style="--i:4"><span class="lbl">Alter</span><b id="tlxAge">30</b></div>
     <div class="tlx-bal in" style="--i:5"><span class="lbl">Fondsguthaben</span><b id="tlxBal">0 €</b></div>
@@ -448,38 +415,37 @@ kbd { font-family: var(--font-body); font-size: 20px; font-weight: 800; padding:
     <div class="hot"><span>7 % p. a.</span><b>162.160 €</b></div>
     <div><span>10 % p. a.</span><b>330.467 €</b></div>
   </div>
-  <p class="foot in" style="--i:9">Beispiel: Start mit 30, Rente mit 67, Renditeannahme vor Kosten, Kosten des Tarifs CA6I, Kapitalabfindung brutto. Modellrechnung, keine Garantie.</p>
+  <p class="foot in" data-in="fade" style="--i:9">Beispiel: Start mit 30, Rente mit 67, Renditeannahme vor Kosten, Kosten des Tarifs CA6I, Kapitalabfindung brutto. Modellrechnung, keine Garantie.</p>
   <aside class="notes">Jetzt ein Zeitraffer: 100 Euro im Monat, Start mit 30, Rente mit 67, 7 Prozent Rendite. Beobachtet die grüne Linie: Anfangs passiert wenig – dann hebt die Kurve ab. Am Ende stehen 162.160 Euro, eingezahlt wurden nur 44.400 Euro. 73 Prozent des Endvermögens sind Gewinn. [Klick] Die Szenarien: Bei 5 Prozent rund 104.000 Euro, bei 10 Prozent über 330.000 Euro.</aside>
 </section>
 
 <!-- 5 · Früh starten -->
-<section class="slide" id="start" data-fx="field" data-dim="0.6" data-title="Früh starten">
-  <div class="head"><p class="kicker in" style="--i:0">Früh starten</p><h2 class="h2 split">Der wichtigste Faktor ist die <em>Zeit</em>.</h2><p class="sub in" style="--i:5">Jeweils 100 € im Monat bis zur Rente mit 67, 7 % p. a.</p></div>
-  <div class="legend in" style="--i:6"><span><i class="sw con"></i>Eingezahlt</span><span><i class="sw gain"></i>Gewinn</span></div>
+<section class="slide" id="start" data-title="Früh starten">
+  <div class="head"><p class="eyebrow in" style="--i:0">Früh starten</p><h2 class="h2 split">Der wichtigste Faktor ist die <em>Zeit</em>.</h2><p class="sub in" style="--i:5">Jeweils 100 € im Monat bis zur Rente mit 67, 7 % p. a.</p></div>
+  <div class="legend in" data-in="fade" style="--i:6"><span><i class="sw con"></i>Eingezahlt</span><span><i class="sw gain"></i>Gewinn</span></div>
   <div class="race">
     <div class="race-row in" style="--i:6;--r:0"><div class="race-lbl"><b>Start mit 25</b><span>42 Jahre · 50.400 € eingezahlt</span></div><div class="race-track"><div class="race-bar" style="--w:1;--r:0"><i class="con" style="--c:0.2204"></i><i class="gain"></i></div></div><div class="odo" data-v="228.708 €" data-delay="0.8"></div></div>
     <div class="race-row in" style="--i:7;--r:1"><div class="race-lbl"><b>Start mit 35</b><span>32 Jahre · 38.400 € eingezahlt</span></div><div class="race-track"><div class="race-bar" style="--w:0.4967;--r:1"><i class="con" style="--c:0.338"></i><i class="gain"></i></div></div><div class="odo" data-v="113.599 €" data-delay="1.15"></div></div>
     <div class="race-row in" style="--i:8;--r:2"><div class="race-lbl"><b>Start mit 45</b><span>22 Jahre · 26.400 € eingezahlt</span></div><div class="race-track"><div class="race-bar" style="--w:0.2287;--r:2"><i class="con" style="--c:0.5047"></i><i class="gain"></i></div></div><div class="odo" data-v="52.313 €" data-delay="1.5"></div></div>
   </div>
-  <div class="callout glass in" data-in="pop" style="--i:22"><span class="callout-num">2×</span><p>Zehn Jahre früher anfangen bringt <em>doppelt so viel Kapital</em> – bei nur 12.000 € mehr Einzahlung.</p></div>
+  <div class="callout in" style="--i:22"><span class="callout-num">2×</span><p>Zehn Jahre früher anfangen bringt <em>doppelt so viel Kapital</em> – bei nur 12.000 € mehr Einzahlung.</p></div>
   <aside class="notes">Der wichtigste Hebel ist nicht der Betrag, sondern die Zeit. Gleicher Beitrag, 100 Euro im Monat: Wer mit 25 startet, hat mit 67 rund 229.000 Euro. Mit 35 sind es 114.000, mit 45 nur noch 52.000. Zehn Jahre früher bedeuten doppelt so viel Kapital – obwohl nur 12.000 Euro mehr eingezahlt wurden.</aside>
 </section>
 
 <!-- 6 · App -->
-<section class="slide" id="app" data-fx="halo" data-tr="iris" data-title="Der Vorsorge-Rechner">
-  <div class="head narrow" style="width:500px"><p class="kicker in" style="--i:0">Die Lösung</p><h2 class="h2 split">Der Vorsorge-<br><em>Rechner</em>.</h2><p class="lead app-lead in" style="--i:5">Alle Antworten auf einer Seite – neu berechnet, sobald sich ein Wert ändert.</p></div>
-  <div class="reveal-stage"><div class="reveal-tilt"><div class="reveal-frame"><div class="browser"><div class="browser-bar"><i></i><i></i><i></i><span class="url">canuzu.github.io/Test-Code/altersvorsorge-rechner</span></div><img src="assets/desktop-hero.jpg" alt="Startansicht des Vorsorge-Rechners mit Fondsdaten und Ergebniskarte"><div class="sheen"></div></div></div></div></div>
-  <div class="chip-pos in" data-in="pop" style="--i:10;left:600px;top:128px"><div class="chip chip-float" style="animation-delay:0s"><i></i>Live-Berechnung</div></div>
-  <div class="chip-pos in" data-in="pop" style="--i:12;right:96px;top:150px"><div class="chip chip-float" style="animation-delay:-2s"><i></i>Echte Fondsdaten</div></div>
-  <div class="chip-pos in" data-in="pop" style="--i:14;right:70px;top:560px"><div class="chip chip-float" style="animation-delay:-4s"><i></i>Tarif CA6I</div></div>
-  <div class="chip-pos in" data-in="pop" style="--i:16;left:640px;top:850px"><div class="chip chip-float" style="animation-delay:-1s"><i></i>Hell &amp; Dunkel</div></div>
-  <div class="chip-pos in" data-in="pop" style="--i:18;right:180px;top:900px"><div class="chip chip-float" style="animation-delay:-3s"><i></i>Auf jedem Gerät</div></div>
+<section class="slide" id="app" data-title="Der Vorsorge-Rechner">
+  <div class="head narrow" style="width:560px"><p class="eyebrow in" style="--i:0">Die Lösung</p><h2 class="h2 split" style="font-size:76px">Der Vorsorge-<br><em>Rechner</em>.</h2><p class="lead app-lead in" style="--i:5">Alle Antworten auf einer Seite – neu berechnet, sobald sich ein Wert ändert.</p></div>
+  <div class="reveal-stage"><div class="reveal-tilt"><div class="reveal-frame"><div class="browser"><div class="browser-bar"><i></i><i></i><i></i><span class="url">canuzu.github.io/Test-Code/altersvorsorge-rechner</span></div><img src="assets/desktop-hero.jpg" alt="Startansicht des Vorsorge-Rechners mit Fondsdaten und Ergebniskarte"></div></div></div></div>
+  <div class="chip-pos in" data-in="fade" style="--i:12;left:600px;top:126px"><div class="chip"><i></i>Live-Berechnung</div></div>
+  <div class="chip-pos in" data-in="fade" style="--i:14;right:90px;top:126px"><div class="chip"><i></i>Echte Fondsdaten</div></div>
+  <div class="chip-pos in" data-in="fade" style="--i:16;left:600px;top:886px"><div class="chip"><i></i>Tarif CA6I</div></div>
+  <div class="chip-pos in" data-in="fade" style="--i:18;right:90px;top:886px"><div class="chip"><i></i>Auf jedem Gerät</div></div>
   <aside class="notes">Das ist der Vorsorge-Rechner. Eine Seite, alle Antworten. Er läuft im Browser, ohne Installation, und rechnet bei jeder Eingabe sofort neu. Grundlage sind die echten Fondsdaten und die Kosten des Tarifs CA6I.</aside>
 </section>
 
 <!-- 7 · Rundgang -->
-<section class="slide" id="tour" data-fx="field" data-dim="0.4" data-steps="3" data-title="Rundgang durch die App">
-  <div class="head narrow"><p class="kicker in" style="--i:0">Rundgang</p></div>
+<section class="slide" id="tour" data-steps="3" data-title="Rundgang durch die App">
+  <div class="head narrow"><p class="eyebrow in" style="--i:0">Rundgang</p></div>
   <div class="tour-cap in" style="--i:2">
     <div class="tour-count"><b id="tourN">1</b>/ 4</div>
     <div class="tour-bars"><i></i><i></i><i></i><i></i></div>
@@ -495,12 +461,12 @@ kbd { font-family: var(--font-body); font-size: 20px; font-weight: 800; padding:
 </section>
 
 <!-- 8 · Handy -->
-<section class="slide" id="mobil" data-fx="field" data-dim="0.7" data-title="Auf dem Handy">
-  <div class="head narrow" style="width:760px"><p class="kicker in" style="--i:0">Überall dabei</p><h2 class="h2 split">Auf dem Handy <em>genauso stark</em>.</h2></div>
+<section class="slide" id="mobil" data-title="Auf dem Handy">
+  <div class="head narrow" style="width:760px"><p class="eyebrow in" style="--i:0">Überall dabei</p><h2 class="h2 split">Auf dem Handy <em>genauso stark</em>.</h2></div>
   <ul class="feat">
-    <li class="in" data-in="left" style="--i:5"><span class="feat-ic"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#8fd9fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="3"/><path d="M7 17h4M15 17h2"/><path d="M6 4h12v6H6z"/></svg></span><div><b>Schwebende Ergebnisleiste</b><span>Netto und Rente bleiben im Blick, während Werte geändert werden.</span></div></li>
-    <li class="in" data-in="left" style="--i:6"><span class="feat-ic"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#8fd9fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="#8fd9fa"/></svg></span><div><b>Hell und dunkel</b><span>Passt sich automatisch an die Einstellung des Geräts an.</span></div></li>
-    <li class="in" data-in="left" style="--i:7"><span class="feat-ic"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#8fd9fa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg></span><div><b>Ohne Installation</b><span>Läuft direkt im Browser – ein Link genügt.</span></div></li>
+    <li class="in" style="--i:5"><span class="feat-ic"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0077b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="14" width="18" height="6" rx="3"/><path d="M7 17h4M15 17h2"/><path d="M6 4h12v6H6z"/></svg></span><div><b>Schwebende Ergebnisleiste</b><span>Netto und Rente bleiben im Blick, während Werte geändert werden.</span></div></li>
+    <li class="in" style="--i:6"><span class="feat-ic"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0077b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="#0077b6"/></svg></span><div><b>Hell und dunkel</b><span>Passt sich automatisch an die Einstellung des Geräts an.</span></div></li>
+    <li class="in" style="--i:7"><span class="feat-ic"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0077b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg></span><div><b>Ohne Installation</b><span>Läuft direkt im Browser – ein Link genügt.</span></div></li>
   </ul>
   <div class="phones"><div class="phones-tilt">
     <div class="phone-wrap-a"><div class="in" data-in="left" style="--i:4;position:absolute;inset:0"><div class="phone phone-a"><img src="assets/mobile-top.jpg" alt="Vorsorge-Rechner auf dem Handy, helles Design"></div></div></div>
@@ -510,60 +476,60 @@ kbd { font-family: var(--font-body); font-size: 20px; font-weight: 800; padding:
 </section>
 
 <!-- 9 · Genauigkeit -->
-<section class="slide" id="genau" data-fx="rings" data-title="Auf den Euro genau">
-  <div class="head"><p class="kicker in" style="--i:0">Genauigkeit</p><h2 class="h2 split">Auf den Euro wie im <em>Debeka-System</em>.</h2></div>
-  <div class="cmp glass in" data-in="scale" style="--i:4">
+<section class="slide accent" id="genau" data-title="Auf den Euro genau">
+  <div class="head"><p class="eyebrow in" style="--i:0">Genauigkeit</p><h2 class="h2 split">Auf den Euro wie im <em>Debeka-System</em>.</h2></div>
+  <div class="cmp in" data-in="scale" style="--i:4">
     <div class="cmp-head"><span>Aufschubzeit</span><span>Debeka-Musterrechnung</span><span>Vorsorge-Rechner</span><span>Abweichung</span></div>
-    <div class="cmp-row"><span class="cmp-lbl"><b>35 Jahre</b>Kapitalabfindung</span><span class="odo" data-v="46.316,12 €" data-delay="1.0"></span><span class="odo green" data-v="46.315,83 €" data-delay="1.35"></span><span class="dev"><i><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>0,29 €</span></div>
-    <div class="cmp-row"><span class="cmp-lbl"><b>34 Jahre</b>Kapitalabfindung</span><span class="odo" data-v="43.758,23 €" data-delay="1.6"></span><span class="odo green" data-v="43.758,24 €" data-delay="1.95"></span><span class="dev"><i><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>0,01 €</span></div>
+    <div class="cmp-row"><span class="cmp-lbl"><b>35 Jahre</b>Kapitalabfindung</span><span class="odo" data-v="46.316,12 €" data-delay="1.0"></span><span class="odo mint" data-v="46.315,83 €" data-delay="1.35"></span><span class="dev"><i><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>0,29 €</span></div>
+    <div class="cmp-row"><span class="cmp-lbl"><b>34 Jahre</b>Kapitalabfindung</span><span class="odo" data-v="43.758,23 €" data-delay="1.6"></span><span class="odo mint" data-v="43.758,24 €" data-delay="1.95"></span><span class="dev"><i><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>0,01 €</span></div>
   </div>
   <p class="statement in" style="--i:30">Gleiche Eingaben, gleiches Ergebnis: Die Kosten des Tarifs CA6I sind auf die <em>Debeka-Musterrechnung</em> kalibriert.</p>
-  <p class="foot in" style="--i:31">50 € im Monat, 5 % p. a., Kapitalabfindung brutto. Aufschubzeit in ganzen Jahren wie bei Debeka: Rentenalter minus Eintrittsalter.</p>
+  <p class="foot in" data-in="fade" style="--i:31">50 € im Monat, 5 % p. a., Kapitalabfindung brutto. Aufschubzeit in ganzen Jahren wie bei Debeka: Rentenalter minus Eintrittsalter.</p>
   <aside class="notes">Die wichtigste Frage bei jedem Rechner: Stimmen die Zahlen? Wir haben gegen die offizielle Debeka-Musterrechnung geprüft. 50 Euro im Monat, 5 Prozent: Bei 35 Jahren Aufschubzeit liefert Debeka 46.316,12 Euro, der Rechner 46.315,83 – 29 Cent Unterschied. Bei 34 Jahren ist es ein Cent.</aside>
 </section>
 
 <!-- 10 · Unter der Haube -->
-<section class="slide" id="haube" data-fx="flow" data-title="So rechnet der Rechner">
-  <div class="head"><p class="kicker in" style="--i:0">Unter der Haube</p><h2 class="h2 split">So rechnet der Rechner – <em>Monat für Monat</em>.</h2></div>
-  <div class="node-at" style="left:300px;top:640px"><div class="node glass in" data-in="pop" style="--i:5"><span class="tag">Start</span><b>Dein Beitrag</b><span>monatlich, auf Wunsch mit jährlicher Dynamik</span></div></div>
-  <div class="node-at" style="left:760px;top:640px"><div class="node glass cost in" data-in="pop" style="--i:7"><span class="tag">§ 17</span><b>Kosten des Tarifs</b><span>2,84 % Abschluss über 5 Jahre, 5,88 % Verwaltung</span></div></div>
-  <div class="node-at" style="left:1220px;top:640px"><div class="node glass in" data-in="pop" style="--i:9"><span class="tag">Fonds</span><b>Debeka Global Shares</b><span>Rendite minus 0,30 % Fondskosten</span></div></div>
-  <div class="node-at" style="left:1640px;top:440px"><div class="node glass out in" data-in="pop" style="--i:11"><span class="tag">Option 1</span><b>Lebenslange Rente</b><span>29,09 € je 10.000 € Guthaben</span></div></div>
-  <div class="node-at" style="left:1640px;top:840px"><div class="node glass out in" data-in="pop" style="--i:12"><span class="tag">Option 2</span><b>Kapitalabfindung</b><span>ab 62: Hälfte des Gewinns steuerpflichtig</span></div></div>
-  <p class="foot in" style="--i:14">Aufschubzeit in ganzen Jahren (Rentenalter minus Eintrittsalter) · Lebenslange Rente nur mit Ertragsanteil steuerpflichtig.</p>
-  <aside class="notes">Was passiert im Hintergrund? Jeder Monatsbeitrag läuft durch dieselbe Kette. Zuerst die Kosten des Tarifs nach Paragraf 17 – Abschlusskosten über fünf Jahre und Verwaltungskosten. Der Rest fließt in den Debeka Global Shares und wächst mit der Rendite abzüglich 0,30 Prozent Fondskosten. Bei Rentenbeginn: lebenslange Rente über den Rentenfaktor – oder Kapitalabfindung, bei der ab 62 nur die Hälfte des Gewinns versteuert wird.</aside>
+<section class="slide fxslide" id="haube" data-fx="flow" data-title="So rechnet der Rechner">
+  <div class="head"><p class="eyebrow in" style="--i:0">Unter der Haube</p><h2 class="h2 split">So rechnet der Rechner – <em>Monat für Monat</em>.</h2></div>
+  <div class="node-at" style="left:300px;top:640px"><div class="node in" data-in="fade" style="--i:5"><span class="tag">Start</span><b>Dein Beitrag</b><span>monatlich, auf Wunsch mit jährlicher Dynamik</span></div></div>
+  <div class="node-at" style="left:760px;top:640px"><div class="node cost in" data-in="fade" style="--i:7"><span class="tag">§ 17</span><b>Kosten des Tarifs</b><span>2,84 % Abschluss über 5 Jahre, 5,88 % Verwaltung</span></div></div>
+  <div class="node-at" style="left:1220px;top:640px"><div class="node in" data-in="fade" style="--i:9"><span class="tag">Fonds</span><b>Debeka Global Shares</b><span>Rendite minus 0,30 % Fondskosten</span></div></div>
+  <div class="node-at" style="left:1640px;top:440px"><div class="node out in" data-in="fade" style="--i:11"><span class="tag">Option 1</span><b>Lebenslange Rente</b><span>29,09 € je 10.000 € Guthaben</span></div></div>
+  <div class="node-at" style="left:1640px;top:840px"><div class="node out in" data-in="fade" style="--i:12"><span class="tag">Option 2</span><b>Kapitalabfindung</b><span>ab 62: Hälfte des Gewinns steuerpflichtig</span></div></div>
+  <p class="foot in" data-in="fade" style="--i:14">Aufschubzeit in ganzen Jahren (Rentenalter minus Eintrittsalter) · Lebenslange Rente nur mit Ertragsanteil steuerpflichtig.</p>
+  <aside class="notes">Was passiert im Hintergrund? Jeder Monatsbeitrag läuft durch dieselbe Kette. Zuerst die Kosten des Tarifs nach Paragraf 17 – Abschlusskosten über fünf Jahre und Verwaltungskosten; das sieht man an den Punkten, die nach unten abfließen. Der Rest fließt in den Debeka Global Shares und wächst mit der Rendite abzüglich 0,30 Prozent Fondskosten. Bei Rentenbeginn: lebenslange Rente über den Rentenfaktor – oder Kapitalabfindung, bei der ab 62 nur die Hälfte des Gewinns versteuert wird.</aside>
 </section>
 
 <!-- 11 · Rentenwahl -->
-<section class="slide" id="wahl" data-fx="field" data-dim="0.65" data-title="Die Wahl bei Rentenbeginn">
-  <div class="head"><p class="kicker in" style="--i:0">Bei Rentenbeginn</p><h2 class="h2 split">Du entscheidest erst, <em>wenn es so weit ist</em>.</h2></div>
+<section class="slide" id="wahl" data-title="Die Wahl bei Rentenbeginn">
+  <div class="head"><p class="eyebrow in" style="--i:0">Bei Rentenbeginn</p><h2 class="h2 split">Du entscheidest erst, <em>wenn es so weit ist</em>.</h2></div>
   <div class="opts">
-    <div class="opt glass featured" style="--i:0"><span class="badge">Garantiert lebenslang</span><h3>Lebenslange Rente</h3><div><span class="odo" data-v="472 €" data-delay="1.2"></span><span class="per">/ Monat</span></div><p>Rentenfaktor 29,09 € je 10.000 € Guthaben – so lange du lebst.</p></div>
-    <div class="opt glass" style="--i:1"><h3>Kapitalabfindung</h3><div><span class="odo" data-v="162.160 €" data-delay="1.4"></span></div><p>Einmalig ausgezahlt – nach Steuer 144.496 € (Steuersatz 30 %).</p></div>
-    <div class="opt glass" style="--i:2"><h3>Kapitalverzehr</h3><div><span class="odo" data-v="766 €" data-delay="1.6"></span><span class="per">/ Monat</span></div><p>25 Jahre lang, mit 3 % Rendite auf das Restkapital.</p></div>
+    <div class="opt featured" style="--i:0"><span class="badge">Garantiert lebenslang</span><h3>Lebenslange Rente</h3><div><span class="odo" data-v="472 €" data-delay="1.2"></span><span class="per">/ Monat</span></div><p>Rentenfaktor 29,09 € je 10.000 € Guthaben – so lange du lebst.</p></div>
+    <div class="opt" style="--i:1"><h3>Kapitalabfindung</h3><div><span class="odo" data-v="162.160 €" data-delay="1.4"></span></div><p>Einmalig ausgezahlt – nach Steuer 144.496 € (Steuersatz 30 %).</p></div>
+    <div class="opt" style="--i:2"><h3>Kapitalverzehr</h3><div><span class="odo" data-v="766 €" data-delay="1.6"></span><span class="per">/ Monat</span></div><p>25 Jahre lang, mit 3 % Rendite auf das Restkapital.</p></div>
   </div>
-  <div class="opt-notes in" style="--i:8"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Kapitalwahlrecht (§ 45)</span><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Todesfall vor Rentenbeginn: Guthaben an Hinterbliebene (§ 35)</span></div>
-  <p class="foot in" style="--i:9">Beispiel aus dem Zeitraffer: 100 € im Monat ab 30, 7 % p. a., Rente mit 67. Modellrechnung, keine Garantie.</p>
+  <div class="opt-notes in" data-in="fade" style="--i:8"><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Kapitalwahlrecht (§ 45)</span><span><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Todesfall vor Rentenbeginn: Guthaben an Hinterbliebene (§ 35)</span></div>
+  <p class="foot in" data-in="fade" style="--i:9">Beispiel aus dem Zeitraffer: 100 € im Monat ab 30, 7 % p. a., Rente mit 67. Modellrechnung, keine Garantie.</p>
   <aside class="notes">Das Schöne: Man muss sich heute nicht festlegen. Bei Rentenbeginn gibt es das Kapitalwahlrecht. Im Beispiel von vorhin: lebenslang rund 472 Euro im Monat, garantiert über den Rentenfaktor. Oder 162.160 Euro auf einen Schlag, nach Steuer rund 144.500. Oder als Kapitalverzehr 25 Jahre lang 766 Euro im Monat.</aside>
 </section>
 
 <!-- 12 · Live -->
-<section class="slide" id="live" data-fx="field" data-dim="0.35" data-tr="iris" data-title="Live-Demo">
-  <div class="head narrow" style="width:470px"><p class="kicker in" style="--i:0">Live-Demo</p><h2 class="h2 split">Probieren wir es <em>aus</em>.</h2></div>
-  <span class="live-badge in" style="--i:2"><i></i>Live</span>
+<section class="slide" id="live" data-title="Live-Demo">
+  <div class="head narrow" style="width:470px"><p class="eyebrow in" style="--i:0">Live-Demo</p><h2 class="h2 split">Probieren wir es <em>aus</em>.</h2></div>
+  <span class="live-badge in" data-in="fade" style="--i:2"><i></i>Live</span>
   <div class="live-cap in" style="--i:4"><p>Das ist die echte App, direkt hier bedienbar. Beitrag, Alter oder Rendite ändern – alles rechnet mit.</p><p class="live-url">canuzu.github.io/<wbr>Test-Code/<wbr>altersvorsorge-rechner</p></div>
   <div class="browser live-frame in" data-in="scale" style="--i:3"><div class="browser-bar"><i></i><i></i><i></i><span class="url">canuzu.github.io/Test-Code/altersvorsorge-rechner</span></div><div class="live-view" id="liveView"><img id="liveFallback" src="assets/desktop-hero.jpg" alt="Vorsorge-Rechner"></div></div>
   <aside class="notes">Jetzt live. Das Fenster ist die echte App – ich kann Werte direkt ändern. Zum Beispiel den Beitrag auf 200 Euro, oder die Rendite auf 7 Prozent. Weiter geht es mit der Pfeiltaste, sobald die Maus außerhalb eines Eingabefelds ist.</aside>
 </section>
 
 <!-- 13 · Danke -->
-<section class="slide" id="danke" data-fx="text" data-title="Danke">
+<section class="slide fxslide" id="danke" data-fx="text" data-title="Danke">
   <h2 class="sr">Danke</h2>
   <div class="close-copy">
-    <p class="close-line in" style="--i:6">Vorsorge, die man <em>sehen</em> kann.</p>
-    <a class="close-link in" style="--i:8" href="https://canuzu.github.io/Test-Code/altersvorsorge-rechner/" target="_blank" rel="noopener">Rechner öffnen <b>canuzu.github.io/Test-Code/altersvorsorge-rechner</b></a>
+    <p class="close-line in" style="--i:8">Vorsorge, die man <em>sehen</em> kann.</p>
+    <a class="close-link in" style="--i:10" href="https://canuzu.github.io/Test-Code/altersvorsorge-rechner/" target="_blank" rel="noopener">Rechner öffnen <b>canuzu.github.io/Test-Code/altersvorsorge-rechner</b></a>
   </div>
-  <p class="close-fine in" style="--i:10">Unabhängige Modellrechnung, kein Angebot der Debeka. Maßgeblich sind die Versicherungsbedingungen und das persönliche Angebot.</p>
+  <p class="close-fine in" data-in="fade" style="--i:12">Unabhängige Modellrechnung, kein Angebot der Debeka. Maßgeblich sind die Versicherungsbedingungen und das persönliche Angebot.</p>
   <aside class="notes">Danke! Der Rechner ist unter dem Link erreichbar. Fragen gerne jetzt.</aside>
 </section>
 
@@ -591,6 +557,8 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const W0 = 1920, H0 = 1080;
+const LIVE_SRC = "../";
+const LIVE_THEME = "";
 const stage = $("#stage");
 const slides = $$(".slide");
 const nf = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
@@ -643,7 +611,7 @@ function odoBuild(el) {
       let h = ""; for (let r = 0; r < 3; r++) for (let d = 0; d < 10; d++) h += `<span>${d}</span>`;
       strip.innerHTML = h; col.appendChild(strip); el.appendChild(col);
     } else {
-      const s = document.createElement("span"); s.className = "odo-ch"; s.textContent = ch === " " ? "\u00a0" : ch; el.appendChild(s);
+      const s = document.createElement("span"); s.className = "odo-ch"; s.textContent = ch === " " ? " " : ch; el.appendChild(s);
     }
   });
 }
@@ -665,206 +633,150 @@ function odoRoll(el, extraDelay = 0) {
 }
 $$(".odo[data-v]").forEach(odoBuild);
 
-/* ================= Partikelwelt ================= */
+/* ============ Partikel: nur Globus, Geldstrom und „Danke.“ ============ */
 const FX = (() => {
   const cv = $("#fx"), ctx = cv.getContext("2d");
-  let vw = 0, vh = 0, dpr = 1, P = [], N = 0, mode = "field", modeT = 0, dim = 1, dimCur = 0, trail = 0.3;
-  let textPts = [], merge = 0, mergeTarget = 0, mouse = { x: -1e4, y: -1e4, t: 0 };
-  const COLORS = ["226,243,255", "0,158,224", "74,222,128", "125,211,252"];
+  let vw = 0, vh = 0, P = [], N = 0, mode = "none", modeT = 0, textPts = [], raf = 0, lastNow = 0;
+  const COLORS = ["0,119,182", "0,158,224", "22,163,74", "150,200,230", "148,163,184"];
   const sprites = COLORS.map((rgb) => {
-    const c = document.createElement("canvas"); c.width = c.height = 48;
-    const g = c.getContext("2d"), gr = g.createRadialGradient(24, 24, 0, 24, 24, 24);
-    gr.addColorStop(0, `rgba(${rgb},1)`); gr.addColorStop(0.16, `rgba(${rgb},0.85)`);
-    gr.addColorStop(0.42, `rgba(${rgb},0.22)`); gr.addColorStop(1, `rgba(${rgb},0)`);
-    g.fillStyle = gr; g.fillRect(0, 0, 48, 48); return c;
+    const c = document.createElement("canvas"); c.width = c.height = 32;
+    const g = c.getContext("2d"), gr = g.createRadialGradient(16, 16, 0, 16, 16, 16);
+    gr.addColorStop(0, `rgba(${rgb},1)`); gr.addColorStop(0.5, `rgba(${rgb},1)`);
+    gr.addColorStop(0.72, `rgba(${rgb},0.45)`); gr.addColorStop(1, `rgba(${rgb},0)`);
+    g.fillStyle = gr; g.fillRect(0, 0, 32, 32); return c;
   });
   const gauss = () => { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
 
   function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     vw = innerWidth; vh = innerHeight;
     cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (!N) {
-      N = Math.round(Math.min(2400, Math.max(1600, (vw * vh) / 850)));
-      for (let i = 0; i < N; i++) P.push({ x: Math.random() * vw, y: Math.random() * vh, vx: 0, vy: 0, a: 0, ta: 0, ts: 1, c: 0,
-        k: 0.018 + Math.random() * 0.03, r1: Math.random(), r2: Math.random(), r3: Math.random(), g: gauss(), u: Math.random(), lastU: -1, lastY: 1e9 });
+      N = 2000;
+      for (let i = 0; i < N; i++) {
+        const x = Math.random() * 1920, y = Math.random() * 1080;
+        P.push({ x: 0, y: 0, sx: x, sy: y, tx: x, ty: y, vx: 0, vy: 0, a: 0, ta: 0, ts: 1, c: 1, placed: false,
+          k: 0.02 + Math.random() * 0.025, r1: Math.random(), r2: Math.random(), r3: Math.random(), g: gauss(), u: Math.random(), lastU: -1 });
+      }
     }
+    if (mode === "none") ctx.clearRect(0, 0, vw, vh);
   }
 
   const F = {
-    curve(p, i, t) {
-      if (p.r3 < 0.16) {
-        p.tx = p.r1 * 1920; p.ty = p.r2 * 980 + Math.sin(t * 0.3 + p.r1 * 9) * 24;
-        p.ta = 0.12 + 0.3 * Math.pow(Math.sin(t * 1.2 + p.r2 * 20), 2); p.ts = 0.6; p.c = 3; return;
-      }
-      const u = (p.u + t * 0.016) % 1;
-      if (u < p.lastU) p.jump = 1; p.lastU = u;
-      const yb = 1040 - 880 * (Math.exp(3.2 * u) - 1) / (Math.exp(3.2) - 1);
-      const spread = (8 + u * 52) * p.g;
-      p.tx = -80 + u * 2100 + spread * 0.4; p.ty = yb + spread;
-      p.ta = (0.3 + 0.7 * Math.min(1, u * 1.5)) * (u > 0.95 ? (1 - u) / 0.05 : 1);
-      p.ts = 0.75 + u * 1.15;
-      p.c = u > 0.6 ? (p.r1 < 0.72 ? 2 : 0) : (p.r1 < 0.5 ? 1 : 0);
-    },
-    swirl(p, i, t) {
-      const dir = p.r3 < 0.5 ? 1 : -0.6;
-      const a = p.r1 * 6.2832 + t * (0.04 + p.r2 * 0.1) * dir;
-      const rr = 140 + p.r2 * 640 + Math.sin(t * 0.5 + p.r1 * 14) * 50;
-      p.tx = 1360 + Math.cos(a) * rr * 1.2; p.ty = 540 + Math.sin(a) * rr * 0.72;
-      p.ta = 0.18 + p.r3 * 0.4; p.ts = 0.6 + p.r1 * 0.7; p.c = p.r2 < 0.6 ? 1 : 0;
-    },
-    grid(p, i, t) {
-      const cols = 34, rows = 30, cells = cols * rows;
-      if (i >= cells) { p.tx = 1400 + p.g * 30; p.ty = 540 + p.r2 * 20; p.ta = 0; return; }
-      const gx = i % cols, gy = (i / cols) | 0;
-      p.tx = 1010 + gx * 24; p.ty = 150 + gy * 24;
-      const wave = 0.5 + 0.5 * Math.sin((gx + gy) * 0.32 - t * 2.6);
-      p.ta = 0.14 + 0.75 * Math.pow(wave, 4); p.ts = 0.55 + wave * 0.5; p.c = wave > 0.82 ? 2 : (wave > 0.4 ? 1 : 0);
-    },
+    none(p) { p.ta = 0; },
     globe(p, i, t) {
-      const cx = 1440, cy = 560, R = 320, tilt = 0.4;
+      const cx = 1440, cy = 560, R = 300, tilt = 0.4;
       if (i % 8 === 0) {
-        const ang = p.r1 * 6.2832 + t * 0.32;
-        const x = Math.cos(ang) * R * 1.62 + p.g * 6, y0 = Math.sin(ang) * R * 0.3, z = Math.sin(ang);
-        const ca = Math.cos(-0.32), sa = Math.sin(-0.32);
+        const ang = p.r1 * 6.2832 + t * 0.12;
+        const x = Math.cos(ang) * R * 1.6, y0 = Math.sin(ang) * R * 0.28, z = Math.sin(ang);
+        const ca = Math.cos(-0.3), sa = Math.sin(-0.3);
         p.tx = cx + x * ca - y0 * sa; p.ty = cy + x * sa + y0 * ca;
-        p.ta = z > 0 ? 0.75 : 0.18; p.ts = 0.7; p.c = 3; return;
+        p.ta = z > 0 ? 0.85 : 0.25; p.ts = 0.75; p.c = 2; return;
       }
       const k = (i + 0.5) / N, phi = Math.acos(1 - 2 * k), th = i * 2.39996323;
       const sx = Math.sin(phi) * Math.cos(th), sy = Math.cos(phi), sz = Math.sin(phi) * Math.sin(th);
       const land = Math.sin(sx * 3.1 + 1.1) * Math.sin(sy * 2.6 + 0.4) * Math.sin(sz * 3.3 + 2.0) + 0.35 * Math.sin(sx * 7 + sz * 5) > 0.12;
-      const rot = t * 0.22, cr = Math.cos(rot), sr = Math.sin(rot);
+      const rot = t * 0.1, cr = Math.cos(rot), sr = Math.sin(rot);
       const x = (sx * cr + sz * sr) * R, z1 = (-sx * sr + sz * cr) * R, y1 = sy * R;
       const y = y1 * Math.cos(tilt) - z1 * Math.sin(tilt), z = y1 * Math.sin(tilt) + z1 * Math.cos(tilt);
       const per = 1200 / (1200 - z);
       p.tx = cx + x * per; p.ty = cy + y * per;
       const front = (z / R + 1) / 2;
-      p.ta = (land ? 0.25 : 0.08) + (land ? 0.75 : 0.28) * front * front;
-      p.ts = (land ? 0.75 : 0.5) + front * 0.7; p.c = land ? (front > 0.5 ? 2 : 1) : 1;
-    },
-    field(p, i, t) {
-      const y = 1180 - ((p.r2 * 1240 + t * 9 * (0.3 + p.r3)) % 1240);
-      if (y > p.lastY + 200) p.jump = 1; p.lastY = y;
-      p.tx = -60 + p.r1 * 2040 + Math.sin(t * 0.08 + p.r2 * 30) * 50; p.ty = y;
-      p.ta = 0.1 + p.r3 * 0.32; p.ts = 0.45 + p.r1 * 0.6; p.c = p.r1 < 0.08 ? 2 : (p.r2 < 0.5 ? 1 : 0);
-    },
-    halo(p, i, t) {
-      const a = p.u * 6.2832 + t * (0.05 + p.r3 * 0.05);
-      const rx = 700 + p.g * 34, ry = 430 + p.g * 22;
-      p.tx = 1250 + Math.cos(a) * rx; p.ty = 553 + Math.sin(a) * ry;
-      p.ta = 0.15 + 0.45 * Math.pow(0.5 + 0.5 * Math.sin(a * 3 - t * 1.4), 2); p.ts = 0.55 + p.r1 * 0.7; p.c = p.r1 < 0.2 ? 2 : (p.r2 < 0.5 ? 3 : 1);
-    },
-    rings(p, i, t) {
-      const left = i % 2 === 0, off = 300 * (1 - merge);
-      const cx = 960 + (left ? -off : off), cy = 590;
-      const a = p.u * 6.2832 + t * 0.09 * (left ? 1 : -1);
-      const rx = 470 + p.g * 16, ry = 300 + p.g * 12;
-      p.tx = cx + Math.cos(a) * rx; p.ty = cy + Math.sin(a) * ry;
-      p.ta = 0.14 + 0.3 * merge + 0.2 * Math.pow(Math.sin(a * 2 + t), 2); p.ts = 0.6 + p.r1 * 0.5;
-      p.c = merge > 0.6 && p.r1 < 0.55 ? 2 : (p.r2 < 0.5 ? 1 : 3);
+      if (land) { p.ta = 0.2 + 0.8 * front * front; p.c = front > 0.45 ? 1 : 3; p.ts = 0.7 + front * 0.45; }
+      else { p.ta = 0.08 + 0.5 * front * front; p.c = 3; p.ts = 0.5 + front * 0.35; }
     },
     flow(p, i, t) {
-      const u = (p.u + t * 0.06) % 1;
+      const u = (p.u + t * 0.045) % 1;
       if (u < p.lastU) p.jump = 1; p.lastU = u;
       const lane = p.g * 15, top = p.r2 < 0.5;
-      let x, y, a = 0.85, s = 0.8, c = 0;
+      let x, y, a = 0.9, s = 0.75, c = 0;
       if (u < 0.8) {
-        x = 60 + (u / 0.8) * 1380; y = 640 + lane + Math.sin(x * 0.011 + t * 2) * 5;
-        if (x > 900) { y += lane * 0.8 * ((x - 900) / 540); }
+        x = 60 + (u / 0.8) * 1380; y = 640 + lane;
+        if (x > 900) y += lane * 0.8 * ((x - 900) / 540);
         c = x < 760 ? 0 : (x < 1220 ? 1 : 2);
-        if (x > 1220) s = 1.25;
-        if (p.r3 < 0.14 && x > 760) { const d = x - 760; y += d * 0.85 + d * d * 0.002; a = Math.max(0, 0.85 - d / 170); c = 3; }
+        if (x > 1220) s = 1;
+        if (p.r3 < 0.14 && x > 760) { const d = x - 760; y += d * 0.85 + d * d * 0.002; a = Math.max(0, 0.9 - d / 170); c = 4; }
       } else {
         if (p.r3 < 0.14) { p.tx = 900; p.ty = 1200; p.ta = 0; return; }
         const v = (u - 0.8) / 0.2, yT = top ? 440 : 840, w = 1 - v;
         x = w * w * w * 1440 + 3 * w * w * v * 1520 + 3 * w * v * v * 1480 + v * v * v * 1600;
         y = w * w * w * 640 + 3 * w * w * v * 640 + 3 * w * v * v * yT + v * v * v * yT + lane * 1.4;
-        c = 2; s = 1.3; a = 0.85 * (v > 0.75 ? (1 - v) / 0.25 : 1);
+        c = 2; s = 1.05; a = 0.9 * (v > 0.75 ? (1 - v) / 0.25 : 1);
       }
       if (u < 0.04) a *= u / 0.04;
       p.tx = x; p.ty = y; p.ta = a; p.ts = s; p.c = c;
     },
-    text(p, i, t) {
-      if (i < textPts.length) {
-        const q = textPts[i];
-        p.tx = q[0] + Math.sin(t * 1.4 + p.r1 * 20) * 0.8; p.ty = q[1] + Math.cos(t * 1.1 + p.r2 * 20) * 0.8;
-        const wave = Math.sin(q[0] * 0.006 - t * 1.6);
-        p.ta = 0.7 + 0.3 * wave; p.ts = 0.5; p.c = wave > 0.55 ? 2 : (p.r3 < 0.3 ? 3 : 0);
-      } else F.field(p, i, t);
+    text(p, i) {
+      if (i < textPts.length) { const q = textPts[i]; p.tx = q[0]; p.ty = q[1]; p.ta = 0.95; p.ts = 0.62; p.c = p.r3 < 0.22 ? 0 : 1; }
+      else p.ta = 0;
     },
   };
 
   function sampleText(str) {
     const c = document.createElement("canvas"); c.width = 1920; c.height = 1080;
     const g = c.getContext("2d");
-    g.fillStyle = "#fff"; g.textAlign = "center"; g.textBaseline = "middle";
-    g.font = '700 330px "Bricolage Grotesque", "Manrope", sans-serif';
-    g.fillText(str, 960, 420);
-    const data = g.getImageData(0, 0, 1920, 1080).data, pts = [];
-    for (let y = 0; y < 1080; y += 5) for (let x = 0; x < 1920; x += 5) if (data[(y * 1920 + x) * 4 + 3] > 140) pts.push([x + (Math.random() - 0.5) * 2, y + (Math.random() - 0.5) * 2]);
+    g.fillStyle = "#000"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.font = '800 340px "Manrope", sans-serif';
+    g.fillText(str, 960, 430);
+    const data = g.getImageData(0, 0, 1920, 1080).data;
+    let pts = [];
+    for (let stepPx = 5; stepPx <= 12; stepPx++) {
+      pts = [];
+      for (let y = 0; y < 1080; y += stepPx) for (let x = 0; x < 1920; x += stepPx) if (data[(y * 1920 + x) * 4 + 3] > 140) pts.push([x, y]);
+      if (pts.length <= N) break;
+    }
     for (let i = pts.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [pts[i], pts[j]] = [pts[j], pts[i]]; }
-    textPts = pts.slice(0, Math.round(N * 0.86));
+    textPts = pts.slice(0, N);
   }
 
-  function setMode(m, d) {
-    if (m === mode && d === dim) return;
-    if (m !== mode) { modeT = performance.now() / 1000; trail = 0.16; for (const p of P) { p.lastU = -1; p.lastY = 1e9; } }
-    mode = m; dim = d; if (m !== "rings") { merge = 0; mergeTarget = 0; }
-    if (reduce) drawStatic();
-  }
-  function burst(dir) {
-    if (reduce) return;
-    const cx = vw / 2, cy = vh / 2;
-    for (const p of P) { const dx = p.x - cx, dy = p.y - cy, d = Math.hypot(dx, dy) || 1, f = (4 + Math.random() * 10) * dir; p.vx += (dx / d) * f; p.vy += (dy / d) * f; }
+  function setMode(m) {
+    if (m === mode) return;
+    mode = m; modeT = performance.now() / 1000;
+    for (const p of P) p.lastU = -1;
+    if (reduce) { draw(4000, true); return; }
+    if (m !== "none") start();
   }
 
-  let lastNow = 0;
   function draw(now, staticMode) {
     const t = now / 1000, tm = t - modeT;
     const dt = lastNow ? Math.min(3, Math.max(0.25, (now - lastNow) / 16.667)) : 1; lastNow = now;
-    const damp = Math.pow(0.86, dt), fade = 1 - Math.pow(1 - trail, dt);
-    dimCur += (dim - dimCur) * Math.min(1, 0.04 * dt);
-    trail += (0.3 - trail) * Math.min(1, 0.02 * dt);
-    if (staticMode) ctx.clearRect(0, 0, vw, vh);
-    else { ctx.globalCompositeOperation = "destination-out"; ctx.fillStyle = `rgba(0,0,0,${fade})`; ctx.fillRect(0, 0, vw, vh); }
-    ctx.globalCompositeOperation = "lighter";
-    if (mode === "rings") merge += (mergeTarget - merge) * Math.min(1, 0.022 * dt);
-    const f = F[mode] || F.field, s = map.s, ox = map.ox, oy = map.oy;
+    const damp = Math.pow(0.86, dt);
+    ctx.clearRect(0, 0, vw, vh);
+    const f = F[mode] || F.none, s = map.s, ox = map.ox, oy = map.oy;
     const tight = mode === "flow" || mode === "text" ? Math.min(2.6, 1 + tm * 0.9) : 1;
-    const mR = 150 * s, mR2 = mR * mR, mouseOn = now - mouse.t < 2500;
+    let maxA = 0;
     for (let i = 0; i < N; i++) {
       const p = P[i];
       f(p, i, t);
+      if (!p.placed) { p.x = p.sx * s + ox; p.y = p.sy * s + oy; p.placed = true; }
       const tx = p.tx * s + ox, ty = p.ty * s + oy;
       if (p.jump) { p.x = tx; p.y = ty; p.vx = p.vy = 0; p.a = 0; p.jump = 0; }
       if (staticMode) { p.x = tx; p.y = ty; p.a = p.ta; }
       else {
-        if (mouseOn) {
-          const dx = p.x - mouse.x, dy = p.y - mouse.y, d2 = dx * dx + dy * dy;
-          if (d2 < mR2) { const d = Math.sqrt(d2) || 1, fo = (1 - d2 / mR2) * 2.4 * dt; p.vx += (dx / d) * fo; p.vy += (dy / d) * fo; }
-        }
         const k = p.k * tight * dt;
         p.vx = (p.vx + (tx - p.x) * k) * damp; p.vy = (p.vy + (ty - p.y) * k) * damp;
         p.x += p.vx * dt; p.y += p.vy * dt;
-        p.a += (p.ta - p.a) * Math.min(1, 0.07 * dt);
+        p.a += (p.ta - p.a) * Math.min(1, (p.ta > p.a ? 0.05 : 0.12) * dt);
       }
-      const a = p.a * dimCur;
-      if (a < 0.012) continue;
-      const sz = p.ts * 13 * s + 2;
-      ctx.globalAlpha = a > 1 ? 1 : a;
+      if (p.a > maxA) maxA = p.a;
+      if (p.a < 0.012) continue;
+      const sz = p.ts * 8 * s + 1.5;
+      ctx.globalAlpha = p.a > 1 ? 1 : p.a;
       ctx.drawImage(sprites[p.c], p.x - sz / 2, p.y - sz / 2, sz, sz);
     }
     ctx.globalAlpha = 1;
+    return maxA;
   }
-  let raf = 0;
-  const loop = (now) => { draw(now, false); raf = requestAnimationFrame(loop); };
-  function drawStatic() { dimCur = dim; draw(4000, true); }
-  function start() { if (reduce) { drawStatic(); return; } if (!raf) raf = requestAnimationFrame(loop); }
-  function stop() { cancelAnimationFrame(raf); raf = 0; }
-  document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
-  addEventListener("pointermove", (e) => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.t = performance.now(); }, { passive: true });
-  return { resize, setMode, burst, start, sampleText, setMerge: (v) => { mergeTarget = v; }, get mode() { return mode; } };
+  const loop = (now) => {
+    const maxA = draw(now, false);
+    if (mode === "none" && maxA < 0.012) { ctx.clearRect(0, 0, vw, vh); raf = 0; lastNow = 0; return; }
+    raf = requestAnimationFrame(loop);
+  };
+  function start() { if (reduce) { draw(4000, true); return; } if (!raf && !document.hidden) raf = requestAnimationFrame(loop); }
+  function stop() { cancelAnimationFrame(raf); raf = 0; lastNow = 0; }
+  document.addEventListener("visibilitychange", () => (document.hidden ? stop() : (mode !== "none" && start())));
+  return { resize, setMode, start, sampleText };
 })();
 
 /* ================= Folien-Steuerung ================= */
@@ -873,32 +785,15 @@ const timers = [];
 const later = (fn, ms) => timers.push(setTimeout(fn, ms));
 const maxStep = (i) => +(slides[i].dataset.steps || 0);
 
-function fxFor(sl, st) {
-  let m = sl.dataset.fx || "field";
-  for (let k = st; k >= 1; k--) if (sl.dataset["fx" + k]) { m = sl.dataset["fx" + k]; break; }
-  return [m, parseFloat(sl.dataset.dim || 1)];
-}
 function applyStep(sl, st) {
   $$("[data-step]", sl).forEach((el) => {
     const on = st >= +el.dataset.step;
     if (on && !el.classList.contains("shown")) $$(".odo", el).forEach((o) => odoRoll(o, 0.2));
     el.classList.toggle("shown", on);
   });
-  const [m, d] = fxFor(sl, st);
-  FX.setMode(m, d);
+  FX.setMode(sl.dataset.fx || "none");
   ctrl[sl.id] && ctrl[sl.id].step && ctrl[sl.id].step(st);
 }
-
-const TR = {
-  depth: {
-    out: (d) => [{ opacity: 1, transform: "scale(1)", filter: "blur(0px)" }, { opacity: 0, transform: `scale(${d > 0 ? 1.14 : 0.88})`, filter: "blur(12px)" }],
-    in: (d) => [{ opacity: 0, transform: `scale(${d > 0 ? 0.9 : 1.1})`, filter: "blur(12px)" }, { opacity: 1, transform: "scale(1)", filter: "blur(0px)" }],
-  },
-  iris: {
-    out: () => [{ opacity: 1, transform: "scale(1)" }, { opacity: 0, transform: "scale(0.94)" }],
-    in: () => [{ clipPath: "circle(0% at 50% 55%)", opacity: 1 }, { clipPath: "circle(75% at 50% 55%)", opacity: 1 }],
-  },
-};
 
 function go(i, dir = 1, atEnd = false, instant = false) {
   if (i < 0 || i >= slides.length) return;
@@ -907,13 +802,11 @@ function go(i, dir = 1, atEnd = false, instant = false) {
   slides.forEach((s) => { if (s !== from && s !== to) { s.getAnimations().forEach((a) => a.cancel()); s.classList.remove("is-active", "play"); } });
   if (from !== to) {
     ctrl[from.id] && ctrl[from.id].leave && ctrl[from.id].leave();
-    const tr = TR[(dir > 0 ? to.dataset.tr : from.dataset.tr) || "depth"] || TR.depth;
     if (!instant && !reduce) {
       from.getAnimations().forEach((a) => a.cancel());
-      const a = from.animate(tr.out(dir), { duration: 650, easing: "cubic-bezier(.55,0,.75,.2)", fill: "forwards" });
+      const a = from.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, easing: "ease-in", fill: "forwards" });
       a.onfinish = () => { if (from !== slides[cur]) { from.classList.remove("is-active", "play"); a.cancel(); resetSlide(from); } };
     } else { from.classList.remove("is-active", "play"); resetSlide(from); }
-    FX.burst(dir);
   }
   cur = i; step = atEnd ? maxStep(i) : 0;
   to.getAnimations().forEach((a) => a.cancel());
@@ -921,8 +814,7 @@ function go(i, dir = 1, atEnd = false, instant = false) {
   to.classList.add("is-active");
   $$("[data-step]", to).forEach((el) => el.classList.remove("shown"));
   if (!instant && !reduce && from !== to) {
-    const tr = TR[(dir > 0 ? to.dataset.tr : from.dataset.tr) || "depth"] || TR.depth;
-    to.animate(tr.in(dir), { duration: 1050, delay: 220, easing: "cubic-bezier(.16,1,.3,1)", fill: "backwards" });
+    to.animate([{ opacity: 0, transform: "scale(0.99)" }, { opacity: 1, transform: "scale(1)" }], { duration: 800, delay: 180, easing: "cubic-bezier(.22,1,.36,1)", fill: "backwards" });
   }
   void to.offsetWidth;
   requestAnimationFrame(() => {
@@ -933,7 +825,7 @@ function go(i, dir = 1, atEnd = false, instant = false) {
   ctrl[to.id] && ctrl[to.id].enter && ctrl[to.id].enter(step, atEnd);
   hud();
   try { history.replaceState(null, "", "#folie-" + (i + 1)); } catch (e) { /* gesperrt */ }
-  if (ctrl.live && ctrl.live.preload && i >= slides.length - 4) ctrl.live.preload();
+  if (i >= slides.length - 4) ctrl.live.preload();
 }
 function resetSlide(sl) { $$(".odo", sl).forEach(odoReset); $$("[data-step]", sl).forEach((el) => el.classList.remove("shown")); }
 function next() { if (step < maxStep(cur)) { step++; applyStep(slides[cur], step); hud(); } else go(cur + 1, 1); }
@@ -949,17 +841,17 @@ ctrl.zeit = (() => {
   for (let v = 0; v <= MAX; v += 45000) g += `<line class="${v ? "tlx-grid" : "tlx-base"}" x1="${X0}" x2="${X1}" y1="${ys(v)}" y2="${ys(v)}"/><text class="tlx-lab" x="${X0 - 14}" y="${ys(v) + 7}" text-anchor="end">${v ? v / 1000 + " Tsd." : "0"}</text>`;
   [0, 10, 20, 30, 37].forEach((yr) => { g += `<text class="tlx-lab" x="${xs(yr)}" y="${B + 40}" text-anchor="${yr === 37 ? "end" : yr === 0 ? "start" : "middle"}">${30 + yr}</text>`; });
   svg.innerHTML = `<defs>
-      <linearGradient id="tgB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4ade80" stop-opacity=".42"/><stop offset="1" stop-color="#4ade80" stop-opacity="0"/></linearGradient>
-      <linearGradient id="tgC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38bdf8" stop-opacity=".38"/><stop offset="1" stop-color="#38bdf8" stop-opacity=".04"/></linearGradient>
+      <linearGradient id="tgB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22c55e" stop-opacity=".22"/><stop offset="1" stop-color="#22c55e" stop-opacity="0"/></linearGradient>
+      <linearGradient id="tgC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a86c4" stop-opacity=".2"/><stop offset="1" stop-color="#0a86c4" stop-opacity=".03"/></linearGradient>
     </defs>${g}
     <path id="tAB" fill="url(#tgB)"/><path id="tAC" fill="url(#tgC)"/>
     <path id="tLC" class="tlx-lineCon"/><path id="tLB" class="tlx-lineBal"/>
     <line id="tPl" class="tlx-play" y1="${T0}" y2="${B}"/>
-    <circle id="tHalo" class="tlx-halo" r="20"/><circle id="tHead" class="tlx-head" r="9"/>
+    <circle id="tHead" class="tlx-head" r="10"/>
     <g id="tAnn" class="tlx-ann">
-      <line x1="${X1 + 22}" x2="${X1 + 22}" y1="${ys(162160) + 4}" y2="${ys(44400) - 4}" stroke="#4ade80" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/>
-      <line x1="${X1 + 12}" x2="${X1 + 32}" y1="${ys(162160)}" y2="${ys(162160)}" stroke="#4ade80" stroke-width="3" stroke-linecap="round"/>
-      <line x1="${X1 + 12}" x2="${X1 + 32}" y1="${ys(44400)}" y2="${ys(44400)}" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+      <line x1="${X1 + 22}" x2="${X1 + 22}" y1="${ys(162160) + 4}" y2="${ys(44400) - 4}" stroke="#16a34a" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/>
+      <line x1="${X1 + 12}" x2="${X1 + 32}" y1="${ys(162160)}" y2="${ys(162160)}" stroke="#16a34a" stroke-width="3" stroke-linecap="round"/>
+      <line x1="${X1 + 12}" x2="${X1 + 32}" y1="${ys(44400)}" y2="${ys(44400)}" stroke="#0a86c4" stroke-width="3" stroke-linecap="round"/>
       <text class="tlx-annG" x="${X1 + 44}" y="${(ys(162160) + ys(44400)) / 2 + 9}">Gewinn</text>
       <text class="tlx-annB" x="${X1 + 44}" y="${ys(44400) + 8}">Eingezahlt</text>
     </g>`;
@@ -976,8 +868,7 @@ ctrl.zeit = (() => {
     el("tAB").setAttribute("d", lb + base); el("tAC").setAttribute("d", lc + base);
     el("tLB").setAttribute("d", lb); el("tLC").setAttribute("d", lc);
     const hx = last[0], hy = ys(last[1]);
-    ["tHead", "tHalo"].forEach((id) => { el(id).setAttribute("cx", hx); el(id).setAttribute("cy", hy); });
-    el("tHalo").setAttribute("r", 16 + 8 * Math.sin(performance.now() / 200));
+    el("tHead").setAttribute("cx", hx); el("tHead").setAttribute("cy", hy);
     el("tPl").setAttribute("x1", hx); el("tPl").setAttribute("x2", hx);
     el("tlxAge").textContent = 30 + Math.floor(yrs + 1e-6);
     el("tlxBal").textContent = eur(last[1]); el("tlxCon").textContent = eur(last[2]); el("tlxGain").textContent = eur(Math.max(0, last[1] - last[2]));
@@ -1044,9 +935,6 @@ ctrl.tour = (() => {
   };
 })();
 
-/* ---------------- Folie 9: Genauigkeit ---------------- */
-ctrl.genau = { enter() { FX.setMerge(0); later(() => FX.setMerge(1), 3200); }, leave() { FX.setMerge(0); } };
-
 /* ---------------- Folie 12: Live ---------------- */
 ctrl.live = (() => {
   const view = $("#liveView"), fb = $("#liveFallback");
@@ -1054,9 +942,10 @@ ctrl.live = (() => {
   const NAV = ["ArrowRight", "ArrowLeft", "PageDown", "PageUp", " ", "Home", "End"];
   function preload() {
     if (frame) return;
+    if (LIVE_THEME) { try { localStorage.setItem("av-theme", LIVE_THEME); } catch (e) { /* gesperrt */ } }
     frame = document.createElement("iframe");
     frame.title = "Vorsorge-Rechner live";
-    frame.src = "../";
+    frame.src = LIVE_SRC;
     frame.style.opacity = "0";
     frame.addEventListener("load", () => {
       setTimeout(() => {
@@ -1152,23 +1041,24 @@ function hud() {
   $("#notesText").textContent = n ? n.textContent : "";
 }
 
-/* Parallaxe für 3D-Elemente */
-let mx = 0, my = 0, tmx = 0, tmy = 0;
-addEventListener("pointermove", (e) => { tmx = (e.clientX / innerWidth) * 2 - 1; tmy = (e.clientY / innerHeight) * 2 - 1; }, { passive: true });
-(function par() {
-  mx += (tmx - mx) * 0.06; my += (tmy - my) * 0.06;
+/* Leichte Neigung der Geräte zur Maus */
+let mx = 0, my = 0, tmx = 0, tmy = 0, parRaf = 0;
+function par() {
+  mx += (tmx - mx) * 0.08; my += (tmy - my) * 0.08;
   document.documentElement.style.setProperty("--mx", mx.toFixed(3));
   document.documentElement.style.setProperty("--my", my.toFixed(3));
-  if (!reduce) requestAnimationFrame(par);
-})();
+  parRaf = Math.abs(tmx - mx) + Math.abs(tmy - my) > 0.002 ? requestAnimationFrame(par) : 0;
+}
+document.documentElement.style.setProperty("--mx", "0");
+document.documentElement.style.setProperty("--my", "0");
+if (!reduce) addEventListener("pointermove", (e) => { tmx = (e.clientX / innerWidth) * 2 - 1; tmy = (e.clientY / innerHeight) * 2 - 1; if (!parRaf) parRaf = requestAnimationFrame(par); }, { passive: true });
 
 /* ================= Start ================= */
 addEventListener("resize", fit);
 async function boot(data) {
   fit();
-  try { await Promise.race([document.fonts.load('700 330px "Bricolage Grotesque"'), new Promise((r) => setTimeout(r, 2500))]); } catch (e) { /* Fallback-Schrift */ }
+  try { await Promise.race([document.fonts.load('800 340px "Manrope"'), new Promise((r) => setTimeout(r, 2500))]); } catch (e) { /* Fallback-Schrift */ }
   FX.sampleText("Danke.");
-  FX.start();
   const m = /folie-(\d+)/.exec(location.hash);
   const start = data && typeof data.cur === "number" ? data.cur : m ? Math.max(0, Math.min(slides.length - 1, +m[1] - 1)) : 0;
   cur = start;
