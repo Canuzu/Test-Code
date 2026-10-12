@@ -136,6 +136,8 @@ jobs:
              altersvorsorge-rechner/app.js \
              altersvorsorge-rechner/fund-data.json \
              dist/altersvorsorge-rechner/
+          # Animierte Präsentation zum Rechner (statisch, mit Bildern).
+          cp -r altersvorsorge-rechner/praesentation dist/altersvorsorge-rechner/
       - name: Add MapCinema map studio into /animatemymap subpath
         # Eigenständige, statische Web-App (kein Build). Wird unter
         # <pages>/animatemymap/ ausgeliefert, ohne die anderen Apps zu berühren.
