@@ -54,8 +54,9 @@ button { font: inherit; color: inherit; }
 #fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 
 /* ---------- Bühne ---------- */
-#viewport { position: fixed; inset: 0; overflow: hidden; }
-#stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+#viewport { position: fixed; inset: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+#stage { position: relative; flex: none; width: 1920px; height: 1080px; transform-origin: 0 0; }
+.no-zoom #stage { position: absolute; left: 0; top: 0; }
 .slide { position: absolute; inset: 0; visibility: hidden; pointer-events: none; background: var(--bg); }
 .slide.is-active { visibility: visible; pointer-events: auto; }
 .slide.fxslide { background: transparent; }
@@ -89,7 +90,7 @@ button { font: inherit; color: inherit; }
 /* Zählwerk */
 .odo { display: inline-flex; align-items: flex-start; white-space: nowrap; font-variant-numeric: tabular-nums; line-height: 1.15; }
 .odo-col { display: inline-block; height: 1.15em; overflow: hidden; -webkit-mask-image: linear-gradient(transparent, #000 9%, #000 91%, transparent); mask-image: linear-gradient(transparent, #000 9%, #000 91%, transparent); }
-.odo-strip { display: block; will-change: transform; }
+.odo-strip { display: block; }
 .odo-strip span, .odo-ch { display: block; height: 1.15em; line-height: 1.15em; }
 .odo-ch { display: inline-block; }
 
@@ -227,9 +228,9 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
 .tour-bars i.on::after { transform: scaleX(1); }
 .tour-frame { left: 680px; top: 164px; width: 1120px; height: 746px; }
 .tour-view { position: relative; height: 700px; overflow: hidden; background: #edf3f8; }
-.tour-page { position: absolute; left: 0; top: 0; width: 1440px; transform-origin: 0 0; transition: transform 1.5s var(--ease); will-change: transform; }
+.tour-page { position: absolute; left: 0; top: 0; width: 1440px; transform-origin: 0 0; transition: transform 1.5s var(--ease); }
 .tour-page img { width: 1440px; display: block; }
-.spot { position: absolute; left: 0; top: 0; width: 100px; height: 100px; border-radius: 26px; box-shadow: 0 0 0 3px var(--blue), 0 0 0 4000px rgba(255, 255, 255, 0.6); transition: left 1.5s var(--ease), top 1.5s var(--ease), width 1.5s var(--ease), height 1.5s var(--ease), opacity 0.6s; pointer-events: none; }
+.spot { position: absolute; left: 0; top: 0; width: 100px; height: 100px; border-radius: 26px; box-shadow: 0 0 0 3px var(--blue), 0 0 0 10px rgba(0, 158, 224, 0.16); transition: left 1.5s var(--ease), top 1.5s var(--ease), width 1.5s var(--ease), height 1.5s var(--ease), opacity 0.6s; pointer-events: none; }
 
 /* ---------- 8 Handy ---------- */
 .feat { position: absolute; left: 140px; top: 420px; width: 720px; display: grid; gap: 40px; }
@@ -295,7 +296,7 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
 /* ---------- 12 Live ---------- */
 .live-cap { position: absolute; left: 140px; top: 420px; width: 460px; display: grid; gap: 28px; }
 .live-cap p { font-size: 30px; line-height: 1.45; color: var(--ink-2); }
-.live-url { font-size: 24px; font-weight: 700; color: var(--blue-ink); user-select: all; }
+.live-url { font-size: 24px; font-weight: 700; color: var(--blue-ink); text-decoration: none; }
 .live-frame { left: 660px; top: 150px; width: 1140px; height: 759px; }
 .live-view { position: relative; width: 1140px; height: 713px; overflow: hidden; background: #f4f8fb; }
 .live-view iframe { position: absolute; left: 0; top: 0; width: 1440px; height: 900px; border: 0; transform: scale(0.79167); transform-origin: 0 0; background: #f4f8fb; }
@@ -435,7 +436,7 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
 <!-- 6 · App -->
 <section class="slide" id="app" data-title="Der Vorsorge-Rechner">
   <div class="head narrow" style="width:560px"><p class="eyebrow in" style="--i:0">Die Lösung</p><h2 class="h2 split" style="font-size:76px">Der Vorsorge-<br><em>Rechner</em>.</h2><p class="lead app-lead in" style="--i:5">Alle Antworten auf einer Seite – neu berechnet, sobald sich ein Wert ändert.</p></div>
-  <div class="reveal-stage"><div class="reveal-tilt"><div class="reveal-frame"><div class="browser"><div class="browser-bar"><i></i><i></i><i></i><span class="url">canuzu.github.io/Test-Code/altersvorsorge-rechner</span></div><img src="assets/desktop-hero.jpg" alt="Startansicht des Vorsorge-Rechners mit Fondsdaten und Ergebniskarte"></div></div></div></div>
+  <div class="reveal-stage"><div class="reveal-tilt"><div class="reveal-frame"><div class="browser"><div class="browser-bar"><i></i><i></i><i></i><span class="url">canuzu.github.io/Test-Code/altersvorsorge-rechner</span></div><img src="assets/desktop-hero.jpg" srcset="assets/desktop-hero-s.jpg 1200w, assets/desktop-hero.jpg 2880w" sizes="58vw" alt="Startansicht des Vorsorge-Rechners mit Fondsdaten und Ergebniskarte"></div></div></div></div>
   <div class="chip-pos in" data-in="fade" style="--i:12;left:600px;top:126px"><div class="chip"><i></i>Live-Berechnung</div></div>
   <div class="chip-pos in" data-in="fade" style="--i:14;right:90px;top:126px"><div class="chip"><i></i>Echte Fondsdaten</div></div>
   <div class="chip-pos in" data-in="fade" style="--i:16;left:600px;top:886px"><div class="chip"><i></i>Tarif CA6I</div></div>
@@ -456,7 +457,7 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
       <div class="tour-text"><h3>Vertrag &amp; Rentenwahl</h3><p>Zeitleiste von Vertragsbeginn bis Rentenbeginn – dazu die Optionen: lebenslange Rente, Kapitalabfindung oder Kapitalverzehr.</p></div>
     </div>
   </div>
-  <div class="browser tour-frame in" data-in="right" style="--i:3"><div class="browser-bar"><i></i><i></i><i></i><span class="url">Vorsorge-Rechner · Debeka Global Shares</span></div><div class="tour-view"><div class="tour-page" id="tourPage"><img src="assets/desktop-full.jpg" alt="Gesamtansicht des Vorsorge-Rechners"></div><div class="spot" id="tourSpot"></div></div></div>
+  <div class="browser tour-frame in" data-in="right" style="--i:3"><div class="browser-bar"><i></i><i></i><i></i><span class="url">Vorsorge-Rechner · Debeka Global Shares</span></div><div class="tour-view"><div class="tour-page" id="tourPage"><img src="assets/desktop-full.jpg" srcset="assets/desktop-full-s.jpg 1200w, assets/desktop-full.jpg 2880w" sizes="92vw" alt="Gesamtansicht des Vorsorge-Rechners"></div><div class="spot" id="tourSpot"></div></div></div>
   <aside class="notes">Ein kurzer Rundgang. Links die Eingaben: Beitrag, Alter, Rendite – alles live. [Klick] Rechts das Ergebnis: Netto-Endvermögen, Gewinnanteil, lebenslange Rente. [Klick] Darunter der Verlauf Jahr für Jahr, auch in Kaufkraft. [Klick] Und am Ende der Vertrag als Zeitleiste und die Wahl bei Rentenbeginn.</aside>
 </section>
 
@@ -469,8 +470,8 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
     <li class="in" style="--i:7"><span class="feat-ic"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0077b6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"/><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"/></svg></span><div><b>Ohne Installation</b><span>Läuft direkt im Browser – ein Link genügt.</span></div></li>
   </ul>
   <div class="phones"><div class="phones-tilt">
-    <div class="phone-wrap-a"><div class="in" data-in="left" style="--i:4;position:absolute;inset:0"><div class="phone phone-a"><img src="assets/mobile-top.jpg" alt="Vorsorge-Rechner auf dem Handy, helles Design"></div></div></div>
-    <div class="phone-wrap-b"><div class="in" data-in="right" style="--i:6;position:absolute;inset:0"><div class="phone phone-b"><img src="assets/mobile-result.jpg" alt="Ergebniskarte auf dem Handy, dunkles Design"></div></div></div>
+    <div class="phone-wrap-a"><div class="in" data-in="left" style="--i:4;position:absolute;inset:0"><div class="phone phone-a"><img src="assets/mobile-top.jpg" srcset="assets/mobile-top-s.jpg 600w, assets/mobile-top.jpg 1170w" sizes="18vw" alt="Vorsorge-Rechner auf dem Handy, helles Design"></div></div></div>
+    <div class="phone-wrap-b"><div class="in" data-in="right" style="--i:6;position:absolute;inset:0"><div class="phone phone-b"><img src="assets/mobile-result.jpg" srcset="assets/mobile-result-s.jpg 600w, assets/mobile-result.jpg 1170w" sizes="18vw" alt="Ergebniskarte auf dem Handy, dunkles Design"></div></div></div>
   </div></div>
   <aside class="notes">Der Rechner funktioniert genauso auf dem Handy – ideal im Kundengespräch. Eine schwebende Leiste zeigt Netto und Rente, während man Werte ändert. Hell- und Dunkelmodus kommen automatisch. Und es gibt nichts zu installieren: Ein Link genügt.</aside>
 </section>
@@ -517,8 +518,8 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
 <section class="slide" id="live" data-title="Live-Demo">
   <div class="head narrow" style="width:470px"><p class="eyebrow in" style="--i:0">Live-Demo</p><h2 class="h2 split">Probieren wir es <em>aus</em>.</h2></div>
   <span class="live-badge in" data-in="fade" style="--i:2"><i></i>Live</span>
-  <div class="live-cap in" style="--i:4"><p>Das ist die echte App, direkt hier bedienbar. Beitrag, Alter oder Rendite ändern – alles rechnet mit.</p><p class="live-url">canuzu.github.io/<wbr>Test-Code/<wbr>altersvorsorge-rechner</p></div>
-  <div class="browser live-frame in" data-in="scale" style="--i:3"><div class="browser-bar"><i></i><i></i><i></i><span class="url">canuzu.github.io/Test-Code/altersvorsorge-rechner</span></div><div class="live-view" id="liveView"><img id="liveFallback" src="assets/desktop-hero.jpg" alt="Vorsorge-Rechner"></div></div>
+  <div class="live-cap in" style="--i:4"><p>Das ist die echte App, direkt hier bedienbar. Beitrag, Alter oder Rendite ändern – alles rechnet mit.</p><a class="live-url" href="https://canuzu.github.io/Test-Code/altersvorsorge-rechner/" target="_blank" rel="noopener">canuzu.github.io/<wbr>Test-Code/<wbr>altersvorsorge-rechner</a></div>
+  <div class="browser live-frame in" data-in="scale" style="--i:3"><div class="browser-bar"><i></i><i></i><i></i><span class="url">canuzu.github.io/Test-Code/altersvorsorge-rechner</span></div><div class="live-view" id="liveView"><img id="liveFallback" src="assets/desktop-hero.jpg" srcset="assets/desktop-hero-s.jpg 1200w, assets/desktop-hero.jpg 2880w" sizes="60vw" alt="Vorsorge-Rechner"></div></div>
   <aside class="notes">Jetzt live. Das Fenster ist die echte App – ich kann Werte direkt ändern. Zum Beispiel den Beitrag auf 200 Euro, oder die Rendite auf 7 Prozent. Weiter geht es mit der Pfeiltaste, sobald die Maus außerhalb eines Eingabefelds ist.</aside>
 </section>
 
@@ -566,11 +567,17 @@ const eur = (v) => nf.format(Math.round(v)) + " €";
 let cur = 0, step = 0, map = { s: 1, ox: 0, oy: 0 };
 
 /* ---------------- Skalierung ---------------- */
+/* Skalierung per CSS-Zoom: Alles wird direkt in Bildschirmgröße gezeichnet.
+   Eine Verkleinerung per transform ließe Safari jede animierte Ebene in
+   1920×1080 × Pixeldichte anlegen – auf dem iPhone sprengt das den Speicher. */
+const ZOOM = !!(window.CSS && CSS.supports && CSS.supports("zoom", "0.5"));
+if (!ZOOM) document.documentElement.classList.add("no-zoom");
 function fit() {
   const vw = innerWidth, vh = innerHeight;
   const s = Math.min(vw / W0, vh / H0);
   map = { s, ox: (vw - W0 * s) / 2, oy: (vh - H0 * s) / 2 };
-  stage.style.transform = `translate(${map.ox}px, ${map.oy}px) scale(${s})`;
+  if (ZOOM) stage.style.zoom = s;
+  else stage.style.transform = `translate(${map.ox}px, ${map.oy}px) scale(${s})`;
   FX.resize();
 }
 
@@ -608,7 +615,7 @@ function odoBuild(el) {
     if (/\d/.test(ch)) {
       const col = document.createElement("span"); col.className = "odo-col"; col.dataset.d = ch;
       const strip = document.createElement("span"); strip.className = "odo-strip";
-      let h = ""; for (let r = 0; r < 3; r++) for (let d = 0; d < 10; d++) h += `<span>${d}</span>`;
+      let h = ""; for (let r = 0; r < 2; r++) for (let d = 0; d < 10; d++) h += `<span>${d}</span>`;
       strip.innerHTML = h; col.appendChild(strip); el.appendChild(col);
     } else {
       const s = document.createElement("span"); s.className = "odo-ch"; s.textContent = ch === " " ? " " : ch; el.appendChild(s);
@@ -623,7 +630,7 @@ function odoRoll(el, extraDelay = 0) {
   const base = parseFloat(el.dataset.delay || 0) + extraDelay;
   cols.forEach((col, i) => {
     const st = col.firstChild, d = +col.dataset.d;
-    const target = `translateY(${-(20 + d) * 1.15}em)`;
+    const target = `translateY(${-(10 + d) * 1.15}em)`;
     if (reduce) { st.style.transition = "none"; st.style.transform = target; return; }
     st.style.transition = "none"; st.style.transform = "translateY(0)";
     void st.offsetWidth;
@@ -653,7 +660,7 @@ const FX = (() => {
     cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     if (!N) {
-      N = 2000;
+      N = Math.min(innerWidth, innerHeight) < 600 ? 1200 : 2000;
       for (let i = 0; i < N; i++) {
         const x = Math.random() * 1920, y = Math.random() * 1080;
         P.push({ x: 0, y: 0, sx: x, sy: y, tx: x, ty: y, vx: 0, vy: 0, a: 0, ta: 0, ts: 1, c: 1, placed: false,
@@ -825,7 +832,7 @@ function go(i, dir = 1, atEnd = false, instant = false) {
   ctrl[to.id] && ctrl[to.id].enter && ctrl[to.id].enter(step, atEnd);
   hud();
   try { history.replaceState(null, "", "#folie-" + (i + 1)); } catch (e) { /* gesperrt */ }
-  if (i >= slides.length - 4) ctrl.live.preload();
+  if (to.id === "live" || to.id === "wahl") ctrl.live.preload(); else ctrl.live.unload();
 }
 function resetSlide(sl) { $$(".odo", sl).forEach(odoReset); $$("[data-step]", sl).forEach((el) => el.classList.remove("shown")); }
 function next() { if (step < maxStep(cur)) { step++; applyStep(slides[cur], step); hud(); } else go(cur + 1, 1); }
@@ -940,20 +947,26 @@ ctrl.live = (() => {
   const view = $("#liveView"), fb = $("#liveFallback");
   let frame = null, ok = false;
   const NAV = ["ArrowRight", "ArrowLeft", "PageDown", "PageUp", " ", "Home", "End"];
+  const small = () => Math.min(innerWidth, innerHeight) < 600 || (matchMedia("(pointer: coarse)").matches && innerWidth < 1100);
+  function unload() {
+    if (!frame) return;
+    frame.remove(); frame = null; ok = false; fb.style.opacity = "1";
+  }
   function preload() {
-    if (frame) return;
+    if (frame || small()) return;
     if (LIVE_THEME) { try { localStorage.setItem("av-theme", LIVE_THEME); } catch (e) { /* gesperrt */ } }
-    frame = document.createElement("iframe");
-    frame.title = "Vorsorge-Rechner live";
-    frame.src = LIVE_SRC;
-    frame.style.opacity = "0";
-    frame.addEventListener("load", () => {
+    const f = frame = document.createElement("iframe");
+    f.title = "Vorsorge-Rechner live";
+    f.src = LIVE_SRC;
+    f.style.opacity = "0";
+    f.addEventListener("load", () => {
       setTimeout(() => {
+        if (f !== frame) return;
         try {
-          const doc = frame.contentDocument;
+          const doc = f.contentDocument;
           ok = !!(doc && doc.getElementById("app") && doc.getElementById("app").childElementCount);
           if (ok) {
-            frame.style.transition = "opacity .8s"; frame.style.opacity = "1"; fb.style.transition = "opacity .8s"; fb.style.opacity = "0";
+            f.style.transition = "opacity .8s"; f.style.opacity = "1"; fb.style.transition = "opacity .8s"; fb.style.opacity = "0";
             doc.addEventListener("keydown", (e) => {
               const tag = (e.target.tagName || "").toLowerCase();
               if (tag === "input" || tag === "select" || tag === "textarea") return;
@@ -961,12 +974,12 @@ ctrl.live = (() => {
             });
           }
         } catch (e) { ok = false; }
-        if (!ok) frame.remove();
+        if (!ok) { f.remove(); frame = null; }
       }, 1800);
     });
-    view.appendChild(frame);
+    view.appendChild(f);
   }
-  return { preload, enter() { preload(); } };
+  return { preload, unload, enter() { preload(); } };
 })();
 
 /* ================= Bedienung ================= */
