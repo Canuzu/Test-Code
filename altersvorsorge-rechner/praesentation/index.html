@@ -68,7 +68,7 @@ button { font: inherit; color: inherit; }
 .eyebrow { font-size: 30px; font-weight: 700; color: var(--blue-ink); letter-spacing: -0.005em; }
 .h2 { margin-top: 14px; font-weight: 800; font-size: 84px; line-height: 1.04; letter-spacing: -0.045em; color: var(--ink); }
 .display { font-weight: 800; font-size: 140px; line-height: 0.98; letter-spacing: -0.055em; color: var(--ink); }
-.h2 em, .display em, .answer em, .callout em, .statement em, .close-line em { color: var(--blue-em); }
+.h2 em, .display em, .answer em, .callout em, .close-line em { color: var(--blue-em); }
 .lead { font-size: 34px; line-height: 1.45; color: var(--ink-2); letter-spacing: -0.01em; }
 .sub { margin-top: 18px; font-size: 30px; color: var(--ink-2); }
 .foot { position: absolute; left: 140px; bottom: 48px; width: 1640px; font-size: 22px; line-height: 1.45; color: var(--ink-3); }
@@ -248,28 +248,6 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
 .phone-wrap-a { position: absolute; inset: 0; transform: rotateY(18deg) rotateZ(-3deg) translate3d(0, 0, -40px); transform-style: preserve-3d; }
 .phone-wrap-b { position: absolute; inset: 0; transform: rotateY(-12deg) rotateZ(2deg) translate3d(0, 0, 70px); transform-style: preserve-3d; }
 
-/* ---------- 9 Genauigkeit (Akzentfolie) ---------- */
-.slide.accent { background: linear-gradient(135deg, #0094d6, #0077b6 55%, #00639a); color: #fff; }
-.accent .eyebrow { color: #bfe7fa; }
-.accent .h2 { color: #fff; }
-.accent .h2 em, .accent .statement em { color: var(--mint); }
-.accent .foot { color: rgba(255, 255, 255, 0.72); }
-.cmp { position: absolute; left: 140px; top: 352px; width: 1640px; padding: 12px 44px 18px; border-radius: 32px; background: rgba(255, 255, 255, 0.1); }
-.cmp-head, .cmp-row { display: grid; grid-template-columns: 340px 450px 450px 1fr; align-items: center; gap: 24px; }
-.cmp-head { padding: 20px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.22); font-size: 24px; font-weight: 600; color: rgba(255, 255, 255, 0.78); }
-.cmp-row { padding: 28px 0; }
-.cmp-row + .cmp-row { border-top: 1px solid rgba(255, 255, 255, 0.22); }
-.cmp-lbl { font-size: 28px; color: rgba(255, 255, 255, 0.8); }
-.cmp-lbl b { display: block; font-size: 40px; color: #fff; font-weight: 800; letter-spacing: -0.03em; }
-.cmp-row .odo { font-size: 62px; font-weight: 800; letter-spacing: -0.04em; }
-.cmp-row .odo.mint { color: var(--mint); }
-.dev { justify-self: start; white-space: nowrap; display: inline-flex; align-items: center; gap: 14px; padding: 10px 22px 10px 10px; border-radius: 999px; font-size: 32px; font-weight: 800; background: #fff; color: var(--ink); opacity: 0; transform: scale(0.6); transition: opacity 0.5s var(--ease), transform 0.8s var(--ease); }
-.dev i { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--green-fill); }
-.slide.play .dev { opacity: 1; transform: none; }
-.slide.play .cmp-row:nth-child(2) .dev { transition-delay: 2.9s; }
-.slide.play .cmp-row:nth-child(3) .dev { transition-delay: 3.3s; }
-.statement { position: absolute; left: 140px; top: 820px; width: 1500px; font-size: 38px; font-weight: 700; line-height: 1.35; letter-spacing: -0.02em; }
-
 /* ---------- 10 Unter der Haube ---------- */
 .node-at { position: absolute; transform: translate(-50%, -50%); }
 .node { width: 330px; padding: 26px 30px; border-radius: 28px; background: rgba(242, 246, 250, 0.94); box-shadow: 0 0 0 1px rgba(11, 31, 51, 0.04); }
@@ -356,7 +334,7 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
   <div class="cover-copy">
     <p class="eyebrow in" style="--i:1">Debeka Global Shares</p>
     <h1 class="display split">Vorsorge, die man<br><em>sehen</em> kann.</h1>
-    <p class="lead in" style="--i:8">Der Vorsorge-Rechner für die Debeka Fondspolice: live, anschaulich und auf den Euro genau wie das Debeka-System.</p>
+    <p class="lead in" style="--i:8">Der Vorsorge-Rechner für die Debeka Fondspolice: live, anschaulich und mit den echten Fondsdaten.</p>
   </div>
   <svg class="cover-curve" viewBox="0 0 1920 356" preserveAspectRatio="none" aria-hidden="true">
     <defs>
@@ -367,7 +345,7 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
     <path class="cc-line" pathLength="1" d="M0,330.0 L32,329.3 L64,328.5 L96,327.7 L128,326.9 L160,326.0 L192,325.0 L224,324.0 L256,323.0 L288,321.9 L320,320.7 L352,319.5 L384,318.2 L416,316.9 L448,315.5 L480,314.0 L512,312.4 L544,310.8 L576,309.0 L608,307.2 L640,305.2 L672,303.2 L704,301.0 L736,298.8 L768,296.4 L800,293.9 L832,291.3 L864,288.5 L896,285.6 L928,282.5 L960,279.2 L992,275.8 L1024,272.2 L1056,268.4 L1088,264.4 L1120,260.2 L1152,255.8 L1184,251.1 L1216,246.2 L1248,241.1 L1280,235.6 L1312,229.9 L1344,223.9 L1376,217.5 L1408,210.8 L1440,203.8 L1472,196.4 L1504,188.5 L1536,180.3 L1568,171.7 L1600,162.5 L1632,152.9 L1664,142.8 L1696,132.2 L1728,120.9 L1760,109.1 L1792,96.7 L1824,83.6 L1856,69.8 L1888,55.3 L1920,40.0"/>
   </svg>
   <p class="hint in" data-in="fade" style="--i:14">Weiter mit <kbd>→</kbd> oder Klick</p>
-  <aside class="notes">Begrüßung. Heute zeige ich euch den Vorsorge-Rechner für den Debeka Global Shares. Die Idee in einem Satz: Vorsorge wird sichtbar. Statt Tabellen sieht man live, was aus dem eigenen Beitrag wird – und die Zahlen stimmen auf den Euro mit dem Debeka-System überein.</aside>
+  <aside class="notes">Begrüßung. Heute zeige ich euch den Vorsorge-Rechner für den Debeka Global Shares. Die Idee in einem Satz: Vorsorge wird sichtbar. Statt Tabellen sieht man live, was aus dem eigenen Beitrag wird – mit den echten Fondsdaten und den Kosten des Tarifs.</aside>
 </section>
 
 <!-- 2 · Ausgangslage -->
@@ -476,20 +454,7 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
   <aside class="notes">Der Rechner funktioniert genauso auf dem Handy – ideal im Kundengespräch. Eine schwebende Leiste zeigt Netto und Rente, während man Werte ändert. Hell- und Dunkelmodus kommen automatisch. Und es gibt nichts zu installieren: Ein Link genügt.</aside>
 </section>
 
-<!-- 9 · Genauigkeit -->
-<section class="slide accent" id="genau" data-title="Auf den Euro genau">
-  <div class="head"><p class="eyebrow in" style="--i:0">Genauigkeit</p><h2 class="h2 split">Auf den Euro wie im <em>Debeka-System</em>.</h2></div>
-  <div class="cmp in" data-in="scale" style="--i:4">
-    <div class="cmp-head"><span>Aufschubzeit</span><span>Debeka-Musterrechnung</span><span>Vorsorge-Rechner</span><span>Abweichung</span></div>
-    <div class="cmp-row"><span class="cmp-lbl"><b>35 Jahre</b>Kapitalabfindung</span><span class="odo" data-v="46.316,12 €" data-delay="1.0"></span><span class="odo mint" data-v="46.315,83 €" data-delay="1.35"></span><span class="dev"><i><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>0,29 €</span></div>
-    <div class="cmp-row"><span class="cmp-lbl"><b>34 Jahre</b>Kapitalabfindung</span><span class="odo" data-v="43.758,23 €" data-delay="1.6"></span><span class="odo mint" data-v="43.758,24 €" data-delay="1.95"></span><span class="dev"><i><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>0,01 €</span></div>
-  </div>
-  <p class="statement in" style="--i:30">Gleiche Eingaben, gleiches Ergebnis: Die Kosten des Tarifs CA6I sind auf die <em>Debeka-Musterrechnung</em> kalibriert.</p>
-  <p class="foot in" data-in="fade" style="--i:31">50 € im Monat, 5 % p. a., Kapitalabfindung brutto. Aufschubzeit in ganzen Jahren wie bei Debeka: Rentenalter minus Eintrittsalter.</p>
-  <aside class="notes">Die wichtigste Frage bei jedem Rechner: Stimmen die Zahlen? Wir haben gegen die offizielle Debeka-Musterrechnung geprüft. 50 Euro im Monat, 5 Prozent: Bei 35 Jahren Aufschubzeit liefert Debeka 46.316,12 Euro, der Rechner 46.315,83 – 29 Cent Unterschied. Bei 34 Jahren ist es ein Cent.</aside>
-</section>
-
-<!-- 10 · Unter der Haube -->
+<!-- 9 · Unter der Haube -->
 <section class="slide fxslide" id="haube" data-fx="flow" data-title="So rechnet der Rechner">
   <div class="head"><p class="eyebrow in" style="--i:0">Unter der Haube</p><h2 class="h2 split">So rechnet der Rechner – <em>Monat für Monat</em>.</h2></div>
   <div class="node-at" style="left:300px;top:640px"><div class="node in" data-in="fade" style="--i:5"><span class="tag">Start</span><b>Dein Beitrag</b><span>monatlich, auf Wunsch mit jährlicher Dynamik</span></div></div>
@@ -501,7 +466,7 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
   <aside class="notes">Was passiert im Hintergrund? Jeder Monatsbeitrag läuft durch dieselbe Kette. Zuerst die Kosten des Tarifs nach Paragraf 17 – Abschlusskosten über fünf Jahre und Verwaltungskosten; das sieht man an den Punkten, die nach unten abfließen. Der Rest fließt in den Debeka Global Shares und wächst mit der Rendite abzüglich 0,30 Prozent Fondskosten. Bei Rentenbeginn: lebenslange Rente über den Rentenfaktor – oder Kapitalabfindung, bei der ab 62 nur die Hälfte des Gewinns versteuert wird.</aside>
 </section>
 
-<!-- 11 · Rentenwahl -->
+<!-- 10 · Rentenwahl -->
 <section class="slide" id="wahl" data-title="Die Wahl bei Rentenbeginn">
   <div class="head"><p class="eyebrow in" style="--i:0">Bei Rentenbeginn</p><h2 class="h2 split">Du entscheidest erst, <em>wenn es so weit ist</em>.</h2></div>
   <div class="opts">
@@ -514,7 +479,7 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
   <aside class="notes">Das Schöne: Man muss sich heute nicht festlegen. Bei Rentenbeginn gibt es das Kapitalwahlrecht. Im Beispiel von vorhin: lebenslang rund 472 Euro im Monat, garantiert über den Rentenfaktor. Oder 162.160 Euro auf einen Schlag, nach Steuer rund 144.500. Oder als Kapitalverzehr 25 Jahre lang 766 Euro im Monat.</aside>
 </section>
 
-<!-- 12 · Live -->
+<!-- 11 · Live -->
 <section class="slide" id="live" data-title="Live-Demo">
   <div class="head narrow" style="width:470px"><p class="eyebrow in" style="--i:0">Live-Demo</p><h2 class="h2 split">Probieren wir es <em>aus</em>.</h2></div>
   <span class="live-badge in" data-in="fade" style="--i:2"><i></i>Live</span>
@@ -523,7 +488,7 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
   <aside class="notes">Jetzt live. Das Fenster ist die echte App – ich kann Werte direkt ändern. Zum Beispiel den Beitrag auf 200 Euro, oder die Rendite auf 7 Prozent. Weiter geht es mit der Pfeiltaste, sobald die Maus außerhalb eines Eingabefelds ist.</aside>
 </section>
 
-<!-- 13 · Danke -->
+<!-- 12 · Danke -->
 <section class="slide fxslide" id="danke" data-fx="text" data-title="Danke">
   <h2 class="sr">Danke</h2>
   <div class="close-copy">
@@ -540,7 +505,7 @@ kbd { font-family: var(--font); font-size: 20px; font-weight: 800; padding: 3px 
 <div id="progress"></div>
 <div id="hud">
   <button type="button" id="bPrev" aria-label="Zurück"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
-  <span id="counter">01 / 13</span>
+  <span id="counter">01 / 12</span>
   <button type="button" id="bNext" aria-label="Weiter"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
   <button type="button" id="bOverview" aria-label="Übersicht (O)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></button>
   <button type="button" id="bNotes" aria-label="Notizen (N)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 6h14M5 11h14M5 16h9"/></svg></button>
