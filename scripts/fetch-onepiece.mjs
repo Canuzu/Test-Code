@@ -15,7 +15,7 @@
 import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { normalize, SET_META } from '../src/data/providers/onepiece.js';
+import { normalize, SET_META, prettyName } from '../src/data/providers/onepiece.js';
 import { fetchCardmarket, fetchCardmarketFull } from './fetch-cardmarket.mjs';
 import { slimSnapshot } from '../src/lib/cardCodec.js';
 
@@ -104,7 +104,10 @@ async function main() {
     d.setUTCDate(d.getUTCDate() + 1);
     return `${d.getUTCFullYear()}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${String(d.getUTCDate()).padStart(2, '0')}`;
   };
-  const titleCase = (s) => (s || '').toLowerCase().replace(/(^|\s)([a-z])/g, (_, sp, c) => sp + c.toUpperCase());
+  // Title-case words (also after dots, e.g. "MONKEY.D.LUFFY"), then let prettyName
+  // turn "Monkey.D.Luffy" into "Monkey D. Luffy" like the card names.
+  const titleCase = (s) => prettyName((s || '').toLowerCase().replace(/(^|[\s.])([a-z])/g, (_, sp, c) => sp + c.toUpperCase()))
+    .replace(/\s(Of|The|In|And|On|To|A)\b/g, (m) => m.toLowerCase());
   // Parse only the FIRST "LETTERS[-]DIGITS" token of a pack label (some packs
   // carry compound labels like "OP-14 [EB-04]") so we never invent bogus codes.
   const codeOfLabel = (label) => {

@@ -2,14 +2,13 @@ import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 import { Settings as Cog, GitCompare, Sun, Moon, Crown, Smartphone, ArrowLeft, ArrowRight, User, Compass, Star, Album, ChartLine, ClipboardList, Bell } from 'lucide-react';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
-import { fmtNum } from './lib/format.js';
 import { useIsMobile } from './lib/useMediaQuery.js';
 import Discover from './components/Discover.jsx';
 import WatchlistView from './components/WatchlistView.jsx';
 import PortfolioView from './components/PortfolioView.jsx';
 import LogoMark from './components/LogoMark.jsx';
-import GameMark from './components/GameMark.jsx';
 import GameSelect from './components/GameSelect.jsx';
+import GameSwitcher from './components/GameSwitcher.jsx';
 import { getGame } from './data/providers/index.js';
 import { clearDiscoverMemo } from './lib/discoverMemo.js';
 import { trackView } from './lib/analytics.js';
@@ -92,7 +91,7 @@ const TABS = [
 ];
 
 function Shell() {
-  const { cards, watchlist, portfolio, compareList, toast, settings, source, theme, toggleTheme, alerts, account, activeGame, selectGame, leaveGame, pro, billingEnabled } = useStore();
+  const { cards, watchlist, portfolio, compareList, toast, settings, theme, toggleTheme, alerts, account, activeGame, selectGame, leaveGame, pro, billingEnabled } = useStore();
   // Seed the initial view from (in priority): a shared deep link in the URL hash,
   // then the history entry the browser preserves across a reload. The game is
   // resolved by the store; the per-game sub-view (open set) is only reused when
@@ -126,10 +125,13 @@ function Shell() {
 
   // Open a card deep link once its dataset has loaded (then forget it).
   useEffect(() => {
+    // Keep waiting until the card shows up: the first `cards` can be the small
+    // sample set (or a still-deferred list) before the full catalogue lands.
     if (!pendingCardId.current || !cards.length) return;
     const c = cards.find((x) => x.id === pendingCardId.current);
+    if (!c) return;
     pendingCardId.current = null;
-    if (c) setModal({ card: c, tab: 'overview' });
+    setModal({ card: c, tab: 'overview' });
   }, [cards]);
 
   // Keep the document title in sync with the view (better browser tabs, shares,
@@ -275,20 +277,22 @@ function Shell() {
   // Reset Discover to its Start view (drops the remembered sub-view too).
   const resetDiscover = (g) => { clearDiscoverMemo(g); setDiscCat('start'); setDiscSet(null); setDiscoverKey((k) => k + 1); };
   // Logo / site name → back to the game-selection landing page.
-  const goHome = () => { resetDiscover(activeGame); setTab('discover'); leaveGame(); };
+  const goHome = () => { pendingCardId.current = null; resetDiscover(activeGame); setTab('discover'); leaveGame(); };
   // Pick a game from the landing page, then start fresh on its Discover view.
   const pickGame = (id) => { selectGame(id); resetDiscover(id); setTab('discover'); scrollTop(); };
+  // Landing page → open a specific card (fan, ticker): enter its game, then the
+  // pending-card effect opens the modal as soon as the catalogue has it.
+  const openCardFromLanding = (g, id) => { pickGame(g); pendingCardId.current = id; };
   // Keep the once-registered popstate handler pointed at the live store actions.
   navActions.current = { select: selectGame, leave: leaveGame };
   const isMobile = useIsMobile();
   const game = getGame(activeGame || 'pokemon');
   const badge = { watchlist: watchlist.length, portfolio: portfolio.length, alerts: alerts.filter((a) => a.active).length };
-  const avgScore = cards.length ? fmtNum(cards.reduce((s, c) => s + c.m.score, 0) / cards.length, 0) : '–';
 
   // No game chosen yet → the game-selection landing page is the whole screen.
   if (!activeGame) return (
     <>
-      <GameSelect onPick={pickGame} onLegal={() => setShowLegal(true)} onFaq={() => setShowFaq(true)} theme={theme} onToggleTheme={toggleTheme} />
+      <GameSelect onPick={pickGame} onOpenCard={openCardFromLanding} onLegal={() => setShowLegal(true)} onFaq={() => setShowFaq(true)} theme={theme} onToggleTheme={toggleTheme} />
       <Suspense fallback={null}>
         {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
         {showFaq && <FaqModal onClose={() => setShowFaq(false)} />}
@@ -308,29 +312,14 @@ function Shell() {
               <button onClick={() => window.history.forward()} title="Vor" className="control" style={{ padding: '7px 8px', display: 'flex', alignItems: 'center' }}><ArrowRight size={15} /></button>
             </div>
           )}
-          <button onClick={goHome} title="Zur Spiel-Auswahl" style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 11, background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', minWidth: 0, color: 'inherit', textAlign: 'left' }}>
-            <div style={{ width: isMobile ? 36 : 42, height: isMobile ? 36 : 42, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', filter: 'drop-shadow(0 0 14px #ffd70044)' }}>
-              <LogoMark size={isMobile ? 36 : 42} />
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontWeight: 800, fontSize: isMobile ? 16 : 19, background: 'linear-gradient(90deg, #ffd700, #ff6b35)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '0.2px' }}>Cartograph</div>
-              <div style={{ fontSize: 10.5, color: C.textFaint, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ display: 'inline-flex', width: 15, height: 15, borderRadius: 4, alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${game.accent}, ${game.accent2})`, flexShrink: 0 }}>
-                  <GameMark id={game.id} size={11} />
-                </span>
-                {game.label}
-              </div>
-            </div>
+          <button onClick={goHome} title="Zur Startseite" aria-label="Cartograph – zur Startseite" style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', flexShrink: 0, color: 'inherit' }}>
+            <span style={{ display: 'flex', filter: 'drop-shadow(0 0 14px #ffd70044)' }}><LogoMark size={isMobile ? 34 : 38} /></span>
+            {!isMobile && <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 19, letterSpacing: '-0.02em', background: 'linear-gradient(90deg, #ffd700, #ff6b35)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', whiteSpace: 'nowrap' }}>Cartograph</span>}
           </button>
+          <GameSwitcher game={game} onSwitch={pickGame} onHome={goHome} compact={isMobile} />
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 5 : 10, flexShrink: 0 }}>
-          {!isMobile && cards.length > 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: source === 'snapshot' ? '#00e67615' : '#ffffff0c', border: `1px solid ${source === 'snapshot' ? '#00e67630' : C.lineStrong}`, borderRadius: 20, padding: '4px 11px' }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: source === 'snapshot' ? C.green : C.textFaint, animation: source === 'snapshot' ? 'blink 2s infinite' : 'none' }} />
-              <span style={{ fontSize: 11, color: source === 'snapshot' ? C.green : C.textDim, fontWeight: 600 }}>{cards.length} · Ø {avgScore}</span>
-            </div>
-          )}
           <button onClick={toggleTheme} title={theme === 'dark' ? 'Helles Design' : 'Dunkles Design'} className="control" style={{ padding: '7px 9px', display: 'flex', alignItems: 'center' }}>
             {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
           </button>
@@ -339,9 +328,11 @@ function Shell() {
               <Smartphone size={13} /> {!isMobile && <span style={{ fontSize: 11, fontWeight: 700 }}>App</span>}
             </button>
           )}
-          <button onClick={() => setShowPricing(true)} title={billingEnabled ? (pro ? 'Pro aktiv' : 'Auf Pro upgraden') : 'Alle Funktionen kostenlos'} className="control" style={{ padding: isMobile ? '7px 9px' : '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: C.gold, borderColor: C.gold + '55' }}>
-            <Crown size={13} /> {!isMobile && <span style={{ fontSize: 11, fontWeight: 700 }}>{billingEnabled ? (pro ? 'Pro ✓' : 'Pro') : 'Gratis'}</span>}
-          </button>
+          {billingEnabled && (
+            <button onClick={() => setShowPricing(true)} title={pro ? 'Pro aktiv' : 'Auf Pro upgraden'} className="control" style={{ padding: isMobile ? '7px 9px' : '7px 10px', display: 'flex', alignItems: 'center', gap: 5, color: C.gold, borderColor: C.gold + '55' }}>
+              <Crown size={13} /> {!isMobile && <span style={{ fontSize: 11, fontWeight: 700 }}>{pro ? 'Pro ✓' : 'Pro'}</span>}
+            </button>
+          )}
           <button onClick={() => setShowAuth(true)} title={account ? account.email : 'Anmelden'} className="control" style={{ padding: isMobile ? '7px 9px' : '7px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
             {account
               ? <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'linear-gradient(135deg,#ffd700,#ff6b35)', color: '#0c0c1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800 }}>{(account.name || account.email).slice(0, 1).toUpperCase()}</span>

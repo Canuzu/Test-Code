@@ -50,6 +50,19 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
   const [viewMode, setViewMode] = useState(mem.viewMode || 'grid');
   const [visible, setVisible] = useState(mem.visible || 60); // how many result cards to render (perf)
   const [searchFocus, setSearchFocus] = useState(false);
+  const searchRef = useRef(null);
+  // "/" anywhere (outside a text field) jumps into the search box.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      e.preventDefault();
+      searchRef.current?.focus();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
   const scrollTop = () => window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
 
   // Persist the local view per game so a remount (tab switch / back-forward)
@@ -205,18 +218,22 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
 
   const switchCat = (id) => { setCat(id); setSelectedSet(null); setSearch(''); setActivePreset(null); scrollTop(); };
   const onSelectSet = (id) => { setSelectedSet(id); scrollTop(); };
+  // From the Start page (newest-sets strip): switch to Singles and open the set.
+  const openSetFromStart = (id) => { setCat('singles'); setSelectedSet(id); setSearch(''); scrollTop(); };
   const closeSet = () => { setSelectedSet(null); setSearch(''); setActivePreset(null); scrollTop(); };
 
   // Scope of the search box, so the placeholder/behaviour match where you are.
   const scope = inSet ? 'set' : mode === 'sealed' ? 'sealed' : 'singles';
-  const singlesHint = activeGame === 'onepiece'
-    ? 'z. B. Luffy, Zoro, Shanks'
-    : 'z. B. Glurak, Pikachu, Nachtara';
+  const singlesHint = {
+    onepiece: 'z. B. Luffy, Zoro, Shanks',
+    magic: 'z. B. Sol Ring, Lightning Bolt',
+    yugioh: 'z. B. Dunkler Magier, Exodia',
+  }[activeGame] || 'z. B. Glurak, Pikachu, Nachtara';
   const searchPlaceholder = scope === 'set'
     ? `In „${openSet?.name || 'diesem Set'}" suchen…`
     : scope === 'sealed'
       ? `${TABS.find((t) => t.id === cat)?.label || 'Produkte'} durchsuchen…`
-      : `Karte suchen – über alle Sets (${singlesHint})…`;
+      : `Karte suchen – ${singlesHint}…`;
 
   return (
     <>
@@ -224,7 +241,9 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
       <div style={{ position: 'relative', marginBottom: 14 }}>
         <Search size={18} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: C.textFaint }} />
         <input
+          ref={searchRef}
           className="control"
+          aria-label="Karten suchen"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onFocus={() => setSearchFocus(true)}
@@ -232,6 +251,7 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
           placeholder={searchPlaceholder}
           style={{ width: '100%', padding: '13px 42px 13px 42px', fontSize: 15, borderRadius: 12 }}
         />
+        {!searching && !searchFocus && <kbd className="kbd-hint" aria-hidden="true">/</kbd>}
         {searching && (
           <button onClick={() => setSearch('')} title="Suche zurücksetzen"
             style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: '#ffffff12', border: 'none', color: C.textSoft, width: 26, height: 26, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
@@ -256,7 +276,7 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
       {/* Category tabs: Start · Singles · Booster · Displays · Top-Trainer-Box.
           Hidden only while searching inside an open set (that view has its own
           back button); otherwise they stay so the search scope is always clear. */}
-      <div style={{ display: inSet ? 'none' : 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 16, borderBottom: `1px solid ${C.lineStrong}` }}>
+      <div className="cat-tabs" style={{ display: inSet ? 'none' : 'flex', gap: 4, marginBottom: 14, borderBottom: `1px solid ${C.lineStrong}` }}>
         {TABS.map((t) => {
           const Ic = CAT_ICON[t.id] || LayoutGrid;
           return (
@@ -274,7 +294,7 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
           {source === 'snapshot' && <>🟢 {snapshotLabel(activeGame, snapshotInfo)} · Stand {fmtRelative(lastUpdated)} · </>}
           {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
           {source === 'sample' && <>🃏 Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}
-          {cards.length} Karten in {sets.length} Sets
+          {mode === 'home' ? 'alle Sets durchsuchbar' : `${cards.length} Karten in ${sets.length} Sets`}
         </div>
       )}
 
@@ -296,19 +316,38 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
       {/* Start: a cool Pokémon animation (replaces the big set list) + Top-Karten */}
       {!loading && mode === 'home' && !searchingDeferred && (
         <>
-          <WelcomeHero game={activeGame} onBrowse={() => switchCat('singles')} />
+          <WelcomeHero game={activeGame} onBrowse={() => switchCat('singles')} cardCount={cards.length} setCount={sets.length} />
           {highlights.length > 0 && (
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-                🌟 Top-Karten
-                <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 500 }}>die 5 stärksten Karten gerade</span>
+            <section style={{ marginBottom: 26 }}>
+              <div className="section-head">
+                <span>🌟 Top-Karten</span>
+                <span className="section-sub">die 5 stärksten Karten gerade</span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 190px), 1fr))', gap: 16 }}>
+              <div className="hl-row">
                 {highlights.map((h) => (
                   <HighlightCard key={h.card.id} h={h} onOpen={onOpen} />
                 ))}
               </div>
-            </div>
+            </section>
+          )}
+          {sets.length > 0 && (
+            <section style={{ marginBottom: 8 }}>
+              <div className="section-head">
+                <span>🆕 Neueste Sets</span>
+                <button className="section-link" onClick={() => switchCat('singles')}>Alle {sets.length} Sets →</button>
+              </div>
+              <div className="set-strip">
+                {sets.slice(0, 10).map((st) => (
+                  <button key={st.id} className="set-chip card-hover" onClick={() => openSetFromStart(st.id)} title={st.name}>
+                    <CardImage card={st.top} height={74} radius={6} />
+                    <span style={{ minWidth: 0 }}>
+                      <span className="set-chip-name">{st.name}</span>
+                      <span className="set-chip-meta">{st.count} Karten{st.releaseDate ? ` · ${st.releaseDate.slice(0, 4)}` : ''}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
           )}
         </>
       )}
@@ -427,7 +466,7 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
 // Thousand Sunny, Magic a slowly turning wheel of the five mana colours, and
 // Yu-Gi-Oh! the Millennium Puzzle swinging from its cord. Any future game falls
 // back to a tasteful animated card fan.
-function WelcomeHero({ game, onBrowse }) {
+function WelcomeHero({ game, onBrowse, cardCount, setCount }) {
   const sparks = [
     { left: '12%', top: '24%', d: '0s', s: 9 },
     { left: '84%', top: '30%', d: '.5s', s: 7 },
@@ -451,6 +490,7 @@ function WelcomeHero({ game, onBrowse }) {
       {sparks.map((sp, i) => (
         <span key={i} className="poke-spark" style={{ left: sp.left, top: sp.top, width: sp.s, height: sp.s, animationDelay: sp.d }} />
       ))}
+      <div className="hero-emblem" aria-hidden="true"><div className="hero-emblem-in">
       {isOP ? (
         <ThousandSunny />
       ) : isMagic ? (
@@ -504,12 +544,14 @@ function WelcomeHero({ game, onBrowse }) {
         <div className="poke-shadow" />
       </div>
       )}
-      <div style={{ textAlign: 'center', marginTop: 14, position: 'relative', zIndex: 1 }}>
-        <div style={{ fontSize: 22, fontWeight: 800, background: hero.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{hero.title}</div>
-        <div style={{ fontSize: 13, color: C.textDim, marginTop: 6, maxWidth: 440 }}>
-          Suche oben gezielt nach einer Karte – oder stöbere unter <strong style={{ color: C.textSoft }}>Singles</strong> Set für Set durch alle Karten.
+      </div></div>
+      <div className="hero-copy">
+        <div className="hero-title" style={{ background: hero.grad, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{hero.title}</div>
+        <div className="hero-text">
+          {cardCount > 0 && <><strong style={{ color: C.textSoft }}>{cardCount.toLocaleString('de-DE')} Karten</strong> in {setCount} Sets. </>}
+          Suche oben gezielt – oder stöbere Set für Set.
         </div>
-        <button className="btn-primary" style={{ marginTop: 16 }} onClick={onBrowse}>{hero.btn}</button>
+        <button className="btn-primary hero-btn" onClick={onBrowse}>{hero.btn}</button>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
+import '@fontsource-variable/bricolage-grotesque/wght.css';
 import './index.css';
 import { initAnalytics } from './lib/analytics.js';
 import { initErrorReporting } from './lib/errorReporting.js';

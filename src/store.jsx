@@ -152,6 +152,7 @@ export function StoreProvider({ children }) {
     if (!g) return;
     setGameNamespace(g);
     setActiveGame(g);
+    globalStore.set('lastGame', g); // landing page offers "Weiter mit …"
     setSettings((prev) => ({ ...prev, game: g }));
     loadAll();
     loadGameData(g);
