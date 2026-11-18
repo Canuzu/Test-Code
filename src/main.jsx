@@ -10,6 +10,18 @@ import { initErrorReporting } from './lib/errorReporting.js';
 initErrorReporting();
 initAnalytics();
 
+// A stale tab after a deploy can request chunk/CSS files that no longer exist:
+// reload once to pick up the new build instead of rendering a white page.
+window.addEventListener('vite:preloadError', (e) => {
+  e.preventDefault();
+  try {
+    const last = Number(sessionStorage.getItem('kwde_chunk_reloaded_at') || 0);
+    if (Date.now() - last < 30000) return;
+    sessionStorage.setItem('kwde_chunk_reloaded_at', String(Date.now()));
+  } catch { /* storage blocked */ }
+  window.location.reload();
+});
+
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />

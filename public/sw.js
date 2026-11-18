@@ -8,7 +8,7 @@
 //   - other same-origin assets → cache-first, then network (hashed, immutable);
 //   - cross-origin card images (pokemontcg.io / onepiece-cardgame.com) → left untouched.
 
-const CACHE = 'kwde-v7';
+const CACHE = 'kwde-v8';
 const SHELL = ['./', './index.html'];
 
 self.addEventListener('install', (event) => {

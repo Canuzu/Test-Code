@@ -22,16 +22,80 @@ import { viewToHash, hashToView } from './lib/viewUrl.js';
 // a white screen right after a deploy: the cached index.html points at an old
 // chunk hash that no longer exists) triggers exactly one full reload to pull the
 // fresh asset, instead of leaving the user on a blank page.
-const lazyChunk = (importer) => lazy(() => importer().catch((err) => {
+// First a quiet retry (covers a flaky mobile connection), then the reload.
+const lazyChunk = (importer) => lazy(() => importer()
+  .catch(() => new Promise((r) => setTimeout(r, 700)).then(importer))
+  .catch((err) => {
+    if (reloadOnce()) return new Promise(() => {}); // hold render until the reload happens
+    throw err;                                      // already retried → the boundary shows a message
+  }));
+
+// One automatic reload per 30 s at most (prevents reload loops).
+export function reloadOnce() {
   const KEY = 'kwde_chunk_reloaded_at';
-  const last = Number(sessionStorage.getItem(KEY) || 0);
-  if (Date.now() - last > 10000) {            // avoid reload loops
-    sessionStorage.setItem(KEY, String(Date.now()));
-    window.location.reload();
-    return new Promise(() => {});             // hold render until the reload happens
+  let last = 0;
+  try { last = Number(sessionStorage.getItem(KEY) || 0); } catch { /* storage blocked */ }
+  if (Date.now() - last < 30000) return false;
+  try { sessionStorage.setItem(KEY, String(Date.now())); } catch { /* ignore */ }
+  window.location.reload();
+  return true;
+}
+
+const isChunkError = (e) => /dynamically imported module|Importing a module script failed|Failed to fetch|Loading chunk|ChunkLoadError|error loading dynamically/i.test(String(e?.message || e));
+
+// Inline boundary for a whole view (tab content). Resets when `resetKey`
+// changes, so switching tab/game after an error always recovers.
+class ViewBoundary extends Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) {
+    console.error('[view] render error:', error);
+    reportError(error, { source: 'view-boundary', componentStack: info?.componentStack });
+    if (isChunkError(error)) reloadOnce();
   }
-  throw err;                                  // already retried → let the boundary show a message
-}));
+  componentDidUpdate(prev) { if (prev.resetKey !== this.props.resetKey && this.state.error) this.setState({ error: null }); }
+  render() {
+    if (!this.state.error) return this.props.children;
+    return (
+      <div style={{ maxWidth: 420, margin: '60px auto', textAlign: 'center', background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, padding: 24 }}>
+        <div style={{ marginBottom: 10, color: C.gold, display: 'flex', justifyContent: 'center' }}><AlertTriangle size={36} strokeWidth={1.8} /></div>
+        <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>Diese Ansicht konnte nicht geladen werden</div>
+        <div style={{ fontSize: 13, color: C.textDim, marginBottom: 16 }}>Meist hilft ein erneuter Versuch – vermutlich wurde die Seite gerade aktualisiert.</div>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => this.setState({ error: null })} style={{ padding: '8px 14px', borderRadius: 8, border: `1px solid ${C.lineStrong}`, background: C.bg1, color: C.textSoft, cursor: 'pointer', fontWeight: 700, fontSize: 12 }}>Erneut versuchen</button>
+          <button className="btn-primary" onClick={() => window.location.reload()}>Neu laden</button>
+        </div>
+      </div>
+    );
+  }
+}
+
+// Last line of defence: never leave a white page, whatever throws.
+class AppBoundary extends Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(error, info) {
+    console.error('[app] render error:', error);
+    reportError(error, { source: 'app-boundary', componentStack: info?.componentStack });
+    if (isChunkError(error)) reloadOnce();
+  }
+  render() {
+    if (!this.state.error) return this.props.children;
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: C.bg0, color: C.text }}>
+        <div style={{ maxWidth: 420, textAlign: 'center' }}>
+          <div style={{ marginBottom: 12, color: C.gold, display: 'flex', justifyContent: 'center' }}><AlertTriangle size={40} strokeWidth={1.8} /></div>
+          <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 8 }}>Da ist etwas schiefgelaufen</div>
+          <div style={{ fontSize: 13.5, color: C.textDim, marginBottom: 18 }}>Lade die Seite neu – deine Sammlung, Watchlist und Einstellungen bleiben erhalten.</div>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={() => { window.location.hash = '#/'; window.location.reload(); }} style={{ padding: '9px 14px', borderRadius: 8, border: `1px solid ${C.lineStrong}`, background: C.surface, color: C.textSoft, cursor: 'pointer', fontWeight: 700, fontSize: 12.5 }}>Zur Startseite</button>
+            <button className="btn-primary" onClick={() => window.location.reload()}>Neu laden</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
 
 const Analytics = lazyChunk(() => import('./components/Analytics.jsx'));
 const CardModal = lazyChunk(() => import('./components/CardModal.jsx'));
@@ -50,7 +114,7 @@ const FaqModal = lazyChunk(() => import('./components/FaqModal.jsx'));
 class ModalBoundary extends Component {
   constructor(props) { super(props); this.state = { error: null }; }
   static getDerivedStateFromError(error) { return { error }; }
-  componentDidCatch(error, info) { console.error('[modal] render error:', error); reportError(error, { source: 'modal-boundary', componentStack: info?.componentStack }); }
+  componentDidCatch(error, info) { console.error('[modal] render error:', error); reportError(error, { source: 'modal-boundary', componentStack: info?.componentStack }); if (isChunkError(error)) reloadOnce(); }
   render() {
     if (this.state.error) {
       return (
@@ -292,11 +356,13 @@ function Shell() {
   // No game chosen yet → the game-selection landing page is the whole screen.
   if (!activeGame) return (
     <>
-      <GameSelect onPick={pickGame} onOpenCard={openCardFromLanding} onLegal={() => setShowLegal(true)} onFaq={() => setShowFaq(true)} theme={theme} onToggleTheme={toggleTheme} />
-      <Suspense fallback={null}>
-        {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
-        {showFaq && <FaqModal onClose={() => setShowFaq(false)} />}
-      </Suspense>
+      <ViewBoundary resetKey="landing"><GameSelect onPick={pickGame} onOpenCard={openCardFromLanding} onLegal={() => setShowLegal(true)} onFaq={() => setShowFaq(true)} theme={theme} onToggleTheme={toggleTheme} /></ViewBoundary>
+      <ModalBoundary onClose={() => { setShowLegal(false); setShowFaq(false); }}>
+        <Suspense fallback={null}>
+          {showLegal && <LegalModal onClose={() => setShowLegal(false)} />}
+          {showFaq && <FaqModal onClose={() => setShowFaq(false)} />}
+        </Suspense>
+      </ModalBoundary>
     </>
   );
 
@@ -357,12 +423,14 @@ function Shell() {
 
       {/* Body */}
       <main style={{ padding: isMobile ? '14px 12px' : '16px 20px', maxWidth: 1400, margin: '0 auto' }}>
+        <ViewBoundary resetKey={`${activeGame}:${tab}:${discCat}:${discSet}`}>
         {tab === 'discover' && <Discover key={discoverKey} onOpen={onOpen} cat={discCat} setCat={setDiscCat} selectedSet={discSet} setSelectedSet={setDiscSet} />}
         {tab === 'analytics' && <Suspense fallback={<Loader />}><Analytics onOpen={onOpen} pro={pro} onUpgrade={() => setShowPricing(true)} /></Suspense>}
         {tab === 'watchlist' && <WatchlistView onOpen={onOpen} />}
         {tab === 'portfolio' && <PortfolioView onImport={() => (pro ? setShowImport(true) : setShowPricing(true))} />}
         {tab === 'buylist' && <Suspense fallback={<Loader />}><BuylistView locked={!pro} onUpgrade={() => setShowPricing(true)} /></Suspense>}
         {tab === 'alerts' && <Suspense fallback={<Loader />}><AlertsView locked={!pro} onUpgrade={() => setShowPricing(true)} /></Suspense>}
+        </ViewBoundary>
       </main>
 
       <footer style={{ borderTop: `1px solid ${C.lineStrong}`, padding: '16px 20px', marginTop: 40, textAlign: 'center', fontSize: 10.5, color: C.textGhost, maxWidth: 900, margin: '40px auto 0', lineHeight: 1.6 }}>
@@ -429,8 +497,10 @@ function Shell() {
 
 export default function App() {
   return (
-    <StoreProvider>
-      <Shell />
-    </StoreProvider>
+    <AppBoundary>
+      <StoreProvider>
+        <Shell />
+      </StoreProvider>
+    </AppBoundary>
   );
 }
