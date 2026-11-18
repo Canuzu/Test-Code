@@ -7,11 +7,7 @@ import { C } from '../lib/theme.js';
 import { GAMES } from '../data/providers/index.js';
 import GameMark from './GameMark.jsx';
 
-const Badge = ({ g, size = 22 }) => (
-  <span style={{ display: 'inline-flex', width: size, height: size, borderRadius: Math.round(size * 0.3), alignItems: 'center', justifyContent: 'center', background: `linear-gradient(135deg, ${g.accent}, ${g.accent2})`, boxShadow: 'inset 0 1px 0 #ffffff70', flexShrink: 0 }}>
-    <GameMark id={g.id} size={Math.round(size * 0.68)} />
-  </span>
-);
+const Badge = ({ g, size = 22 }) => <GameMark id={g.id} size={size} />;
 
 export default function GameSwitcher({ game, onSwitch, onHome, compact = false }) {
   const [open, setOpen] = useState(false);

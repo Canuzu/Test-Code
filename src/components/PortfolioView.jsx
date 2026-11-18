@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Briefcase, Trash2, Info, Tag as TagIcon, Upload, Download, Search } from 'lucide-react';
+import { Briefcase, Trash2, Info, Tag as TagIcon, Upload, Download, Search, MapPin, ShoppingCart, HandCoins } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, conditionColor } from '../lib/theme.js';
 import { fmtEur, fmtPct, fmtDate } from '../lib/format.js';
 import { getTier } from '../lib/metrics.js';
 import { marketLinks, cmUrl } from '../lib/marketLinks.js';
 import { VARIANTS } from '../lib/variants.js';
-import { CardImage, ScoreBadge, Pill, Stat, EmptyState } from './ui.jsx';
+import { CardImage, ScoreBadge, Pill, Stat, EmptyState, IconLabel } from './ui.jsx';
 
 const CONDITIONS = ['M', 'NM', 'EX', 'GD', 'LP', 'PL', 'PO'];
 
@@ -44,7 +44,7 @@ export default function PortfolioView({ onImport }) {
 
   if (portfolio.length === 0 && sold.length === 0) {
     return (
-      <EmptyState icon={<Briefcase size={56} style={{ opacity: 0.35 }} />} title="Sammlung ist leer" hint="Klicke bei einer Karte auf »📦 Sammlung«, oder importiere deinen Bestand per CSV.">
+      <EmptyState icon={Briefcase} title="Sammlung ist leer" hint="Klicke bei einer Karte auf »Sammlung«, oder importiere deinen Bestand per CSV.">
         {onImport && <button className="btn-primary" onClick={onImport} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Upload size={14} /> Massenimport (CSV)</button>}
       </EmptyState>
     );
@@ -132,7 +132,7 @@ export default function PortfolioView({ onImport }) {
               <span style={{ color: C.textSoft, fontWeight: 700 }}>{selCount} ausgewählt</span>
               {locations.length > 0 && (
                 <select className="control" defaultValue="" onChange={(e) => { if (e.target.value !== '') { bulkSetLocation(e.target.value === '__none' ? '' : e.target.value); e.target.value = ''; } }}>
-                  <option value="">📍 Lagerort setzen…</option>
+                  <option value="">Lagerort setzen…</option>
                   <option value="__none">— kein Lagerort —</option>
                   {locations.map((l) => <option key={l} value={l}>{l}</option>)}
                 </select>
@@ -187,7 +187,7 @@ export default function PortfolioView({ onImport }) {
                     </div>
                     {/* Lagerort als Drop-Down direkt in der Karte (#14) */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 7 }}>
-                      <span style={{ fontSize: 11, color: C.textFaint }}>📍</span>
+                      <MapPin size={12} style={{ color: C.textFaint, flexShrink: 0 }} />
                       <select value={e.location || ''} onChange={(ev) => {
                         const v = ev.target.value;
                         if (v === '__new') { const nl = window.prompt('Neuer Lagerort:'); if (nl && nl.trim()) updatePortfolioEntry(e.id, { location: nl.trim() }); }
@@ -238,11 +238,11 @@ export default function PortfolioView({ onImport }) {
                 ) : (
                   <>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginBottom: 8 }}>
-                      <a href={cmUrl(card)} target="_blank" rel="noopener noreferrer" style={{ padding: '7px', borderRadius: 6, textAlign: 'center', textDecoration: 'none', fontSize: 11, fontWeight: 700, background: '#0066cc1f', color: C.blue, border: '1px solid #0066cc44' }}>🛒 Cardmarket</a>
-                      <a href={links.ebay} target="_blank" rel="noopener noreferrer" style={{ padding: '7px', borderRadius: 6, textAlign: 'center', textDecoration: 'none', fontSize: 11, fontWeight: 700, background: '#3a3a8c2f', color: '#8a8aff', border: '1px solid #3a3a8c66' }}>🛒 eBay</a>
+                      <a href={cmUrl(card)} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '7px', borderRadius: 6, textAlign: 'center', textDecoration: 'none', fontSize: 11, fontWeight: 700, background: '#0066cc1f', color: C.blue, border: '1px solid #0066cc44' }}><ShoppingCart size={12} /> Cardmarket</a>
+                      <a href={links.ebay} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '7px', borderRadius: 6, textAlign: 'center', textDecoration: 'none', fontSize: 11, fontWeight: 700, background: '#3a3a8c2f', color: '#8a8aff', border: '1px solid #3a3a8c66' }}><ShoppingCart size={12} /> eBay</a>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-                      <button onClick={() => startSell(e)} style={{ padding: 7, borderRadius: 6, border: `1px solid ${C.green2}40`, background: `${C.green2}18`, color: C.green2, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>💰 Verkaufen</button>
+                      <button onClick={() => startSell(e)} style={{ padding: 7, borderRadius: 6, border: `1px solid ${C.green2}40`, background: `${C.green2}18`, color: C.green2, fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}><HandCoins size={12} /> Verkaufen</button>
                       <button onClick={() => removeFromPortfolio(e.id)} style={{ padding: 7, borderRadius: 6, border: '1px solid #ff525230', background: '#ff525210', color: C.red, fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
                         <Trash2 size={11} /> Entfernen
                       </button>
@@ -340,7 +340,7 @@ function InventoryTable({ rows, freshPrice, updatePortfolioEntry, onRemove, onSe
                   <div style={{ fontSize: 10.5, fontWeight: 700, color: pnl >= 0 ? C.green : C.red }}>{pnl >= 0 ? '+' : ''}{fmtEur(pnl)}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-                  <button onClick={() => onSell(e)} title="Verkaufen" style={{ padding: '5px 7px', borderRadius: 5, border: `1px solid ${C.green2}40`, background: `${C.green2}18`, color: C.green2, fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>💰</button>
+                  <button onClick={() => onSell(e)} title="Verkaufen" style={{ padding: '5px 7px', borderRadius: 5, border: `1px solid ${C.green2}40`, background: `${C.green2}18`, color: C.green2, fontSize: 11, fontWeight: 700, cursor: 'pointer', display: 'flex' }}><HandCoins size={12} /></button>
                   <button onClick={() => onRemove(e.id)} title="Entfernen" style={{ padding: '5px 7px', borderRadius: 5, border: '1px solid #ff525230', background: '#ff525210', color: C.red, cursor: 'pointer', display: 'flex' }}><Trash2 size={12} /></button>
                 </div>
                 {selling && (
@@ -359,7 +359,7 @@ function InventoryTable({ rows, freshPrice, updatePortfolioEntry, onRemove, onSe
 
       {byLoc.length > 1 && (
         <div style={{ marginTop: 14 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', marginBottom: 8 }}>📍 Summen je Lagerort</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.textFaint, textTransform: 'uppercase', marginBottom: 8 }}><IconLabel icon={MapPin} size={13} gap={6}>Summen je Lagerort</IconLabel></div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 200px), 1fr))', gap: 8 }}>
             {byLoc.map((g) => (
               <div key={g.loc} style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 10, padding: 12 }}>

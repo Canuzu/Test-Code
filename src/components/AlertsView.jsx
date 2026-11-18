@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Bell, BellOff, Search, Trash2, Plus } from 'lucide-react';
+import { Bell, BellOff, BellRing, Search, Trash2, Plus, Lock, ScrollText } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C } from '../lib/theme.js';
 import { fmtEur, fmtRelative } from '../lib/format.js';
 import { newRule, ruleHit, canNotify, notifyPermission, requestNotifyPermission } from '../lib/alerts.js';
 import { fold } from '../lib/localize.js';
-import { CardImage, EmptyState } from './ui.jsx';
+import { CardImage, EmptyState, IconLabel, Dot } from './ui.jsx';
 
 export default function AlertsView({ locked, onUpgrade }) {
   const { cards, alerts, alertLog, addAlert, removeAlert, toggleAlert, updateAlert, clearAlertLog, showToast } = useStore();
@@ -31,7 +31,7 @@ export default function AlertsView({ locked, onUpgrade }) {
   }, [search, cards]);
 
   if (locked) {
-    return <EmptyState icon="🔒" title="Preis-Alerts sind ein Pro-Feature" hint="Lass dich benachrichtigen, sobald eine Karte über/unter deinen Wunschpreis kommt.">
+    return <EmptyState icon={Lock} title="Preis-Alerts sind ein Pro-Feature" hint="Lass dich benachrichtigen, sobald eine Karte über/unter deinen Wunschpreis kommt.">
       <button className="btn-primary" onClick={onUpgrade}>Pro freischalten</button>
     </EmptyState>;
   }
@@ -60,7 +60,7 @@ export default function AlertsView({ locked, onUpgrade }) {
 
       {/* Create alert */}
       <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 12, padding: 14, marginBottom: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>🔔 Neuen Alarm anlegen</div>
+        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}><IconLabel icon={BellRing} size={14}>Neuen Alarm anlegen</IconLabel></div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
             <Search size={14} style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: C.textFaint }} />
@@ -106,7 +106,7 @@ export default function AlertsView({ locked, onUpgrade }) {
 
       {/* Active alerts */}
       {alerts.length === 0 ? (
-        <EmptyState icon={<Bell size={52} style={{ opacity: 0.35 }} />} title="Noch keine Alerts" hint="Lege oben einen Alarm an, z. B.: Glurak ex steigt über 200 €." />
+        <EmptyState icon={Bell} title="Noch keine Alerts" hint="Lege oben einen Alarm an, z. B.: Glurak ex steigt über 200 €." />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 10, marginBottom: 24 }}>
           {alerts.map((a) => {
@@ -147,13 +147,13 @@ export default function AlertsView({ locked, onUpgrade }) {
       {alertLog.length > 0 && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <div style={{ fontSize: 13, fontWeight: 700 }}>📜 Ausgelöste Alerts</div>
+            <div style={{ fontSize: 13, fontWeight: 700 }}><IconLabel icon={ScrollText} size={14}>Ausgelöste Alerts</IconLabel></div>
             <button onClick={clearAlertLog} style={{ fontSize: 11, color: C.textFaint, background: 'none', border: 'none', cursor: 'pointer' }}>Verlauf leeren</button>
           </div>
           <div style={{ background: C.surface, border: `1px solid ${C.line}`, borderRadius: 12, overflow: 'hidden' }}>
             {alertLog.slice(0, 40).map((e, i) => (
               <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 14px', borderBottom: i < Math.min(alertLog.length, 40) - 1 ? `1px solid ${C.line}` : 'none', fontSize: 12 }}>
-                <span style={{ fontSize: 14 }}>{e.direction === 'above' ? '🟢' : '🔴'}</span>
+                <Dot color={e.direction === 'above' ? C.green : C.red} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.name}</div>
                   <div style={{ fontSize: 10.5, color: C.textFaint }}>{e.direction === 'above' ? 'über' : 'unter'} {fmtEur(e.target)} · {fmtRelative(e.at)}</div>

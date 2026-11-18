@@ -10,7 +10,6 @@
 export const meta = {
   id: 'magic',
   label: 'Magic: The Gathering',
-  emoji: '🔮',
   attribution: 'Kartendaten, Bilder & Preise: Scryfall (Cardmarket EUR)',
   priceSource: 'Cardmarket EU (via Scryfall)',
 };

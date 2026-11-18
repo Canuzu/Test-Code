@@ -196,7 +196,7 @@ export function StoreProvider({ children }) {
   }, []);
 
   // ---- price alerts -----------------------------------------------------
-  const addAlert = useCallback((rule) => { setAlerts((prev) => [...prev, rule]); showToast('🔔 Preis-Alarm angelegt'); }, [showToast]);
+  const addAlert = useCallback((rule) => { setAlerts((prev) => [...prev, rule]); showToast('Preis-Alarm angelegt'); }, [showToast]);
   const removeAlert = useCallback((id) => setAlerts((prev) => prev.filter((a) => a.id !== id)), []);
   const toggleAlert = useCallback((id) => setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, active: !a.active } : a))), []);
   const updateAlert = useCallback((id, patch) => setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, ...patch, target: patch.target != null ? Number(patch.target) || 0 : a.target } : a))), []);
@@ -207,7 +207,7 @@ export function StoreProvider({ children }) {
   const addToBuylist = useCallback((card) => {
     setBuylist((bl) => {
       if (bl.items.some((i) => i.id === card.id)) { showToast('Schon in der Buylist'); return bl; }
-      showToast('🧾 Zur Buylist hinzugefügt');
+      showToast('Zur Buylist hinzugefügt');
       return { ...bl, items: [...bl.items, { id: card.id, condition: 'NM', qty: 1 }] };
     });
   }, [showToast]);
@@ -230,13 +230,13 @@ export function StoreProvider({ children }) {
   }, [loadAll, loadGameData, activeGame]);
   const login = useCallback(async (creds) => {
     const res = await authLogin(creds);
-    if (res.ok && res.account) { await enterAccount(res.account); showToast(`👤 Angemeldet: ${res.account.name}`); }
+    if (res.ok && res.account) { await enterAccount(res.account); showToast(`Angemeldet: ${res.account.name}`); }
     return res;
   }, [enterAccount, showToast]);
   const register = useCallback(async (creds) => {
     const res = await authRegister(creds);
-    if (res.pending) { showToast('📧 Konto erstellt – bitte bestätige deine E-Mail, dann anmelden.'); return res; }
-    if (res.ok && res.account) { await enterAccount(res.account); showToast(`✅ Konto erstellt: ${res.account.name}`); }
+    if (res.pending) { showToast('Konto erstellt – bitte bestätige deine E-Mail, dann anmelden.'); return res; }
+    if (res.ok && res.account) { await enterAccount(res.account); showToast(`Konto erstellt: ${res.account.name}`); }
     return res;
   }, [enterAccount, showToast]);
   const logout = useCallback(async () => {
@@ -253,7 +253,7 @@ export function StoreProvider({ children }) {
     const q = new URLSearchParams(window.location.search);
     const b = q.get('billing');
     if (!b) return;
-    if (b === 'success') { showToast('🎉 Danke! Pro wird aktiviert …'); setTimeout(refreshPlan, 3500); }
+    if (b === 'success') { showToast('Danke! Pro wird aktiviert …'); setTimeout(refreshPlan, 3500); }
     q.delete('billing');
     window.history.replaceState({}, '', window.location.pathname + (q.toString() ? `?${q}` : '') + window.location.hash);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -280,7 +280,7 @@ export function StoreProvider({ children }) {
       const stamped = events.map((e, i) => ({ ...e, id: `ev-${Date.now()}-${i}`, at: Date.now() }));
       setAlertLog((prev) => [...stamped, ...prev].slice(0, 120));
       stamped.forEach(fireNotification);
-      showToast(`🔔 ${stamped.length} Preis-Alert${stamped.length > 1 ? 's' : ''} ausgelöst`);
+      showToast(`${stamped.length} Preis-Alert${stamped.length > 1 ? 's' : ''} ausgelöst`);
     }
   }, [cards, alerts, showToast]);
 
@@ -336,7 +336,7 @@ export function StoreProvider({ children }) {
       // Price-history bookkeeping walks the whole list, so run it just after the
       // cards have painted instead of blocking the first render.
       setTimeout(() => accumulateHistory(list, ts), 0);
-      if (!silent) showToast(`✓ Aktuelle Marktdaten geladen · ${list.length} Karten`);
+      if (!silent) showToast(`Aktuelle Marktdaten geladen · ${list.length} Karten`);
       return true;
     } catch (e) {
       if (!silent) setError(`Aktuelle Daten konnten nicht geladen werden (${e.message}). Es werden gespeicherte bzw. Beispieldaten gezeigt.`);
@@ -350,7 +350,7 @@ export function StoreProvider({ children }) {
     setRawCards(sampleFor(activeGame || 'pokemon'));
     setSource('sample');
     setError(null);
-    showToast('🃏 Beispieldaten geladen');
+    showToast('Beispieldaten geladen');
   }, [showToast, activeGame]);
 
   const fetchCards = useCallback(() => loadSnapshot({ silent: false }), [loadSnapshot]);
@@ -364,7 +364,7 @@ export function StoreProvider({ children }) {
     setWatchlist((prev) => {
       const exists = prev.some((c) => c.id === card.id);
       if (exists) { showToast('Aus Watchlist entfernt'); return prev.filter((c) => c.id !== card.id); }
-      showToast('⭐ Zur Watchlist hinzugefügt');
+      showToast('Zur Watchlist hinzugefügt');
       return [...prev, { ...card, addedAt: Date.now(), addedPrice: card.prices?.market ?? null }];
     });
   }, [showToast]);
@@ -383,7 +383,7 @@ export function StoreProvider({ children }) {
       purchaseDate: Date.now(),
     };
     setPortfolio((prev) => [...prev, entry]);
-    showToast('📦 Zur Sammlung hinzugefügt');
+    showToast('Zur Sammlung hinzugefügt');
   }, [showToast]);
 
   // Inline-edit an inventory position (quantity, unit cost, condition, location).
@@ -411,7 +411,7 @@ export function StoreProvider({ children }) {
       purchaseDate: e.purchaseDate || Date.now(),
     }));
     setPortfolio((prev) => [...prev, ...stamped]);
-    showToast(`📥 ${stamped.length} Positionen importiert`);
+    showToast(`${stamped.length} Positionen importiert`);
   }, [showToast]);
 
   const removeFromPortfolio = useCallback((entryId) => {
@@ -436,7 +436,7 @@ export function StoreProvider({ children }) {
     const realized = (price - (entry.actualBuyPrice || 0)) * qty;
     setSold((prev) => [...prev, { ...entry, sellPrice: price, soldDate: Date.now(), realized }]);
     setPortfolio((prev) => prev.filter((e) => e.id !== entryId));
-    showToast(`${realized >= 0 ? '✅' : '➖'} Verkauf erfasst: ${realized >= 0 ? '+' : ''}${realized.toFixed(2)} €`);
+    showToast(`Verkauf erfasst: ${realized >= 0 ? '+' : ''}${realized.toFixed(2)} €`);
   }, [portfolio, showToast]);
 
   const removeSold = useCallback((entryId) => {
@@ -464,7 +464,7 @@ export function StoreProvider({ children }) {
   const toggleCompare = useCallback((card) => {
     setCompareList((prev) => {
       if (prev.some((c) => c.id === card.id)) return prev.filter((c) => c.id !== card.id);
-      if (prev.length >= 3) { showToast('⚠️ Max. 3 Karten vergleichbar'); return prev; }
+      if (prev.length >= 3) { showToast('Max. 3 Karten vergleichbar'); return prev; }
       return [...prev, card];
     });
   }, [showToast]);

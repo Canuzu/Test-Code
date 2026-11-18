@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
-import { Settings as Cog, GitCompare, Sun, Moon, Crown, Smartphone, ArrowLeft, ArrowRight, User, Compass, Star, Album, ChartLine, ClipboardList, Bell } from 'lucide-react';
+import { Settings as Cog, GitCompare, Sun, Moon, Crown, Smartphone, ArrowLeft, ArrowRight, User, Compass, Star, Album, ChartLine, ClipboardList, Bell, AlertTriangle } from 'lucide-react';
 import { StoreProvider, useStore } from './store.jsx';
 import { C } from './lib/theme.js';
 import { useIsMobile } from './lib/useMediaQuery.js';
@@ -56,7 +56,7 @@ class ModalBoundary extends Component {
       return (
         <div onClick={this.props.onClose} style={{ position: 'fixed', inset: 0, background: '#000000bb', backdropFilter: 'blur(6px)', zIndex: 140, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, padding: 24, maxWidth: 380, textAlign: 'center' }}>
-            <div style={{ fontSize: 40, marginBottom: 10 }}>⚠️</div>
+            <div style={{ marginBottom: 10, color: C.gold, display: 'flex', justifyContent: 'center' }}><AlertTriangle size={38} strokeWidth={1.8} /></div>
             <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 6 }}>Diese Ansicht konnte nicht geladen werden</div>
             <div style={{ fontSize: 13, color: C.textDim, marginBottom: 16 }}>Bitte versuche es erneut oder lade die Seite neu.</div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
@@ -366,7 +366,7 @@ function Shell() {
       </main>
 
       <footer style={{ borderTop: `1px solid ${C.lineStrong}`, padding: '16px 20px', marginTop: 40, textAlign: 'center', fontSize: 10.5, color: C.textGhost, maxWidth: 900, margin: '40px auto 0', lineHeight: 1.6 }}>
-        ⚠️ <strong>Hinweis:</strong> {activeGame === 'pokemon'
+        <AlertTriangle size={12} style={{ verticalAlign: '-2px', marginRight: 4 }} /><strong>Hinweis:</strong> {activeGame === 'pokemon'
           ? 'Preisdaten von Cardmarket (EU) via pokemontcg.io – können verzögert oder unvollständig sein.'
           : activeGame === 'magic'
             ? 'Magic: alle Sets & Karten mit offiziellem Artwork und echten Cardmarket-EUR-Preisen (via Scryfall) – können verzögert oder unvollständig sein.'

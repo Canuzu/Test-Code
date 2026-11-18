@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, ScatterChart, Scatter, CartesianGrid } from 'recharts';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, Package, Trophy, Palette, Gem, TrendingUp, TrendingDown, Crown } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, rarityColor } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtPct } from '../lib/format.js';
 import { enrich } from '../lib/metrics.js';
-import { Stat, EmptyState, ChangeBadge } from './ui.jsx';
+import { Stat, EmptyState, ChangeBadge, IconLabel } from './ui.jsx';
 
 const panelTitle = { fontWeight: 700, fontSize: 13, marginBottom: 12 };
 
@@ -42,8 +42,8 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
   }, [holdings]);
 
   if (holdings.length === 0) {
-    return <EmptyState icon={<BarChart3 size={56} style={{ opacity: 0.35 }} />} title="Deine Sammlung ist noch leer"
-      hint="Füge Karten über »📦 Sammlung« hinzu – die Analyse wertet dann genau deinen Bestand aus." />;
+    return <EmptyState icon={BarChart3} title="Deine Sammlung ist noch leer"
+      hint="Füge Karten über »Sammlung« hinzu – die Analyse wertet dann genau deinen Bestand aus." />;
   }
 
   const totalQty = owned.reduce((s, o) => s + o.qty, 0);
@@ -87,7 +87,7 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
   return (
     <div className="fade-in">
       <div style={{ fontSize: 12.5, color: C.textDim, marginBottom: 14 }}>
-        📦 Analyse deiner <strong style={{ color: C.textSoft }}>eigenen Sammlung</strong> · {owned.length} verschiedene Karten · {totalQty} Stück gesamt
+        <IconLabel icon={Package} size={13} gap={6}>Analyse deiner <strong style={{ color: C.textSoft }}>eigenen Sammlung</strong> · {owned.length} verschiedene Karten · {totalQty} Stück gesamt</IconLabel>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 10, marginBottom: 16 }}>
         <Stat label="Karten" value={totalQty} color={C.textSoft} sub={owned.length !== totalQty ? `${owned.length} verschiedene` : undefined} />
@@ -99,7 +99,7 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 14, marginBottom: 14 }}>
         <div style={panel}>
-          <div style={panelTitle}>🏆 Tier-Verteilung</div>
+          <div style={panelTitle}><IconLabel icon={Trophy} size={14}>Tier-Verteilung</IconLabel></div>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={tierData}>
               <XAxis dataKey="name" tick={{ fill: C.textDim, fontSize: 11 }} />
@@ -111,7 +111,7 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
         </div>
 
         <div style={panel}>
-          <div style={panelTitle}>🎨 Seltenheits-Mix</div>
+          <div style={panelTitle}><IconLabel icon={Palette} size={14}>Seltenheits-Mix</IconLabel></div>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie data={rarityData} cx="50%" cy="50%" outerRadius={72} dataKey="value" nameKey="name">
@@ -123,7 +123,7 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
         </div>
 
         <div style={panel}>
-          <div style={panelTitle}>📊 Trend-Verteilung</div>
+          <div style={panelTitle}><IconLabel icon={BarChart3} size={14}>Trend-Verteilung</IconLabel></div>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={trendData} layout="vertical">
               <XAxis type="number" tick={{ fill: C.textDim, fontSize: 11 }} allowDecimals={false} />
@@ -135,7 +135,7 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
         </div>
 
         <div style={panel}>
-          <div style={panelTitle}>💎 Preis vs. 30-Tage-Veränderung</div>
+          <div style={panelTitle}><IconLabel icon={Gem} size={14}>Preis vs. 30-Tage-Veränderung</IconLabel></div>
           <ResponsiveContainer width="100%" height={200}>
             <ScatterChart margin={{ top: 6, right: 12, left: -6, bottom: 0 }}>
               <CartesianGrid stroke={C.lineStrong} strokeDasharray="3 3" />
@@ -155,15 +155,15 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 14 }}>
-        <MoverList title="🚀 Größte Gewinner (30T)" cards={topGainers} onOpen={onOpen} />
-        <MoverList title="📉 Größte Verlierer (30T)" cards={topLosers} onOpen={onOpen} />
+        <MoverList title="Größte Gewinner (30T)" icon={TrendingUp} iconColor={C.green} cards={topGainers} onOpen={onOpen} />
+        <MoverList title="Größte Verlierer (30T)" icon={TrendingDown} iconColor={C.red} cards={topLosers} onOpen={onOpen} />
       </div>
 
       {/* Pro-gated advanced analytics */}
       <div style={{ marginTop: 14 }}>
         {pro ? (
           <div style={panel}>
-            <div style={panelTitle}>👑 Pro-Insight · Konzentration deiner Sammlung</div>
+            <div style={panelTitle}><IconLabel icon={Crown} size={14} color={C.gold}>Pro-Insight · Konzentration deiner Sammlung</IconLabel></div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', gap: 10 }}>
               <Stat label="Top-5 Wertanteil" value={fmtPct((([...owned].sort((a, b) => (b.card.m.market || 0) * b.qty - (a.card.m.market || 0) * a.qty).slice(0, 5).reduce((s, o) => s + (o.card.m.market || 0) * o.qty, 0)) / (marketValue || 1)) * 100, 0, false)} color={C.gold} />
               <Stat label="Premium-Karten (≥100 €)" value={owned.filter((o) => (o.card.m.market || 0) >= 100).reduce((s, o) => s + o.qty, 0)} color={C.orange} />
@@ -174,7 +174,7 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
           </div>
         ) : (
           <div style={{ ...panel, textAlign: 'center', padding: 24 }}>
-            <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 6 }}>👑 Erweiterte Analytics</div>
+            <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 6 }}><IconLabel icon={Crown} size={15} color={C.gold}>Erweiterte Analytics</IconLabel></div>
             <div style={{ fontSize: 12.5, color: C.textDim, marginBottom: 14 }}>Markt-Konzentration, Premium-Anteil, Qualitäts- und Margen-Kennzahlen – im Pro-Plan.</div>
             <button className="btn-primary" onClick={onUpgrade}>Pro freischalten</button>
           </div>
@@ -184,11 +184,11 @@ export default function Analytics({ onOpen, pro, onUpgrade }) {
   );
 }
 
-function MoverList({ title, cards, onOpen }) {
+function MoverList({ title, icon, iconColor, cards, onOpen }) {
   const panel = makePanel();
   return (
     <div style={panel}>
-      <div style={panelTitle}>{title}</div>
+      <div style={panelTitle}><IconLabel icon={icon} size={14} color={iconColor}>{title}</IconLabel></div>
       {cards.map((c, i) => (
         <div key={c.id} onClick={() => onOpen(c, 'value')} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 4px', borderBottom: i < cards.length - 1 ? `1px solid ${C.line}` : 'none', cursor: 'pointer' }}>
           <div style={{ flex: 1, minWidth: 0 }}>

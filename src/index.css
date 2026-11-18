@@ -423,7 +423,7 @@ button, input, select, textarea { font-family: inherit; }
 .lp-tick:hover { background: var(--surface); border-color: var(--line); }
 .lp-tick-img { width: 29px; height: 40px; border-radius: 4px; overflow: hidden; flex-shrink: 0; background: var(--surface-2); }
 .lp-tick-img img { width: 100% !important; height: 100% !important; object-fit: cover; box-shadow: none !important; border-radius: 0 !important; }
-.lp-tick-game { width: 18px; height: 18px; border-radius: 5px; display: grid; place-items: center; flex-shrink: 0; }
+.lp-tick-game { width: 18px; height: 18px; display: grid; place-items: center; flex-shrink: 0; }
 .lp-tick-name { font-weight: 700; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
 .lp-tick-price { font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text-soft); }
 
@@ -444,9 +444,9 @@ button, input, select, textarea { font-family: inherit; }
   background-image: radial-gradient(var(--a-glow) 1px, transparent 1.4px); background-size: 18px 18px;
   -webkit-mask-image: radial-gradient(90% 90% at 100% 20%, #000 0%, transparent 62%); mask-image: radial-gradient(90% 90% at 100% 20%, #000 0%, transparent 62%); }
 .lp-tile-body { position: relative; z-index: 2; display: flex; flex-direction: column; flex: 1; max-width: 60%; }
-.lp-tile-mark { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; position: relative;
-  background: linear-gradient(140deg, var(--a), var(--a2)); box-shadow: 0 10px 24px -8px var(--a-glow), inset 0 1px 0 #ffffff90, inset 0 0 0 1px #ffffff26; }
-.lp-tile-mark::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(180deg, #ffffff45, transparent 55%); pointer-events: none; }
+.lp-tile-mark { width: 56px; height: 56px; border-radius: 15px; position: relative; box-shadow: 0 12px 26px -8px var(--a-glow); transition: transform .3s cubic-bezier(.2, .75, .2, 1); }
+.lp-tile:hover .lp-tile-mark { transform: rotate(-6deg) scale(1.06); }
+.lp-tile-mark svg { width: 100%; height: 100%; }
 .lp-tile-name { font-family: var(--font-display); font-size: 29px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; margin: 18px 0 6px; }
 .lp-tile-tag { font-size: 13.5px; color: var(--text-dim); }
 .lp-tile-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 18px; }
@@ -525,7 +525,7 @@ button, input, select, textarea { font-family: inherit; }
   .lp-tile-meta { padding-top: 12px; }
   .lp-tile-cta { margin-top: 10px; }
   .lp-tile-body { max-width: 64%; }
-  .lp-tile-mark { width: 48px; height: 48px; border-radius: 14px; }
+  .lp-tile-mark { width: 48px; height: 48px; border-radius: 13px; }
   .lp-tile-name { font-size: 23px; margin-top: 12px; }
   .lp-tile-tag { font-size: 12.5px; }
   .lp-tile-art { width: 104px; height: 145px; right: 16px; }

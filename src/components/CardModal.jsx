@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDialog } from '../lib/useDialog.js';
-import { X, Info, TrendingUp, Calculator, Tag as TagIcon, Globe, Award, Receipt, Maximize2, Package } from 'lucide-react';
+import { X, Info, TrendingUp, Calculator, Tag as TagIcon, Globe, Award, Receipt, Maximize2, Package, RefreshCw, BarChart3, ShoppingCart, Trophy, Bell, LineChart, ArrowLeftRight, Search, Wallet, StickyNote, AlertTriangle, ImageOff, Check } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, riskColor, riskPhrase, riskAdjDative, rarityColor, trendColor, trendIcon, trendLabel } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtPct, fmtDate, fmtMoney, fmtUsd } from '../lib/format.js';
@@ -11,13 +11,13 @@ import { marketEstimates, arbitrage } from '../lib/markets.js';
 import { gradeEstimates, gradingProfit } from '../lib/grading.js';
 import { newRule } from '../lib/alerts.js';
 import { livePricesEnabled, refreshCard } from '../lib/livePrices.js';
-import { CardImage, Pill, ChangeBadge, ScoreBadge, Spark } from './ui.jsx';
+import { CardImage, Pill, ChangeBadge, ScoreBadge, Spark, IconLabel, Dot } from './ui.jsx';
 import PriceChart from './PriceChart.jsx';
 
 const mpBtn = (color) => ({
   padding: '10px', borderRadius: 8, textAlign: 'center', textDecoration: 'none',
   fontSize: 12, fontWeight: 700, background: color + '1f', color, border: `1px solid ${color}44`,
-  cursor: 'pointer', display: 'block',
+  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
 });
 
 export default function CardModal({ card, initialTab = 'overview', onClose }) {
@@ -180,7 +180,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
               {showAdd && (
                 <div style={{ background: '#34d39912', border: '1px solid #34d39930', borderRadius: 10, padding: 12, marginBottom: 14 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <div style={{ fontSize: 12, color: C.green2, fontWeight: 700 }}>📦 Zur Sammlung hinzufügen</div>
+                    <div style={{ fontSize: 12, color: C.green2, fontWeight: 700 }}><IconLabel icon={Package} size={14} gap={6}>Zur Sammlung hinzufügen</IconLabel></div>
                     <button onClick={() => setShowAdd(false)} title="Abbrechen" style={{ background: 'none', border: 'none', color: C.textFaint, cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}>×</button>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 8 }}>
@@ -222,16 +222,21 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                   </div>
                 ))}
               </div>
+              {p.filtered?.length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 10.5, color: C.textFaint, margin: '-8px 0 14px' }} title={`Ausgeblendet: ${p.filtered.join(', ')}`}>
+                  <Info size={12} /> Unplausible Einzelwerte der Quelle wurden ausgeblendet.
+                </div>
+              )}
 
               {livePricesEnabled && (
                 <div style={{ marginBottom: 14, textAlign: 'center' }}>
-                  <button className="control" disabled={liveBusy} style={{ padding: '7px 12px', fontSize: 12 }}
+                  <button className="control" disabled={liveBusy} style={{ padding: '7px 12px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
                     onClick={async () => { setLiveBusy(true); const r = await refreshCard(card); setLive(r || { market: null }); setLiveBusy(false); }}>
-                    {liveBusy ? 'Lädt…' : '🔄 Live-Preis aktualisieren'}
+                    {liveBusy ? 'Lädt…' : <><RefreshCw size={13} />Live-Preis aktualisieren</>}
                   </button>
                   {live && (
                     <div style={{ fontSize: 12, color: live.market != null ? C.green : C.textFaint, marginTop: 6 }}>
-                      {live.market != null ? `🟢 Live: ${fmtEur(live.market)} (Cardmarket)` : 'Für dieses Spiel gibt es keinen Live-Preis (transparente Schätzung).'}
+                      {live.market != null ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}><Dot color={C.green} />Live: {fmtEur(live.market)} (Cardmarket)</span> : 'Für dieses Spiel gibt es keinen Live-Preis (transparente Schätzung).'}
                     </div>
                   )}
                 </div>
@@ -245,25 +250,25 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
               </div>
 
               <div style={{ background: C.bg1, borderRadius: 10, padding: 12, marginBottom: 14 }}>
-                <div style={sectionLabel}>📊 Einschätzung</div>
+                <div style={sectionLabel}><IconLabel icon={BarChart3} size={13}>Einschätzung</IconLabel></div>
                 <div style={{ fontSize: 13, color: '#dcdcec', lineHeight: 1.6 }}>{thesis(card)}</div>
               </div>
 
               <div>
-                <div style={sectionLabel}>🛒 Direkt zum Marktplatz</div>
+                <div style={sectionLabel}><IconLabel icon={ShoppingCart} size={13}>Direkt zum Marktplatz</IconLabel></div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                  <a href={cmUrl(card)} target="_blank" rel="noopener noreferrer" style={mpBtn('#0066cc')}>🛒 Cardmarket →</a>
-                  <a href={links.ebay} target="_blank" rel="noopener noreferrer" style={mpBtn('#3a3a8c')}>🛒 eBay Deutschland →</a>
-                  <a href={links.psa} target="_blank" rel="noopener noreferrer" style={mpBtn('#ec4899')}>🏆 PSA Population →</a>
+                  <a href={cmUrl(card)} target="_blank" rel="noopener noreferrer" style={mpBtn('#0066cc')}><ShoppingCart size={13} />Cardmarket →</a>
+                  <a href={links.ebay} target="_blank" rel="noopener noreferrer" style={mpBtn('#3a3a8c')}><ShoppingCart size={13} />eBay Deutschland →</a>
+                  <a href={links.psa} target="_blank" rel="noopener noreferrer" style={mpBtn('#ec4899')}><Trophy size={13} />PSA Population →</a>
                 </div>
                 <button onClick={() => addToBuylist(card)} title="Zur Einkaufsliste hinzufügen"
                   style={{ marginTop: 6, width: '100%', padding: '9px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: inBuylist(card.id) ? C.gold + '22' : '#ffd70012', color: C.gold, border: `1px solid ${C.gold}${inBuylist(card.id) ? '66' : '33'}` }}>
-                  <Receipt size={14} /> {inBuylist(card.id) ? 'In der Buylist ✓' : 'Zur Buylist hinzufügen'}
+                  <Receipt size={14} /> {inBuylist(card.id) ? <>In der Buylist <Check size={13} /></> : 'Zur Buylist hinzufügen'}
                 </button>
               </div>
 
               <div style={{ marginTop: 14 }}>
-                <div style={sectionLabel}>🔔 Preis-Alarm</div>
+                <div style={sectionLabel}><IconLabel icon={Bell} size={13}>Preis-Alarm</IconLabel></div>
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                   <span style={{ fontSize: 12, color: C.textSoft }}>Benachrichtige mich, wenn der Preis</span>
                   <select value={alertDir} onChange={(e) => setAlertDir(e.target.value)} style={{ ...fieldStyle, width: 'auto', marginTop: 0 }}>
@@ -283,7 +288,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
 
           {tab === 'value' && (
             <>
-              <div style={sectionLabel}>📈 Preisverlauf · interaktiv (Cardmarket EU)</div>
+              <div style={sectionLabel}><IconLabel icon={LineChart} size={13}>Preisverlauf · interaktiv (Cardmarket EU)</IconLabel></div>
               <div style={{ marginBottom: 14 }}>
                 <PriceChart card={card} defaultRange="6M" />
               </div>
@@ -324,14 +329,14 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
 
           {tab === 'markets' && (
             <>
-              <div style={sectionLabel}>🌍 Preise nach Marktplatz</div>
+              <div style={sectionLabel}><IconLabel icon={Globe} size={13}>Preise nach Marktplatz</IconLabel></div>
               <div style={{ background: C.bg1, borderRadius: 10, overflow: 'hidden', marginBottom: 12 }}>
                 {markets.map((mk, i) => (
                   <div key={mk.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 12px', borderBottom: i < markets.length - 1 ? `1px solid ${C.line}` : 'none' }}>
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: mk.color, flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: 13 }}>{mk.label} <span style={{ fontSize: 10, color: C.textFaint, fontWeight: 600 }}>· {mk.region}</span></div>
-                      <div style={{ fontSize: 10.5, color: C.textFaint }}>{mk.real ? '🟢 Live (Cardmarket EU)' : `geschätzt${mk.vsCardmarket != null ? ` · ${fmtPct(mk.vsCardmarket)} vs. CM` : ''}`}</div>
+                      <div style={{ fontSize: 10.5, color: C.textFaint }}>{mk.real ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><Dot color={C.green} size={6} />Live (Cardmarket EU)</span> : `geschätzt${mk.vsCardmarket != null ? ` · ${fmtPct(mk.vsCardmarket)} vs. CM` : ''}`}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 800, fontSize: 14 }}>{fmtMoney(mk.price, mk.currency)}</div>
@@ -343,7 +348,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
               </div>
               {arb && (
                 <div style={{ background: arb.worthwhile ? '#00e67612' : '#ffffff06', border: `1px solid ${arb.worthwhile ? '#00e67630' : C.lineStrong}`, borderRadius: 10, padding: 12, marginBottom: 12 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>🔄 Import/Export EU → US</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}><IconLabel icon={ArrowLeftRight} size={14} gap={6}>Import/Export EU → US</IconLabel></div>
                   <div style={{ fontSize: 12, color: C.textSoft, lineHeight: 1.55 }}>
                     Günstigste EU-Kopie {fmtEur(arb.buyEur)} → US-Verkauf ca. {fmtUsd(arb.sellUsd)} ({fmtEur(arb.sellEur)}).
                     Spanne nach groben Grenzkosten: <strong style={{ color: arb.netPct >= 0 ? C.green : C.red }}>{fmtPct(arb.netPct)}</strong>{arb.worthwhile ? ' — potenziell lohnend.' : '.'}
@@ -358,7 +363,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
 
           {tab === 'grading' && (
             <>
-              <div style={sectionLabel}>🏆 Geschätzte Slab-Werte</div>
+              <div style={sectionLabel}><IconLabel icon={Trophy} size={13}>Geschätzte Slab-Werte</IconLabel></div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6, marginBottom: 14 }}>
                 {grades.map((g) => (
                   <div key={g.id} style={{ background: C.bg1, border: `1px solid ${g.color}30`, borderRadius: 9, padding: '9px 8px', textAlign: 'center' }}>
@@ -370,7 +375,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                 ))}
               </div>
 
-              <div style={sectionLabel}>🧮 Grading-Rechner</div>
+              <div style={sectionLabel}><IconLabel icon={Calculator} size={13}>Grading-Rechner</IconLabel></div>
               <div style={{ background: C.bg1, borderRadius: 10, padding: 12, marginBottom: 12 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
                   <label style={{ fontSize: 10, color: C.textFaint }}>Grading-Kosten/Stk. (€)
@@ -396,8 +401,8 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
-                <a href={links.psa} target="_blank" rel="noopener noreferrer" style={mpBtn('#ec4899')}>🏆 PSA Population →</a>
-                <a href={links.ebay} target="_blank" rel="noopener noreferrer" style={mpBtn('#3a3a8c')}>🔎 eBay „sold" (Slabs) →</a>
+                <a href={links.psa} target="_blank" rel="noopener noreferrer" style={mpBtn('#ec4899')}><Trophy size={13} />PSA Population →</a>
+                <a href={links.ebay} target="_blank" rel="noopener noreferrer" style={mpBtn('#3a3a8c')}><Search size={13} />eBay „sold" (Slabs) →</a>
               </div>
               <div style={{ fontSize: 11, color: C.textFaint }}>
                 Schätzwerte: Roh-Marktpreis × Note/Alter-Faktor (Vintage deutlich höher, Top-Rarität mit Aufschlag). Keine garantierten Slab-Preise — vor Kauf/Verkauf echte „sold"-Daten prüfen. Die Grading-Trefferquote (z. B. PSA 10) hängt vom Zustand der Roh-Karte ab.
@@ -407,7 +412,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
 
           {tab === 'fees' && (
             <>
-              <div style={sectionLabel}>💸 Echter Gewinn nach Gebühren (Kauf günstigstes Angebot → Verkauf zum Trend)</div>
+              <div style={sectionLabel}><IconLabel icon={Wallet} size={13}>Echter Gewinn nach Gebühren (Kauf günstigstes Angebot → Verkauf zum Trend)</IconLabel></div>
               {Object.entries(PLATFORM_FEES).map(([key, plat]) => {
                 const net = calcNet(p.trend ?? m.market, p.low ?? m.market, key, settings.includeShipping);
                 return (
@@ -431,7 +436,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
 
           {tab === 'notes' && (
             <>
-              <div style={sectionLabel}>🏷 Tags</div>
+              <div style={sectionLabel}><IconLabel icon={TagIcon} size={13}>Tags</IconLabel></div>
               <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
                 {cardTags.map((t) => (
                   <span key={t} style={{ padding: '4px 10px', borderRadius: 20, background: '#c084fc20', color: C.purple, border: '1px solid #c084fc40', fontSize: 11, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -446,7 +451,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
                   style={{ flex: 1, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 6, padding: '7px 10px', color: C.text, fontSize: 12, outline: 'none' }} />
                 <button onClick={() => { addTag(card.id, newTag); setNewTag(''); }} style={{ padding: '7px 14px', borderRadius: 6, border: 'none', cursor: 'pointer', background: '#c084fc20', color: C.purple, fontWeight: 700, fontSize: 12 }}>+ Tag</button>
               </div>
-              <div style={sectionLabel}>📝 Persönliche Notiz</div>
+              <div style={sectionLabel}><IconLabel icon={StickyNote} size={13}>Persönliche Notiz</IconLabel></div>
               <textarea value={noteText} onChange={(e) => setNoteText(e.target.value)} onBlur={() => saveNote(card.id, noteText)}
                 placeholder="Eigene Beobachtungen, Kaufdetails, Strategien…"
                 style={{ width: '100%', minHeight: 120, background: C.bg1, border: `1px solid ${C.lineStrong}`, borderRadius: 8, padding: '10px 12px', color: C.text, fontSize: 12, fontFamily: 'inherit', resize: 'vertical', outline: 'none' }} />
@@ -456,7 +461,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
         </div>
 
         <div style={{ padding: '8px 20px', borderTop: `1px solid ${C.lineStrong}`, fontSize: 10, color: C.textGhost, textAlign: 'center' }}>
-          ⚠️ Keine Anlageberatung · Preise stichprobenhaft, vor dem Kauf auf Cardmarket prüfen{p.updatedAt ? ` · Stand ${fmtDate(card.prices.updatedAt?.replace(/\//g, '-'))}` : ''}
+          <AlertTriangle size={12} style={{ verticalAlign: '-2px' }} /> Keine Anlageberatung · Preise stichprobenhaft, vor dem Kauf auf Cardmarket prüfen{p.updatedAt ? ` · Stand ${fmtDate(card.prices.updatedAt?.replace(/\//g, '-'))}` : ''}
         </div>
       </div>
     </div>
@@ -485,7 +490,7 @@ export default function CardModal({ card, initialTab = 'overview', onClose }) {
           />
         ) : (
           <div style={{ color: '#fff', fontSize: 14, textAlign: 'center', maxWidth: 280 }}>
-            <div style={{ fontSize: 40, marginBottom: 8 }}>🃏</div>
+            <ImageOff size={40} strokeWidth={1.6} color={C.textFaint} style={{ display: 'block', margin: '0 auto 8px' }} />
             Für diese Karte ist gerade kein Bild verfügbar.
           </div>
         )}

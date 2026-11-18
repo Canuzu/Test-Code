@@ -1,9 +1,11 @@
-import { X } from 'lucide-react';
+import { X, Settings, Check } from 'lucide-react';
 import { useDialog } from '../lib/useDialog.js';
 import { useStore } from '../store.jsx';
 import { C } from '../lib/theme.js';
 import { PLATFORM_FEES } from '../lib/fees.js';
 import { GAMES } from '../data/providers/index.js';
+import GameMark from './GameMark.jsx';
+import { IconLabel } from './ui.jsx';
 
 export default function SettingsModal({ onClose }) {
   const dialogRef = useDialog(onClose);
@@ -14,7 +16,7 @@ export default function SettingsModal({ onClose }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: '#000000bb', backdropFilter: 'blur(6px)', zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} aria-label="Einstellungen" onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 480, width: '100%', maxHeight: '90vh', overflow: 'auto', padding: 20, position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, background: '#ffffff15', border: 'none', color: C.textSoft, width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={15} /></button>
-        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>⚙️ Einstellungen</div>
+        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}><IconLabel icon={Settings} size={16} gap={8}>Einstellungen</IconLabel></div>
         <div style={{ fontSize: 11, color: C.textDim, marginBottom: 20 }}>Wirken sich auf alle Berechnungen aus</div>
 
         <div style={{ marginBottom: 18 }}>
@@ -29,7 +31,7 @@ export default function SettingsModal({ onClose }) {
                   background: activeGame === g.id ? '#ffd70015' : C.bg1,
                   color: g.enabled ? C.text : C.textFaint, cursor: g.enabled ? 'pointer' : 'not-allowed', opacity: g.enabled ? 1 : 0.6,
                 }}>
-                <span style={{ fontSize: 16 }}>{g.emoji}</span>
+                <GameMark id={g.id} size={22} />
                 <div>
                   <div style={{ fontSize: 12.5, fontWeight: 700 }}>{g.label}</div>
                   <div style={{ fontSize: 9.5, color: C.textFaint }}>{!g.enabled ? 'kommt bald' : activeGame === g.id ? 'aktiv' : 'wechseln'}</div>
@@ -64,7 +66,7 @@ export default function SettingsModal({ onClose }) {
                   <div style={{ fontWeight: 700, fontSize: 13, color: settings.platform === key ? p.color : '#dcdcec' }}>{p.label}</div>
                   <div style={{ fontSize: 10, color: C.textFaint }}>{(p.commission * 100).toFixed(2)} % Provision · €{p.shipping} Versand</div>
                 </div>
-                {settings.platform === key && <span style={{ color: p.color, fontWeight: 700 }}>✓</span>}
+                {settings.platform === key && <Check size={15} strokeWidth={2.6} color={p.color} style={{ flexShrink: 0 }} />}
               </button>
             ))}
           </div>

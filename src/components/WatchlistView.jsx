@@ -33,7 +33,7 @@ export default function WatchlistView({ onOpen }) {
   }, [items, search, sortBy, filterTrend]);
 
   if (items.length === 0) {
-    return <EmptyState icon={<Star size={56} style={{ opacity: 0.35 }} />} title="Watchlist ist leer" hint="Füge Karten über »⭐ Merken« in der Entdecken-Ansicht hinzu." />;
+    return <EmptyState icon={Star} title="Watchlist ist leer" hint="Füge Karten über »Merken« in der Entdecken-Ansicht hinzu." />;
   }
 
   const addedValue = watchlist.reduce((s, w) => s + (w.addedPrice || 0), 0);
@@ -45,7 +45,7 @@ export default function WatchlistView({ onOpen }) {
   return (
     <div className="fade-in">
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 10, marginBottom: 18 }}>
-        <Stat label="🃏 Karten" value={items.length} color={C.textSoft} />
+        <Stat label="Karten" value={items.length} color={C.textSoft} />
         <Stat label="Wert beim Merken" value={fmtEur(addedValue, 0)} color={C.blue} />
         <Stat label="Aktueller Marktwert" value={fmtEur(currentValue, 0)} color={C.text} />
         <Stat label="Δ seit Merken" value={`${delta >= 0 ? '+' : ''}${fmtEur(delta, 0)}`} color={delta >= 0 ? C.green : C.red} sub={deltaPct != null ? fmtPct(deltaPct) : undefined} />
@@ -59,12 +59,12 @@ export default function WatchlistView({ onOpen }) {
           <input className="control" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="In der Watchlist suchen…" style={{ width: '100%', padding: '9px 10px 9px 32px' }} />
         </div>
         <select className="control" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-          <option value="added">↕ Zuletzt gemerkt</option>
-          <option value="score">↕ Score</option>
-          <option value="change30">↕ Veränderung 30T</option>
-          <option value="price_desc">↕ Preis ↓</option>
-          <option value="price_asc">↕ Preis ↑</option>
-          <option value="name">↕ Name A–Z</option>
+          <option value="added">Zuletzt gemerkt</option>
+          <option value="score">Score</option>
+          <option value="change30">Veränderung 30T</option>
+          <option value="price_desc">Preis ↓</option>
+          <option value="price_asc">Preis ↑</option>
+          <option value="name">Name A–Z</option>
         </select>
         <select className="control" value={filterTrend} onChange={(e) => setFilterTrend(e.target.value)}>
           <option value="all">Alle Trends</option>
@@ -77,7 +77,7 @@ export default function WatchlistView({ onOpen }) {
       <div style={{ fontSize: 12, color: C.textFaint, marginBottom: 12 }}>{shown.length} von {items.length} Karten</div>
 
       {shown.length === 0
-        ? <EmptyState icon="🔍" title="Keine Karten gefunden" hint="Anderen Suchbegriff oder Filter probieren." />
+        ? <EmptyState icon={Search} title="Keine Karten gefunden" hint="Anderen Suchbegriff oder Filter probieren." />
         : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 330px), 1fr))', gap: 14 }}>
             {shown.map((card) => <CardTile key={card.id} card={card} onOpen={onOpen} />)}
           </div>}

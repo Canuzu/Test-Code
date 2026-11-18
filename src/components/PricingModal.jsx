@@ -4,6 +4,7 @@ import { X, Check, Crown } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C } from '../lib/theme.js';
 import { ALL_FEATURES, PRO_FEATURES } from '../lib/pro.js';
+import { IconLabel } from './ui.jsx';
 import { startCheckout, openPortal, priceLabel } from '../lib/billing.js';
 
 // Two faces:
@@ -89,7 +90,7 @@ export default function PricingModal({ onClose }) {
 
       {pro ? (
         <>
-          <div style={{ textAlign: 'center', fontSize: 13, color: C.green, fontWeight: 700, marginBottom: 10 }}>👑 Du bist Pro – danke!</div>
+          <div style={{ textAlign: 'center', fontSize: 13, color: C.green, fontWeight: 700, marginBottom: 10 }}><IconLabel icon={Crown} size={14} gap={6}>Du bist Pro – danke!</IconLabel></div>
           <button className="control" disabled={busy} onClick={() => go(openPortal)} style={{ width: '100%', padding: 11 }}>
             {busy ? '…' : 'Abo verwalten / kündigen'}
           </button>

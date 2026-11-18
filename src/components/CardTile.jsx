@@ -1,8 +1,8 @@
-import { Receipt } from 'lucide-react';
+import { Receipt, Briefcase, Hourglass, X, Star, Check, Scale, ClipboardList, Package } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, riskColor, riskLabel, rarityColor } from '../lib/theme.js';
 import { fmtEur } from '../lib/format.js';
-import { CardImage, Pill, ScoreBadge } from './ui.jsx';
+import { CardImage, Pill, ScoreBadge, IconLabel } from './ui.jsx';
 
 // Standard preview tile (shown BEFORE opening a card). Kept deliberately light:
 // big artwork + the essentials (score, price, rarity/risk, popularity). The
@@ -64,7 +64,7 @@ export default function CardTile({ card, onOpen }) {
           <div style={{ marginTop: 9, display: 'flex', gap: 5, flexWrap: 'wrap' }}>
             {card.rarity && <Pill color={rarityColor(card.rarity)}>{card.rarity}</Pill>}
             <Pill color={riskColor(m.risk)}>{riskLabel(m.risk)}</Pill>
-            {owned && <Pill color={C.green2}>💼 im Depot</Pill>}
+            {owned && <Pill color={C.green2}><IconLabel icon={Briefcase} size={11} gap={4} style={{ verticalAlign: 'top' }}>im Depot</IconLabel></Pill>}
             {cardTags.slice(0, 1).map((t) => <Pill key={t} color={C.purple}>#{t}</Pill>)}
           </div>
 
@@ -72,7 +72,7 @@ export default function CardTile({ card, onOpen }) {
             {card.prices?.pricePending && m.market == null ? (
               <>
                 <div style={{ fontSize: 11, color: C.textFaint }}>Neu erschienen</div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: C.gold, lineHeight: 1.1, paddingTop: 4 }} title="Karte ist neu – der Marktpreis folgt, sobald er auf Cardmarket verfügbar ist.">⏳ Preis folgt</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: C.gold, lineHeight: 1.1, paddingTop: 4 }} title="Karte ist neu – der Marktpreis folgt, sobald er auf Cardmarket verfügbar ist."><IconLabel icon={Hourglass} size={15} gap={6}>Preis folgt</IconLabel></div>
               </>
             ) : (
               <>
@@ -91,21 +91,26 @@ export default function CardTile({ card, onOpen }) {
         <button
           onClick={() => toggleWatchlist(card)}
           style={btn(listed ? C.red : C.gold, listed)}
-        >{listed ? '✕ Watchlist' : '⭐ Merken'}</button>
+        >{listed ? <X size={13} /> : <Star size={13} />}<span style={btnText}>{listed ? 'Watchlist' : 'Merken'}</span></button>
         <button
           onClick={() => toggleCompare(card)}
           style={btn(C.blue, comparing)}
-        >{comparing ? '✓ Vergleich' : '⚖ Vergleich'}</button>
+        >{comparing ? <Check size={13} /> : <Scale size={13} />}<span style={btnText}>Vergleich</span></button>
         <button
           onClick={() => onOpen(card, owned ? 'overview' : 'buy')}
           style={btn(C.green2, false)}
-        >{owned ? '📋 Details' : '📦 Sammlung'}</button>
+        >{owned ? <ClipboardList size={13} /> : <Package size={13} />}<span style={btnText}>{owned ? 'Details' : 'Sammlung'}</span></button>
       </div>
     </div>
   );
 }
 
 const btn = (color, active) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  minWidth: 0,
   padding: 8,
   borderRadius: 7,
   cursor: 'pointer',
@@ -118,3 +123,6 @@ const btn = (color, active) => ({
   overflow: 'hidden',
   textOverflow: 'ellipsis',
 });
+
+// Label inside the action buttons: keeps the ellipsis working in the flex button.
+const btnText = { overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 };

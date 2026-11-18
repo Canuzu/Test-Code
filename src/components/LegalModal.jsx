@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, AlertTriangle } from 'lucide-react';
 import { useDialog } from '../lib/useDialog.js';
 import { OPERATOR } from '../lib/site.js';
 import { billingEnabled } from '../lib/pro.js';
@@ -212,7 +212,7 @@ export default function LegalModal({ tab = 'imprint', onClose }) {
         )}
 
         <div style={{ fontSize: 10.5, color: C.textGhost, borderTop: `1px solid ${C.lineStrong}`, paddingTop: 12, lineHeight: 1.6 }}>
-          Stand: Juni 2026 · ⚠️ Vorlage ohne Rechtsberatung. Vor der Veröffentlichung
+          Stand: Juni 2026 · <AlertTriangle size={12} style={{ verticalAlign: '-2px' }} /> Vorlage ohne Rechtsberatung. Vor der Veröffentlichung
           die Betreiber-Angaben in <code>src/lib/site.js</code> ausfüllen; im Zweifel
           rechtlich prüfen lassen.{billingEnabled ? ' AGB und Widerrufsbelehrung für das ' +
           'kostenpflichtige Pro-Abo vor dem Verkauf zwingend anwaltlich prüfen lassen.' : ''}

@@ -1,11 +1,11 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useDialog } from '../lib/useDialog.js';
-import { X, Upload, FileText, ScanLine, Download, Camera } from 'lucide-react';
+import { X, Upload, FileText, ScanLine, Download, Camera, Import, HelpCircle, MapPin } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C } from '../lib/theme.js';
 import { fmtEur } from '../lib/format.js';
 import { parseCSV, detectMapping, TEMPLATE } from '../lib/csv.js';
-import { CardImage } from './ui.jsx';
+import { CardImage, IconLabel } from './ui.jsx';
 
 const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
 const parseNum = (s) => { const v = parseFloat(String(s || '').replace(/\./g, (m, o, str) => (str.indexOf(',') > -1 ? '' : '.')).replace(',', '.')); return Number.isNaN(v) ? null : v; };
@@ -85,7 +85,7 @@ export default function ImportModal({ onClose }) {
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: '#000000bb', backdropFilter: 'blur(6px)', zIndex: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div ref={dialogRef} role="dialog" aria-modal="true" tabIndex={-1} aria-label="Sammlung importieren" onClick={(e) => e.stopPropagation()} className="fade-in" style={{ background: C.surface, border: `1px solid ${C.lineStrong}`, borderRadius: 16, maxWidth: 760, width: '100%', maxHeight: '92vh', overflow: 'auto', padding: 20, position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 12, background: '#ffffff15', border: 'none', color: C.textSoft, width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={15} /></button>
-        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}>📥 Massenimport</div>
+        <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 2 }}><IconLabel icon={Import} size={16} gap={8}>Massenimport</IconLabel></div>
         <div style={{ fontSize: 11, color: C.textDim, marginBottom: 16 }}>Hunderte Karten auf einmal in die Sammlung übernehmen</div>
 
         <div style={{ display: 'flex', gap: 4, borderBottom: `1px solid ${C.lineStrong}`, marginBottom: 16 }}>
@@ -131,10 +131,10 @@ export default function ImportModal({ onClose }) {
                 <div style={{ maxHeight: 240, overflow: 'auto', border: `1px solid ${C.line}`, borderRadius: 8 }}>
                   {preview.slice(0, 100).map((p, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 10px', borderBottom: i < Math.min(preview.length, 100) - 1 ? `1px solid ${C.line}` : 'none', opacity: p.card ? 1 : 0.55 }}>
-                      {p.card ? <CardImage card={p.card} height={32} radius={3} /> : <span style={{ width: 23, textAlign: 'center' }}>❓</span>}
+                      {p.card ? <CardImage card={p.card} height={32} radius={3} /> : <span style={{ width: 23, display: 'flex', justifyContent: 'center', color: C.textFaint }}><HelpCircle size={16} /></span>}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.card?.name || p.name}</div>
-                        <div style={{ fontSize: 10, color: C.textFaint }}>{p.card ? p.card.set : 'kein Treffer im Datensatz'} · ×{p.quantity} · {p.condition}{p.location ? ` · 📍${p.location}` : ''}</div>
+                        <div style={{ fontSize: 10, color: C.textFaint }}>{p.card ? p.card.set : 'kein Treffer im Datensatz'} · ×{p.quantity} · {p.condition}{p.location ? <> · <MapPin size={10} style={{ verticalAlign: '-1px', marginRight: 2 }} />{p.location}</> : ''}</div>
                       </div>
                       <span style={{ fontSize: 12, fontWeight: 700, color: C.blue }}>{p.price != null ? fmtEur(p.price) : (p.card ? fmtEur(p.card.prices?.low ?? p.card.m?.market) : '–')}</span>
                     </div>

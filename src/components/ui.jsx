@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, isValidElement } from 'react';
+import { ImageOff } from 'lucide-react';
 import { C, changeColor } from '../lib/theme.js';
 import { fmtPct } from '../lib/format.js';
 
@@ -97,7 +98,7 @@ export function CardImage({ card, height = 150, radius = 10 }) {
   if (!src) {
     return (
       <div style={{ height, width, borderRadius: radius, background: 'linear-gradient(160deg,#23234a,#161630)', border: `1px solid ${C.lineStrong}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, flexShrink: 0 }}>
-        <span style={{ fontSize: 26 }}>🃏</span>
+        <ImageOff size={Math.max(14, Math.min(26, Math.round(height / 6)))} strokeWidth={1.6} color={C.textFaint} />
         <span style={{ fontSize: 9, color: C.textFaint, padding: '0 6px', textAlign: 'center', lineHeight: 1.2 }}>{card?.name?.slice(0, 24) || 'Karte'}</span>
       </div>
     );
@@ -159,10 +160,33 @@ export function Stat({ label, value, color = C.text, sub }) {
   );
 }
 
+// Small coloured status dot (live / falling / rising), replaces 🟢/🔴 emoji.
+export function Dot({ color = C.green, size = 7, pulse = false, style }) {
+  return (
+    <span aria-hidden="true" style={{ display: 'inline-block', width: size, height: size, borderRadius: '50%', background: color, boxShadow: `0 0 0 3px ${color}22`, flexShrink: 0, verticalAlign: 'middle', animation: pulse ? 'blink 2s infinite' : undefined, ...style }} />
+  );
+}
+
+// Icon + text heading used for panel/section titles (replaces emoji prefixes).
+export function IconLabel({ icon: Icon, color, size = 15, gap = 7, children, style }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap, ...style }}>
+      {Icon && <Icon size={size} strokeWidth={2.2} color={color} style={{ flexShrink: 0 }} />}
+      <span>{children}</span>
+    </span>
+  );
+}
+
+// `icon` may be a lucide component (rendered in a soft tile) or any node.
 export function EmptyState({ icon, title, hint, children }) {
+  const Icon = icon && !isValidElement(icon) && typeof icon !== 'string' ? icon : null;
   return (
     <div style={{ textAlign: 'center', padding: '60px 20px', color: C.textDim }}>
-      <div style={{ fontSize: 52, marginBottom: 14, opacity: 0.9 }}>{icon}</div>
+      {Icon ? (
+        <div style={{ width: 76, height: 76, margin: '0 auto 16px', borderRadius: 22, display: 'grid', placeItems: 'center', color: C.gold, background: `linear-gradient(140deg, ${C.gold}22, ${C.gold}08)`, border: `1px solid ${C.gold}33` }}>
+          <Icon size={34} strokeWidth={1.8} />
+        </div>
+      ) : <div style={{ fontSize: 52, marginBottom: 14, opacity: 0.9 }}>{icon}</div>}
       <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 8, color: C.text }}>{title}</div>
       {hint && <div style={{ fontSize: 13, marginBottom: 20 }}>{hint}</div>}
       {children}

@@ -18,7 +18,6 @@
 export const meta = {
   id: 'onepiece',
   label: 'One Piece',
-  emoji: '🏴‍☠️',
   attribution: 'Kartendaten & Bilder: One Piece Card Game (offiziell) via punk-records',
   priceSource: 'Schätzung · Cardmarket-Link je Karte',
 };

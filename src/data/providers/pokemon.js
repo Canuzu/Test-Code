@@ -9,7 +9,6 @@ const BASE = 'https://api.pokemontcg.io/v2';
 export const meta = {
   id: 'pokemon',
   label: 'Pokémon',
-  emoji: '⚡',
   attribution: 'Preisdaten: Cardmarket (EU) via pokemontcg.io',
   priceSource: 'Cardmarket EU',
 };

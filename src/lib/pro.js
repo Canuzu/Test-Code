@@ -25,10 +25,10 @@ export const ALL_FEATURES = [
   'Live-/Marktpreise & interaktive Preis-Charts',
   'Watchlist, Sammlung & Inventar-Verwaltung',
   'Marktplatz-Vergleich & Grading-Schätzung',
-  '🧾 Buylist mit PDF-Druck & Regeln',
-  '🔔 Preis-Alerts (in-app & Push)',
-  '📥 Massenimport (CSV & Barcode)',
-  '📊 Erweiterte Analytics',
+  'Buylist mit PDF-Druck & Regeln',
+  'Preis-Alerts (in-app & Push)',
+  'Massenimport (CSV & Barcode)',
+  'Erweiterte Analytics',
   'CSV-Export',
 ];
 

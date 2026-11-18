@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef, useDeferredValue } from 'react';
 import { fold } from '../lib/localize.js';
 import { getDiscoverMemo, setDiscoverMemo } from '../lib/discoverMemo.js';
-import { Search, RefreshCw, AlertCircle, ExternalLink, ChevronLeft, Sparkles, LayoutGrid, Package, Boxes, Gift, Layers } from 'lucide-react';
+import { Search, RefreshCw, AlertCircle, ExternalLink, ChevronLeft, Sparkles, LayoutGrid, Package, Boxes, Gift, Layers, Rocket, Coins, Target, Gem, Crown, Trophy, Flame, CalendarClock, Library, HardDrive, Star, X, ArrowRight } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, trendColor, trendIcon } from '../lib/theme.js';
 import { fmtEur, fmtNum, fmtRelative } from '../lib/format.js';
@@ -10,15 +10,15 @@ import CardTile from './CardTile.jsx';
 import SealedGrid from './SealedGrid.jsx';
 import { sealedCategoriesFor } from '../data/sealedProducts.js';
 import { foilClass } from '../lib/variants.js';
-import { ChangeBadge, ScoreBadge, EmptyState, CardImage } from './ui.jsx';
+import { ChangeBadge, ScoreBadge, EmptyState, CardImage, Dot, IconLabel } from './ui.jsx';
 
 const PRESETS = [
-  { id: 'risers', label: '🚀 Steiger', fn: (c) => c.m.trend === 'rising' && (c.m.change30 ?? 0) > 3 },
-  { id: 'bargain', label: '💰 Unter €25', fn: (c) => (c.m.market ?? 0) < 25 },
-  { id: 'margin', label: '🎯 Hohe Marge', fn: (c) => (c.m.margin ?? 0) >= 18 },
-  { id: 'gem', label: '💎 Geheimtipps', fn: (c) => c.m.score >= 64 && c.m.popularity <= 6 },
-  { id: 'premium', label: '👑 Premium €100+', fn: (c) => (c.m.market ?? 0) >= 100 && c.m.score >= 60 },
-  { id: 'top', label: '🏆 Nur S/A', fn: (c) => c.m.score >= 76 },
+  { id: 'risers', label: 'Steiger', icon: Rocket, fn: (c) => c.m.trend === 'rising' && (c.m.change30 ?? 0) > 3 },
+  { id: 'bargain', label: 'Unter 25 €', icon: Coins, fn: (c) => (c.m.market ?? 0) < 25 },
+  { id: 'margin', label: 'Hohe Marge', icon: Target, fn: (c) => (c.m.margin ?? 0) >= 18 },
+  { id: 'gem', label: 'Geheimtipps', icon: Gem, fn: (c) => c.m.score >= 64 && c.m.popularity <= 6 },
+  { id: 'premium', label: 'Premium 100 €+', icon: Crown, fn: (c) => (c.m.market ?? 0) >= 100 && c.m.score >= 60 },
+  { id: 'top', label: 'Nur S/A', icon: Trophy, fn: (c) => c.m.score >= 76 },
 ];
 
 // Cohesive line icons per category (matches the lucide nav in the header).
@@ -118,16 +118,20 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
   const highlights = useMemo(() => {
     if (cards.length === 0) return [];
     const byScore = [...cards].sort((a, b) => b.m.score - a.m.score);
-    const byChange = [...cards].filter((c) => c.m.change30 != null).sort((a, b) => b.m.change30 - a.m.change30);
-    const byMargin = [...cards].filter((c) => c.m.margin != null).sort((a, b) => b.m.margin - a.m.margin);
+    // Riser / margin picks only among cards worth tracking (≥ 5 €) and with a
+    // credible size of move — on cent cards a single sale reads as "+900 %".
+    const credible = (c) => (c.m.market ?? 0) >= 5;
+    const byChange = cards.filter((c) => credible(c) && c.m.change30 != null && c.m.change30 <= 150 && (c.prices?.avg30 ?? 0) >= 5)
+      .sort((a, b) => b.m.change30 - a.m.change30);
+    const byMargin = cards.filter((c) => credible(c) && c.m.margin != null && c.m.margin <= 300).sort((a, b) => b.m.margin - a.m.margin);
     const byPrice = [...cards].sort((a, b) => (b.m.market ?? 0) - (a.m.market ?? 0));
     const gem = byScore.find((c) => c.m.popularity <= 6 && c.m.score >= 60);
     const picks = [
-      { label: '🏆 Top-Pick', card: byScore[0], color: C.gold },
-      { label: '🚀 Größter Steiger', card: byChange[0], color: C.green },
-      { label: '💰 Wertvollste', card: byPrice[0], color: C.orange },
-      { label: '🎯 Beste Marge', card: byMargin[0], color: C.blue },
-      { label: '💎 Geheimtipp', card: gem, color: C.purple },
+      { label: 'Top-Pick', icon: Trophy, card: byScore[0], color: C.gold },
+      { label: 'Größter Steiger', icon: Rocket, card: byChange[0], color: C.green },
+      { label: 'Wertvollste', icon: Coins, card: byPrice[0], color: C.orange },
+      { label: 'Beste Marge', icon: Target, card: byMargin[0], color: C.blue },
+      { label: 'Geheimtipp', icon: Gem, card: gem, color: C.purple },
     ].filter((x) => x.card);
     // de-dupe by card id (a card can win multiple categories)
     const seen = new Set();
@@ -291,9 +295,9 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
       {/* Source line */}
       {!searching && !inSet && (
         <div style={{ fontSize: 11, color: C.textFaint, marginBottom: 14 }}>
-          {source === 'snapshot' && <>🟢 {snapshotLabel(activeGame, snapshotInfo)} · Stand {fmtRelative(lastUpdated)} · </>}
-          {source === 'cache' && <>💾 Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
-          {source === 'sample' && <>🃏 Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}
+          {source === 'snapshot' && <><Dot color={C.green} size={6} style={{ marginRight: 6, verticalAlign: '1px' }} />{snapshotLabel(activeGame, snapshotInfo)} · Stand {fmtRelative(lastUpdated)} · </>}
+          {source === 'cache' && <><HardDrive size={11} style={{ marginRight: 5, verticalAlign: '-1px' }} />Zuletzt geladen · {fmtRelative(lastUpdated)} · </>}
+          {source === 'sample' && <><Layers size={11} style={{ marginRight: 5, verticalAlign: '-1px' }} />Beispieldaten (Live-Daten gerade nicht erreichbar) · </>}
           {mode === 'home' ? 'alle Sets durchsuchbar' : `${cards.length} Karten in ${sets.length} Sets`}
         </div>
       )}
@@ -320,7 +324,7 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
           {highlights.length > 0 && (
             <section style={{ marginBottom: 26 }}>
               <div className="section-head">
-                <span>🌟 Top-Karten</span>
+                <IconLabel icon={Flame} color={C.orange} size={16}>Top-Karten</IconLabel>
                 <span className="section-sub">die 5 stärksten Karten gerade</span>
               </div>
               <div className="hl-row">
@@ -333,7 +337,7 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
           {sets.length > 0 && (
             <section style={{ marginBottom: 8 }}>
               <div className="section-head">
-                <span>🆕 Neueste Sets</span>
+                <IconLabel icon={CalendarClock} color={C.blue} size={16}>Neueste Sets</IconLabel>
                 <button className="section-link" onClick={() => switchCat('singles')}>Alle {sets.length} Sets →</button>
               </div>
               <div className="set-strip">
@@ -357,12 +361,12 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
       {!loading && mode === 'setlist' && !searchingDeferred && (
         <>
           <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-            🗂️ Sets
+            <IconLabel icon={Library} color={C.gold} size={16}>Sets</IconLabel>
             <span style={{ fontSize: 11, color: C.textFaint, fontWeight: 500 }}>wähle ein Set – dann erscheinen die Einzelkarten</span>
           </div>
           <div style={{ fontSize: 11.5, color: C.textDim, marginBottom: 14 }}>{cards.length} Karten in {sets.length} Sets · oder oben gezielt nach einer Karte suchen</div>
           {sets.length === 0
-            ? <EmptyState icon="🃏" title="Keine Daten" hint="Klicke »Aktualisieren«, um aktuelle Karten zu laden." />
+            ? <EmptyState icon={Layers} title="Keine Daten" hint="Klicke »Aktualisieren«, um aktuelle Karten zu laden." />
             : <SetTiles sets={sets} onSelect={onSelectSet} />}
         </>
       )}
@@ -377,14 +381,14 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
               </button>
             )}
             <select className="control" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="score">↕ Score</option>
-              <option value="date_new">↕ Neueste zuerst</option>
-              <option value="date_old">↕ Älteste zuerst</option>
-              <option value="change30">↕ Veränderung 30T</option>
-              <option value="change7">↕ Veränderung 7T</option>
-              <option value="margin">↕ Marge</option>
-              <option value="price_desc">↕ Preis ↓</option>
-              <option value="price_asc">↕ Preis ↑</option>
+              <option value="score">Score</option>
+              <option value="date_new">Neueste zuerst</option>
+              <option value="date_old">Älteste zuerst</option>
+              <option value="change30">Veränderung 30T</option>
+              <option value="change7">Veränderung 7T</option>
+              <option value="margin">Marge</option>
+              <option value="price_desc">Preis ↓</option>
+              <option value="price_asc">Preis ↑</option>
             </select>
             <select className="control" value={priceRange} onChange={(e) => setPriceRange(e.target.value)}>
               <option value="all">Alle Preise</option>
@@ -401,9 +405,9 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
             </select>
             <select className="control" value={filterFoil} onChange={(e) => setFilterFoil(e.target.value)} title="Holo / Reverse Holo">
               <option value="all">Alle Varianten</option>
-              <option value="holo">✨ Holo</option>
-              <option value="reverse">🔄 Reverse Holo</option>
-              <option value="normal">▫️ Normal</option>
+              <option value="holo">Holo</option>
+              <option value="reverse">Reverse Holo</option>
+              <option value="normal">Normal</option>
             </select>
             {allTags.length > 0 && (
               <select className="control" value={filterTag} onChange={(e) => setFilterTag(e.target.value)}>
@@ -425,7 +429,7 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12, alignItems: 'center' }}>
             {PRESETS.map((p) => (
               <button key={p.id} onClick={() => setActivePreset(activePreset === p.id ? null : p.id)}
-                style={{ padding: '4px 11px', borderRadius: 20, border: `1px solid ${activePreset === p.id ? C.gold : C.lineStrong}`, background: activePreset === p.id ? '#ffd70015' : 'transparent', color: activePreset === p.id ? C.gold : C.textSoft, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{p.label}</button>
+                style={{ padding: '4px 11px', borderRadius: 20, border: `1px solid ${activePreset === p.id ? C.gold : C.lineStrong}`, background: activePreset === p.id ? '#ffd70015' : 'transparent', color: activePreset === p.id ? C.gold : C.textSoft, fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>{p.icon && <p.icon size={12} />}{p.label}</button>
             ))}
           </div>
 
@@ -440,7 +444,7 @@ export default function Discover({ onOpen, cat, setCat, selectedSet, setSelected
           </div>
 
           {listed.length === 0
-            ? <EmptyState icon="🔍" title="Keine Karten gefunden" hint="Anderen Suchbegriff oder Filter probieren." />
+            ? <EmptyState icon={Search} title="Keine Karten gefunden" hint="Anderen Suchbegriff oder Filter probieren." />
             : (
               <>
                 {viewMode === 'grid'
@@ -479,10 +483,10 @@ function WelcomeHero({ game, onBrowse, cardCount, setCount }) {
   const isMagic = game === 'magic';
   const isYugioh = game === 'yugioh';
   const HERO = {
-    pokemon: { grad: 'linear-gradient(90deg,#ffd700,#ff6b35)', title: 'Schnapp sie dir alle!', btn: '🃏 Sets durchstöbern' },
-    onepiece: { grad: 'linear-gradient(90deg,#ffb300,#e23b3b)', title: 'Setze die Segel! ⚓', btn: '🏴‍☠️ Sets entern' },
-    magic: { grad: 'linear-gradient(90deg,#8b5cf6,#3b82f6)', title: 'Tappe ins Mana! 🔮', btn: '🔮 Sets erkunden' },
-    yugioh: { grad: 'linear-gradient(90deg,#f59e0b,#b45309)', title: "It's time to D-D-Duel! 🐉", btn: '🐉 Sets erkunden' },
+    pokemon: { grad: 'linear-gradient(90deg,#ffd700,#ff6b35)', title: 'Schnapp sie dir alle!', btn: 'Sets durchstöbern' },
+    onepiece: { grad: 'linear-gradient(90deg,#ffb300,#e23b3b)', title: 'Setze die Segel!', btn: 'Sets entern' },
+    magic: { grad: 'linear-gradient(90deg,#8b5cf6,#3b82f6)', title: 'Tappe ins Mana!', btn: 'Sets erkunden' },
+    yugioh: { grad: 'linear-gradient(90deg,#f59e0b,#b45309)', title: "It's time to D-D-Duel!", btn: 'Sets erkunden' },
   };
   const hero = HERO[game] || HERO.pokemon;
   return (
@@ -551,7 +555,7 @@ function WelcomeHero({ game, onBrowse, cardCount, setCount }) {
           {cardCount > 0 && <><strong style={{ color: C.textSoft }}>{cardCount.toLocaleString('de-DE')} Karten</strong> in {setCount} Sets. </>}
           Suche oben gezielt – oder stöbere Set für Set.
         </div>
-        <button className="btn-primary hero-btn" onClick={onBrowse}>{hero.btn}</button>
+        <button className="btn-primary hero-btn" onClick={onBrowse} style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>{hero.btn}<ArrowRight size={15} strokeWidth={2.5} /></button>
       </div>
     </div>
   );
@@ -707,8 +711,8 @@ function HighlightCard({ h, onOpen }) {
         gap: 10,
       }}
     >
-      <div style={{ alignSelf: 'flex-start', background: h.color, color: '#0c0c1a', fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 20, boxShadow: `0 2px 8px ${h.color}66` }}>
-        {h.label}
+      <div style={{ alignSelf: 'flex-start', background: h.color, color: '#0c0c1a', fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 20, boxShadow: `0 2px 8px ${h.color}66`, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+        {h.icon && <h.icon size={12} strokeWidth={2.5} />}{h.label}
       </div>
       <CardImage card={h.card} height={230} radius={12} />
       <div style={{ width: '100%', textAlign: 'center' }}>
@@ -770,7 +774,7 @@ function ListView({ cards, onOpen }) {
           <div style={{ textAlign: 'right' }}><ChangeBadge value={c.m.change30} size={11} /></div>
           <div style={{ textAlign: 'right', fontSize: 12, color: C.blue, fontWeight: 700 }}>{fmtNum(c.m.margin, 0)} %</div>
           <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-            <button onClick={() => toggleWatchlist(c)} title="Merken" style={{ padding: '4px 7px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, background: inWatchlist(c.id) ? '#ff525215' : '#ffd70015', color: inWatchlist(c.id) ? C.red : C.gold }}>{inWatchlist(c.id) ? '✕' : '⭐'}</button>
+            <button onClick={() => toggleWatchlist(c)} title="Merken" style={{ padding: '4px 7px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 11, fontWeight: 700, background: inWatchlist(c.id) ? '#ff525215' : '#ffd70015', color: inWatchlist(c.id) ? C.red : C.gold, display: 'inline-flex', alignItems: 'center' }}>{inWatchlist(c.id) ? <X size={12} /> : <Star size={12} />}</button>
             <a href={cmUrl(c)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} title="Cardmarket" style={{ padding: '4px 7px', borderRadius: 5, background: '#0066cc22', color: C.blue, display: 'inline-flex', alignItems: 'center' }}><ExternalLink size={11} /></a>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Printer, Download, Search, Settings2, Trash2, Star } from 'lucide-react';
+import { Printer, Download, Search, Settings2, Trash2, Star, Lock, Receipt, Banknote, Ticket } from 'lucide-react';
 import { useStore } from '../store.jsx';
 import { C, conditionColor } from '../lib/theme.js';
 import { fmtEur, fmtDate } from '../lib/format.js';
@@ -69,7 +69,7 @@ export default function BuylistView({ locked, onUpgrade }) {
   const askExport = () => { if (resolved.length && window.confirm(`Buylist mit ${resolved.length} Positionen als CSV herunterladen?`)) exportCSV(resolved, rules); };
 
   if (locked) {
-    return <EmptyState icon="🔒" title="Buylist ist ein Pro-Feature" hint="Erstelle Ankaufslisten mit konfigurierbaren Prozentsätzen und drucke sie als PDF.">
+    return <EmptyState icon={Lock} title="Buylist ist ein Pro-Feature" hint="Erstelle Ankaufslisten mit konfigurierbaren Prozentsätzen und drucke sie als PDF.">
       <button className="btn-primary" onClick={onUpgrade}>Pro freischalten</button>
     </EmptyState>;
   }
@@ -83,8 +83,8 @@ export default function BuylistView({ locked, onUpgrade }) {
         <input value={rules.shopName} onChange={(e) => setRules({ ...rules, shopName: e.target.value })} placeholder="Laden-Name"
           className="control" style={{ fontWeight: 700, minWidth: 160 }} />
         <div style={{ display: 'flex', gap: 4, background: C.bg2, border: `1px solid ${C.lineStrong}`, borderRadius: 8, padding: 3 }}>
-          {[['cash', '💶 Bar'], ['credit', '🎟 Guthaben']].map(([m, lbl]) => (
-            <button key={m} onClick={() => setRules({ ...rules, payout: m })} style={{ padding: '6px 12px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, background: rules.payout === m ? '#ffd70022' : 'transparent', color: rules.payout === m ? C.gold : C.textFaint }}>{lbl}</button>
+          {[['cash', 'Bar', Banknote], ['credit', 'Guthaben', Ticket]].map(([m, lbl, Icon]) => (
+            <button key={m} onClick={() => setRules({ ...rules, payout: m })} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 5, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, background: rules.payout === m ? '#ffd70022' : 'transparent', color: rules.payout === m ? C.gold : C.textFaint }}><Icon size={13} />{lbl}</button>
           ))}
         </div>
         <button className="control" onClick={() => setShowRules((s) => !s)} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Settings2 size={14} /> Regeln</button>
@@ -154,7 +154,7 @@ export default function BuylistView({ locked, onUpgrade }) {
 
       {/* On-screen table */}
       {resolved.length === 0 ? (
-        <EmptyState icon="🧾" title="Buylist ist leer" hint="Füge Karten über die Suche oder deine Watchlist hinzu. Der Ankaufspreis berechnet sich automatisch." />
+        <EmptyState icon={Receipt} title="Buylist ist leer" hint="Füge Karten über die Suche oder deine Watchlist hinzu. Der Ankaufspreis berechnet sich automatisch." />
       ) : (
         <div className="no-print">
           {/* Multi-select bulk bar (#19) */}

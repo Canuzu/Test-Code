@@ -258,7 +258,7 @@ function Ticker({ items, onOpenCard }) {
         title={`${c.name} · ${g?.label || ''}`}
       >
         <span className="lp-tick-img"><CardImage card={asCard(c)} height={40} radius={4} /></span>
-        <span className="lp-tick-game" style={{ background: `linear-gradient(140deg, ${g?.accent}, ${g?.accent2})` }}><GameMark id={c.game} size={12} /></span>
+        <span className="lp-tick-game"><GameMark id={c.game} size={18} /></span>
         <span className="lp-tick-name">{c.name}</span>
         <span className="lp-tick-price">{priceLabel(c)}</span>
         {c.kind === 'mover' && c.change30 != null && <span className="lp-up">{fmtPct(c.change30)}</span>}
@@ -295,7 +295,7 @@ function GameTile({ g, h, onPick, index }) {
     >
       <div className="lp-tile-pattern" aria-hidden="true" />
       <div className="lp-tile-body">
-        <div className="lp-tile-mark"><GameMark id={g.id} size={32} /></div>
+        <div className="lp-tile-mark"><GameMark id={g.id} size={56} /></div>
         <div className="lp-tile-name">{g.label}</div>
         <div className="lp-tile-tag">{TAGLINES[g.id] || g.tagline}</div>
         <div className="lp-tile-meta">

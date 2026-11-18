@@ -15,7 +15,6 @@
 export const meta = {
   id: 'yugioh',
   label: 'Yu-Gi-Oh!',
-  emoji: '🐉',
   attribution: 'Kartendaten & Bilder: YGOJSON (yugipedia/ygoprodeck)',
   priceSource: 'Schätzung · Cardmarket-Link je Karte',
 };

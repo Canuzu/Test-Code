@@ -13,7 +13,6 @@ export const GAMES = [
   {
     id: 'pokemon',
     label: 'Pokémon',
-    emoji: '⚡',
     enabled: true,
     provider: pokemon,
     accent: '#ffd700',
@@ -27,7 +26,6 @@ export const GAMES = [
   {
     id: 'onepiece',
     label: 'One Piece',
-    emoji: '🏴‍☠️',
     enabled: true,
     provider: onepiece,
     accent: '#e23b3b',
@@ -39,7 +37,6 @@ export const GAMES = [
   {
     id: 'magic',
     label: 'Magic: The Gathering',
-    emoji: '🔮',
     enabled: true,
     provider: magic,
     accent: '#8b5cf6',
@@ -51,7 +48,6 @@ export const GAMES = [
   {
     id: 'yugioh',
     label: 'Yu-Gi-Oh!',
-    emoji: '🐉',
     enabled: true,
     provider: yugioh,
     accent: '#f59e0b',

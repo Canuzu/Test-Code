@@ -22,6 +22,8 @@
 //                        kept as a compact numeric `cmId` instead of the full URL.
 
 // --- slim (build time) -----------------------------------------------------
+import { sanitizePrices } from './priceSanity.js';
+
 function slimCard(card, game, defaultUpdatedAt) {
   const c = { ...card };
   delete c.game;   // constant per file → re-added on load from the snapshot's game
@@ -94,6 +96,10 @@ export function rehydrateCard(card, game, pricesUpdatedAt) {
   }
 
   if (card.prices) {
+    // Drop absurd outliers (troll "cheapest offers", 1-day spikes, stale trends)
+    // so they never reach the headline price, % changes or Top-Karten lists.
+    const dropped = sanitizePrices(card.prices);
+    if (dropped.length) card.prices.filtered = dropped;
     if (card.prices.currency == null) card.prices.currency = 'EUR';
     if (card.prices.updatedAt == null && pricesUpdatedAt) card.prices.updatedAt = pricesUpdatedAt;
   }

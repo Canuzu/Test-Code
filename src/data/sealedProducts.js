@@ -29,9 +29,9 @@ const PRODUCT_TYPES = {
   // `suffix` is the German display label. `cmTerm` MUST match Cardmarket's
   // (English) sealed-product catalogue, otherwise the search returns nothing:
   // e.g. Cardmarket lists "Elite Trainer Box", never the German "Top-Trainer-Box".
-  booster: { label: 'Booster', suffix: 'Booster Pack', cmTerm: 'Booster', emoji: '📦', grad: ['#3b82f6', '#1e3a8a'] },
-  display: { label: 'Display', suffix: 'Display (36 Booster)', cmTerm: 'Booster Box', emoji: '🗃️', grad: ['#f59e0b', '#b45309'] },
-  etb: { label: 'Top-Trainer-Box', suffix: 'Top-Trainer-Box', cmTerm: 'Elite Trainer Box', emoji: '🎁', grad: ['#c084fc', '#7c3aed'] },
+  booster: { label: 'Booster', suffix: 'Booster Pack', cmTerm: 'Booster', icon: 'booster', grad: ['#3b82f6', '#1e3a8a'] },
+  display: { label: 'Display', suffix: 'Display (36 Booster)', cmTerm: 'Booster Box', icon: 'display', grad: ['#f59e0b', '#b45309'] },
+  etb: { label: 'Top-Trainer-Box', suffix: 'Top-Trainer-Box', cmTerm: 'Elite Trainer Box', icon: 'etb', grad: ['#c084fc', '#7c3aed'] },
 };
 
 // Cardmarket product search using the English set + product term. The term must
@@ -45,7 +45,7 @@ export const SEALED = SETS.flatMap(({ set, setEn, year, setId }) =>
     id: `${type}-${slug(setEn)}`,
     type,
     typeLabel: def.label,
-    emoji: def.emoji,
+    icon: def.icon,
     grad: def.grad,
     name: `${set} ${def.suffix}`,
     set,
@@ -56,9 +56,9 @@ export const SEALED = SETS.flatMap(({ set, setEn, year, setId }) =>
 );
 
 export const SEALED_CATEGORIES = [
-  { id: 'booster', label: 'Booster', emoji: '📦' },
-  { id: 'display', label: 'Displays', emoji: '🗃️' },
-  { id: 'etb', label: 'Top-Trainer-Box', emoji: '🎁' },
+  { id: 'booster', label: 'Booster', icon: 'booster' },
+  { id: 'display', label: 'Displays', icon: 'display' },
+  { id: 'etb', label: 'Top-Trainer-Box', icon: 'etb' },
 ];
 
 // ---- One Piece sealed --------------------------------------------------------
@@ -80,20 +80,20 @@ export const ONE_PIECE_SEALED = [
     const name = SET_META[code].name;
     const year = opYear(code);
     return [
-      { id: `op-booster-${code}`, type: 'booster', typeLabel: 'Booster', emoji: '📦', grad: ['#e23b3b', '#7a1010'], name: `${name} Booster`, set: name, year, logo: opCardImg(code), cardmarketUrl: cmOpUrl(`${name} Booster`) },
-      { id: `op-display-${code}`, type: 'display', typeLabel: 'Display', emoji: '🗃️', grad: ['#ffb300', '#a86d00'], name: `${name} Display`, set: name, year, logo: opCardImg(code), cardmarketUrl: cmOpUrl(`${name} Display`) },
+      { id: `op-booster-${code}`, type: 'booster', typeLabel: 'Booster', icon: 'booster', grad: ['#e23b3b', '#7a1010'], name: `${name} Booster`, set: name, year, logo: opCardImg(code), cardmarketUrl: cmOpUrl(`${name} Booster`) },
+      { id: `op-display-${code}`, type: 'display', typeLabel: 'Display', icon: 'display', grad: ['#ffb300', '#a86d00'], name: `${name} Display`, set: name, year, logo: opCardImg(code), cardmarketUrl: cmOpUrl(`${name} Display`) },
     ];
   }),
   ...OP_STARTER_CODES.map((code) => {
     const name = SET_META[code].name;
-    return { id: `op-starter-${code}`, type: 'starter', typeLabel: 'Starter Deck', emoji: '🎴', grad: ['#448aff', '#1e3a8a'], name: `${name} [${code}]`, set: name, year: opYear(code), logo: opCardImg(code), cardmarketUrl: cmOpUrl(`${name} ${code}`) };
+    return { id: `op-starter-${code}`, type: 'starter', typeLabel: 'Starter Deck', icon: 'starter', grad: ['#448aff', '#1e3a8a'], name: `${name} [${code}]`, set: name, year: opYear(code), logo: opCardImg(code), cardmarketUrl: cmOpUrl(`${name} ${code}`) };
   }),
 ];
 
 export const ONE_PIECE_SEALED_CATEGORIES = [
-  { id: 'booster', label: 'Booster', emoji: '📦' },
-  { id: 'display', label: 'Displays', emoji: '🗃️' },
-  { id: 'starter', label: 'Starter Decks', emoji: '🎴' },
+  { id: 'booster', label: 'Booster', icon: 'booster' },
+  { id: 'display', label: 'Displays', icon: 'display' },
+  { id: 'starter', label: 'Starter Decks', icon: 'starter' },
 ];
 
 // ---- Magic / Yu-Gi-Oh sealed (data-driven) -----------------------------------
@@ -123,15 +123,15 @@ const sealedFromCards = (game, cards) => {
   return sorted.flatMap((s) => {
     const logo = s.top?.image?.small || s.top?.image?.large || null;
     return [
-      { id: `${game}-booster-${s.name}`, type: 'booster', typeLabel: 'Booster', emoji: '📦', grad: grad[0], name: `${s.name} Booster`, set: s.name, year: s.year, logo, cardmarketUrl: `https://www.cardmarket.com/de/${path}/Products/Search?searchString=${enc(`${s.name} Booster`)}` },
-      { id: `${game}-display-${s.name}`, type: 'display', typeLabel: 'Display', emoji: '🗃️', grad: grad[1], name: `${s.name} Display`, set: s.name, year: s.year, logo, cardmarketUrl: `https://www.cardmarket.com/de/${path}/Products/Search?searchString=${enc(`${s.name} Display`)}` },
+      { id: `${game}-booster-${s.name}`, type: 'booster', typeLabel: 'Booster', icon: 'booster', grad: grad[0], name: `${s.name} Booster`, set: s.name, year: s.year, logo, cardmarketUrl: `https://www.cardmarket.com/de/${path}/Products/Search?searchString=${enc(`${s.name} Booster`)}` },
+      { id: `${game}-display-${s.name}`, type: 'display', typeLabel: 'Display', icon: 'display', grad: grad[1], name: `${s.name} Display`, set: s.name, year: s.year, logo, cardmarketUrl: `https://www.cardmarket.com/de/${path}/Products/Search?searchString=${enc(`${s.name} Display`)}` },
     ];
   });
 };
 
 const DATA_DRIVEN_CATEGORIES = [
-  { id: 'booster', label: 'Booster', emoji: '📦' },
-  { id: 'display', label: 'Displays', emoji: '🗃️' },
+  { id: 'booster', label: 'Booster', icon: 'booster' },
+  { id: 'display', label: 'Displays', icon: 'display' },
 ];
 
 // Per-game accessors used by the UI. `cards` is only needed for the data-driven
