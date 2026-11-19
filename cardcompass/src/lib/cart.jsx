@@ -28,14 +28,13 @@ export function CartProvider({ children }) {
 
   const add = useCallback((product, variant, qty = 1, { openDrawer = true, from } = {}) => {
     if (!product || !variant) return;
-    const limit = Number.isInteger(variant.max_per_order) && variant.max_per_order > 0 ? variant.max_per_order : null;
-    const max = Math.min(MAX_PER_LINE, Math.max(0, variant.available ?? MAX_PER_LINE), limit ?? MAX_PER_LINE);
+    const max = Math.min(MAX_PER_LINE, Math.max(0, variant.available ?? MAX_PER_LINE));
     if (max <= 0) return;
     setLines((prev) => {
       const i = prev.findIndex((l) => l.variantId === variant.id);
       if (i >= 0) {
         const next = [...prev];
-        next[i] = { ...next[i], qty: clamp(next[i].qty + qty, 1, max), max, limit, priceCents: variant.price_cents };
+        next[i] = { ...next[i], qty: clamp(next[i].qty + qty, 1, max), max, priceCents: variant.price_cents };
         return next;
       }
       return [...prev, {
@@ -48,7 +47,6 @@ export function CartProvider({ children }) {
         compareAtCents: variant.compare_at_price_cents || null,
         qty: clamp(qty, 1, max),
         max,
-        limit,
         visual: product.visual,
         image: product.images?.[0]?.url || null,
       }];

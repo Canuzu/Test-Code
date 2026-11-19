@@ -28,6 +28,30 @@ export function usePageMeta(title, description) {
   }, [title, description]);
 }
 
+// Pointer-driven tilt/shine: writes --rx/--ry/--mx/--my on the element.
+export function useTilt(max = 10) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || prefersReducedMotion()) return undefined;
+    let raf = 0; let ev = null;
+    const apply = () => {
+      raf = 0; if (!ev) return;
+      const r = el.getBoundingClientRect();
+      const x = (ev.clientX - r.left) / r.width; const y = (ev.clientY - r.top) / r.height;
+      el.style.setProperty('--rx', `${((0.5 - y) * max).toFixed(2)}deg`);
+      el.style.setProperty('--ry', `${((x - 0.5) * max).toFixed(2)}deg`);
+      el.style.setProperty('--mx', `${(x * 100).toFixed(1)}%`);
+      el.style.setProperty('--my', `${(y * 100).toFixed(1)}%`);
+    };
+    const move = (e) => { if (e.pointerType === 'touch') return; ev = e; if (!raf) raf = requestAnimationFrame(apply); };
+    const leave = () => { ev = null; ['--rx', '--ry'].forEach((k) => el.style.setProperty(k, '0deg')); el.style.setProperty('--mx', '50%'); el.style.setProperty('--my', '30%'); };
+    el.addEventListener('pointermove', move); el.addEventListener('pointerleave', leave);
+    return () => { el.removeEventListener('pointermove', move); el.removeEventListener('pointerleave', leave); if (raf) cancelAnimationFrame(raf); };
+  }, [max]);
+  return ref;
+}
+
 // Reveal-on-scroll: adds .is-in when the element enters the viewport.
 export function useReveal() {
   const ref = useRef(null);

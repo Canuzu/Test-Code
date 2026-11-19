@@ -243,25 +243,3 @@ revoke all on sequence public.cc_stripe_order_seq from anon, authenticated;
 grant usage, select on sequence public.cc_stripe_order_seq to service_role;
 
 commit;
-
-
--- ---------------------------------------------------------------------------
--- Fair-Limit (anti-scalping): optional maximum quantity per order for a
--- variant. NULL = no limit (only stock applies). Shown on the product page,
--- enforced in the cart and – authoritatively – in create-checkout.
--- ---------------------------------------------------------------------------
-alter table public.cc_product_variants add column if not exists max_per_order integer;
-
-do $$
-begin
-  if not exists (
-    select 1 from pg_constraint where conname = 'cc_product_variants_max_per_order_positive'
-  ) then
-    alter table public.cc_product_variants
-      add constraint cc_product_variants_max_per_order_positive
-      check (max_per_order is null or max_per_order > 0);
-  end if;
-end $$;
-
-comment on column public.cc_product_variants.max_per_order is
-  'Fair-Limit: maximum units of this variant per order (anti-scalping). NULL = no limit.';

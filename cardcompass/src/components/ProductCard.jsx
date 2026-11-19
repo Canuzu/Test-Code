@@ -1,51 +1,55 @@
 import { Link } from 'react-router-dom';
-import { Plus, Check } from 'lucide-react';
+import { ShoppingBag, Check, Bell } from 'lucide-react';
 import { useState } from 'react';
 import { ProductImage } from './ProductVisual.jsx';
 import { useCart } from '../lib/cart.jsx';
+import { useTilt } from '../lib/hooks.js';
 import { money, pct } from '../lib/format.js';
 import { defaultVariant, minPrice, isAvailable, lowStock, isNew, totalAvailable } from '../lib/catalog.js';
 import { productPath } from '../lib/routes.js';
 
-// Uniform product tile: fixed image stage (4:5), title clamped to exactly two
-// lines, one price/stock row. Every tile in a row has the same height.
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, index = 0 }) {
+  const tilt = useTilt(9);
   const { add } = useCart();
   const [added, setAdded] = useState(false);
   const v = defaultVariant(product);
   const available = isAvailable(product);
   const from = product.variants.length > 1 && new Set(product.variants.map((x) => x.price_cents)).size > 1;
   const price = from ? minPrice(product) : v?.price_cents;
-  const was = !from ? v?.compare_at_price_cents : null;
+  const was = v?.compare_at_price_cents;
   const off = pct(v?.price_cents, was);
-  const n = totalAvailable(product);
 
   const quickAdd = (e) => {
     e.preventDefault(); e.stopPropagation();
     if (!available) return;
     const variant = product.variants.find((x) => x.available > 0) || v;
-    add(product, variant, 1);
+    add(product, variant, 1, { from: e.currentTarget.getBoundingClientRect() });
     setAdded(true); setTimeout(() => setAdded(false), 1400);
   };
 
   return (
-    <Link to={productPath(product.slug)} className={`pcard ${available ? '' : 'is-out'}`}>
-      <div className="pcard-media">
-        <ProductImage product={product} className="pcard-img" />
-        <div className="pcard-badges">
-          {!available ? <span className="badge badge-off">Ausverkauft</span> : (
-            <>
-              {isNew(product) && <span className="badge badge-violet">Neu</span>}
-              {off > 0 && <span className="badge badge-sale">−{off} %</span>}
-            </>
-          )}
+    <Link to={productPath(product.slug)} className={`pcard ${available ? '' : 'is-out'}`} style={{ '--i': index }}>
+      <div className="pcard-media" ref={tilt}>
+        <div className="pcard-stage">
+          <ProductImage product={product} className="pcard-img" />
         </div>
-        {available && (
-          <button type="button" className={`pcard-add ${added ? 'is-added' : ''}`} onClick={quickAdd} aria-label={`${product.name} in den Warenkorb`}>
-            {added ? <Check size={16} strokeWidth={2.5} /> : <Plus size={16} strokeWidth={2.5} />}
-            <span>{added ? 'Hinzugefügt' : 'In den Warenkorb'}</span>
-          </button>
-        )}
+        <div className="pcard-shine" aria-hidden="true" />
+        <div className="pcard-badges">
+          {off > 0 && <span className="badge badge-sale">−{off} %</span>}
+          {isNew(product) && <span className="badge badge-violet">Neu</span>}
+          {!available && <span className="badge badge-off">Ausverkauft</span>}
+          {available && lowStock(product) && <span className="badge badge-warn">Nur noch {totalAvailable(product)}</span>}
+        </div>
+        <button
+          type="button"
+          className={`pcard-quick ${added ? 'is-added' : ''}`}
+          onClick={quickAdd}
+          disabled={!available}
+          aria-label={available ? `${product.name} in den Warenkorb` : 'Ausverkauft'}
+          title={available ? 'In den Warenkorb' : 'Ausverkauft'}
+        >
+          {added ? <Check size={18} strokeWidth={2.6} /> : available ? <ShoppingBag size={18} /> : <Bell size={17} />}
+        </button>
       </div>
       <div className="pcard-body">
         <div className="pcard-meta">{product.franchise?.name || product.product_type?.name || 'Zubehör'}</div>
@@ -56,9 +60,7 @@ export default function ProductCard({ product }) {
             <strong>{money(price)}</strong>
             {was && was > (v?.price_cents || 0) && <s>{money(was)}</s>}
           </div>
-          <span className={`pcard-stock ${!available ? 'off' : lowStock(product) ? 'low' : 'ok'}`}>
-            {!available ? 'Ausverkauft' : lowStock(product) ? `Nur noch ${n}` : 'Lieferbar'}
-          </span>
+          <span className={`pcard-stock ${available ? 'ok' : 'off'}`}>{available ? 'Sofort lieferbar' : 'Ausverkauft'}</span>
         </div>
       </div>
     </Link>
@@ -69,12 +71,7 @@ export function ProductCardSkeleton() {
   return (
     <div className="pcard pcard-skel" aria-hidden="true">
       <div className="pcard-media skeleton" />
-      <div className="pcard-body">
-        <div className="skeleton" style={{ height: 11, width: '38%' }} />
-        <div className="skeleton" style={{ height: 16, width: '88%', marginTop: 10 }} />
-        <div className="skeleton" style={{ height: 16, width: '60%', marginTop: 6 }} />
-        <div className="skeleton" style={{ height: 18, width: '34%', marginTop: 16 }} />
-      </div>
+      <div className="pcard-body"><div className="skeleton" style={{ height: 12, width: '40%', borderRadius: 6 }} /><div className="skeleton" style={{ height: 18, width: '85%', borderRadius: 6, marginTop: 10 }} /><div className="skeleton" style={{ height: 22, width: '35%', borderRadius: 6, marginTop: 16 }} /></div>
     </div>
   );
 }

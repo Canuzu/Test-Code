@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { listProducts, getProduct, getRelated, shippingFor, minPrice, isAvailable, defaultVariant, fairLimit } from './catalog.js';
+import { listProducts, getProduct, getRelated, shippingFor, minPrice, isAvailable, defaultVariant } from './catalog.js';
 
 // Runs against the built-in demo catalogue (no Supabase env in tests).
 describe('catalog (demo mode)', () => {
@@ -51,15 +51,5 @@ describe('catalog (demo mode)', () => {
     expect(shippingFor(0, rates).cents).toBe(0);
     expect(shippingFor(9999, rates).cents).toBe(549);
     expect(shippingFor(10000, rates)).toMatchObject({ cents: 0, free: true });
-  });
-
-  it('Fair-Limit: only positive integers count as a limit', async () => {
-    expect(fairLimit({ max_per_order: 2 })).toBe(2);
-    expect(fairLimit({ max_per_order: null })).toBeNull();
-    expect(fairLimit({ max_per_order: 0 })).toBeNull();
-    expect(fairLimit({ max_per_order: 1.5 })).toBeNull();
-    expect(fairLimit(null)).toBeNull();
-    const display = await getProduct('pokemon-tcg-booster-display');
-    expect(fairLimit(defaultVariant(display))).toBe(2);
   });
 });

@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowRight, Check, Info, KeyRound, LayoutDashboard, Loader2, LogIn, LogOut, MapPin, Package, Pencil, Plus,
-  RefreshCw, ShoppingBag, Star, Trash2, TriangleAlert, UserPlus, UserRound,
+  RefreshCw, RotateCcw, ShoppingBag, Star, Trash2, TriangleAlert, UserPlus, UserRound,
 } from 'lucide-react';
 import { useAsync, usePageMeta } from '../lib/hooks.js';
 import { money, fmtDate } from '../lib/format.js';
@@ -57,11 +57,9 @@ const Skel = ({ h = 120, n = 1 }) => (
   <div className="ac-skels" aria-hidden="true">{Array.from({ length: n }, (_, i) => <div key={i} className="skeleton" style={{ height: h }} />)}</div>
 );
 
-// Order status as a plain square label (base .badge variants).
-const STATUS_BADGE = { warn: 'badge-warn', violet: 'badge-soft', info: 'badge-violet', ok: 'badge-ok', off: 'badge-off' };
 function StatusBadge({ status }) {
   const s = orderStatus(status);
-  return <span className={`badge ${STATUS_BADGE[s.tone] || 'badge-off'}`}>{s.label}</span>;
+  return <span className={`badge ac-status is-${s.tone}`}><span className="ac-status-dot" aria-hidden="true" />{s.label}</span>;
 }
 
 function Field({ id, label, error, hint, optional, children }) {
@@ -132,9 +130,9 @@ function OrdersPanel({ orders, retry }) {
 function Overview({ orders, addresses, retryOrders, go, preview }) {
   const latest = orders.data?.[0];
   const tiles = [
-    { key: 'bestellungen', t: 'Bestellungen', d: orders.data ? `${orders.data.length} ${orders.data.length === 1 ? 'Bestellung' : 'Bestellungen'}` : 'Status & Inhalt' },
-    { key: 'adressen', t: 'Adressen', d: addresses.data ? `${addresses.data.length} gespeichert` : 'Liefer- & Rechnungsadresse' },
-    { key: 'profil', t: 'Profil', d: 'Name, Telefon & Passwort' },
+    { key: 'bestellungen', Icon: Package, t: 'Bestellungen', d: orders.data ? `${orders.data.length} ${orders.data.length === 1 ? 'Bestellung' : 'Bestellungen'}` : 'Status & Inhalt' },
+    { key: 'adressen', Icon: MapPin, t: 'Adressen', d: addresses.data ? `${addresses.data.length} gespeichert` : 'Liefer- & Rechnungsadresse' },
+    { key: 'profil', Icon: UserRound, t: 'Profil', d: 'Name, Telefon & Passwort' },
   ];
   return (
     <div className="ac-overview">
@@ -153,17 +151,17 @@ function Overview({ orders, addresses, retryOrders, go, preview }) {
               )}
       </section>
       <div className="ac-tiles">
-        {tiles.map(({ key, t, d }) => (
+        {tiles.map(({ key, Icon, t, d }) => (
           <button key={key} type="button" className="ac-tile" onClick={() => go(key)}>
-            <strong className="ac-tile-name">{t}</strong>
-            <span className="ac-tile-d">{d}</span>
-            <ArrowRight size={18} className="ac-tile-arrow" aria-hidden="true" />
+            <span className="ac-tile-ic"><Icon size={20} aria-hidden="true" /></span>
+            <span className="ac-tile-txt"><strong>{t}</strong><span>{d}</span></span>
+            <ArrowRight size={17} className="ac-tile-arrow" aria-hidden="true" />
           </button>
         ))}
         <Link to={R.widerruf} className="ac-tile">
-          <strong className="ac-tile-name">Vertrag widerrufen</strong>
-          <span className="ac-tile-d">Online in wenigen Schritten</span>
-          <ArrowRight size={18} className="ac-tile-arrow" aria-hidden="true" />
+          <span className="ac-tile-ic"><RotateCcw size={20} aria-hidden="true" /></span>
+          <span className="ac-tile-txt"><strong>Vertrag widerrufen</strong><span>Online in wenigen Schritten</span></span>
+          <ArrowRight size={17} className="ac-tile-arrow" aria-hidden="true" />
         </Link>
       </div>
     </div>
@@ -312,7 +310,7 @@ function AddressesPanel({ addresses, retry, reload, preview }) {
             />
           ))}
           <button type="button" className="ac-addr-add" onClick={() => { setMsg(null); setEditing({}); }}>
-            <Plus size={20} aria-hidden="true" />
+            <span className="ac-tile-ic"><Plus size={20} aria-hidden="true" /></span>
             Neue Adresse
           </button>
         </div>
@@ -501,7 +499,7 @@ function AccountShell({ preview = false, session, onLogout }) {
       {preview && (
         <div className="container">
           <div className="ac-preview" role="note">
-            <Info size={18} aria-hidden="true" />
+            <span className="ac-preview-ic"><Info size={20} aria-hidden="true" /></span>
             <div>
               <strong>Vorschau des Kundenkontos</strong>
               <p>In der Design-Vorschau ist das Kundenkonto nicht mit dem Shop verbunden. So sieht dein Bereich aus, sobald du angemeldet bist: Bestellungen, Adressen und Profil an einem Ort.</p>
@@ -522,7 +520,7 @@ function AccountShell({ preview = false, session, onLogout }) {
                   ref={(el) => { tabRefs.current[key] = el; }}
                   className={`ac-tab ${tab === key ? 'is-active' : ''}`} onClick={() => go(key, false)}
                 >
-                  <Icon size={18} strokeWidth={1.75} aria-hidden="true" /><span>{label}</span>
+                  <Icon size={18} aria-hidden="true" /><span>{label}</span>
                   {count ? <span className="ac-count">{count}</span> : null}
                 </button>
               );

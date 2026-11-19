@@ -1,6 +1,6 @@
 import { useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, ChevronRight, Copy, MailCheck, Minus, Plus, Send, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Check, ChevronDown, ChevronRight, Copy, Mail, MailCheck, MapPin, Phone, Send, TriangleAlert, Package, RotateCcw, FileText } from 'lucide-react';
 import { OPERATOR, OpValue, isPlaceholder, missingOperatorFields } from '../content/operator.js';
 import { usePageMeta } from '../lib/hooks.js';
 import { isEmail } from '../lib/auth.js';
@@ -29,8 +29,8 @@ const FAQ = [
     ),
   },
   {
-    q: 'Warum gibt es bei manchen Produkten ein Fair-Limit?',
-    a: <p>Bei begehrten Releases begrenzen wir die Stückzahl pro Bestellung. So kommen möglichst viele Sammlerinnen und Sammler zum Zug – und nicht Reseller, die alles aufkaufen. Das Limit steht direkt auf der Produktseite.</p>,
+    q: 'Ist die Ware original und versiegelt?',
+    a: <p>Ja. Wir verkaufen ausschließlich neue Originalware. Versiegelte Produkte wie Booster, Displays und Boxen erhältst du original versiegelt – so, wie sie vom Hersteller kommen.</p>,
   },
   {
     q: 'Wie kann ich eine Bestellung widerrufen?',
@@ -68,7 +68,7 @@ function FaqItem({ item, open, onToggle }) {
       <h3 className="ct-faq-q">
         <button type="button" aria-expanded={open} aria-controls={`${id}-a`} id={`${id}-q`} onClick={onToggle}>
           <span>{item.q}</span>
-          {open ? <Minus size={18} className="ct-faq-pm" aria-hidden="true" /> : <Plus size={18} className="ct-faq-pm" aria-hidden="true" />}
+          <ChevronDown size={18} className="ct-faq-chev" aria-hidden="true" />
         </button>
       </h3>
       <div className="ct-faq-a" id={`${id}-a`} role="region" aria-labelledby={`${id}-q`} data-open={open}>
@@ -209,40 +209,40 @@ export default function Contact() {
       </section>
 
       <div className="container ct-grid">
-        <section className="ct-side" aria-labelledby="ct-info-h">
-          <h2 id="ct-info-h" className="sr-only">So erreichst du uns</h2>
+        <div className="ct-cards">
           {missing.length > 0 && (
             <p className="pg-ph-note"><TriangleAlert size={16} aria-hidden="true" /> Gelb markierte Kontaktdaten sind Platzhalter und müssen vor dem Livegang ausgefüllt werden.</p>
           )}
-          <dl className="ct-info">
-            <div className="ct-info-row">
-              <dt>E-Mail</dt>
-              <dd>
-                <p className="ct-info-v"><OpValue value={OPERATOR.email} link="mail" /></p>
-                <p className="ct-info-d">Für alle Fragen rund um Produkte, Bestellungen und Rücksendungen.</p>
-              </dd>
+          <div className="ct-card">
+            <span className="ct-card-ic"><Mail size={20} aria-hidden="true" /></span>
+            <div>
+              <h2 className="ct-card-h">E-Mail</h2>
+              <p className="ct-card-v"><OpValue value={OPERATOR.email} link="mail" /></p>
+              <p className="ct-card-d">Für alle Fragen rund um Produkte, Bestellungen und Rücksendungen.</p>
             </div>
-            <div className="ct-info-row">
-              <dt>Telefon</dt>
-              <dd>
-                <p className="ct-info-v"><OpValue value={OPERATOR.phone} link="tel" /></p>
-                <p className="ct-info-d">Halte bei Fragen zu einer Bestellung bitte die Bestellnummer bereit.</p>
-              </dd>
+          </div>
+          <div className="ct-card">
+            <span className="ct-card-ic"><Phone size={20} aria-hidden="true" /></span>
+            <div>
+              <h2 className="ct-card-h">Telefon</h2>
+              <p className="ct-card-v"><OpValue value={OPERATOR.phone} link="tel" /></p>
+              <p className="ct-card-d">Halte bei Fragen zu einer Bestellung bitte die Bestellnummer bereit.</p>
             </div>
-            <div className="ct-info-row">
-              <dt>Anschrift</dt>
-              <dd>
-                <address className="ct-info-addr">
-                  <OpValue value={OPERATOR.name} /><br />
-                  {OPERATOR.business}<br />
-                  <OpValue value={OPERATOR.street} /><br />
-                  <OpValue value={OPERATOR.city} /><br />
-                  {OPERATOR.country}
-                </address>
-              </dd>
+          </div>
+          <div className="ct-card">
+            <span className="ct-card-ic"><MapPin size={20} aria-hidden="true" /></span>
+            <div>
+              <h2 className="ct-card-h">Anschrift</h2>
+              <address className="ct-card-addr">
+                <OpValue value={OPERATOR.name} /><br />
+                {OPERATOR.business}<br />
+                <OpValue value={OPERATOR.street} /><br />
+                <OpValue value={OPERATOR.city} /><br />
+                {OPERATOR.country}
+              </address>
             </div>
-          </dl>
-        </section>
+          </div>
+        </div>
 
         <section className="panel ct-form-panel" aria-labelledby="ct-form-h">
           <p className="eyebrow">Nachricht schreiben</p>
@@ -253,21 +253,21 @@ export default function Contact() {
 
       <section className="section-sm" aria-labelledby="ct-faq-h">
         <div className="container ct-faq">
-          <div className="ct-faq-side">
-            <p className="eyebrow">Häufige Fragen</p>
-            <h2 id="ct-faq-h" className="h2">Schnelle Antworten</h2>
-            <p className="muted">Das Wichtigste auf einen Blick. Verbindlich sind die <Link to={R.agb} className="pg-link">AGB</Link> und die <Link to={R.widerrufsbelehrung} className="pg-link">Widerrufsbelehrung</Link>.</p>
-            <div className="ct-quick">
-              <Link to={R.account} className="ct-quick-link"><span>Bestellungen ansehen</span><ArrowRight size={16} aria-hidden="true" /></Link>
-              <Link to={R.widerruf} className="ct-quick-link"><span>Vertrag widerrufen</span><ArrowRight size={16} aria-hidden="true" /></Link>
-              <Link to={R.agb} className="ct-quick-link"><span>AGB lesen</span><ArrowRight size={16} aria-hidden="true" /></Link>
-            </div>
+        <div className="ct-faq-side">
+          <p className="eyebrow">Häufige Fragen</p>
+          <h2 id="ct-faq-h" className="h2">Schnelle Antworten</h2>
+          <p className="muted">Das Wichtigste auf einen Blick. Verbindlich sind die <Link to={R.agb} className="pg-link">AGB</Link> und die <Link to={R.widerrufsbelehrung} className="pg-link">Widerrufsbelehrung</Link>.</p>
+          <div className="ct-quick">
+            <Link to={R.account} className="ct-quick-link"><Package size={18} aria-hidden="true" /><span>Bestellungen ansehen</span><ArrowRight size={16} aria-hidden="true" /></Link>
+            <Link to={R.widerruf} className="ct-quick-link"><RotateCcw size={18} aria-hidden="true" /><span>Vertrag widerrufen</span><ArrowRight size={16} aria-hidden="true" /></Link>
+            <Link to={R.agb} className="ct-quick-link"><FileText size={18} aria-hidden="true" /><span>AGB lesen</span><ArrowRight size={16} aria-hidden="true" /></Link>
           </div>
-          <div className="ct-faq-list">
-            {FAQ.map((item, i) => (
-              <FaqItem key={item.q} item={item} open={openFaq === i} onToggle={() => setOpenFaq((o) => (o === i ? -1 : i))} />
-            ))}
-          </div>
+        </div>
+        <div className="ct-faq-list">
+          {FAQ.map((item, i) => (
+            <FaqItem key={item.q} item={item} open={openFaq === i} onToggle={() => setOpenFaq((o) => (o === i ? -1 : i))} />
+          ))}
+        </div>
         </div>
       </section>
     </div>

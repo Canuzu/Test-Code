@@ -38,7 +38,7 @@ export function CartLine({ line, compact = false }) {
           </div>
           <strong className="cline-price">{money(line.priceCents * line.qty)}</strong>
         </div>
-        {line.qty >= line.max && <div className="cline-note">{line.limit && line.max === line.limit ? `Fair-Limit: max. ${line.limit} pro Bestellung` : 'Maximal verfügbare Menge im Warenkorb'}</div>}
+        {line.qty >= line.max && <div className="cline-note">Maximal verfügbare Menge im Warenkorb</div>}
       </div>
       {!compact && <button type="button" className="cline-remove" onClick={() => remove(line.variantId)} aria-label={`${line.name} entfernen`}><X size={16} /></button>}
     </div>

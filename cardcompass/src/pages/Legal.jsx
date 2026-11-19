@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, ChevronDown, ChevronRight, Printer, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Building2, ChevronDown, ChevronRight, Clock, Cookie, FileText, ListTree, Printer, RotateCcw, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { getLegalDoc, LEGAL_DOCS } from '../content/legal.js';
 import { missingOperatorFields, Placeholder } from '../content/operator.js';
 import { usePageMeta, prefersReducedMotion } from '../lib/hooks.js';
@@ -9,6 +9,7 @@ import { HASH_ROUTER } from '../lib/config.js';
 import { R } from '../lib/routes.js';
 import '../styles/pages.css';
 
+const DOC_ICONS = { agb: FileText, widerrufsbelehrung: RotateCcw, impressum: Building2, datenschutz: ShieldCheck, cookies: Cookie };
 const DESCRIPTIONS = {
   agb: 'Allgemeine Geschäftsbedingungen von CardCompass: Vertragsschluss, Preise, Zahlung, Lieferung und Haftung.',
   widerrufsbelehrung: 'Widerrufsbelehrung und Muster-Widerrufsformular für Bestellungen bei CardCompass.',
@@ -135,7 +136,6 @@ export default function Legal({ doc = 'impressum' }) {
   const ids = useMemo(() => data.sections.map(sectionId), [data]);
   const [active, setActive] = useActiveSection(ids);
   const mobileToc = useRef(null);
-  const docNav = useRef(null);
 
   const words = useMemo(() => JSON.stringify(data.sections).split(/\s+/).length, [data]);
   const minutes = Math.max(1, Math.round(words / 200));
@@ -155,13 +155,6 @@ export default function Legal({ doc = 'impressum' }) {
     return () => clearTimeout(t);
   }, [loc.hash, doc]);
 
-  // Phones: the document tabs scroll sideways – keep the active one in view.
-  useEffect(() => {
-    const nav = docNav.current;
-    const el = nav?.querySelector('.is-active');
-    if (nav && el && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, el.offsetLeft - nav.offsetLeft - 16);
-  }, [doc]);
-
   const others = LEGAL_DOCS.filter((d) => d.key !== doc);
 
   return (
@@ -178,7 +171,7 @@ export default function Legal({ doc = 'impressum' }) {
               <p className="eyebrow">Rechtliches</p>
               <h1 className="lg-title" id="lg-title">{data.title}</h1>
               <p className="lg-meta">
-                <span className="lg-stamp">{data.updated}</span>
+                <span className="lg-stamp"><Clock size={15} aria-hidden="true" />{data.updated}</span>
                 <span className="lg-meta-dot" aria-hidden="true" />
                 <span>{data.sections.length} Abschnitte</span>
                 <span className="lg-meta-dot lg-meta-opt" aria-hidden="true" />
@@ -191,9 +184,9 @@ export default function Legal({ doc = 'impressum' }) {
               </button>
             </div>
           </div>
-          <nav className="lg-docnav" aria-label="Rechtstexte" ref={docNav}>
+          <nav className="lg-docnav" aria-label="Rechtstexte">
             {LEGAL_DOCS.map((d) => (
-              <Link key={d.key} to={d.path} className={`lg-doclink ${d.key === doc ? 'is-active' : ''}`} aria-current={d.key === doc ? 'page' : undefined}>{d.label}</Link>
+              <Link key={d.key} to={d.path} className={`chip ${d.key === doc ? 'is-active' : ''}`} aria-current={d.key === doc ? 'page' : undefined}>{d.label}</Link>
             ))}
           </nav>
         </div>
@@ -202,7 +195,7 @@ export default function Legal({ doc = 'impressum' }) {
       <div className="container lg-layout">
         <aside className="lg-toc" aria-label="Inhaltsverzeichnis">
           <div className="lg-toc-inner">
-            <p className="lg-toc-h">Inhalt</p>
+            <p className="lg-toc-h"><ListTree size={15} aria-hidden="true" /> Inhalt</p>
             <Toc sections={data.sections} active={active} onGo={go} />
           </div>
         </aside>
@@ -220,7 +213,7 @@ export default function Legal({ doc = 'impressum' }) {
           )}
 
           <details className="lg-toc-m" ref={mobileToc}>
-            <summary>Inhalt · {data.sections.length} Abschnitte <ChevronDown size={16} className="lg-toc-m-chev" aria-hidden="true" /></summary>
+            <summary><ListTree size={16} aria-hidden="true" /> Inhalt · {data.sections.length} Abschnitte <ChevronDown size={16} className="lg-toc-m-chev" aria-hidden="true" /></summary>
             <Toc sections={data.sections} active={active} onGo={go} compact />
           </details>
 
@@ -228,6 +221,7 @@ export default function Legal({ doc = 'impressum' }) {
             {data.intro?.map((b, i) => <Block key={`i${i}`} b={b} />)}
             {data.cta && (
               <div className="lg-cta">
+                <div className="lg-cta-ic"><RotateCcw size={20} aria-hidden="true" /></div>
                 <p>{data.cta.text}</p>
                 <Link to={data.cta.to} className="btn btn-primary btn-sm">{data.cta.label} <ArrowRight size={16} aria-hidden="true" /></Link>
               </div>
@@ -250,17 +244,21 @@ export default function Legal({ doc = 'impressum' }) {
       </div>
 
       <section className="container lg-cross" aria-labelledby="lg-cross-h">
-        <div className="section-head">
+        <div className="lg-cross-head">
           <h2 id="lg-cross-h" className="h3">Weitere Rechtstexte</h2>
           <Link to={R.contact} className="link-arrow">Fragen? Schreib uns <ArrowRight size={15} aria-hidden="true" /></Link>
         </div>
         <div className="lg-cross-grid">
-          {others.map((d) => (
-            <Link key={d.key} to={d.path} className="lg-cross-card">
-              <span className="lg-cross-txt"><strong>{d.label}</strong><span>{d.desc}</span></span>
-              <ArrowRight size={18} className="lg-cross-arrow" aria-hidden="true" />
-            </Link>
-          ))}
+          {others.map((d) => {
+            const Icon = DOC_ICONS[d.key];
+            return (
+              <Link key={d.key} to={d.path} className="lg-cross-card">
+                <span className="lg-cross-ic"><Icon size={20} aria-hidden="true" /></span>
+                <span className="lg-cross-txt"><strong>{d.label}</strong><span>{d.desc}</span></span>
+                <ArrowRight size={17} className="lg-cross-arrow" aria-hidden="true" />
+              </Link>
+            );
+          })}
         </div>
       </section>
     </div>

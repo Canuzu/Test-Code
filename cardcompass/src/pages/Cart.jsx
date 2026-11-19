@@ -1,9 +1,9 @@
 // Warenkorb (/warenkorb): lines on the left, sticky summary on the right,
 // sticky checkout bar on phones. Also exports the small building blocks the
-// checkout and result pages share (progress steps, totals, payment methods).
+// checkout and result pages share (progress steps, totals, payment chips).
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Check, ShoppingBag, ArrowRight, ArrowLeft, ChevronRight, Info } from 'lucide-react';
+import { Check, Lock, ShoppingBag, ArrowRight, ArrowLeft, ChevronRight, Tag, Info } from 'lucide-react';
 import { useCart } from '../lib/cart.jsx';
 import { CartLine, FreeShippingMeter } from '../components/CartDrawer.jsx';
 import { TRUST } from '../components/Footer.jsx';
@@ -14,7 +14,7 @@ import { R } from '../lib/routes.js';
 import { SHOP } from '../lib/config.js';
 import '../styles/checkout.css';
 
-export const PAYMENT_METHODS = ['Karte', 'PayPal', 'Klarna', 'Apple Pay', 'Google Pay', 'SEPA'];
+export const PAYMENT_METHODS = ['Visa', 'Mastercard', 'PayPal', 'Klarna', 'Apple Pay', 'Google Pay', 'SEPA'];
 export const TAX_NOTE = 'Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung).';
 
 // Shipping rates + Kleinunternehmer setting (live from Supabase, demo otherwise).
@@ -41,7 +41,7 @@ export function CheckoutSteps({ current = 0 }) {
         const now = i === current;
         const inner = (
           <>
-            <span className="co-step-dot" aria-hidden="true">{done ? <Check size={13} strokeWidth={2.75} /> : i + 1}</span>
+            <span className="co-step-dot" aria-hidden="true">{done ? <Check size={14} strokeWidth={3} /> : i + 1}</span>
             <span className="co-step-label">{label}</span>
             {done && <span className="sr-only"> (erledigt)</span>}
           </>
@@ -63,7 +63,7 @@ export function SummaryTotals({ subtotal, savings = 0, ship, count, smallBusines
       <dl>
         <div className="co-row"><dt>Zwischensumme{count ? <small> ({count} Artikel)</small> : null}</dt><dd>{money(subtotal)}</dd></div>
         {savings > 0 && (
-          <div className="co-row is-save"><dt>Deine Ersparnis</dt><dd>{money(savings)}</dd></div>
+          <div className="co-row is-save"><dt><Tag size={14} aria-hidden="true" /> Deine Ersparnis</dt><dd>{money(savings)}</dd></div>
         )}
         <div className="co-row">
           <dt>Versand{ship?.name ? <small className="co-row-sub">{ship.name}</small> : null}</dt>
@@ -76,13 +76,14 @@ export function SummaryTotals({ subtotal, savings = 0, ship, count, smallBusines
   );
 }
 
-// Accepted payment methods as one plain line of text (no logos, no chips).
-export function PayMethods({ label = 'Sicher bezahlen mit' }) {
+export function PayChips({ label = 'Sicher bezahlen mit' }) {
   return (
-    <p className="co-pay">
-      <span className="co-pay-label">{label}</span>
-      <span>{PAYMENT_METHODS.join(' · ')}</span>
-    </p>
+    <div className="co-pay">
+      <span className="co-pay-label"><Lock size={13} aria-hidden="true" /> {label}</span>
+      <ul className="co-pay-list" aria-label="Zahlarten">
+        {PAYMENT_METHODS.map((p) => <li key={p} className="co-pay-chip">{p}</li>)}
+      </ul>
+    </div>
   );
 }
 
@@ -90,7 +91,7 @@ export function TrustList() {
   return (
     <ul className="co-trust">
       {TRUST.map(({ Icon, t, d }) => (
-        <li key={t}><span className="co-trust-ic"><Icon size={17} strokeWidth={1.75} aria-hidden="true" /></span><span><strong>{t}</strong><small>{d}</small></span></li>
+        <li key={t}><span className="co-trust-ic"><Icon size={16} aria-hidden="true" /></span><span><strong>{t}</strong><small>{d}</small></span></li>
       ))}
     </ul>
   );
@@ -159,7 +160,7 @@ export default function Cart() {
 
       <div className="container co-grid">
         <div className="co-main">
-          <section className="co-lines" aria-label="Artikel im Warenkorb">
+          <section className="card co-lines" aria-label="Artikel im Warenkorb">
             <div className="co-lines-head">
               <span className="co-lines-title">Artikel</span>
               <Link to={R.shop} className="co-back"><ArrowLeft size={16} aria-hidden="true" /> Weiter einkaufen</Link>
@@ -179,9 +180,10 @@ export default function Cart() {
             <SummaryTotals subtotal={subtotal} savings={savings} ship={ship} count={count} smallBusiness={smallBusiness} />
             <FreeShippingMeter subtotal={subtotal} rates={rates} />
             <button ref={ctaRef} type="button" className="btn btn-primary btn-lg btn-block co-cta" onClick={() => nav(R.checkout)}>
-              Zur Kasse <ArrowRight size={18} aria-hidden="true" className="co-cta-arrow" />
+              <Lock size={18} aria-hidden="true" /> Zur Kasse
+              <ArrowRight size={18} aria-hidden="true" className="co-cta-arrow" />
             </button>
-            <PayMethods />
+            <PayChips />
           </div>
           <TrustList />
         </aside>
@@ -193,7 +195,7 @@ export default function Cart() {
           <strong>{money(total)}</strong>
         </div>
         <button type="button" className="btn btn-primary co-sticky-btn" onClick={() => nav(R.checkout)} tabIndex={showBar ? 0 : -1}>
-          Zur Kasse <ArrowRight size={16} aria-hidden="true" />
+          <Lock size={16} aria-hidden="true" /> Zur Kasse
         </button>
       </div>
     </div>

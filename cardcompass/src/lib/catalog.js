@@ -16,7 +16,7 @@ import * as demo from './demoCatalog.js';
 const PRODUCT_SELECT = `id, slug, name, short_description, description, is_featured, published_at,
   franchise:cc_franchises(slug, name),
   product_type:cc_product_types(name),
-  variants:cc_product_variants(id, sku, title, language, condition, price_cents, compare_at_price_cents, is_default, position, max_per_order, inventory:cc_inventory(available)),
+  variants:cc_product_variants(id, sku, title, language, condition, price_cents, compare_at_price_cents, is_default, position, inventory:cc_inventory(available)),
   images:cc_product_images(storage_path, alt_text, position),
   attributes:cc_product_attributes(key, value, sort_order),
   categories:cc_product_categories(category:cc_categories(slug))`;
@@ -28,8 +28,6 @@ export const defaultVariant = (p) => p?.variants?.find((v) => v.is_default) || p
 export const minPrice = (p) => Math.min(...(p?.variants || []).map((v) => v.price_cents).filter(Number.isFinite));
 export const totalAvailable = (p) => (p?.variants || []).reduce((s, v) => s + Math.max(0, v.available || 0), 0);
 export const isAvailable = (p) => totalAvailable(p) > 0;
-// Fair-Limit: max. units per order (anti-scalping); null = only stock/20 apply.
-export const fairLimit = (v) => (v && Number.isInteger(v.max_per_order) && v.max_per_order > 0 ? v.max_per_order : null);
 export const lowStock = (p) => { const n = totalAvailable(p); return n > 0 && n <= 5; };
 export const isNew = (p) => p?.published_at && Date.now() - new Date(p.published_at).getTime() < 21 * 86400000;
 export const franchiseColors = (slug) => FR_COLORS[slug] || { c1: '#b26bff', c2: '#4c0099', short: 'CardCompass' };
@@ -75,16 +73,11 @@ const cached = (key, fn) => {
 async function allProducts() {
   if (!LIVE) return demo.PRODUCTS;
   return cached('products', async () => {
-    const query = (select) => getSupabase()
-      .from('cc_products').select(select)
+    const { data, error } = await getSupabase()
+      .from('cc_products').select(PRODUCT_SELECT)
       .not('published_at', 'is', null)
       .order('is_featured', { ascending: false })
       .order('published_at', { ascending: false });
-    let { data, error } = await query(PRODUCT_SELECT);
-    // Fair-Limit column not migrated yet (42703 = undefined column) → load without it.
-    if (error && (error.code === '42703' || /max_per_order/.test(error.message || ''))) {
-      ({ data, error } = await query(PRODUCT_SELECT.replace(' max_per_order,', '')));
-    }
     if (error) throw error;
     return (data || []).map(normalize);
   });

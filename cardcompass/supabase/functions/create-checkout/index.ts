@@ -39,7 +39,7 @@ const MAX_LINES = 50;
 const MAX_QTY = 20;
 const MAX_BODY_BYTES = 32 * 1024;
 const SESSION_TTL_SECONDS = 30 * 60 + 60; // Stripe minimum is 30 min after creation → +60 s buffer
-const FALLBACK_SHIPPING = { name: 'Standardversand (Deutschland)', price_cents: 549, free_from_cents: 10000 };
+const FALLBACK_SHIPPING = { name: 'DHL Paket (Deutschland)', price_cents: 549, free_from_cents: 10000 };
 
 const stripe = new Stripe(STRIPE_SECRET_KEY, {
   httpClient: Stripe.createFetchHttpClient(),
@@ -224,19 +224,16 @@ type VariantRow = {
   id: string;
   title: string | null;
   price_cents: number;
-  max_per_order?: number | null; // Fair-Limit (anti-scalping), see migration
   product_id: string;
   product: { id: string; name: string; published_at: string | null } | null;
   inventory: { available: number | null } | { available: number | null }[] | null;
 };
 
 async function loadVariants(ids: string[]): Promise<Map<string, VariantRow>> {
-  const base = 'id, title, price_cents, product_id, product:cc_products(id, name, published_at), inventory:cc_inventory(available)';
-  let { data, error } = await admin.from('cc_product_variants').select(`${base}, max_per_order`).in('id', ids);
-  // Fair-Limit column not migrated yet → run without it (no limit enforced).
-  if (error && (error.code === '42703' || /max_per_order/.test(error.message))) {
-    ({ data, error } = await admin.from('cc_product_variants').select(base).in('id', ids));
-  }
+  const { data, error } = await admin
+    .from('cc_product_variants')
+    .select('id, title, price_cents, product_id, product:cc_products(id, name, published_at), inventory:cc_inventory(available)')
+    .in('id', ids);
   if (error) throw new Error(`variants: ${error.message}`);
   return new Map((data as unknown as VariantRow[]).map((v) => [v.id.toLowerCase(), v]));
 }
@@ -408,11 +405,6 @@ Deno.serve(async (req) => {
       const price = Number(v?.price_cents);
       if (!v || !product || !published || !Number.isInteger(price) || price < 0) {
         problems.push({ variant_id: it.variant_id, name: product?.name ?? null, variant_title: v?.title ?? null, requested: it.quantity, available: 0, reason: 'unavailable' });
-        continue;
-      }
-      const limit = Number.isInteger(v.max_per_order) && (v.max_per_order as number) > 0 ? (v.max_per_order as number) : null;
-      if (limit != null && it.quantity > limit) {
-        problems.push({ variant_id: it.variant_id, name: product.name, variant_title: v.title, requested: it.quantity, available: Math.min(available, limit), limit, reason: 'fair_limit' });
         continue;
       }
       if (available < it.quantity) {

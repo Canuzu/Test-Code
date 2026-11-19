@@ -64,7 +64,6 @@ function p(fr, cat, kind, name, price, o = {}) {
       is_default: i === 0,
       position: i,
       available: o.stock?.[i] ?? o.stock ?? 12,
-      max_per_order: o.limit ?? null, // Fair-Limit (anti-scalping)
     })),
     images: [],
     attributes: o.attrs || [],
@@ -85,13 +84,13 @@ const SEALED = (n, per) => [
 ];
 
 export const PRODUCTS = [
-  p('pokemon', 'booster-displays', 'display', 'Pokémon TCG Booster Display', 159.9, { limit: 2,
+  p('pokemon', 'booster-displays', 'display', 'Pokémon TCG Booster Display', 159.9, {
     featured: true, age: 1, was: 179.9, langs: ['Deutsch', 'Englisch'], langDelta: [0, -5], stock: [6, 3],
     short: '36 Booster im Original-Display – perfekt für den großen Pull.',
-    desc: 'Das komplette Booster Display mit 36 Boostern. Ideal zum Sammeln, Öffnen mit Freunden oder als versiegeltes Sammlerstück. Lieferung im Versandkarton.',
+    desc: 'Das komplette Booster Display mit 36 Boostern. Ideal zum Sammeln, Öffnen mit Freunden oder als versiegeltes Sammlerstück. Lieferung sicher verpackt im Versandkarton.',
     attrs: SEALED('36 Booster', '10 Karten'), sub: '36 Booster',
   }),
-  p('one-piece', 'booster-displays', 'display', 'One Piece Card Game Booster Display', 119.9, { limit: 2,
+  p('one-piece', 'booster-displays', 'display', 'One Piece Card Game Booster Display', 119.9, {
     featured: true, age: 2, langs: ['Englisch', 'Japanisch'], langDelta: [0, -25], stock: [4, 2],
     short: '24 Booster – für Strohhut-Fans und Turnierspieler.', desc: 'Versiegeltes Display mit 24 Boostern à 12 Karten.',
     attrs: SEALED('24 Booster', '12 Karten'), sub: '24 Booster',
@@ -100,7 +99,7 @@ export const PRODUCTS = [
     featured: true, age: 3, stock: 8, short: '24 Booster mit Chance auf Secret Rares.', desc: 'Original versiegeltes Display mit 24 Boostern.',
     attrs: SEALED('24 Booster', '9 Karten'), sub: '24 Booster',
   }),
-  p('magic', 'booster-displays', 'display', 'Magic: The Gathering Play Booster Display', 154.9, { limit: 2,
+  p('magic', 'booster-displays', 'display', 'Magic: The Gathering Play Booster Display', 154.9, {
     featured: true, age: 4, langs: ['Deutsch', 'Englisch'], stock: [3, 5], short: '36 Play Booster – Draft-ready.', desc: 'Display mit 36 Play Boostern, ideal für Draft-Abende.',
     attrs: SEALED('36 Play Booster', '14 Karten'), sub: '36 Booster',
   }),
@@ -110,13 +109,13 @@ export const PRODUCTS = [
   }),
   p('one-piece', 'booster', 'booster', 'One Piece Card Game Booster', 5.49, { age: 5, langs: ['Englisch', 'Japanisch'], stock: [36, 24], attrs: SEALED('1 Booster', '12 Karten'), sub: '12 Karten' }),
   p('digimon', 'booster', 'booster', 'Digimon Card Game Booster', 4.49, { age: 9, langs: ['Englisch'], stock: 40, attrs: SEALED('1 Booster', '12 Karten'), sub: '12 Karten' }),
-  p('riftbound', 'booster', 'booster', 'Riftbound Booster', 5.99, { limit: 10, featured: true, age: 0, langs: ['Englisch'], stock: 60, short: 'Das neue TCG – jetzt einsteigen.', attrs: SEALED('1 Booster', '14 Karten'), sub: 'Neu' }),
+  p('riftbound', 'booster', 'booster', 'Riftbound Booster', 5.99, { featured: true, age: 0, langs: ['Englisch'], stock: 60, short: 'Das neue TCG – jetzt einsteigen.', attrs: SEALED('1 Booster', '14 Karten'), sub: 'Neu' }),
   p('cyberpunk', 'booster', 'booster', 'Cyberpunk TCG Booster', 5.49, { age: 6, langs: ['Englisch'], stock: 0, attrs: SEALED('1 Booster', '12 Karten'), sub: '12 Karten' }),
   p('pokemon', 'starter-decks', 'deck', 'Pokémon TCG Kampfdeck', 14.99, { age: 7, stock: 15, short: 'Spielbereites 60-Karten-Deck.', attrs: [{ key: 'Inhalt', value: '60-Karten-Deck, Münze, Schadensmarker' }], sub: '60 Karten' }),
   p('one-piece', 'starter-decks', 'deck', 'One Piece Card Game Starter Deck', 12.99, { age: 8, langs: ['Englisch'], stock: 10, attrs: [{ key: 'Inhalt', value: '51 Karten inkl. Leader' }], sub: '51 Karten' }),
   p('yu-gi-oh', 'starter-decks', 'deck', 'Yu-Gi-Oh! Structure Deck', 11.99, { age: 10, stock: 9, attrs: [{ key: 'Inhalt', value: '48 Karten + Spielfeld' }], sub: 'Structure Deck' }),
   p('magic', 'starter-decks', 'deck', 'Magic: The Gathering Commander Deck', 44.9, { age: 11, langs: ['Deutsch', 'Englisch'], stock: [2, 4], attrs: [{ key: 'Inhalt', value: '100-Karten-Commander-Deck' }], sub: 'Commander' }),
-  p('pokemon', 'boxen-und-kollektionen', 'box', 'Pokémon TCG Top-Trainer-Box', 54.9, { limit: 2, featured: true, age: 2, was: 59.9, stock: 7, short: '9 Booster, Promo-Karte, Sleeves & Zubehör.', attrs: [{ key: 'Inhalt', value: '9 Booster, 1 Promo, 65 Sleeves, Würfel, Marker' }], sub: 'Top-Trainer-Box' }),
+  p('pokemon', 'boxen-und-kollektionen', 'box', 'Pokémon TCG Top-Trainer-Box', 54.9, { featured: true, age: 2, was: 59.9, stock: 7, short: '9 Booster, Promo-Karte, Sleeves & Zubehör.', attrs: [{ key: 'Inhalt', value: '9 Booster, 1 Promo, 65 Sleeves, Würfel, Marker' }], sub: 'Top-Trainer-Box' }),
   p('pokemon', 'boxen-und-kollektionen', 'tin', 'Pokémon TCG Tin-Box', 24.9, { age: 12, stock: 11, attrs: [{ key: 'Inhalt', value: '4 Booster, 1 Promo-Karte' }], sub: 'Tin-Box' }),
   p('one-piece', 'boxen-und-kollektionen', 'box', 'One Piece Card Game Premium Collection', 39.9, { age: 13, langs: ['Englisch'], stock: 3, attrs: [{ key: 'Inhalt', value: '6 Booster, Promo-Karten, Spielmatte' }], sub: 'Premium Collection' }),
   p(null, 'tcg-zubehoer', 'sleeves', 'Matte Sleeves – Royal Purple (100 Stück)', 8.99, { featured: true, age: 3, label: 'CardCompass', c1: '#b26bff', c2: '#4c0099', stock: 80, short: 'Kartenhüllen in Standardgröße, matt.', attrs: [{ key: 'Größe', value: '66 × 91 mm (Standard)' }, { key: 'Stück', value: '100' }], sub: '100 Sleeves' }),
@@ -130,4 +129,4 @@ export const PRODUCTS = [
   p('pokemon', 'figuren-und-sammlerartikel', 'figure', 'Sammelfigur – Deluxe Edition', 34.9, { age: 21, stock: 4, attrs: [{ key: 'Höhe', value: 'ca. 12 cm' }], sub: 'Figur' }),
 ];
 
-export const SHIPPING = [{ name: 'Standardversand (Deutschland)', price_cents: 549, free_from_cents: 10000 }];
+export const SHIPPING = [{ name: 'DHL Paket (Deutschland)', price_cents: 549, free_from_cents: 10000 }];
