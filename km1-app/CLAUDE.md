@@ -80,6 +80,13 @@ und Daten braucht.
   Profis bekommen ihn über die Einladung ihres Vereins, der mit seinem Code
   für sie bürgt, oder über Belege, die KM1 prüft. Ob ein Code gilt, steht
   allein in `einladungGueltig(code, rolle)`, die Codes in `W.einladungen`.
+- Solange die App nicht im Laden ist, gilt die Testphase (`TESTPHASE`):
+  Jede Rolle, KM1 eingeschlossen, lässt sich ohne Code und ohne Belege
+  anlegen, und der Haken ist sofort da. Unter Profil → Zahnrad lässt sich
+  dann auch die Vorführung einschalten. Mit `?testphase=aus` sieht man den
+  späteren Weg mit Code und Prüfung, und die Prüfungen mit Playwright für die
+  Einladungen laufen so. Vor dem Start wird `TESTPHASE` auf `false` gesetzt
+  (siehe `WEG_ZUR_ZEHN.md`).
 - Übersicht vor Vollständigkeit, wie bei Duolingo, Strava oder Instagram:
   - Die Startseite zeigt unter „Für dich“ höchstens fünf Blöcke: Hinweise in
     einer Karte, die große Karte „Heute“ mit dem Wochenziel, neue Videos, die
