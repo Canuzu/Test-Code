@@ -152,6 +152,8 @@ h1, h2, h3, h4 { margin: 0; line-height: 1.12; color: var(--ink); }
   color: var(--ink); transition: border-color .2s, box-shadow .2s; outline: none;
 }
 .textarea { height: auto; min-height: 110px; padding: 12px 14px; resize: vertical; }
+/* keep focused/invalid fields clear of the sticky header when scrolled into view */
+.input, .select, .textarea, .checkbox input { scroll-margin-top: 150px; scroll-margin-bottom: 110px; }
 .input:focus, .select:focus, .textarea:focus { border-color: var(--violet); box-shadow: 0 0 0 4px color-mix(in srgb, var(--violet) 16%, transparent); }
 .input[aria-invalid='true'] { border-color: var(--err); }
 .field-error { font-size: 12.5px; color: var(--err); }
@@ -159,9 +161,9 @@ h1, h2, h3, h4 { margin: 0; line-height: 1.12; color: var(--ink); }
 .checkbox input { width: 20px; height: 20px; margin-top: 1px; accent-color: var(--violet); flex-shrink: 0; }
 
 /* sections */
-.section { padding: 88px 0; }
-.section-sm { padding: 56px 0; }
-@media (max-width: 640px) { .section { padding: 60px 0; } .section-sm { padding: 40px 0; } }
+.section { padding-top: 88px; padding-bottom: 88px; }
+.section-sm { padding-top: 56px; padding-bottom: 56px; }
+@media (max-width: 640px) { .section { padding-top: 60px; padding-bottom: 60px; } .section-sm { padding-top: 40px; padding-bottom: 40px; } }
 .section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 30px; }
 .link-arrow { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--violet); font-size: 14.5px; }
 .link-arrow svg { transition: transform .2s var(--ease); }
