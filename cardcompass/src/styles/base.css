@@ -68,6 +68,9 @@
   --violet-200: #3a2361;
   --brand-grad-soft: var(--violet-50);
   --shadow-lg: 0 18px 40px -24px rgba(0, 0, 0, .7);
+  --ok: #4ade80;
+  --warn: #fdba74;
+  --err: #f87171;
   color-scheme: dark;
 }
 

@@ -88,7 +88,7 @@ export const PRODUCTS = [
   p('pokemon', 'booster-displays', 'display', 'Pokémon TCG Booster Display', 159.9, { limit: 2,
     featured: true, age: 1, was: 179.9, langs: ['Deutsch', 'Englisch'], langDelta: [0, -5], stock: [6, 3],
     short: '36 Booster im Original-Display – perfekt für den großen Pull.',
-    desc: 'Das komplette Booster Display mit 36 Boostern. Ideal zum Sammeln, Öffnen mit Freunden oder als versiegeltes Sammlerstück. Lieferung sicher verpackt im Versandkarton.',
+    desc: 'Das komplette Booster Display mit 36 Boostern. Ideal zum Sammeln, Öffnen mit Freunden oder als versiegeltes Sammlerstück. Lieferung im Versandkarton.',
     attrs: SEALED('36 Booster', '10 Karten'), sub: '36 Booster',
   }),
   p('one-piece', 'booster-displays', 'display', 'One Piece Card Game Booster Display', 119.9, { limit: 2,

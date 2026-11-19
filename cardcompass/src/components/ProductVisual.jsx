@@ -63,7 +63,6 @@ function Booster({ k, v }) {
       <rect x="62" y="46" width="176" height="16" fill={INK} opacity=".22" />
       <rect x="62" y="298" width="176" height="16" fill={INK} opacity=".22" />
       <Label x={62} y={226} w={176} label={v.label} sub={v.sub} />
-      <path d={outline} fill={`url(#${k('sheen')})`} />
     </g>
   );
 }
@@ -81,7 +80,6 @@ function Box3D({ k, v, fx, fy, fw, fh, d = 46 }) {
       <path d={front} fill={`url(#${k('face')})`} />
       <rect x={fx} y={fy} width={fw} height={Math.round(fh * 0.42)} fill={`url(#${k('hatch')})`} />
       <Label x={fx} y={fy + fh - 66} w={fw} label={v.label} sub={v.sub} />
-      <path d={front} fill={`url(#${k('sheen')})`} />
     </g>
   );
 }
@@ -112,7 +110,6 @@ function Box({ k, v, tin }) {
         <rect x="52" y="74" width="196" height="54" rx="26" fill="#fff" opacity=".16" />
         <rect x="52" y="128" width="196" height="186" fill={`url(#${k('hatch')})`} opacity=".7" />
         <Label x={52} y={232} w={196} label={v.label} sub={v.sub} />
-        <rect x="52" y="74" width="196" height="240" rx="26" fill={`url(#${k('sheen')})`} />
       </g>
     );
   }
@@ -129,7 +126,6 @@ function Sleeves({ k, v }) {
       <rect x="66" y="232" width="168" height="84" fill="#fff" stroke="#e7e3ec" />
       <text x="80" y="266" fontFamily="'Archivo Variable', Archivo, sans-serif" fontStretch="125%" fontWeight="800" fontSize="16" fill={INK}>{(v.sub || 'SLEEVES').toUpperCase()}</text>
       <text x="80" y="290" fontFamily="'Archivo Variable', Archivo, sans-serif" fontWeight="700" fontSize="9.5" letterSpacing=".14em" fill="#8b00ff">CARDCOMPASS</text>
-      <rect x="84" y="48" width="132" height="200" rx="6" fill={`url(#${k('sheen')})`} />
     </g>
   );
 }
@@ -181,7 +177,6 @@ function Manga({ k, v }) {
       <rect x="72" y="56" width="14" height="262" rx="2" fill={`url(#${k('side')})`} />
       <rect x="84" y="50" width="146" height="160" fill={`url(#${k('hatch')})`} />
       <Label x={84} y={236} w={146} label={v.label} sub={v.sub} />
-      <rect x="84" y="50" width="146" height="264" rx="3" fill={`url(#${k('sheen')})`} />
     </g>
   );
 }

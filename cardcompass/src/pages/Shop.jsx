@@ -2,13 +2,11 @@ import '../styles/shop.css';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
-  Search, X, SlidersHorizontal, ChevronDown, ChevronRight, ArrowUpDown, SearchX, AlertTriangle,
-  RotateCcw, Sparkles, LayoutGrid, Check, ArrowRight,
+  Search, X, SlidersHorizontal, ChevronDown, ChevronRight, SearchX, AlertTriangle, RotateCcw, Check, ArrowRight,
 } from 'lucide-react';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard.jsx';
-import ProductVisual from '../components/ProductVisual.jsx';
 import { listProducts, getFranchises, getCategories } from '../lib/catalog.js';
-import { useAsync, usePageMeta, useTilt, prefersReducedMotion } from '../lib/hooks.js';
+import { useAsync, usePageMeta, prefersReducedMotion } from '../lib/hooks.js';
 import { R, shopPath } from '../lib/routes.js';
 
 const SORTS = [
@@ -34,7 +32,18 @@ const filterKey = (f) => [f.franchise, f.category, f.q, f.available ? 1 : 0, f.s
 const toQuery = (f) => shopPath(f).split('?')[1] || '';
 const plural = (n) => `${n} ${n === 1 ? 'Produkt' : 'Produkte'}`;
 const nPanelKey = (f) => `${f.franchise}|${f.category}|${f.available}`;
-const grad = (fr) => `linear-gradient(135deg, ${fr.c1}, ${fr.c2})`;
+
+// White text needs ≥ 4.5:1 on the franchise colour; otherwise the banner falls back to ink.
+function whiteOn(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const [r, g, b] = [n >> 16, (n >> 8) & 255, n & 255].map((c) => {
+    const x = c / 255;
+    return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+  });
+  return 1.05 / (0.2126 * r + 0.7152 * g + 0.0722 * b + 0.05) >= 4.5;
+}
 
 // Facet counts: every dimension counted with all *other* active filters applied.
 async function loadFacets({ franchise, category, q, available }) {
@@ -55,17 +64,17 @@ async function loadFacets({ franchise, category, q, available }) {
 }
 
 // ---------------------------------------------------------------------------
-// Search field (hero + franchise banner) – refines within the current filters.
-function SearchField({ value, onSubmit, placeholder, glass = false, className = '' }) {
+// Search field (page header + franchise banner) – refines within the current filters.
+function SearchField({ value, onSubmit, placeholder, className = '' }) {
   const [text, setText] = useState(value);
   useEffect(() => { setText(value); }, [value]);
   return (
     <form
-      className={`shop-search ${glass ? 'is-glass' : ''} ${className}`}
+      className={`shop-search ${className}`}
       role="search"
       onSubmit={(e) => { e.preventDefault(); onSubmit(text.trim()); }}
     >
-      <Search size={19} className="shop-search-ic" aria-hidden="true" />
+      <Search size={18} className="shop-search-ic" aria-hidden="true" />
       <input
         type="search"
         value={text}
@@ -81,7 +90,7 @@ function SearchField({ value, onSubmit, placeholder, glass = false, className = 
         </button>
       )}
       <button type="submit" className="shop-search-go" aria-label="Suchen">
-        <span>Suchen</span><ArrowRight size={17} />
+        <span>Suchen</span><ArrowRight size={16} />
       </button>
     </form>
   );
@@ -101,85 +110,54 @@ function Crumbs({ items }) {
 }
 
 // ---------------------------------------------------------------------------
-// Default hero ("Alle Produkte", category or search results).
-function ShopHero({ f, cat, count, franchises, onSearch }) {
+// Default header ("Alle Produkte", category or search results).
+function ShopHero({ f, cat, count, onSearch }) {
   const title = f.q
-    ? <>Suchergebnisse für <span className="grad-text">„{f.q}“</span></>
+    ? <>Suchergebnisse für <span className="shop-title-q">„{f.q}“</span></>
     : cat ? cat.name : 'Alle Produkte';
   const crumbs = [{ label: 'Start', to: R.home }, { label: 'Shop', to: f.q || cat ? R.shop : null }];
   if (cat && !f.q) crumbs.push({ label: cat.name });
   if (f.q) crumbs.push({ label: 'Suche' });
-  const art = franchises.slice(0, 3);
   return (
     <section className="page-hero shop-hero">
-      <div className="shop-hero-orb" aria-hidden="true" />
-      <div className="container shop-hero-row">
-        <div className="shop-hero-text fade-up">
+      <div className="container shop-head">
+        <div className="shop-head-text">
           <Crumbs items={crumbs} />
-          <p className="eyebrow">{f.q ? 'Suche' : cat ? 'Kategorie' : 'Shop'}</p>
-          <h1 className="h1 shop-title">{title}</h1>
-          <p className={`lead shop-lead ${f.q ? 'is-q' : ''}`}>
-            {f.q
-              ? 'Nicht ganz das Richtige? Verfeinere deine Suche oder nutze die Filter.'
-              : 'Booster, Displays, Kollektionen und Zubehör – original versiegelt, sicher verpackt und schnell bei dir.'}
-          </p>
-          <div className="shop-hero-meta">
-            <span className="shop-pill"><Sparkles size={15} />{count == null ? 'Lädt …' : plural(count)}</span>
-          </div>
-          <SearchField
-            value={f.q}
-            onSubmit={(q) => onSearch(q)}
-            placeholder="Displays, Booster, Sleeves …"
-            className={f.q ? '' : 'hide-sm'}
-          />
+          <h1 className="shop-title">{title}</h1>
+          <p className="shop-head-count">{count == null ? 'Produkte werden geladen …' : plural(count)}</p>
         </div>
-        <div className="shop-hero-art" aria-hidden="true">
-          {art.map((fr, i) => (
-            <div key={fr.slug} className={`shop-fan shop-fan-${i}`}>
-              <ProductVisual visual={{ kind: 'booster', c1: fr.c1, c2: fr.c2, label: fr.short, sub: 'Booster' }} />
-            </div>
-          ))}
-          <span className="shop-spark s1" /><span className="shop-spark s2" /><span className="shop-spark s3" />
-        </div>
+        <SearchField
+          value={f.q}
+          onSubmit={(q) => onSearch(q)}
+          placeholder="Displays, Booster, Sleeves …"
+          className={f.q ? '' : 'hide-sm'}
+        />
       </div>
     </section>
   );
 }
 
-// Striking banner tinted with the selected franchise's colours.
+// Flat colour block for a selected franchise: name, count, scoped search.
 function FranchiseBanner({ fr, f, count, onSearch, onClear }) {
-  const tilt = useTilt(14);
+  const brand = whiteOn(fr.c2);
   return (
-    <section className="shop-banner-wrap">
-      <div className="container">
-        <div className="shop-banner fade-up" style={{ '--c1': fr.c1, '--c2': fr.c2 }}>
-          <div className="shop-banner-fx" aria-hidden="true"><span className="aur a1" /><span className="aur a2" /><span className="grid" /></div>
-          <div className="shop-banner-text">
-            <Crumbs items={[{ label: 'Start', to: R.home }, { label: 'Shop', to: R.shop }, { label: fr.name }]} />
-            <p className="eyebrow">Franchise</p>
-            <h1 className="h1 shop-banner-title">{fr.name}</h1>
-            {f.q && <p className="shop-banner-q">Suchergebnisse für „{f.q}“</p>}
-            <div className="shop-hero-meta">
-              <span className="shop-pill is-glass"><Sparkles size={15} />{count == null ? 'Lädt …' : plural(count)}</span>
-              <button type="button" className="shop-pill is-glass is-btn" onClick={onClear}><LayoutGrid size={15} />Alle Franchises</button>
-            </div>
-            <SearchField
-              glass
-              value={f.q}
-              onSubmit={onSearch}
-              placeholder={`In ${fr.short || fr.name} suchen …`}
-              className={f.q ? '' : 'hide-sm'}
-            />
-          </div>
-          <div className="shop-banner-art" ref={tilt} aria-hidden="true">
-            <div className="shop-banner-stage">
-              <div className="shop-banner-glow" />
-              <ProductVisual className="art-back" visual={{ kind: 'display', c1: fr.c1, c2: fr.c2, label: fr.short, sub: 'Display' }} />
-              <ProductVisual className="art-front" visual={{ kind: 'booster', c1: fr.c1, c2: fr.c2, label: fr.short, sub: 'Booster' }} />
-            </div>
-            <div className="shop-banner-shine" />
-          </div>
+    <section className={`shop-banner ${brand ? 'is-brand' : ''}`} style={brand ? { '--fb': fr.c2 } : undefined}>
+      <div className="container shop-head">
+        <div className="shop-head-text">
+          <Crumbs items={[{ label: 'Start', to: R.home }, { label: 'Shop', to: R.shop }, { label: fr.name }]} />
+          <h1 className="shop-title">{fr.name}</h1>
+          {f.q && <p className="shop-banner-q">Suchergebnisse für „{f.q}“</p>}
+          <p className="shop-head-count">
+            <span className="shop-head-n">{count == null ? 'Produkte werden geladen …' : plural(count)}</span>
+            <button type="button" className="shop-banner-clear" onClick={onClear}>Alle Franchises <X size={14} aria-hidden="true" /></button>
+          </p>
         </div>
+        <SearchField
+          value={f.q}
+          onSubmit={onSearch}
+          placeholder={`In ${fr.short || fr.name} suchen …`}
+          className={`is-inverse ${f.q ? '' : 'hide-sm'}`}
+        />
       </div>
     </section>
   );
@@ -187,20 +165,17 @@ function FranchiseBanner({ fr, f, count, onSearch, onClear }) {
 
 // ---------------------------------------------------------------------------
 // Filter panel (desktop sidebar + phone sheet share it).
-function Opt({ active, onClick, label, n, dot, icon, sub = false }) {
+function Opt({ active, onClick, label, n, sub = false }) {
   return (
-    <li>
-      <button
-        type="button"
-        className={`fopt ${sub ? 'is-sub' : ''} ${active ? 'is-active' : ''} ${n === 0 && !active ? 'is-zero' : ''}`}
-        aria-pressed={active}
-        onClick={onClick}
-      >
-        {dot ? <span className="fdot" style={{ background: dot }} /> : icon || null}
-        <span className="fopt-label">{label}</span>
-        {active ? <Check size={15} className="fopt-check" aria-hidden="true" /> : n != null && <span className="fcount">{n}</span>}
-      </button>
-    </li>
+    <button
+      type="button"
+      className={`fopt ${sub ? 'is-sub' : ''} ${active ? 'is-active' : ''} ${n === 0 && !active ? 'is-zero' : ''}`}
+      aria-pressed={active}
+      onClick={onClick}
+    >
+      <span className="fopt-label">{label}</span>
+      {n != null && <span className="fcount">{n}</span>}
+    </button>
   );
 }
 
@@ -212,19 +187,34 @@ function FilterPanel({ value, onChange, franchises, categories, facets, idPrefix
   const toggleId = `${idPrefix}-avail`;
   return (
     <div className="fpanel">
+      <section className="fgroup" aria-labelledby={`${idPrefix}-av`}>
+        <h3 className="fgroup-h" id={`${idPrefix}-av`}>Verfügbarkeit</h3>
+        <label className="fcheck" htmlFor={toggleId}>
+          <input
+            id={toggleId}
+            type="checkbox"
+            checked={value.available}
+            onChange={(e) => onChange({ available: e.target.checked })}
+          />
+          <span className="fcheck-box" aria-hidden="true"><Check size={13} strokeWidth={3} /></span>
+          <span className="fcheck-label">Nur sofort lieferbar</span>
+          {facets && <span className="fcount">{facets.available}</span>}
+        </label>
+      </section>
+
       <section className="fgroup" aria-labelledby={`${idPrefix}-fr`}>
         <h3 className="fgroup-h" id={`${idPrefix}-fr`}>Franchise</h3>
         <ul className="flist">
-          <Opt active={!value.franchise} onClick={() => onChange({ franchise: '' })} label="Alle Franchises" n={fc._all} icon={<LayoutGrid size={15} className="fopt-ic" />} />
+          <li><Opt active={!value.franchise} onClick={() => onChange({ franchise: '' })} label="Alle Franchises" n={fc._all} /></li>
           {franchises.map((fr) => (
-            <Opt
-              key={fr.slug}
-              active={value.franchise === fr.slug}
-              onClick={() => onChange({ franchise: value.franchise === fr.slug ? '' : fr.slug })}
-              label={fr.name}
-              n={facets ? fc[fr.slug] || 0 : null}
-              dot={grad(fr)}
-            />
+            <li key={fr.slug}>
+              <Opt
+                active={value.franchise === fr.slug}
+                onClick={() => onChange({ franchise: value.franchise === fr.slug ? '' : fr.slug })}
+                label={fr.name}
+                n={facets ? fc[fr.slug] || 0 : null}
+              />
+            </li>
           ))}
         </ul>
       </section>
@@ -232,30 +222,29 @@ function FilterPanel({ value, onChange, franchises, categories, facets, idPrefix
       <section className="fgroup" aria-labelledby={`${idPrefix}-cat`}>
         <h3 className="fgroup-h" id={`${idPrefix}-cat`}>Kategorie</h3>
         <ul className="flist">
-          <Opt active={!value.category} onClick={() => onChange({ category: '' })} label="Alle Kategorien" n={cc._all} icon={<LayoutGrid size={15} className="fopt-ic" />} />
+          <li><Opt active={!value.category} onClick={() => onChange({ category: '' })} label="Alle Kategorien" n={cc._all} /></li>
           {roots.map((c) => {
             const children = kids(c.id);
             return (
-              <li key={c.slug} className="ftree">
-                <ul className="flist">
-                  <Opt
-                    active={value.category === c.slug}
-                    onClick={() => onChange({ category: value.category === c.slug ? '' : c.slug })}
-                    label={c.name}
-                    n={facets ? cc[c.slug] || 0 : null}
-                  />
-                </ul>
+              <li key={c.slug}>
+                <Opt
+                  active={value.category === c.slug}
+                  onClick={() => onChange({ category: value.category === c.slug ? '' : c.slug })}
+                  label={c.name}
+                  n={facets ? cc[c.slug] || 0 : null}
+                />
                 {children.length > 0 && (
-                  <ul className="flist flist-sub">
+                  <ul className="flist-sub">
                     {children.map((k) => (
-                      <Opt
-                        key={k.slug}
-                        sub
-                        active={value.category === k.slug}
-                        onClick={() => onChange({ category: value.category === k.slug ? '' : k.slug })}
-                        label={k.name}
-                        n={facets ? cc[k.slug] || 0 : null}
-                      />
+                      <li key={k.slug}>
+                        <Opt
+                          sub
+                          active={value.category === k.slug}
+                          onClick={() => onChange({ category: value.category === k.slug ? '' : k.slug })}
+                          label={k.name}
+                          n={facets ? cc[k.slug] || 0 : null}
+                        />
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -263,23 +252,6 @@ function FilterPanel({ value, onChange, franchises, categories, facets, idPrefix
             );
           })}
         </ul>
-      </section>
-
-      <section className="fgroup" aria-labelledby={`${idPrefix}-av`}>
-        <h3 className="fgroup-h" id={`${idPrefix}-av`}>Verfügbarkeit</h3>
-        <label className={`fswitch ${value.available ? 'is-on' : ''}`} htmlFor={toggleId}>
-          <input
-            id={toggleId}
-            type="checkbox"
-            role="switch"
-            checked={value.available}
-            aria-checked={value.available}
-            onChange={(e) => onChange({ available: e.target.checked })}
-          />
-          <span className="fswitch-track" aria-hidden="true"><span className="fswitch-thumb" /></span>
-          <span className="fswitch-label">Nur sofort lieferbar</span>
-          {facets && <span className="fcount">{facets.available}</span>}
-        </label>
       </section>
     </div>
   );
@@ -340,7 +312,7 @@ function FilterSheet({ open, onClose, current, onApply, franchises, categories, 
       <div className="fsheet-panel" role="dialog" aria-modal="true" aria-labelledby="fsheet-title" ref={panelRef}>
         <div className="fsheet-grip" aria-hidden="true" />
         <div className="fsheet-head">
-          <h2 id="fsheet-title" className="h3">Filter</h2>
+          <h2 id="fsheet-title" className="fsheet-title">Filter</h2>
           <button type="button" className="icon-btn" ref={closeRef} onClick={onClose} aria-label="Filter schließen"><X size={20} /></button>
         </div>
         <div className="fsheet-body">
@@ -431,7 +403,7 @@ export default function Shop() {
     row.scrollTo({ left: Math.max(0, target), behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
   }, [f.franchise, franchises.length]);
 
-  // Sidebar scrolls internally when taller than the viewport: fade the bottom edge until the end.
+  // Sidebar scrolls internally when taller than the viewport: hairline at the bottom until the end.
   useEffect(() => {
     const el = sideRef.current;
     if (!el) return undefined;
@@ -443,9 +415,9 @@ export default function Shop() {
   }, [franchises.length, categories.length, nPanelKey(f)]);
 
   const chips = [];
-  if (f.franchise) chips.push({ id: 'fr', label: fr?.name || f.franchise, dot: fr ? grad(fr) : null, clear: { franchise: '' } });
+  if (f.franchise) chips.push({ id: 'fr', label: fr?.name || f.franchise, clear: { franchise: '' } });
   if (f.category) chips.push({ id: 'cat', label: cat?.name || f.category, clear: { category: '' } });
-  if (f.q) chips.push({ id: 'q', label: `„${f.q}“`, icon: <Search size={13} />, clear: { q: '' } });
+  if (f.q) chips.push({ id: 'q', label: `„${f.q}“`, clear: { q: '' } });
   if (f.available) chips.push({ id: 'av', label: 'Sofort lieferbar', clear: { available: false } });
   const nPanel = (f.franchise ? 1 : 0) + (f.category ? 1 : 0) + (f.available ? 1 : 0);
   const closeSheet = useCallback(() => setSheet(false), []);
@@ -458,24 +430,22 @@ export default function Shop() {
     <div className="shop">
       {fr
         ? <FranchiseBanner key={fr.slug} fr={fr} f={f} count={count} onSearch={(q) => update({ q })} onClear={() => update({ franchise: '' })} />
-        : <ShopHero f={f} cat={cat} count={count} franchises={franchises} onSearch={(q) => update({ q })} />}
+        : <ShopHero f={f} cat={cat} count={count} onSearch={(q) => update({ q })} />}
 
       <div className="container shop-layout">
         <aside className={`shop-side ${sideEnd ? 'is-end' : ''}`} ref={sideRef} aria-label="Filter">
-          <div className="shop-side-inner">
-            <div className="shop-side-head">
-              <span className="shop-side-title"><SlidersHorizontal size={17} /> Filter</span>
-              {nPanel > 0 && <button type="button" className="shop-linkbtn" onClick={() => update(EMPTY_FILTERS)}>Zurücksetzen</button>}
-            </div>
-            <FilterPanel
-              idPrefix="side"
-              value={f}
-              onChange={update}
-              franchises={franchises}
-              categories={categories}
-              facets={facets.data}
-            />
+          <div className="shop-side-head">
+            <span className="shop-side-title"><SlidersHorizontal size={15} aria-hidden="true" /> Filter</span>
+            {nPanel > 0 && <button type="button" className="shop-linkbtn" onClick={() => update(EMPTY_FILTERS)}>Zurücksetzen</button>}
           </div>
+          <FilterPanel
+            idPrefix="side"
+            value={f}
+            onChange={update}
+            franchises={franchises}
+            categories={categories}
+            facets={facets.data}
+          />
         </aside>
 
         <section className="shop-main" ref={resultsRef} aria-labelledby="shop-results-title">
@@ -491,7 +461,7 @@ export default function Shop() {
                 aria-pressed={f.franchise === x.slug}
                 onClick={() => update({ franchise: f.franchise === x.slug ? '' : x.slug })}
               >
-                <span className="fdot sm" style={{ background: grad(x) }} />{x.short || x.name}
+                {x.short || x.name}
               </button>
             ))}
           </div>
@@ -504,11 +474,9 @@ export default function Shop() {
               {chips.length > 0 && (
                 <div className="shop-active" role="group" aria-label="Aktive Filter">
                   {chips.map((c) => (
-                    <button key={c.id} type="button" className="shop-achip" onClick={() => update(c.clear)} aria-label={`Filter entfernen: ${c.label}`}>
-                      {c.dot && <span className="fdot sm" style={{ background: c.dot }} />}
-                      {c.icon}
+                    <button key={c.id} type="button" className="chip shop-achip" onClick={() => update(c.clear)} aria-label={`Filter entfernen: ${c.label}`}>
                       <span>{c.label}</span>
-                      <X size={14} className="shop-achip-x" />
+                      <X size={14} className="shop-achip-x" aria-hidden="true" />
                     </button>
                   ))}
                   {chips.length > 1 && <button type="button" className="shop-linkbtn" onClick={resetAll}>Alle zurücksetzen</button>}
@@ -517,16 +485,17 @@ export default function Shop() {
             </div>
             <div className="shop-tools">
               <button type="button" className="shop-filter-btn" ref={filterBtnRef} onClick={() => setSheet(true)} aria-haspopup="dialog" aria-expanded={sheet}>
-                <SlidersHorizontal size={17} /> Filter
+                <SlidersHorizontal size={16} aria-hidden="true" /> Filter
                 {nPanel > 0 && <span className="shop-filter-n">{nPanel}</span>}
               </button>
               <label className="shop-sort">
-                <ArrowUpDown size={16} className="shop-sort-ic" aria-hidden="true" />
-                <span className="sr-only">Sortieren nach</span>
-                <select value={f.sort} onChange={(e) => update({ sort: e.target.value })}>
-                  {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-                </select>
-                <ChevronDown size={16} className="shop-sort-chev" aria-hidden="true" />
+                <span className="shop-sort-l">Sortieren</span>
+                <span className="shop-sort-field">
+                  <select value={f.sort} onChange={(e) => update({ sort: e.target.value })}>
+                    {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+                  </select>
+                  <ChevronDown size={16} className="shop-sort-chev" aria-hidden="true" />
+                </span>
               </label>
             </div>
           </div>
@@ -534,10 +503,12 @@ export default function Shop() {
           <div className={`shop-results ${res.loading && list ? 'is-busy' : ''}`}>
             {res.error ? (
               <div className="shop-state" role="alert">
-                <div className="empty-ic"><AlertTriangle size={32} /></div>
-                <h3 className="h3">Die Produkte konnten nicht geladen werden</h3>
+                <div className="empty-ic"><AlertTriangle size={30} /></div>
+                <h3 className="shop-state-h">Die Produkte konnten nicht geladen werden</h3>
                 <p className="muted">Prüfe deine Internetverbindung und versuch es gleich noch einmal.</p>
-                <button type="button" className="btn btn-primary" onClick={() => setRetry((r) => r + 1)}><RotateCcw size={17} /> Erneut versuchen</button>
+                <div className="shop-state-actions">
+                  <button type="button" className="btn btn-primary" onClick={() => setRetry((r) => r + 1)}><RotateCcw size={17} /> Erneut versuchen</button>
+                </div>
               </div>
             ) : !list ? (
               <div className="grid-products shop-grid" aria-busy="true" aria-label="Produkte werden geladen">
@@ -545,8 +516,8 @@ export default function Shop() {
               </div>
             ) : list.length === 0 ? (
               <div className="shop-state">
-                <div className="empty-ic"><SearchX size={34} /></div>
-                <h3 className="h3">Keine Produkte gefunden</h3>
+                <div className="empty-ic"><SearchX size={30} /></div>
+                <h3 className="shop-state-h">Keine Produkte gefunden</h3>
                 <p className="muted">
                   {f.q
                     ? <>Für „{f.q}“ haben wir mit diesen Filtern nichts gefunden. Prüfe die Schreibweise oder probier einen allgemeineren Begriff.</>
@@ -560,20 +531,20 @@ export default function Shop() {
                   <div className="shop-state-sugg">
                     <span className="muted">Beliebte Franchises:</span>
                     {franchises.slice(0, 4).map((x) => (
-                      <Link key={x.slug} className="chip" to={shopPath({ franchise: x.slug })}><span className="fdot sm" style={{ background: grad(x) }} />{x.short || x.name}</Link>
+                      <Link key={x.slug} className="chip" to={shopPath({ franchise: x.slug })}>{x.short || x.name}</Link>
                     ))}
                   </div>
                 )}
               </div>
             ) : (
               <>
-                <div className="grid-products shop-grid" key={res.data.key}>
-                  {visible.map((p, i) => <ProductCard key={p.id} product={p} index={i % PAGE} />)}
+                <div className="grid-products shop-grid">
+                  {visible.map((p) => <ProductCard key={p.id} product={p} />)}
                 </div>
                 {list.length > limit && (
                   <div className="shop-more">
                     <p className="muted">{limit} von {list.length} Produkten</p>
-                    <div className="shop-more-bar"><span style={{ width: `${(limit / list.length) * 100}%` }} /></div>
+                    <div className="shop-more-bar" aria-hidden="true"><span style={{ width: `${(limit / list.length) * 100}%` }} /></div>
                     <button type="button" className="btn btn-outline btn-lg" onClick={() => setShown((s) => s + PAGE)}>
                       Mehr anzeigen <ChevronDown size={17} />
                     </button>

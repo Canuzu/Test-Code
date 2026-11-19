@@ -1,27 +1,23 @@
 import '../styles/shop.css';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import {
-  ChevronRight, Minus, Plus, ShoppingBag, Zap, Check, Truck, PackageSearch, RotateCcw, Package,
-  FileText, ListChecks, ArrowRight, AlertTriangle, Sparkles,
-} from 'lucide-react';
+import { ChevronRight, Minus, Plus, ShoppingBag, Check, Truck, PackageSearch, RotateCcw, Package, ArrowRight, AlertTriangle, Scale } from 'lucide-react';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard.jsx';
 import { ProductImage } from '../components/ProductVisual.jsx';
 import { TRUST } from '../components/Footer.jsx';
 import { useCart } from '../lib/cart.jsx';
 import {
-  getProduct, getRelated, getShippingRates, getSettings, getCategories, defaultVariant, isNew,
-} from '../lib/catalog.js';
-import { useAsync, usePageMeta, useTilt, useReveal, prefersReducedMotion } from '../lib/hooks.js';
+  getProduct, getRelated, getShippingRates, getSettings, getCategories, defaultVariant, isNew, fairLimit } from '../lib/catalog.js';
+import { useAsync, usePageMeta, useReveal, prefersReducedMotion } from '../lib/hooks.js';
 import { money, pct, clamp } from '../lib/format.js';
 import { R, shopPath } from '../lib/routes.js';
 import { SHOP } from '../lib/config.js';
 
 const MAX_QTY = 20;
 const TABS = [
-  { id: 'desc', label: 'Beschreibung', Icon: FileText },
-  { id: 'details', label: 'Details', Icon: ListChecks },
-  { id: 'ship', label: 'Versand & Rückgabe', short: 'Versand', Icon: Truck },
+  { id: 'desc', label: 'Beschreibung' },
+  { id: 'details', label: 'Details' },
+  { id: 'ship', label: 'Versand & Rückgabe', short: 'Versand' },
 ];
 
 const stockOf = (n) => (n <= 0
@@ -78,12 +74,12 @@ function ProductSkeleton() {
         <div className="pdp-grid">
           <div className="pdp-media"><div className="pdp-stage skeleton" /></div>
           <div className="pdp-info">
-            <div className="skeleton" style={{ height: 30, width: 150, borderRadius: 999 }} />
-            <div className="skeleton" style={{ height: 44, width: '90%', borderRadius: 12, marginTop: 18 }} />
-            <div className="skeleton" style={{ height: 44, width: '60%', borderRadius: 12, marginTop: 10 }} />
-            <div className="skeleton" style={{ height: 18, width: '80%', borderRadius: 8, marginTop: 22 }} />
-            <div className="skeleton" style={{ height: 120, borderRadius: 24, marginTop: 28 }} />
-            <div className="skeleton" style={{ height: 220, borderRadius: 24, marginTop: 18 }} />
+            <div className="skeleton" style={{ height: 12, width: 120 }} />
+            <div className="skeleton" style={{ height: 40, width: '90%', marginTop: 18 }} />
+            <div className="skeleton" style={{ height: 40, width: '60%', marginTop: 10 }} />
+            <div className="skeleton" style={{ height: 18, width: '80%', marginTop: 22 }} />
+            <div className="skeleton" style={{ height: 96, marginTop: 32 }} />
+            <div className="skeleton" style={{ height: 220, marginTop: 24 }} />
           </div>
         </div>
       </div>
@@ -107,7 +103,6 @@ function ProductView({ product }) {
   const addedTimer = useRef(0);
   const buyRef = useRef(null);
   const tabsRef = useRef(null);
-  const tilt = useTilt(12);
   const relRef = useReveal();
 
   const rates = useAsync(getShippingRates, []);
@@ -125,12 +120,11 @@ function ProductView({ product }) {
   const avail = Math.max(0, variant?.available || 0);
   const soldOut = !variant || avail === 0;
   const inCart = lines.find((l) => l.variantId === variant?.id)?.qty || 0;
-  const room = Math.max(0, Math.min(MAX_QTY, avail) - inCart);
+  const limit = fairLimit(variant);
+  const room = Math.max(0, Math.min(MAX_QTY, avail, limit ?? MAX_QTY) - inCart);
   const maxQty = Math.max(1, room);
   const stock = stockOf(avail);
   const priceDiffers = new Set(variants.map((v) => v.price_cents)).size > 1;
-  const c1 = product.visual?.c1 || '#b26bff';
-  const c2 = product.visual?.c2 || '#4c0099';
 
   useEffect(() => { setQty((q) => clamp(q, 1, maxQty)); }, [maxQty]);
   useEffect(() => () => clearTimeout(addedTimer.current), []);
@@ -207,9 +201,8 @@ function ProductView({ product }) {
   }, [product, variants]);
 
   return (
-    <div className="pdp" style={{ '--c1': c1, '--c2': c2 }}>
+    <div className="pdp">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ld }} />
-      <div className="pdp-aura" aria-hidden="true" />
       <div className="container">
         <nav className="breadcrumbs pdp-crumbs" aria-label="Brotkrumen">
           <Link to={R.home}>Start</Link>
@@ -223,19 +216,13 @@ function ProductView({ product }) {
         <div className="pdp-grid">
           {/* ---- media ---- */}
           <div className="pdp-media">
-            <div className={`pdp-stage fade-up ${soldOut ? 'is-out' : ''}`} ref={tilt}>
-              <div className="pdp-glow" aria-hidden="true" />
-              <div className="pdp-floor" aria-hidden="true" />
+            <div className={`pdp-stage ${soldOut ? 'is-out' : ''}`}>
               <div className="pdp-stage-inner">
-                <div className="pdp-float" key={img}>
-                  <ProductImage product={shown} className="pdp-img" eager />
-                </div>
+                <ProductImage product={shown} className="pdp-img" eager />
               </div>
-              <div className="pdp-holo" aria-hidden="true" />
-              <div className="pdp-shine" aria-hidden="true" />
               <div className="pdp-badges">
                 {off > 0 && <span className="badge badge-sale">−{off} %</span>}
-                {isNew(product) && <span className="badge badge-violet"><Sparkles size={12} /> Neu</span>}
+                {isNew(product) && <span className="badge badge-violet">Neu</span>}
                 {soldOut && <span className="badge badge-off">Ausverkauft</span>}
               </div>
             </div>
@@ -259,19 +246,17 @@ function ProductView({ product }) {
 
           {/* ---- info ---- */}
           <div className="pdp-info">
-            <div className="pdp-head fade-up">
+            <div className="pdp-head">
               {product.franchise ? (
-                <Link to={shopPath({ franchise: product.franchise.slug })} className="pdp-fr">
-                  <span className="pdp-fr-dot" />{product.franchise.name}<ArrowRight size={14} />
-                </Link>
+                <Link to={shopPath({ franchise: product.franchise.slug })} className="pdp-fr">{product.franchise.name}</Link>
               ) : crumbMid ? (
-                <Link to={crumbMid.to} className="pdp-fr"><span className="pdp-fr-dot" />{crumbMid.label}<ArrowRight size={14} /></Link>
+                <Link to={crumbMid.to} className="pdp-fr">{crumbMid.label}</Link>
               ) : null}
               <h1 className="pdp-title">{product.name}</h1>
               {product.short_description && <p className="pdp-short">{product.short_description}</p>}
             </div>
 
-            <div className="pdp-price fade-up" key={variant?.id || 'none'}>
+            <div className="pdp-price">
               <div className="pdp-price-row">
                 <strong className="pdp-price-now">{money(price)}</strong>
                 {off > 0 && <s className="pdp-price-was">{money(was)}</s>}
@@ -286,13 +271,13 @@ function ProductView({ product }) {
               </p>
             </div>
 
-            <div className="pdp-buy fade-up">
+            <div className="pdp-buy">
               {variants.length > 1 ? (
                 <div className="pdp-variants">
                   <div className="pdp-label" id="pdp-variant-label">
-                    Sprache / Edition: <strong>{variant?.title}</strong>
+                    Sprache / Edition <strong>{variant?.title}</strong>
                   </div>
-                  <div className="pdp-pills" role="group" aria-labelledby="pdp-variant-label">
+                  <div className="pdp-opts" role="group" aria-labelledby="pdp-variant-label">
                     {variants.map((v) => {
                       const s = stockOf(v.available || 0);
                       const on = v.id === variant?.id;
@@ -300,24 +285,23 @@ function ProductView({ product }) {
                         <button
                           key={v.id}
                           type="button"
-                          className={`pdp-pill ${on ? 'is-active' : ''} is-${s.cls}`}
+                          className={`pdp-opt ${on ? 'is-active' : ''} is-${s.cls}`}
                           aria-pressed={on}
                           disabled={!(v.available > 0)}
                           onClick={() => setVid(v.id)}
                         >
-                          <span className="pdp-pill-t">{v.title}</span>
-                          <span className="pdp-pill-s">
+                          <span className="pdp-opt-t">{v.title}</span>
+                          <span className="pdp-opt-s">
                             {priceDiffers && <b>{money(v.price_cents)}</b>}
-                            <span className="pdp-pill-st"><span className={`pdp-dot is-${s.cls}`} />{s.short}</span>
+                            <span className="pdp-opt-st"><span className={`pdp-dot is-${s.cls}`} aria-hidden="true" />{s.short}</span>
                           </span>
-                          {on && <Check size={14} className="pdp-pill-check" aria-hidden="true" />}
                         </button>
                       );
                     })}
                   </div>
                 </div>
               ) : variant?.title ? (
-                <div className="pdp-label">Sprache / Edition: <strong>{variant.title}</strong></div>
+                <div className="pdp-label">Sprache / Edition <strong>{variant.title}</strong></div>
               ) : null}
 
               <div className={`pdp-stock is-${stock.cls}`} role="status">
@@ -325,6 +309,11 @@ function ProductView({ product }) {
                 <span>{stock.text}</span>
                 {inCart > 0 && <span className="pdp-incart">· {inCart} im Warenkorb</span>}
               </div>
+              {limit && (
+                <div className="pdp-fair">
+                  <strong>Fair-Limit:</strong> max. {limit} pro Bestellung – damit Sammler zum Zug kommen, nicht Reseller.
+                </div>
+              )}
 
               <div className="pdp-actions" ref={buyRef}>
                 {!soldOut && (
@@ -343,27 +332,27 @@ function ProductView({ product }) {
                 )}
               </div>
               {!soldOut && (
-                <button type="button" className="btn btn-outline btn-lg btn-block pdp-now" onClick={buyNow}>
-                  <Zap size={18} /> Sofort kaufen
+                <button type="button" className="btn btn-outline btn-lg btn-block" onClick={buyNow}>
+                  Sofort kaufen
                 </button>
               )}
               {room === 0 && !soldOut && <p className="pdp-note">Du hast bereits die maximal verfügbare Menge im Warenkorb.</p>}
               {soldOut && <p className="pdp-note muted">Dieser Artikel ist gerade vergriffen. Schau bald wieder vorbei – wir füllen regelmäßig auf.</p>}
 
               {freeFrom != null && !soldOut && (
-                <div className={`pdp-ship ${toFree <= 0 ? 'is-free' : ''}`}>
-                  <Truck size={17} />
+                <p className={`pdp-ship ${toFree <= 0 ? 'is-free' : ''}`}>
+                  <Truck size={17} aria-hidden="true" />
                   {toFree <= 0
                     ? <span>Mit diesem Einkauf ist dein <strong>Versand kostenlos</strong>.</span>
                     : <span>Noch <strong>{money(toFree)}</strong> bis zum Gratisversand</span>}
-                </div>
+                </p>
               )}
             </div>
 
-            <ul className="pdp-trust fade-up">
+            <ul className="pdp-trust">
               {TRUST.map(({ Icon, t, d }) => (
                 <li key={t}>
-                  <span className="pdp-trust-ic"><Icon size={18} /></span>
+                  <Icon size={19} className="pdp-trust-ic" aria-hidden="true" />
                   <span><strong>{t}</strong><small>{d}</small></span>
                 </li>
               ))}
@@ -384,17 +373,14 @@ function ProductView({ product }) {
         {/* ---- related ---- */}
         <section className="pdp-related reveal" ref={relRef} aria-labelledby="pdp-related-title">
           <div className="section-head">
-            <div>
-              <p className="eyebrow">Mehr entdecken</p>
-              <h2 className="h2" id="pdp-related-title">Das könnte dir auch gefallen</h2>
-            </div>
+            <h2 className="h2" id="pdp-related-title">Das könnte dir auch gefallen</h2>
             <Link to={product.franchise ? shopPath({ franchise: product.franchise.slug }) : R.shop} className="link-arrow">
               {product.franchise ? `Mehr von ${product.franchise.name}` : 'Alle Produkte'} <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="grid-products">
+          <div className="grid-products pdp-related-grid">
             {related.data
-              ? related.data.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)
+              ? related.data.map((p) => <ProductCard key={p.id} product={p} />)
               : Array.from({ length: 4 }, (_, i) => <ProductCardSkeleton key={i} />)}
           </div>
         </section>
@@ -422,21 +408,6 @@ function ProductView({ product }) {
 // ---------------------------------------------------------------------------
 function InfoTabs({ tabsRef, tab, setTab, product, variant, rates }) {
   const listRef = useRef(null);
-  const inkRef = useRef(null);
-
-  // Sliding pill under the active tab.
-  useLayoutEffect(() => {
-    const place = () => {
-      const btn = listRef.current?.querySelector('[aria-selected="true"]');
-      const ink = inkRef.current;
-      if (!btn || !ink) return;
-      ink.style.width = `${btn.offsetWidth}px`;
-      ink.style.transform = `translateX(${btn.offsetLeft}px)`;
-    };
-    place();
-    window.addEventListener('resize', place);
-    return () => window.removeEventListener('resize', place);
-  }, [tab]);
 
   const onKey = (e) => {
     const i = TABS.findIndex((t) => t.id === tab);
@@ -467,8 +438,7 @@ function InfoTabs({ tabsRef, tab, setTab, product, variant, rates }) {
   return (
     <section className="pdp-tabs" ref={tabsRef} aria-label="Produktinformationen">
       <div className="pdp-tablist" role="tablist" aria-label="Produktinformationen" ref={listRef} onKeyDown={onKey}>
-        <span className="pdp-tab-ink" ref={inkRef} aria-hidden="true" />
-        {TABS.map(({ id, label, short, Icon }) => (
+        {TABS.map(({ id, label, short }) => (
           <button
             key={id}
             type="button"
@@ -480,7 +450,6 @@ function InfoTabs({ tabsRef, tab, setTab, product, variant, rates }) {
             className={`pdp-tab ${tab === id ? 'is-active' : ''}`}
             onClick={() => setTab(id)}
           >
-            <Icon size={16} aria-hidden="true" />
             <span className={short ? 'pdp-tab-l' : ''}>{label}</span>
             {short && <span className="pdp-tab-s">{short}</span>}
           </button>
@@ -495,10 +464,10 @@ function InfoTabs({ tabsRef, tab, setTab, product, variant, rates }) {
               {text.length ? text.map((p, i) => <p key={i}>{p}</p>) : <p className="muted">Für dieses Produkt gibt es noch keine ausführliche Beschreibung.</p>}
             </div>
             <aside className="pdp-desc-aside">
-              <span className="pdp-trust-ic"><Sparkles size={18} /></span>
+              <Scale size={20} className="pdp-trust-ic" aria-hidden="true" />
               <div>
-                <strong>Original &amp; versiegelt</strong>
-                <p>Wir verkaufen ausschließlich Originalware – sorgfältig geprüft und sicher verpackt.</p>
+                <strong>Fairer Preis</strong>
+                <p>Auch begehrte Releases gibt es bei uns zum regulären Preis – ohne Scalper-Aufschlag.</p>
               </div>
             </aside>
           </div>
@@ -518,7 +487,7 @@ function InfoTabs({ tabsRef, tab, setTab, product, variant, rates }) {
             <h2 className="h3">Versand &amp; Rückgabe</h2>
             <ul className="pdp-shiplist">
               <li>
-                <span className="pdp-trust-ic"><Truck size={18} /></span>
+                <Truck size={20} className="pdp-trust-ic" aria-hidden="true" />
                 <div>
                   <strong>Versand mit DHL</strong>
                   {rates.map((r) => (
@@ -530,14 +499,14 @@ function InfoTabs({ tabsRef, tab, setTab, product, variant, rates }) {
                 </div>
               </li>
               <li>
-                <span className="pdp-trust-ic"><Package size={18} /></span>
+                <Package size={20} className="pdp-trust-ic" aria-hidden="true" />
                 <div>
                   <strong>Sicher verpackt</strong>
                   <p>Versiegelte Produkte verschicken wir gut gepolstert im stabilen Versandkarton – damit deine Sammlung unbeschadet ankommt.</p>
                 </div>
               </li>
               <li>
-                <span className="pdp-trust-ic"><RotateCcw size={18} /></span>
+                <RotateCcw size={20} className="pdp-trust-ic" aria-hidden="true" />
                 <div>
                   <strong>14 Tage Widerrufsrecht</strong>
                   <p>
