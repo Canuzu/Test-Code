@@ -3,6 +3,8 @@
 // categories as on cardcompass.de) and the shape returned by catalog.js.
 // Products are clearly generic demo items – no real stock, no real orders.
 
+import { slugify } from './format.js';
+
 export const FRANCHISES = [
   { id: 'f-pokemon', slug: 'pokemon', name: 'Pokémon TCG', short: 'Pokémon', c1: '#ffcb05', c2: '#2a75bb' },
   { id: 'f-onepiece', slug: 'one-piece', name: 'One Piece Card Game', short: 'One Piece', c1: '#ff4d4d', c2: '#1d2b53' },
@@ -31,14 +33,14 @@ const F = Object.fromEntries(FRANCHISES.map((f) => [f.slug, f]));
 const day = (n) => new Date(Date.UTC(2026, 10, 18) - n * 86400000).toISOString();
 
 let seq = 0;
+const usedSlugs = new Set();
 // p(franchise, category, kind, name, price €, opts)
 function p(fr, cat, kind, name, price, o = {}) {
   seq += 1;
   const f = F[fr] || null;
   const id = `demo-${seq}`;
-  const slug = `${(fr || 'zubehoer')}-${name}`.toLowerCase()
-    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const slug = slugify(name) + (usedSlugs.has(slugify(name)) ? `-${seq}` : '');
+  usedSlugs.add(slug);
   const langs = o.langs || ['Deutsch'];
   return {
     id,

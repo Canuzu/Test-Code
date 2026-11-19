@@ -25,8 +25,9 @@ npm run dev          # http://localhost:5173 – Demo-Katalog
 
 1. `.env.example` nach `.env.production` kopieren und `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY` eintragen
    (beide öffentlich, stehen im Supabase-Dashboard unter *Project Settings → API*).
-2. **Betreiberangaben eintragen:** `src/content/operator.js` (Name, Anschrift, E-Mail, Telefon). Solange dort noch
-   `[[…]]` steht, zeigen Impressum, Kontakt, Widerruf und Datenschutz einen gelben Platzhalter-Hinweis.
+2. **Betreiberangaben eintragen:** in `.env.production` über `VITE_OPERATOR_NAME`, `_STREET`, `_CITY`, `_EMAIL`,
+   `_PHONE` (so bleiben sie aus dem öffentlichen Repository heraus) – oder direkt in `src/content/operator.js`.
+   Solange noch `[[…]]` gilt, zeigen Impressum, Kontakt, Widerruf und Datenschutz einen gelben Platzhalter-Hinweis.
 3. `npm run build` → der Ordner `dist/` ist die fertige Website.
 4. `dist/` beim bisherigen Hoster von cardcompass.de hochladen. Wichtig: Der Hoster muss alle unbekannten Pfade auf
    `index.html` umleiten (SPA-Fallback), damit Adressen wie `/shop` oder `/produkt/…` direkt funktionieren.
@@ -34,6 +35,18 @@ npm run dev          # http://localhost:5173 – Demo-Katalog
    - Vercel: `vercel.json` mit Rewrite auf `/index.html` (liegt bereits bei).
 5. Bezahlung erst nach [`docs/STRIPE-SETUP.md`](docs/STRIPE-SETUP.md) einschalten (`VITE_STRIPE_ENABLED=1`).
    Bis dahin zeigt die Kasse – wie bisher – „Die Bezahlung wird gerade eingerichtet".
+
+## Einmalig in Supabase prüfen
+
+- **Auth → URL Configuration:** `https://cardcompass.de/konto` und `https://cardcompass.de/konto/neues-passwort`
+  als erlaubte Redirect-URLs eintragen (sonst funktionieren Bestätigungs- und Passwort-Links nicht).
+- **Edge Function `submit-withdrawal`:** Das Widerrufsformular ruft sie genau wie die bisherige Seite auf
+  (`{ name, email, order_number, scope?, confirm: true }`). Sie ist im Supabase-Projekt vorhanden, ihr Quellcode
+  liegt aber nicht in diesem Repository – bitte prüfen, dass sie weiter deployt ist.
+- **Datenschutzerklärung:** Der neue Abschnitt zu Stripe ist im Text als „Neu · vor Livegang rechtlich prüfen"
+  markiert (`draft: true` in `src/content/legal.js`). Nach der Prüfung `draft: true` entfernen.
+- **Cookie-Tabelle** in `src/content/legal.js` nennt die gespeicherten Schlüssel (`cc_cart_v1`, `cc_theme`,
+  `cc_reload_at`, `cc_auth`). Werden die im Code umbenannt, die Tabelle mitziehen.
 
 ## Ungeprüft (kein Datenbankzugriff beim Bau)
 

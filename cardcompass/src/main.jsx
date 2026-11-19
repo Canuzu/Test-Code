@@ -28,7 +28,7 @@ const basename = HASH_ROUTER ? undefined : (import.meta.env.BASE_URL || '/').rep
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Router basename={basename}>
+    <Router basename={basename} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <CartProvider>
         <App />
       </CartProvider>
