@@ -130,4 +130,4 @@ export const PRODUCTS = [
   p('pokemon', 'figuren-und-sammlerartikel', 'figure', 'Sammelfigur – Deluxe Edition', 34.9, { age: 21, stock: 4, attrs: [{ key: 'Höhe', value: 'ca. 12 cm' }], sub: 'Figur' }),
 ];
 
-export const SHIPPING = [{ name: 'DHL Paket (Deutschland)', price_cents: 549, free_from_cents: 10000 }];
+export const SHIPPING = [{ name: 'Standardversand (Deutschland)', price_cents: 549, free_from_cents: 10000 }];

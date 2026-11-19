@@ -5,8 +5,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  AlertCircle, AlertTriangle, ChevronDown, ChevronRight, Info, Loader2, Lock, Mail, MapPin, MessageSquare,
-  Pencil, ShieldCheck, ShoppingBag, Truck, ClipboardList, Hourglass,
+  AlertCircle, AlertTriangle, ChevronDown, ChevronRight, Info, Loader2, Lock, Pencil, ShieldCheck, ShoppingBag, Hourglass,
 } from 'lucide-react';
 import { useCart } from '../lib/cart.jsx';
 import { CartLine } from '../components/CartDrawer.jsx';
@@ -18,7 +17,7 @@ import { getSupabase } from '../lib/supabase.js';
 import {
   checkoutMode, startCheckout, loadDraft, saveDraft, CheckoutError,
 } from '../lib/checkout.js';
-import { CheckoutSteps, SummaryTotals, PayChips, CartEmpty, useShopInfo, TAX_NOTE } from './Cart.jsx';
+import { CheckoutSteps, SummaryTotals, PayMethods, CartEmpty, useShopInfo, TAX_NOTE } from './Cart.jsx';
 import '../styles/checkout.css';
 
 const NOTE_MAX = 1000;
@@ -120,12 +119,13 @@ function AddressFields({ prefix, ac, v, err, onChange, onBlur }) {
   );
 }
 
-function Section({ n, icon: Icon, title, id, aside, children, className = '' }) {
+// One numbered form section: open layout under an ink rule (no card).
+function Section({ n, title, id, aside, children, className = '' }) {
   return (
-    <section className={`card co-sec ${className}`} aria-labelledby={id}>
+    <section className={`co-sec ${className}`} aria-labelledby={id}>
       <header className="co-sec-head">
         <span className="co-num" aria-hidden="true">{n}</span>
-        <h2 id={id} className="co-sec-title">{Icon && <Icon size={18} aria-hidden="true" />}{title}</h2>
+        <h2 id={id} className="co-sec-title">{title}</h2>
         {aside && <div className="co-sec-aside">{aside}</div>}
       </header>
       {children}
@@ -324,14 +324,14 @@ export default function Checkout() {
             </div>
           )}
 
-          <Section n={1} icon={Mail} title="Kontakt" id="co-h-contact" aside={<Link to={R.login} className="co-login">Schon Kunde? Anmelden</Link>}>
+          <Section n={1} title="Kontakt" id="co-h-contact" aside={<Link to={R.login} className="co-login">Schon Kunde? Anmelden</Link>}>
             <div className="co-fields">
               <TextField name="email" label="E-Mail-Adresse" type="email" inputMode="email" autoComplete="email" value={v.email} error={err('email')} onChange={onChange} onBlur={onBlur} maxLength={MAXLEN.email} className="span-6" hint="Hierhin schicken wir deine Bestellbestätigung." />
               <TextField name="phone" label="Telefon" optional type="tel" inputMode="tel" autoComplete="tel" value={v.phone} error={err('phone')} onChange={onChange} onBlur={onBlur} maxLength={MAXLEN.phone} className="span-6" hint="Nur für Rückfragen zur Lieferung." />
             </div>
           </Section>
 
-          <Section n={2} icon={MapPin} title="Lieferadresse" id="co-h-address">
+          <Section n={2} title="Lieferadresse" id="co-h-address">
             <AddressFields prefix="ship" ac="shipping" v={v} err={err} onChange={onChange} onBlur={onBlur} />
             <label className="checkbox co-check-same">
               <input type="checkbox" checked={v.bill_same} onChange={(e) => setV((s) => ({ ...s, bill_same: e.target.checked }))} aria-controls="co-billing" />
@@ -345,7 +345,7 @@ export default function Checkout() {
             )}
           </Section>
 
-          <Section n={3} icon={Truck} title="Versandart" id="co-h-shipping">
+          <Section n={3} title="Versandart" id="co-h-shipping">
             {!rates ? (
               <div className="co-ship"><div className="skeleton co-ship-skel" /></div>
             ) : (
@@ -371,7 +371,7 @@ export default function Checkout() {
             )}
           </Section>
 
-          <Section n={4} icon={MessageSquare} title={<>Anmerkung <em className="co-opt">optional</em></>} id="co-h-note">
+          <Section n={4} title={<>Anmerkung <em className="co-opt">optional</em></>} id="co-h-note">
             <div className={`field co-field ${err('note') ? 'has-error' : ''}`}>
               <label htmlFor="co-note" className="sr-only">Anmerkung zur Bestellung</label>
               <textarea
@@ -384,7 +384,7 @@ export default function Checkout() {
             </div>
           </Section>
 
-          <Section n={5} icon={ClipboardList} title="Prüfen & bestellen" id="co-h-review" className="co-review">
+          <Section n={5} title="Prüfen & bestellen" id="co-h-review" className="co-review">
             <ul className="co-review-items" aria-label="Artikel">
               {lines.map((l) => (
                 <li key={l.variantId}>
@@ -426,7 +426,7 @@ export default function Checkout() {
               <div ref={alertRef} tabIndex={-1} className={`co-alert ${serverError.code === 'out_of_stock' ? 'is-warn' : 'is-error'}`} role="alert">
                 <AlertTriangle size={18} aria-hidden="true" />
                 <div>
-                  <strong>{serverError.code === 'out_of_stock' ? 'Nicht mehr genug auf Lager' : serverError.code === 'invalid' ? 'Bitte prüfe deine Angaben' : 'Das hat leider nicht geklappt'}</strong>
+                  <strong>{serverError.code === 'out_of_stock' ? (serverError.items?.some((it) => it.reason === 'fair_limit') ? 'Bitte passe die Menge an' : 'Nicht mehr genug auf Lager') : serverError.code === 'invalid' ? 'Bitte prüfe deine Angaben' : 'Das hat leider nicht geklappt'}</strong>
                   <span>{serverError.message}</span>
                   {serverError.code === 'out_of_stock' && serverError.items?.length > 0 && (
                     <>
@@ -435,7 +435,7 @@ export default function Checkout() {
                           <li key={it.variant_id}>
                             <b>{nameOf(it.variant_id) || it.name || 'Artikel'}</b>
                             {' – '}
-                            {Number(it.available) > 0 ? `nur noch ${it.available} verfügbar (du wolltest ${it.requested})` : 'leider ausverkauft'}
+                            {it.reason === 'fair_limit' ? `Fair-Limit: max. ${it.limit} pro Bestellung (du wolltest ${it.requested})` : Number(it.available) > 0 ? `nur noch ${it.available} verfügbar (du wolltest ${it.requested})` : 'leider ausverkauft'}
                           </li>
                         ))}
                       </ul>
@@ -493,8 +493,8 @@ export default function Checkout() {
             </div>
           </div>
           <div className="co-assure">
-            <div className="co-assure-row"><ShieldCheck size={18} aria-hidden="true" /><span><strong>Sicher bezahlen über Stripe</strong><small>Deine Zahlungsdaten gibst du nur bei Stripe ein – verschlüsselt und PCI-zertifiziert.</small></span></div>
-            <PayChips label="Verfügbare Zahlarten" />
+            <div className="co-assure-row"><ShieldCheck size={18} strokeWidth={1.75} aria-hidden="true" /><span><strong>Sicher bezahlen über Stripe</strong><small>Deine Zahlungsdaten gibst du nur bei Stripe ein – verschlüsselt und PCI-zertifiziert.</small></span></div>
+            <PayMethods label="Verfügbare Zahlarten" />
           </div>
         </aside>
       </div>

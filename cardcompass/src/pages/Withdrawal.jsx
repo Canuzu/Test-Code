@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Check, ChevronRight, Clock, Info, Loader2, MailCheck, MessageSquareOff, Printer, ShieldCheck, TriangleAlert } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, ChevronRight, Info, Loader2, Printer, TriangleAlert } from 'lucide-react';
 import { OPERATOR, OpValue } from '../content/operator.js';
 import { usePageMeta } from '../lib/hooks.js';
 import { getSupabase } from '../lib/supabase.js';
@@ -65,7 +65,7 @@ function Stepper({ step }) {
     <ol className="wd-steps" aria-label="Fortschritt">
       {STEPS.map((s, i) => (
         <li key={s} className={i < step ? 'is-done' : i === step ? 'is-current' : ''} aria-current={i === step ? 'step' : undefined}>
-          <span className="wd-step-dot" aria-hidden="true">{i < step ? <Check size={14} /> : i + 1}</span>
+          <span className="wd-step-dot" aria-hidden="true">{i < step ? <Check size={13} strokeWidth={2.75} /> : i + 1}</span>
           <span className="wd-step-label">{s}</span>
         </li>
       ))}
@@ -158,7 +158,7 @@ export default function Withdrawal() {
           <Stepper step={step} />
           <section className={`panel wd-panel ${step === 2 ? 'is-done' : ''}`} aria-labelledby="wd-head">
             {step === 2 && (
-              <div className="wd-success-ic" aria-hidden="true"><Check size={30} strokeWidth={2.6} /></div>
+              <div className="wd-success-ic" aria-hidden="true"><Check size={26} strokeWidth={2.5} /></div>
             )}
             <h2 id="wd-head" className="h3 wd-head" tabIndex={-1} ref={headRef}>{headline}</h2>
 
@@ -236,10 +236,10 @@ export default function Withdrawal() {
           <div className="wd-info">
             <h2 className="wd-info-h">Gut zu wissen</h2>
             <ul className="wd-facts">
-              <li><span className="wd-fact-ic"><Clock size={18} aria-hidden="true" /></span><span><strong>14 Tage Zeit</strong>Die Frist beginnt, wenn du die letzte Ware erhalten hast. Es reicht, den Widerruf vor Ablauf abzusenden.</span></li>
-              <li><span className="wd-fact-ic"><MessageSquareOff size={18} aria-hidden="true" /></span><span><strong>Kein Grund nötig</strong>Du musst nicht erklären, warum du widerrufst.</span></li>
-              <li><span className="wd-fact-ic"><MailCheck size={18} aria-hidden="true" /></span><span><strong>Eingangsbestätigung</strong>Du bekommst eine Bestätigung mit Datum und Uhrzeit des Eingangs per E-Mail.</span></li>
-              <li><span className="wd-fact-ic"><ShieldCheck size={18} aria-hidden="true" /></span><span><strong>Erstattung</strong>Wir erstatten deine Zahlung über dasselbe Zahlungsmittel – Details in der <Link to={R.widerrufsbelehrung} className="pg-link">Widerrufsbelehrung</Link>.</span></li>
+              <li><strong>14 Tage Zeit</strong>Die Frist beginnt, wenn du die letzte Ware erhalten hast. Es reicht, den Widerruf vor Ablauf abzusenden.</li>
+              <li><strong>Kein Grund nötig</strong>Du musst nicht erklären, warum du widerrufst.</li>
+              <li><strong>Eingangsbestätigung</strong>Du bekommst eine Bestätigung mit Datum und Uhrzeit des Eingangs per E-Mail.</li>
+              <li><strong>Erstattung</strong>Wir erstatten deine Zahlung über dasselbe Zahlungsmittel – Details in der <Link to={R.widerrufsbelehrung} className="pg-link">Widerrufsbelehrung</Link>.</li>
             </ul>
             <div className="wd-post">
               <p className="wd-post-h">Per Post an</p>

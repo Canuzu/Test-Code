@@ -27,5 +27,5 @@ export const SHOP = {
   smallBusiness: true,
   currency: 'EUR',
   // Fallback shipping (live: cc_shipping_rates). Cents.
-  shipping: [{ name: 'DHL Paket (Deutschland)', price_cents: 549, free_from_cents: 10000 }],
+  shipping: [{ name: 'Standardversand (Deutschland)', price_cents: 549, free_from_cents: 10000 }],
 };

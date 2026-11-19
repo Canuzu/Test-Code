@@ -489,7 +489,7 @@ function InfoTabs({ tabsRef, tab, setTab, product, variant, rates }) {
               <li>
                 <Truck size={20} className="pdp-trust-ic" aria-hidden="true" />
                 <div>
-                  <strong>Versand mit DHL</strong>
+                  <strong>Versandkosten</strong>
                   {rates.map((r) => (
                     <p key={r.name}>
                       {r.name}: {r.price_cents === 0 ? 'kostenlos' : money(r.price_cents)}

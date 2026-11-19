@@ -39,7 +39,7 @@ const MAX_LINES = 50;
 const MAX_QTY = 20;
 const MAX_BODY_BYTES = 32 * 1024;
 const SESSION_TTL_SECONDS = 30 * 60 + 60; // Stripe minimum is 30 min after creation → +60 s buffer
-const FALLBACK_SHIPPING = { name: 'DHL Paket (Deutschland)', price_cents: 549, free_from_cents: 10000 };
+const FALLBACK_SHIPPING = { name: 'Standardversand (Deutschland)', price_cents: 549, free_from_cents: 10000 };
 
 const stripe = new Stripe(STRIPE_SECRET_KEY, {
   httpClient: Stripe.createFetchHttpClient(),

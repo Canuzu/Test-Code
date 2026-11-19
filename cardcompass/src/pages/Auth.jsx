@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, Info, KeyRound, Loader2, MailCheck, MapPin, Package, TriangleAlert, Zap, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, Info, KeyRound, Loader2, MailCheck, TriangleAlert } from 'lucide-react';
 import { usePageMeta } from '../lib/hooks.js';
 import { R } from '../lib/routes.js';
 import {
@@ -41,9 +41,9 @@ const MODES = {
 };
 
 const BENEFITS = [
-  { Icon: Package, t: 'Bestellungen verfolgen', d: 'Status und Inhalt jeder Bestellung an einem Ort.' },
-  { Icon: MapPin, t: 'Adressen speichern', d: 'Liefer- und Rechnungsadresse einmal hinterlegen.' },
-  { Icon: Zap, t: 'Schneller zur Kasse', d: 'Deine Daten sind beim nächsten Einkauf schon da.' },
+  { t: 'Bestellungen verfolgen', d: 'Status und Inhalt jeder Bestellung an einem Ort.' },
+  { t: 'Adressen speichern', d: 'Liefer- und Rechnungsadresse einmal hinterlegen.' },
+  { t: 'Schneller zur Kasse', d: 'Deine Daten sind beim nächsten Einkauf schon da.' },
 ];
 
 /* ---------------------------------------------------------------- bits */
@@ -393,26 +393,21 @@ export default function Auth({ mode = 'login' }) {
   return (
     <div className="container au-page">
       <div className="au-shell">
-        <aside className="au-brand" aria-label="Vorteile eines Kundenkontos">
-          <span className="au-orb au-orb-1" aria-hidden="true" />
-          <span className="au-orb au-orb-2" aria-hidden="true" />
-          <span className="au-orb au-orb-3" aria-hidden="true" />
-          <span className="au-cards" aria-hidden="true"><span /><span /><span /></span>
-          <div className="au-brand-inner">
-            <p className="au-brand-eyebrow">CardCompass Konto</p>
-            <p className="au-brand-title">{m.brand}</p>
-            <p className="au-brand-sub">{m.brandSub}</p>
-            <ul className="au-benefits">
-              {BENEFITS.map(({ Icon, t, d }) => (
-                <li key={t}><span className="au-benefit-ic"><Icon size={18} aria-hidden="true" /></span><span><strong>{t}</strong><span>{d}</span></span></li>
-              ))}
-            </ul>
-            <p className="au-guest"><ShieldCheck size={16} aria-hidden="true" /> Bestellen geht auch ohne Konto als Gast.</p>
-          </div>
-        </aside>
+        {/* Form first in the DOM (and on phones); on wide screens the brand panel sits on the left. */}
         <div className="au-main">
           <div className="au-card">{body}</div>
         </div>
+        <aside className="au-brand" aria-label="Vorteile eines Kundenkontos">
+          <p className="au-brand-eyebrow">CardCompass Konto</p>
+          <div className="au-brand-inner">
+            <p className="au-brand-title">{m.brand}</p>
+            <p className="au-brand-sub">{m.brandSub}</p>
+            <ul className="au-benefits">
+              {BENEFITS.map(({ t, d }) => <li key={t}><strong>{t}</strong><span>{d}</span></li>)}
+            </ul>
+            <p className="au-guest">Bestellen geht auch ohne Konto als Gast.</p>
+          </div>
+        </aside>
       </div>
     </div>
   );
