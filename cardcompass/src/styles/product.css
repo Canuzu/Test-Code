@@ -1,44 +1,45 @@
-/* ---- procedural product visuals ---- */
+/* ---- packshot illustrations ---- */
 .pv { width: 100%; height: 100%; overflow: visible; }
-.pv-foil { mix-blend-mode: screen; opacity: .9; }
 
-/* ---- product card ---- */
-.pcard { display: flex; flex-direction: column; border-radius: 24px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s; isolation: isolate; }
-.pcard:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--violet-200); }
-.pcard-media { position: relative; aspect-ratio: 1 / 1.05; perspective: 900px; --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 30%;
-  background: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--violet) 10%, transparent), transparent 60%), linear-gradient(180deg, var(--bg-tint), var(--surface)); }
-.pcard-stage { position: absolute; inset: 9% 12% 6%; transform: rotateX(var(--rx)) rotateY(var(--ry)); transform-style: preserve-3d; transition: transform .5s var(--ease); }
-.pcard-img { width: 100%; height: 100%; object-fit: contain; transition: transform .5s var(--ease); }
-.pcard:hover .pcard-img { transform: translateY(-6px) scale(1.04); }
-.pcard-shine { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, .55), transparent 45%); mix-blend-mode: overlay; opacity: 0; transition: opacity .35s; }
-.pcard:hover .pcard-shine { opacity: 1; }
-.pcard-badges { position: absolute; top: 14px; left: 14px; display: flex; flex-wrap: wrap; gap: 6px; z-index: 2; }
-.pcard-quick { position: absolute; right: 14px; bottom: 14px; z-index: 2; width: 46px; height: 46px; border-radius: 15px; border: 0; display: grid; place-items: center; color: #fff; background: var(--brand-grad); box-shadow: 0 10px 22px -10px rgba(139, 0, 255, .9); transform: translateY(10px) scale(.9); opacity: 0; transition: transform .3s var(--ease), opacity .3s, background .3s; }
-.pcard:hover .pcard-quick, .pcard-quick:focus-visible, .pcard-quick.is-added { transform: none; opacity: 1; }
-.pcard-quick.is-added { background: linear-gradient(135deg, #22c55e, #0f9d58); }
-.pcard-quick:disabled { background: var(--surface-2); color: var(--ink-4); box-shadow: none; }
-@media (hover: none) { .pcard-quick { transform: none; opacity: 1; } }
-.pcard-body { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
-.pcard-meta { font-size: 12px; font-weight: 700; color: var(--violet); letter-spacing: .02em; }
-:root[data-theme='dark'] .pcard-meta { color: #c084fc; }
-.pcard-title { font-family: var(--font); font-size: 15.5px; font-weight: 700; line-height: 1.35; letter-spacing: -0.005em; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.pcard-foot { margin-top: auto; padding-top: 14px; display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.pcard-price { display: flex; align-items: baseline; gap: 6px; }
-.pcard-price strong { font-size: 19px; font-weight: 800; letter-spacing: -0.01em; }
-.pcard-price s { font-size: 13px; color: var(--ink-4); }
+/* ---- product tile: identical geometry for every product ---- */
+.pcard { display: flex; flex-direction: column; height: 100%; min-width: 0; color: var(--ink); }
+.pcard-media { position: relative; aspect-ratio: 4 / 5; background: var(--stage); border-radius: var(--radius-sm); overflow: hidden; display: grid; place-items: center; }
+.pcard-img { width: 78%; height: 78%; object-fit: contain; transition: transform .45s var(--ease); }
+img.pcard-img { mix-blend-mode: multiply; }
+:root[data-theme='dark'] img.pcard-img { mix-blend-mode: normal; }
+.pcard:hover .pcard-img { transform: scale(1.04); }
+.pcard-badges { position: absolute; top: 10px; left: 10px; display: flex; gap: 4px; z-index: 2; }
+.pcard-add {
+  position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 2; height: 42px; border: 0; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--ink); color: var(--bg);
+  font-weight: 700; font-size: 13.5px; font-stretch: 108%; opacity: 0; transform: translateY(6px); transition: opacity .2s, transform .2s var(--ease), background .2s;
+}
+.pcard:hover .pcard-add, .pcard-add:focus-visible { opacity: 1; transform: none; }
+.pcard-add:hover { background: var(--violet); color: #fff; }
+.pcard-add.is-added { opacity: 1; transform: none; background: var(--ok); color: #fff; }
+.pcard-body { display: flex; flex-direction: column; flex: 1; padding-top: 14px; }
+.pcard-meta { font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pcard-title { margin-top: 4px; font-size: 15px; font-weight: 650; font-stretch: 100%; letter-spacing: 0; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: calc(1.35em * 2); }
+.pcard:hover .pcard-title { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.pcard-foot { margin-top: auto; padding-top: 10px; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; white-space: nowrap; }
+.pcard-price { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.pcard-price strong { font-size: 16.5px; font-weight: 800; font-stretch: 108%; }
+.pcard-price s { font-size: 12.5px; color: var(--ink-4); }
 .pcard-from { font-size: 12.5px; color: var(--ink-3); }
-.pcard-stock { font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
-.pcard-stock::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pcard-stock { font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; overflow: hidden; text-overflow: ellipsis; }
+.pcard-stock::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
 .pcard-stock.ok { color: var(--ok); }
+.pcard-stock.low { color: var(--warn); }
 .pcard-stock.off { color: var(--ink-4); }
-.pcard.is-out .pcard-stage { filter: grayscale(.6); opacity: .75; }
-.pcard-skel .pcard-media { border-radius: 0; }
+.pcard.is-out .pcard-img { opacity: .55; filter: grayscale(.5); }
+@media (hover: none) {
+  .pcard-add { opacity: 1; transform: none; left: auto; right: 8px; bottom: 8px; width: 34px; height: 34px; padding: 0; background: var(--bg); color: var(--ink); border: 1px solid var(--line-2); }
+  .pcard-add span { display: none; }
+}
 @media (max-width: 560px) {
-  .pcard { border-radius: 18px; }
-  .pcard-body { padding: 12px 12px 14px; }
   .pcard-title { font-size: 13.5px; }
-  .pcard-price strong { font-size: 16px; }
+  .pcard-price strong { font-size: 15px; }
   .pcard-stock { display: none; }
-  .pcard-quick { width: 40px; height: 40px; border-radius: 13px; right: 10px; bottom: 10px; }
-  .pcard-badges { top: 10px; left: 10px; }
+  .pcard-foot { padding-top: 6px; }
 }

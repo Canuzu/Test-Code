@@ -1,10 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, HashRouter } from 'react-router-dom';
-import '@fontsource-variable/inter/wght.css';
-import '@fontsource/poppins/600.css';
-import '@fontsource/poppins/700.css';
-import '@fontsource/poppins/800.css';
+import '@fontsource-variable/archivo/wdth.css';
 import './styles/base.css';
 import './styles/layout.css';
 import './styles/product.css';

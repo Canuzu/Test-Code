@@ -92,37 +92,45 @@ export default function Header() {
   }, [lastAdded]);
 
   const roots = cats.filter((c) => !c.parent_id);
+  const navCls = ({ isActive }) => `hdr-link ${isActive ? 'active' : ''}`;
 
   return (
     <header className={`hdr ${scrolled ? 'is-scrolled' : ''}`}>
+      <div className="hdr-usp">
+        <div className="container hdr-usp-row">
+          <span><strong>Faire Preise statt Scalping</strong> – Hype-Releases zum regulären Preis</span>
+          <span className="hdr-usp-sep" aria-hidden="true" />
+          <span className="hdr-usp-2"><strong>Schneller Versand</strong> – deine Bestellung geht zügig raus</span>
+        </div>
+      </div>
       <div className="container hdr-row">
-        <button className="icon-btn hdr-burger" onClick={() => setMenu(true)} aria-label="Menü öffnen"><Menu size={20} /></button>
-        <Logo />
+        <button className="icon-btn hdr-burger" onClick={() => setMenu(true)} aria-label="Menü öffnen"><Menu size={22} /></button>
+        <Logo size={34} />
         <nav className="hdr-nav" aria-label="Hauptnavigation">
-          <NavLink to={R.home} end className="hdr-link">Start</NavLink>
+          <NavLink to={R.shop} className={navCls} end>Shop</NavLink>
+          <Link to={shopPath({ sort: 'new' })} className="hdr-link">Neuheiten</Link>
           <div className="hdr-mega-wrap" onMouseEnter={() => setMega(true)} onMouseLeave={() => setMega(false)}>
-            <NavLink to={R.shop} className="hdr-link" onFocus={() => setMega(true)}>Shop <ChevronDown size={15} className="hdr-chev" /></NavLink>
+            <button type="button" className="hdr-link" aria-expanded={mega} onClick={() => setMega((m) => !m)} onFocus={() => setMega(true)}>Franchises <ChevronDown size={14} className="hdr-chev" /></button>
             {mega && (
               <div className="mega" role="menu">
                 <div className="mega-col">
                   <div className="mega-h">Franchises</div>
-                  {franchises.map((f) => (
-                    <Link key={f.slug} to={shopPath({ franchise: f.slug })} className="mega-link"><span className="mega-dot" style={{ background: `linear-gradient(135deg, ${f.c1}, ${f.c2})` }} />{f.name}</Link>
-                  ))}
+                  {franchises.map((f) => <Link key={f.slug} to={shopPath({ franchise: f.slug })} className="mega-link">{f.name}</Link>)}
                 </div>
                 <div className="mega-col">
                   <div className="mega-h">Kategorien</div>
                   {roots.map((c) => <Link key={c.slug} to={shopPath({ category: c.slug })} className="mega-link">{c.name}</Link>)}
                 </div>
                 <Link to={shopPath({ available: true })} className="mega-promo">
-                  <span className="eyebrow" style={{ color: '#fff' }}>Sofort lieferbar</span>
-                  <strong>Alles, was heute rausgeht</strong>
-                  <span className="link-arrow" style={{ color: '#fff' }}>Jetzt stöbern <ArrowRight size={15} /></span>
+                  <span className="mega-promo-k">Sofort lieferbar</span>
+                  <strong>Was heute noch rausgehen kann.</strong>
+                  <span className="mega-promo-l">Ansehen <ArrowRight size={15} /></span>
                 </Link>
               </div>
             )}
           </div>
-          <NavLink to={R.contact} className="hdr-link">Kontakt</NavLink>
+          <Link to={shopPath({ category: 'tcg-zubehoer' })} className="hdr-link">Zubehör</Link>
+          <NavLink to={R.contact} className={navCls}>Kontakt</NavLink>
         </nav>
         <div className="hdr-search"><SearchBox /></div>
         <div className="hdr-actions">
@@ -133,7 +141,7 @@ export default function Header() {
           <button className={`hdr-cart ${bump ? 'is-bump' : ''}`} onClick={() => setOpen(true)} aria-label={`Warenkorb, ${count} Artikel`}>
             <ShoppingBag size={19} />
             <span className="hdr-cart-label">Warenkorb</span>
-            {count > 0 && <span className="hdr-count" key={count}>{count}</span>}
+            <span className={`hdr-count ${count ? '' : 'is-zero'}`} key={count}>{count}</span>
           </button>
         </div>
       </div>
@@ -143,19 +151,18 @@ export default function Header() {
         <div className="mmenu" role="dialog" aria-modal="true" aria-label="Menü">
           <div className="mmenu-back" onClick={() => setMenu(false)} />
           <div className="mmenu-panel">
-            <div className="mmenu-top"><Logo onClick={() => setMenu(false)} /><button className="icon-btn" onClick={() => setMenu(false)} aria-label="Menü schließen"><X size={20} /></button></div>
+            <div className="mmenu-top"><Logo size={32} onClick={() => setMenu(false)} /><button className="icon-btn" onClick={() => setMenu(false)} aria-label="Menü schließen"><X size={22} /></button></div>
             <nav className="mmenu-nav">
-              <Link to={R.home}>Start</Link>
-              <Link to={R.shop}>Alle Produkte</Link>
+              <Link to={R.shop}>Shop</Link>
+              <Link to={shopPath({ sort: 'new' })}>Neuheiten</Link>
+              <Link to={shopPath({ category: 'tcg-zubehoer' })}>Zubehör</Link>
               <Link to={shopPath({ available: true })}>Sofort lieferbar</Link>
               <div className="mmenu-h">Franchises</div>
-              {franchises.map((f) => <Link key={f.slug} to={shopPath({ franchise: f.slug })}><span className="mega-dot" style={{ background: `linear-gradient(135deg, ${f.c1}, ${f.c2})` }} />{f.name}</Link>)}
-              <div className="mmenu-h">Kategorien</div>
-              {roots.map((c) => <Link key={c.slug} to={shopPath({ category: c.slug })}>{c.name}</Link>)}
+              {franchises.map((f) => <Link key={f.slug} to={shopPath({ franchise: f.slug })} className="mmenu-sub">{f.name}</Link>)}
               <div className="mmenu-h">Service</div>
-              <Link to={R.account}>Mein Konto</Link>
-              <Link to={R.contact}>Kontakt</Link>
-              <Link to={R.widerruf}>Vertrag widerrufen</Link>
+              <Link to={R.account} className="mmenu-sub">Mein Konto</Link>
+              <Link to={R.contact} className="mmenu-sub">Kontakt</Link>
+              <Link to={R.widerruf} className="mmenu-sub">Vertrag widerrufen</Link>
             </nav>
           </div>
         </div>

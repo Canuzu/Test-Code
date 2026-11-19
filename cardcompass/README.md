@@ -8,6 +8,15 @@ Design in Weiß und Royal-Lila (`#8b00ff`), animiert, mobil optimiert, mit Dunke
   Ohne Supabase-Zugangsdaten läuft der Shop mit einem eingebauten **Demo-Katalog** (für Vorschau & Entwicklung).
 - **Bezahlung:** Stripe Checkout (Karte, PayPal, Klarna, SEPA, Apple Pay, Google Pay) über zwei Supabase Edge Functions – siehe [`docs/STRIPE-SETUP.md`](docs/STRIPE-SETUP.md).
 
+## USP: Fair statt Scalping
+
+- **Faire Preise:** Hype-Releases zum regulären Preis (Kommunikation in USP-Leiste, Startseite, Footer).
+- **Fair-Limit:** Pro Variante kann eine Höchstmenge pro Bestellung gesetzt werden (`cc_product_variants.max_per_order`,
+  kommt mit der Migration in `supabase/migrations/`). Leer = kein Limit. Das Limit wird auf der Produktseite angezeigt,
+  im Warenkorb eingehalten und in der Kasse **serverseitig** erzwungen (`create-checkout`). Solange die Spalte noch
+  nicht existiert, läuft der Shop ohne Limit weiter.
+- **Schneller Versand:** bewusst ohne konkrete Zeitzusage formuliert – bei Bedarf in `Home.jsx`/`Footer.jsx` präzisieren.
+
 ## Vorschau
 
 Die Design-Vorschau (Demo-Produkte, keine echten Bestellungen, nicht in Suchmaschinen) wird bei jedem Push auf `main` automatisch gebaut:
