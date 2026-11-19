@@ -33,10 +33,11 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // don't intercept cross-origin
-  // The MapCinema app under /animatemymap/ is a separate, independently deployed
+  // The MapCinema app under /animatemymap/ (and the CardCompass shop preview
+  // under /cardcompass/) are separate, independently deployed
   // static app with fixed (non-hashed) filenames. Never cache it here — always
   // let it go to the network so updates show up immediately (no stale versions).
-  if (url.pathname.includes('/animatemymap/') || url.pathname.includes('/mapcinema/')) return;
+  if (url.pathname.includes('/animatemymap/') || url.pathname.includes('/mapcinema/') || url.pathname.includes('/cardcompass/')) return;
 
   if (req.mode === 'navigate') {
     event.respondWith(

@@ -116,6 +116,16 @@ jobs:
           npm run build
           mkdir -p ../dist/creature-quest
           cp -r dist/* ../dist/creature-quest/
+      - name: Build CardCompass shop preview into /cardcompass subpath
+        # Eigenständiger Shop (React + Vite). Hier nur die Design-Vorschau mit
+        # Demo-Katalog (VITE_PREVIEW=1, Hash-Routing, noindex) – es werden keine
+        # echten Bestellungen ausgelöst. Live läuft der Shop auf cardcompass.de.
+        run: |
+          cd cardcompass
+          npm ci
+          npm run build:preview
+          mkdir -p ../dist/cardcompass
+          cp -r dist/* ../dist/cardcompass/
       - name: Add Velora Saga into /velora-saga subpath
         # Eigenständiges Canvas-Spiel (kein Build), wird unter
         # <pages>/velora-saga/ ausgeliefert. Tests laufen als nicht-blockierendes
