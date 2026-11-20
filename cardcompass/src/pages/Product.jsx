@@ -497,8 +497,8 @@ function InfoTabs({ tabsRef, tab, setTab, product, variant, rates }) {
             <aside className="pdp-desc-aside">
               <span className="pdp-trust-ic"><Sparkles size={18} /></span>
               <div>
-                <strong>Original &amp; versiegelt</strong>
-                <p>Wir verkaufen ausschließlich Originalware – sorgfältig geprüft und sicher verpackt.</p>
+                <strong>Fairer Preis</strong>
+                <p>Neue Sets verkaufen wir zum regulären Preis – ohne Scalper-Aufschlag.</p>
               </div>
             </aside>
           </div>
@@ -520,7 +520,7 @@ function InfoTabs({ tabsRef, tab, setTab, product, variant, rates }) {
               <li>
                 <span className="pdp-trust-ic"><Truck size={18} /></span>
                 <div>
-                  <strong>Versand mit DHL</strong>
+                  <strong>Versandkosten</strong>
                   {rates.map((r) => (
                     <p key={r.name}>
                       {r.name}: {r.price_cents === 0 ? 'kostenlos' : money(r.price_cents)}

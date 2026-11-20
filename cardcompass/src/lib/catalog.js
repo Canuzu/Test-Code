@@ -29,7 +29,7 @@ export const minPrice = (p) => Math.min(...(p?.variants || []).map((v) => v.pric
 export const totalAvailable = (p) => (p?.variants || []).reduce((s, v) => s + Math.max(0, v.available || 0), 0);
 export const isAvailable = (p) => totalAvailable(p) > 0;
 export const lowStock = (p) => { const n = totalAvailable(p); return n > 0 && n <= 5; };
-export const isNew = (p) => p?.published_at && Date.now() - new Date(p.published_at).getTime() < 21 * 86400000;
+export const isNew = (p) => p?.published_at && Date.now() - new Date(p.published_at).getTime() < 14 * 86400000;
 export const franchiseColors = (slug) => FR_COLORS[slug] || { c1: '#b26bff', c2: '#4c0099', short: 'CardCompass' };
 
 function visualFor(p, cats) {

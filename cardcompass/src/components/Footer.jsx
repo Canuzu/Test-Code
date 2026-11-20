@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Truck, RotateCcw, Sparkles } from 'lucide-react';
+import { ShieldCheck, Truck, RotateCcw, Scale } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Logo from './Logo.jsx';
 import { getFranchises } from '../lib/catalog.js';
@@ -8,8 +8,8 @@ import { SHOP } from '../lib/config.js';
 
 export const TRUST = [
   { Icon: ShieldCheck, t: 'Sicher bezahlen', d: 'Karte, PayPal, Klarna & mehr über Stripe' },
-  { Icon: Truck, t: 'Schneller Versand', d: 'Sicher verpackt mit DHL' },
-  { Icon: Sparkles, t: '100 % Originalware', d: 'Neu & original versiegelt' },
+  { Icon: Truck, t: 'Schneller Versand', d: 'Deine Bestellung geht zügig raus' },
+  { Icon: Scale, t: 'Faire Preise', d: 'Neue Sets zum regulären Preis' },
   { Icon: RotateCcw, t: '14 Tage Widerruf', d: 'Unkompliziert per Klick' },
 ];
 

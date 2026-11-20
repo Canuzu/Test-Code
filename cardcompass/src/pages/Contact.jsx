@@ -29,8 +29,8 @@ const FAQ = [
     ),
   },
   {
-    q: 'Ist die Ware original und versiegelt?',
-    a: <p>Ja. Wir verkaufen ausschließlich neue Originalware. Versiegelte Produkte wie Booster, Displays und Boxen erhältst du original versiegelt – so, wie sie vom Hersteller kommen.</p>,
+    q: 'Verlangt ihr bei neuen Sets Aufpreise?',
+    a: <p>Nein. Neue Sets verkaufen wir zum regulären Preis – ohne Scalper-Aufschlag, auch wenn ein Release gerade sehr gefragt ist.</p>,
   },
   {
     q: 'Wie kann ich eine Bestellung widerrufen?',

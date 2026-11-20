@@ -144,11 +144,11 @@ function Success() {
           </li>
           <li>
             <span className="co-next-ic"><PackageCheck size={20} aria-hidden="true" /></span>
-            <div><strong>Sorgfältig verpackt</strong><span>Wir machen deine Karten und Produkte sicher verpackt versandfertig.</span></div>
+            <div><strong>Wir packen</strong><span>Wir bereiten deine Bestellung für den Versand vor.</span></div>
           </li>
           <li>
             <span className="co-next-ic"><Truck size={20} aria-hidden="true" /></span>
-            <div><strong>Versand mit DHL</strong><span>Wir versenden sicher mit DHL Paket – direkt an deine Lieferadresse.</span></div>
+            <div><strong>Versand</strong><span>Deine Bestellung geht zügig raus – direkt an deine Lieferadresse.</span></div>
           </li>
         </ol>
 

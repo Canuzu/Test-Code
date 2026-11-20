@@ -121,7 +121,7 @@ function ShopHero({ f, cat, count, franchises, onSearch }) {
           <p className={`lead shop-lead ${f.q ? 'is-q' : ''}`}>
             {f.q
               ? 'Nicht ganz das Richtige? Verfeinere deine Suche oder nutze die Filter.'
-              : 'Booster, Displays, Kollektionen und Zubehör – original versiegelt, sicher verpackt und schnell bei dir.'}
+              : 'Booster, Displays, Kollektionen und Zubehör – such dir dein Spiel aus oder stöbere einfach los.'}
           </p>
           <div className="shop-hero-meta">
             <span className="shop-pill"><Sparkles size={15} />{count == null ? 'Lädt …' : plural(count)}</span>

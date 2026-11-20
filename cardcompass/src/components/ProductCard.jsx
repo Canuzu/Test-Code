@@ -58,9 +58,9 @@ export default function ProductCard({ product, index = 0 }) {
           <div className="pcard-price">
             {from && <span className="pcard-from">ab</span>}
             <strong>{money(price)}</strong>
-            {was && was > (v?.price_cents || 0) && <s>{money(was)}</s>}
+            {!from && was && was > (v?.price_cents || 0) && <s>{money(was)}</s>}
           </div>
-          <span className={`pcard-stock ${available ? 'ok' : 'off'}`}>{available ? 'Sofort lieferbar' : 'Ausverkauft'}</span>
+          <span className={`pcard-stock ${available ? 'ok' : 'off'}`}>{available ? 'Lieferbar' : 'Ausverkauft'}</span>
         </div>
       </div>
     </Link>

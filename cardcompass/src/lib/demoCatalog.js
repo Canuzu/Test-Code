@@ -49,7 +49,7 @@ function p(fr, cat, kind, name, price, o = {}) {
     short_description: o.short || '',
     description: o.desc || '',
     is_featured: !!o.featured,
-    published_at: day((o.age ?? seq) * 5), // spread over ~4 months; only the newest few get "Neu"
+    published_at: day((o.age ?? seq) * 8), // spread over ~4 months; only the newest few get "Neu"
     franchise: f ? { slug: f.slug, name: f.name } : null,
     product_type: { name: o.type || kindLabel(kind) },
     category_slugs: [cat],
@@ -87,7 +87,7 @@ export const PRODUCTS = [
   p('pokemon', 'booster-displays', 'display', 'Pokémon TCG Booster Display', 159.9, {
     featured: true, age: 1, was: 179.9, langs: ['Deutsch', 'Englisch'], langDelta: [0, -5], stock: [6, 3],
     short: '36 Booster im Original-Display – perfekt für den großen Pull.',
-    desc: 'Das komplette Booster Display mit 36 Boostern. Ideal zum Sammeln, Öffnen mit Freunden oder als versiegeltes Sammlerstück. Lieferung sicher verpackt im Versandkarton.',
+    desc: 'Das komplette Booster Display mit 36 Boostern. Ideal zum Sammeln, Öffnen mit Freunden oder als versiegeltes Sammlerstück. Lieferung im Versandkarton.',
     attrs: SEALED('36 Booster', '10 Karten'), sub: '36 Booster',
   }),
   p('one-piece', 'booster-displays', 'display', 'One Piece Card Game Booster Display', 119.9, {
@@ -129,4 +129,4 @@ export const PRODUCTS = [
   p('pokemon', 'figuren-und-sammlerartikel', 'figure', 'Sammelfigur – Deluxe Edition', 34.9, { age: 21, stock: 4, attrs: [{ key: 'Höhe', value: 'ca. 12 cm' }], sub: 'Figur' }),
 ];
 
-export const SHIPPING = [{ name: 'DHL Paket (Deutschland)', price_cents: 549, free_from_cents: 10000 }];
+export const SHIPPING = [{ name: 'Standardversand (Deutschland)', price_cents: 549, free_from_cents: 10000 }];

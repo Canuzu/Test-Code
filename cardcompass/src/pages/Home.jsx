@@ -5,12 +5,15 @@
 // point at, (3) a booster you can tear open to fan out holo cards.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Sparkles, Truck, RotateCcw, MousePointerClick, PackageOpen, CreditCard, Search } from 'lucide-react';
+import { ArrowRight, Truck, RotateCcw, MousePointerClick, PackageOpen, CreditCard } from 'lucide-react';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard.jsx';
 import ProductVisual, { ProductImage } from '../components/ProductVisual.jsx';
-import { listProducts, getFranchises, minPrice, franchiseColors } from '../lib/catalog.js';
+import { listProducts, getFranchises, minPrice, franchiseColors, getShippingRates } from '../lib/catalog.js';
 import { usePageMeta, useReveal, prefersReducedMotion } from '../lib/hooks.js';
 import { money } from '../lib/format.js';
+
+// Whole euro amounts read better without cents in running text ("ab 100 €").
+const euro = (c) => (c % 100 === 0 ? `${c / 100} €` : money(c));
 import { R, shopPath, productPath } from '../lib/routes.js';
 import '../styles/home.css';
 
@@ -99,7 +102,7 @@ function OrbitProducts({ products }) {
   );
 }
 
-function Hero({ products, franchiseCount }) {
+function Hero({ products, freeFrom }) {
   return (
     <section className="hero">
       <div className="container">
@@ -107,25 +110,19 @@ function Hero({ products, franchiseCount }) {
           <div className="aurora" aria-hidden="true"><span /><span /><span /></div>
           <div className="hero-grain" aria-hidden="true" />
           <div className="hero-copy">
-            <span className="hero-pill"><Sparkles size={14} /> Trading Cards & Zubehör</span>
             <h1 className="hero-h1">
               Deine nächste <span className="hero-hl">Karte</span> wartet schon auf dich.
             </h1>
-            <p className="hero-lead">Booster, Displays, Kollektionen und Zubehör für Pokémon, One Piece, Yu-Gi-Oh!, Magic und mehr – original versiegelt, sicher bezahlt, schnell bei dir.</p>
+            <p className="hero-lead">Booster, Displays und Zubehör für Pokémon, One Piece, Yu-Gi-Oh!, Magic und mehr. Neue Sets bekommst du bei uns zum regulären Preis – ohne Scalper-Aufschlag.</p>
             <div className="hero-ctas">
-              <Link to={R.shop} className="btn btn-white btn-lg">Jetzt entdecken <ArrowRight size={18} /></Link>
-              <Link to={shopPath({ available: true })} className="btn btn-glass btn-lg">Sofort lieferbar</Link>
+              <Link to={R.shop} className="btn btn-white btn-lg">Zum Shop <ArrowRight size={18} /></Link>
+              <Link to={shopPath({ sort: 'new' })} className="hero-link">Neu im Sortiment <ArrowRight size={16} /></Link>
             </div>
-            <ul className="hero-usp">
-              <li><ShieldCheck size={16} /> Sicher bezahlen</li>
-              <li><Truck size={16} /> Schneller Versand</li>
-              <li><RotateCcw size={16} /> 14 Tage Widerruf</li>
-            </ul>
-            <div className="hero-stats">
-              <div><strong>{franchiseCount || 7}</strong><span>Franchises</span></div>
-              <div><strong>100 %</strong><span>Originalware</span></div>
-              <div><strong>14 Tage</strong><span>Rückgaberecht</span></div>
-            </div>
+            <p className="hero-facts">
+              {freeFrom != null && <span>Versandkostenfrei ab {euro(freeFrom)}</span>}
+              <span>Schneller Versand</span>
+              <span>14 Tage Widerrufsrecht</span>
+            </p>
           </div>
           <OrbitProducts products={products} />
         </div>
@@ -170,9 +167,8 @@ function FranchiseCompass({ franchises }) {
     <section className="section fc-section">
       <div className="container fc-grid">
         <Reveal className="fc-copy">
-          <p className="eyebrow">Der Franchise-Kompass</p>
-          <h2 className="h2" style={{ marginTop: 10 }}>Wähle deine <span className="grad-text">Richtung.</span></h2>
-          <p className="lead" style={{ marginTop: 14 }}>Ob Pokémon, One Piece oder Magic – richte den Kompass auf dein Spiel und finde Booster, Displays und Zubehör in Sekunden.</p>
+          <h2 className="h2">Wähle deine <span className="grad-text">Richtung.</span></h2>
+          <p className="lead" style={{ marginTop: 14 }}>Such dir dein Spiel aus – dann siehst du alles, was es dafür bei uns gibt.</p>
           <div className="fc-current" style={{ '--c1': cur.c1, '--c2': cur.c2 }}>
             <span className="fc-current-dot" />
             <div>
@@ -238,8 +234,7 @@ function Featured() {
       <div className="container">
         <Reveal className="section-head">
           <div>
-            <p className="eyebrow">Highlights</p>
-            <h2 className="h2" style={{ marginTop: 8 }}>Beliebte Produkte</h2>
+            <h2 className="h2">Beliebte Produkte</h2>
           </div>
           <div className="seg" role="tablist" aria-label="Produktauswahl">
             {TABS.map((t) => (
@@ -250,7 +245,7 @@ function Featured() {
         <div className="grid-products">
           {items == null
             ? Array.from({ length: 4 }, (_, i) => <ProductCardSkeleton key={i} />)
-            : items.slice(0, 8).map((p, i) => <div key={p.id} className="fade-up" style={{ animationDelay: `${i * 60}ms` }}><ProductCard product={p} index={i} /></div>)}
+            : items.slice(0, 8).map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
         </div>
         <div style={{ textAlign: 'center', marginTop: 34 }}>
           <Link to={R.shop} className="btn btn-outline btn-lg">Alle Produkte ansehen <ArrowRight size={18} /></Link>
@@ -262,9 +257,9 @@ function Featured() {
 
 /* ------------------------------------------------------ categories ---- */
 const CATS = [
-  { slug: 'booster-displays', name: 'Booster Displays', text: 'Der große Pull – 24 bis 36 Booster im Original-Display.', visual: { kind: 'display', c1: '#c084fc', c2: '#4c0099', label: 'Displays', sub: 'Versiegelt' }, big: true },
-  { slug: 'booster', name: 'Booster', text: 'Einzeln öffnen, sofort Spaß.', visual: { kind: 'booster', c1: '#ff7ad9', c2: '#6d00d6', label: 'Booster', sub: 'Einzeln' } },
-  { slug: 'starter-decks', name: 'Starter Decks', text: 'Spielbereit in Minuten.', visual: { kind: 'deck', c1: '#7dd3fc', c2: '#3b0aa8', label: 'Decks', sub: 'Starter' } },
+  { slug: 'booster-displays', name: 'Booster Displays', text: '24 bis 36 Booster im Original-Display.', visual: { kind: 'display', c1: '#c084fc', c2: '#4c0099', label: 'Displays', sub: 'Versiegelt' }, big: true },
+  { slug: 'booster', name: 'Booster', text: 'Einzelne Booster zum Ausprobieren.', visual: { kind: 'booster', c1: '#ff7ad9', c2: '#6d00d6', label: 'Booster', sub: 'Einzeln' } },
+  { slug: 'starter-decks', name: 'Starter Decks', text: 'Fertige Decks zum direkten Losspielen.', visual: { kind: 'deck', c1: '#7dd3fc', c2: '#3b0aa8', label: 'Decks', sub: 'Starter' } },
   { slug: 'boxen-und-kollektionen', name: 'Boxen & Kollektionen', text: 'Promos, Booster & Zubehör in einer Box.', visual: { kind: 'box', c1: '#fbbf24', c2: '#7000cc', label: 'Kollektion', sub: 'Box' } },
   { slug: 'tcg-zubehoer', name: 'TCG-Zubehör', text: 'Sleeves, Alben, Deckboxen & Playmats.', visual: { kind: 'sleeves', c1: '#b26bff', c2: '#4c0099', label: 'CardCompass', sub: 'Sleeves' } },
 ];
@@ -275,8 +270,7 @@ function Categories() {
       <div className="container">
         <Reveal className="section-head">
           <div>
-            <p className="eyebrow">Kategorien</p>
-            <h2 className="h2" style={{ marginTop: 8 }}>Alles für deine Sammlung</h2>
+            <h2 className="h2">Alles für deine Sammlung</h2>
           </div>
           <Link to={R.shop} className="link-arrow">Zum Shop <ArrowRight size={16} /></Link>
         </Reveal>
@@ -308,9 +302,8 @@ function PackOpening() {
     <section className="section pack-section">
       <div className="container pack-grid">
         <Reveal className="pack-copy">
-          <p className="eyebrow">Der Moment</p>
-          <h2 className="h2" style={{ marginTop: 10 }}>Für dieses Gefühl <span className="grad-text">sammeln wir.</span></h2>
-          <p className="lead" style={{ marginTop: 14 }}>Folie auf, Herz klopft, Holo blitzt. Probier's aus – und hol dir danach den echten Booster.</p>
+          <h2 className="h2">Kurz mal <span className="grad-text">aufreißen?</span></h2>
+          <p className="lead" style={{ marginTop: 14 }}>Tipp auf den Booster. Den echten gibt’s im Shop.</p>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 26 }}>
             <button className="btn btn-primary btn-lg" onClick={() => setOpen((o) => !o)}>
               {open ? 'Nochmal' : 'Booster öffnen'} <PackageOpen size={18} />
@@ -341,27 +334,32 @@ function PackOpening() {
 }
 
 /* --------------------------------------------------------- steps ---- */
-const STEPS = [
-  { Icon: Search, t: 'Finden', d: 'Stöbere nach Franchise und Kategorie oder nutze die Suche – alles mit Live-Lagerbestand.' },
-  { Icon: CreditCard, t: 'Sicher bezahlen', d: 'Karte, PayPal, Klarna, Apple Pay oder SEPA – über die sichere Bezahlseite von Stripe.' },
-  { Icon: Truck, t: 'Auspacken', d: 'Wir verpacken alles sammlergerecht und schicken es mit DHL direkt zu dir.' },
-];
-
-function Steps() {
+// "Gut zu wissen": the facts people check before buying – no slogans.
+function Steps({ rate }) {
+  const facts = [
+    {
+      Icon: Truck, t: 'Versand',
+      d: rate
+        ? `${money(rate.price_cents)} innerhalb Deutschlands${rate.free_from_cents != null ? `, ab ${euro(rate.free_from_cents)} versandkostenfrei` : ''}. Deine Bestellung geht zügig raus.`
+        : 'Deine Bestellung geht zügig raus.',
+      link: null,
+    },
+    { Icon: CreditCard, t: 'Bezahlen', d: 'Karte, PayPal, Klarna, Apple Pay, Google Pay oder SEPA – über die Bezahlseite von Stripe.', link: null },
+    { Icon: RotateCcw, t: 'Rückgabe', d: '14 Tage Widerrufsrecht. Den Widerruf kannst du direkt hier online erklären.', link: { to: R.widerruf, label: 'Zum Widerrufsformular' } },
+  ];
   return (
     <section className="section steps-section">
       <div className="container">
         <Reveal className="steps-head">
-          <p className="eyebrow">So einfach geht's</p>
-          <h2 className="h2" style={{ marginTop: 8 }}>In drei Schritten zur nächsten Karte</h2>
+          <h2 className="h2">Gut zu wissen</h2>
         </Reveal>
         <div className="steps">
-          {STEPS.map(({ Icon, t, d }, i) => (
+          {facts.map(({ Icon, t, d, link }, i) => (
             <Reveal key={t} delay={i + 1} className="step">
-              <span className="step-n">0{i + 1}</span>
-              <span className="step-ic"><Icon size={24} /></span>
+              <span className="step-ic"><Icon size={22} /></span>
               <h3>{t}</h3>
               <p>{d}</p>
+              {link && <Link to={link.to} className="link-arrow step-link">{link.label} <ArrowRight size={15} /></Link>}
             </Reveal>
           ))}
         </div>
@@ -369,7 +367,6 @@ function Steps() {
     </section>
   );
 }
-
 function FinalCta() {
   return (
     <section className="section-sm">
@@ -377,11 +374,11 @@ function FinalCta() {
         <Reveal className="final-cta">
           <div className="aurora" aria-hidden="true"><span /><span /><span /></div>
           <div className="final-inner">
-            <h2 className="h2">Bereit für deinen nächsten Pull?</h2>
-            <p>Neue Displays, Booster und Zubehör – entdecke, was heute rausgehen kann.</p>
+            <h2 className="h2">Fragen zu einem Produkt?</h2>
+            <p>Schreib uns – wir melden uns so schnell wie möglich.</p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link to={R.shop} className="btn btn-white btn-lg">Jetzt shoppen <ArrowRight size={18} /></Link>
-              <Link to={R.contact} className="btn btn-glass btn-lg">Frage stellen</Link>
+              <Link to={R.contact} className="btn btn-white btn-lg">Kontakt aufnehmen <ArrowRight size={18} /></Link>
+              <Link to={R.shop} className="btn btn-glass btn-lg">Zum Shop</Link>
             </div>
           </div>
         </Reveal>
@@ -391,22 +388,24 @@ function FinalCta() {
 }
 
 export default function Home() {
-  usePageMeta(null, 'CardCompass: Booster, Displays, Kollektionen und Zubehör für Pokémon, One Piece, Yu-Gi-Oh!, Magic und mehr – sicher bezahlen, schnell geliefert.');
+  usePageMeta(null, 'CardCompass: Booster, Displays und Zubehör für Pokémon, One Piece, Yu-Gi-Oh!, Magic und mehr – neue Sets zum regulären Preis, schneller Versand.');
   const [heroProducts, setHeroProducts] = useState([]);
   const [franchises, setFranchises] = useState([]);
+  const [rate, setRate] = useState(null);
   useEffect(() => {
+    getShippingRates().then((r) => setRate(r?.[0] || null)).catch(() => {});
     listProducts({ featured: true, limit: 6 }).then((r) => setHeroProducts(r.length >= 3 ? r : r)).catch(() => {});
     getFranchises().then((f) => setFranchises(f.map((x) => ({ ...x, ...franchiseColors(x.slug), short: x.short || franchiseColors(x.slug).short || x.name })))).catch(() => {});
   }, []);
   return (
     <div className="home">
-      <Hero products={heroProducts} franchiseCount={franchises.length} />
+      <Hero products={heroProducts} freeFrom={rate?.free_from_cents ?? null} />
       <Marquee franchises={franchises} />
       <Featured />
       <FranchiseCompass franchises={franchises} />
       <Categories />
       <PackOpening />
-      <Steps />
+      <Steps rate={rate} />
       <FinalCta />
     </div>
   );

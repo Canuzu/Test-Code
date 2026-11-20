@@ -20,12 +20,15 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E"); }
 .hero-copy { position: relative; z-index: 2; }
 .hero-pill { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 999px; font-size: 12.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .28); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-.hero-h1 { color: #fff; font-size: clamp(40px, 4.9vw, 68px); font-weight: 800; line-height: 1.02; letter-spacing: -0.035em; margin: 22px 0 20px; }
-.hero-hl { position: relative; white-space: nowrap; background: linear-gradient(100deg, #ffffff 0%, #ffd1f4 30%, #a5f3ff 60%, #ffffff 100%); background-size: 220% auto; -webkit-background-clip: text; background-clip: text; color: transparent; animation: hlShimmer 6s ease-in-out infinite alternate; }
-@keyframes hlShimmer { from { background-position: 0% center; } to { background-position: 100% center; } }
+.hero-h1 { color: #fff; font-size: clamp(40px, 4.9vw, 68px); font-weight: 800; line-height: 1.02; letter-spacing: -0.035em; margin: 0 0 20px; }
+.hero-hl { white-space: nowrap; color: #e3cbff; }
 @keyframes underline { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .hero-lead { font-size: clamp(16px, 1.35vw, 19px); color: rgba(255, 255, 255, .86); max-width: 540px; margin: 0 0 30px; }
-.hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+.hero-ctas { display: flex; gap: 22px; flex-wrap: wrap; align-items: center; }
+.hero-link { display: inline-flex; align-items: center; gap: 6px; color: #fff; font-weight: 700; font-size: 15px; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, .45); text-underline-offset: 5px; text-decoration-thickness: 1.5px; transition: text-decoration-color .2s; }
+.hero-link:hover { text-decoration-color: #fff; }
+.hero-facts { display: flex; flex-wrap: wrap; gap: 6px 0; margin: 34px 0 0; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, .2); max-width: 540px; font-size: 13.5px; color: rgba(255, 255, 255, .78); }
+.hero-facts span + span::before { content: '·'; margin: 0 10px; color: rgba(255, 255, 255, .45); }
 .hero-usp { display: flex; flex-wrap: wrap; gap: 8px 20px; list-style: none; padding: 0; margin: 26px 0 0; font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, .88); }
 .hero-usp li { display: inline-flex; align-items: center; gap: 7px; }
 .hero-stats { display: flex; gap: 0; margin-top: 34px; padding-top: 22px; border-top: 1px solid rgba(255, 255, 255, .2); max-width: 520px; }
@@ -70,7 +73,10 @@
 @media (max-width: 560px) {
   .hero { padding-top: 10px; }
   .hero-panel { border-radius: 28px; padding: 30px 20px 18px; gap: 6px; }
-  .hero-h1 { margin: 18px 0 14px; }
+  .hero-h1 { margin: 0 0 14px; }
+  .hero-ctas .hero-link { width: 100%; justify-content: center; }
+  .hero-facts { flex-direction: column; gap: 4px; margin-top: 26px; }
+  .hero-facts span + span::before { content: none; }
   .hero-hl { white-space: normal; }
   .hero-ctas .btn { flex: 1 1 auto; }
   .hero-stats strong { font-size: 21px; }
@@ -179,7 +185,7 @@
 .steps-head { text-align: center; margin-bottom: 36px; }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 .step { position: relative; overflow: hidden; padding: 30px 28px; border-radius: 26px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
-.step-n { position: absolute; right: 18px; top: 6px; font-family: var(--font-brand); font-size: 76px; font-weight: 800; line-height: 1; color: color-mix(in srgb, var(--violet) 9%, transparent); }
+.step-link { margin-top: 14px; font-size: 14px; }
 .step-ic { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; color: #fff; background: var(--brand-grad); box-shadow: var(--glow); margin-bottom: 18px; }
 .step h3 { font-size: 21px; font-weight: 800; }
 .step p { color: var(--ink-3); margin: 8px 0 0; font-size: 15px; }
