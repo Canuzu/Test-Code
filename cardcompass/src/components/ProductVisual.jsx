@@ -57,7 +57,17 @@ const Rose = ({ x, y, r, o = .9 }) => (
   </g>
 );
 
-function Label({ x, y, w, label, sub, k, dark = true }) {
+function Label({ x, y, w, label, sub, k, dark = true, logo }) {
+  if (logo) {
+    // Franchise logo on a white plate, product type underneath.
+    return (
+      <g>
+        <rect x={x} y={y - 6} width={w} height={sub ? 58 : 46} rx="11" fill="#fff" opacity=".96" />
+        <image href={logo} x={x + 8} y={y - 1} width={w - 16} height={sub ? 34 : 36} preserveAspectRatio="xMidYMid meet" />
+        {sub && <text x={x + w / 2} y={y + 45} textAnchor="middle" fontFamily="Inter, sans-serif" fontWeight="700" fontSize="10" letterSpacing=".1em" fill="#4c1d95">{String(sub).toUpperCase()}</text>}
+      </g>
+    );
+  }
   const t = String(label || '').toUpperCase();
   const size = t.length > 18 ? 12 : t.length > 12 ? 14 : 16;
   return (
@@ -79,7 +89,7 @@ function Booster({ k, v }) {
       <circle cx="150" cy="150" r="78" fill={`url(#${k('burst')})`} />
       <Rose x={150} y={150} r={42} />
       <Star x={92} y={96} r={9} o={.9} /><Star x={212} y={210} r={7} o={.8} />
-      <Label x={70} y={238} w={160} label={v.label} sub={v.sub} k={k} />
+      <Label x={70} y={238} w={160} label={v.label} sub={v.sub} logo={v.logo} k={k} />
       <path d="M54 40 H246 V320 H54 Z" fill={`url(#${k('foil')})`} className="pv-foil" />
     </g>
   );
@@ -99,7 +109,7 @@ function Display({ k, v }) {
       ))}
       <circle cx="183" cy="200" r="62" fill={`url(#${k('burst')})`} />
       <Rose x={183} y={196} r={30} />
-      <Label x={120} y={238} w={126} label={v.label} sub={v.sub} k={k} />
+      <Label x={120} y={238} w={126} label={v.label} sub={v.sub} logo={v.logo} k={k} />
       <path d="M104 140 L262 116 L262 292 L104 318 Z" fill={`url(#${k('foil')})`} className="pv-foil" />
     </g>
   );
@@ -114,7 +124,7 @@ function Deck({ k, v }) {
       <path d="M120 114 L236 100 L236 132 L120 146 Z" fill="#000" opacity=".2" />
       <circle cx="178" cy="196" r="44" fill={`url(#${k('burst')})`} />
       <Rose x={178} y={194} r={24} />
-      <Label x={128} y={246} w={100} label={v.label.split(' ')[0]} sub={v.sub} k={k} />
+      <Label x={128} y={246} w={100} label={v.label.split(' ')[0]} sub={v.sub} logo={v.logo} k={k} />
       <path d="M120 114 L236 100 L236 300 L120 316 Z" fill={`url(#${k('foil')})`} className="pv-foil" />
     </g>
   );
@@ -139,7 +149,7 @@ function Box({ k, v, tin }) {
       )}
       <circle cx={tin ? 150 : 187} cy={tin ? 188 : 210} r="56" fill={`url(#${k('burst')})`} />
       <Rose x={tin ? 150 : 187} y={tin ? 184 : 206} r={28} />
-      <Label x={tin ? 70 : 116} y={tin ? 238 : 238} w={tin ? 160 : 140} label={v.label} sub={v.sub} k={k} />
+      <Label x={tin ? 70 : 116} y={tin ? 238 : 238} w={tin ? 160 : 140} label={v.label} sub={v.sub} logo={v.logo} k={k} />
       {tin ? <rect x="44" y="96" width="212" height="214" rx="28" fill={`url(#${k('foil')})`} className="pv-foil" />
         : <path d="M102 162 L272 136 L272 280 L102 304 Z" fill={`url(#${k('foil')})`} className="pv-foil" />}
     </g>
@@ -171,7 +181,7 @@ function Binder({ k, v }) {
       <rect x="62" y="56" width="26" height="256" rx="10" fill="#000" opacity=".28" />
       <path d="M238 70 V298" stroke="#fff" strokeOpacity=".7" strokeWidth="4" strokeDasharray="3 5" />
       <Rose x={160} y={160} r={40} />
-      <Label x={96} y={232} w={130} label={v.label} sub={v.sub} k={k} />
+      <Label x={96} y={232} w={130} label={v.label} sub={v.sub} logo={v.logo} k={k} />
       <rect x="62" y="56" width="176" height="256" rx="16" fill={`url(#${k('foil')})`} className="pv-foil" />
     </g>
   );
@@ -198,7 +208,7 @@ function Playmat({ k, v }) {
       {Array.from({ length: 14 }, (_, i) => <circle key={i} cx={60 + (i * 47) % 200} cy={130 + (i * 31) % 110} r={i % 3 ? 1.6 : 2.6} fill="#fff" opacity=".8" />)}
       <Rose x={152} y={186} r={34} />
       <path d="M70 270 L274 222 L274 232 L72 282 Z" fill="#000" opacity=".35" />
-      <Label x={80} y={288} w={140} label={v.label} sub={v.sub} k={k} dark={false} />
+      <Label x={80} y={288} w={140} label={v.label} sub={v.sub} logo={v.logo} k={k} dark={false} />
     </g>
   );
 }
@@ -210,7 +220,7 @@ function Manga({ k, v }) {
       <rect x="70" y="56" width="16" height="232" rx="4" fill={`url(#${k('dark')})`} />
       <rect x="82" y="50" width="150" height="232" rx="6" fill={`url(#${k('burst')})`} />
       <Rose x={157} y={140} r={34} />
-      <Label x={92} y={214} w={130} label={v.label} sub={v.sub} k={k} />
+      <Label x={92} y={214} w={130} label={v.label} sub={v.sub} logo={v.logo} k={k} />
       <rect x="82" y="50" width="150" height="232" rx="6" fill={`url(#${k('foil')})`} className="pv-foil" />
     </g>
   );
@@ -242,7 +252,7 @@ function WindowBox({ k, v, kind }) {
         </g>
       )}
       <rect x="82" y="72" width="136" height="150" rx="10" fill={`url(#${k('foil')})`} className="pv-foil" />
-      <Label x={80} y={238} w={140} label={v.label} sub={v.sub} k={k} />
+      <Label x={80} y={238} w={140} label={v.label} sub={v.sub} logo={v.logo} k={k} />
     </g>
   );
 }

@@ -5,9 +5,10 @@
 // point at, (3) a booster you can tear open to fan out holo cards.
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Truck, RotateCcw, MousePointerClick, PackageOpen, CreditCard } from 'lucide-react';
+import { ArrowRight, Truck, RotateCcw, MousePointerClick, PackageOpen, CreditCard, Layers } from 'lucide-react';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard.jsx';
 import ProductVisual, { ProductImage } from '../components/ProductVisual.jsx';
+import FranchiseLogo from '../components/FranchiseLogo.jsx';
 import { listProducts, getFranchises, minPrice, franchiseColors, getShippingRates } from '../lib/catalog.js';
 import { usePageMeta, useReveal, prefersReducedMotion } from '../lib/hooks.js';
 import { money } from '../lib/format.js';
@@ -136,7 +137,7 @@ function Marquee({ franchises }) {
   if (!franchises.length) return null;
   const row = (dup) => franchises.map((f) => (
     <Link key={`${dup}-${f.slug}`} to={shopPath({ franchise: f.slug })} className="mq-item" tabIndex={dup ? -1 : 0} aria-hidden={dup ? 'true' : undefined}>
-      <span className="mq-dot" style={{ background: `linear-gradient(135deg, ${f.c1}, ${f.c2})` }} />{f.name}
+      <FranchiseLogo franchise={f} size="sm" />{f.name}
     </Link>
   ));
   return (
@@ -149,7 +150,7 @@ function Marquee({ franchises }) {
 /* ------------------------------------------------- franchise compass ---- */
 function FranchiseCompass({ franchises }) {
   const nav = useNavigate();
-  const items = useMemo(() => [...franchises, { slug: '', name: 'Zubehör', short: 'Zubehör', c1: '#c084fc', c2: '#5b00c9', category: 'tcg-zubehoer' }], [franchises]);
+  const items = useMemo(() => [...franchises, { slug: '', name: 'Zubehör', short: 'Zubehör', c1: '#c084fc', c2: '#5b00c9', category: 'tcg-zubehoer', Icon: Layers }], [franchises]);
   const [active, setActive] = useState(0);
   const n = items.length || 1;
   const angle = (i) => (360 / n) * i;
@@ -170,7 +171,7 @@ function FranchiseCompass({ franchises }) {
           <h2 className="h2">Wähle deine <span className="grad-text">Richtung.</span></h2>
           <p className="lead" style={{ marginTop: 14 }}>Such dir dein Spiel aus – dann siehst du alles, was es dafür bei uns gibt.</p>
           <div className="fc-current" style={{ '--c1': cur.c1, '--c2': cur.c2 }}>
-            <span className="fc-current-dot" />
+            <FranchiseLogo key={cur.name} franchise={cur} icon={cur.Icon} size="md" className="fc-current-logo" />
             <div>
               <span className="muted" style={{ fontSize: 13 }}>Kurs auf</span>
               <strong>{cur.name}</strong>
@@ -180,7 +181,7 @@ function FranchiseCompass({ franchises }) {
           <div className="fc-chips">
             {items.map((it, i) => (
               <button key={it.name} className={`chip ${i === active ? 'is-active' : ''}`} onMouseEnter={() => { touched.current = true; setActive(i); }} onFocus={() => { touched.current = true; setActive(i); }} onClick={() => go(it)}>
-                <span className="mega-dot" style={{ background: `linear-gradient(135deg, ${it.c1}, ${it.c2})` }} />{it.short || it.name}
+                {it.short || it.name}
               </button>
             ))}
           </div>
@@ -198,7 +199,7 @@ function FranchiseCompass({ franchises }) {
                 onClick={() => go(it)}
                 aria-label={`${it.name} öffnen`}
               >
-                <span className="fc-point-inner"><span className="fc-point-dot" /><span className="fc-point-label">{it.short || it.name}</span></span>
+                <span className="fc-point-inner"><FranchiseLogo franchise={it} icon={it.Icon} size="lg" /></span>
               </button>
             ))}
             <div className="fc-needle" style={{ transform: `rotate(${angle(active)}deg)` }} aria-hidden="true">

@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard.jsx';
 import ProductVisual from '../components/ProductVisual.jsx';
+import FranchiseLogo from '../components/FranchiseLogo.jsx';
+import { logoUrl } from '../lib/logos.js';
 import { listProducts, getFranchises, getCategories } from '../lib/catalog.js';
 import { useAsync, usePageMeta, useTilt, prefersReducedMotion } from '../lib/hooks.js';
 import { R, shopPath } from '../lib/routes.js';
@@ -34,7 +36,6 @@ const filterKey = (f) => [f.franchise, f.category, f.q, f.available ? 1 : 0, f.s
 const toQuery = (f) => shopPath(f).split('?')[1] || '';
 const plural = (n) => `${n} ${n === 1 ? 'Produkt' : 'Produkte'}`;
 const nPanelKey = (f) => `${f.franchise}|${f.category}|${f.available}`;
-const grad = (fr) => `linear-gradient(135deg, ${fr.c1}, ${fr.c2})`;
 
 // Facet counts: every dimension counted with all *other* active filters applied.
 async function loadFacets({ franchise, category, q, available }) {
@@ -136,7 +137,7 @@ function ShopHero({ f, cat, count, franchises, onSearch }) {
         <div className="shop-hero-art" aria-hidden="true">
           {art.map((fr, i) => (
             <div key={fr.slug} className={`shop-fan shop-fan-${i}`}>
-              <ProductVisual visual={{ kind: 'booster', c1: fr.c1, c2: fr.c2, label: fr.short, sub: 'Booster' }} />
+              <ProductVisual visual={{ kind: 'booster', c1: fr.c1, c2: fr.c2, label: fr.short, sub: 'Booster', logo: logoUrl(fr) }} />
             </div>
           ))}
           <span className="shop-spark s1" /><span className="shop-spark s2" /><span className="shop-spark s3" />
@@ -156,7 +157,7 @@ function FranchiseBanner({ fr, f, count, onSearch, onClear }) {
           <div className="shop-banner-fx" aria-hidden="true"><span className="aur a1" /><span className="aur a2" /><span className="grid" /></div>
           <div className="shop-banner-text">
             <Crumbs items={[{ label: 'Start', to: R.home }, { label: 'Shop', to: R.shop }, { label: fr.name }]} />
-            <p className="eyebrow">Franchise</p>
+            <FranchiseLogo franchise={fr} size="xl" className="shop-banner-logo" />
             <h1 className="h1 shop-banner-title">{fr.name}</h1>
             {f.q && <p className="shop-banner-q">Suchergebnisse für „{f.q}“</p>}
             <div className="shop-hero-meta">
@@ -174,8 +175,8 @@ function FranchiseBanner({ fr, f, count, onSearch, onClear }) {
           <div className="shop-banner-art" ref={tilt} aria-hidden="true">
             <div className="shop-banner-stage">
               <div className="shop-banner-glow" />
-              <ProductVisual className="art-back" visual={{ kind: 'display', c1: fr.c1, c2: fr.c2, label: fr.short, sub: 'Display' }} />
-              <ProductVisual className="art-front" visual={{ kind: 'booster', c1: fr.c1, c2: fr.c2, label: fr.short, sub: 'Booster' }} />
+              <ProductVisual className="art-back" visual={{ kind: 'display', c1: fr.c1, c2: fr.c2, label: fr.short, sub: 'Display', logo: logoUrl(fr) }} />
+              <ProductVisual className="art-front" visual={{ kind: 'booster', c1: fr.c1, c2: fr.c2, label: fr.short, sub: 'Booster', logo: logoUrl(fr) }} />
             </div>
             <div className="shop-banner-shine" />
           </div>
@@ -187,7 +188,7 @@ function FranchiseBanner({ fr, f, count, onSearch, onClear }) {
 
 // ---------------------------------------------------------------------------
 // Filter panel (desktop sidebar + phone sheet share it).
-function Opt({ active, onClick, label, n, dot, icon, sub = false }) {
+function Opt({ active, onClick, label, n, icon, sub = false }) {
   return (
     <li>
       <button
@@ -196,7 +197,7 @@ function Opt({ active, onClick, label, n, dot, icon, sub = false }) {
         aria-pressed={active}
         onClick={onClick}
       >
-        {dot ? <span className="fdot" style={{ background: dot }} /> : icon || null}
+        {icon || null}
         <span className="fopt-label">{label}</span>
         {active ? <Check size={15} className="fopt-check" aria-hidden="true" /> : n != null && <span className="fcount">{n}</span>}
       </button>
@@ -223,7 +224,7 @@ function FilterPanel({ value, onChange, franchises, categories, facets, idPrefix
               onClick={() => onChange({ franchise: value.franchise === fr.slug ? '' : fr.slug })}
               label={fr.name}
               n={facets ? fc[fr.slug] || 0 : null}
-              dot={grad(fr)}
+              icon={<FranchiseLogo franchise={fr} size="sm" />}
             />
           ))}
         </ul>
@@ -443,7 +444,7 @@ export default function Shop() {
   }, [franchises.length, categories.length, nPanelKey(f)]);
 
   const chips = [];
-  if (f.franchise) chips.push({ id: 'fr', label: fr?.name || f.franchise, dot: fr ? grad(fr) : null, clear: { franchise: '' } });
+  if (f.franchise) chips.push({ id: 'fr', label: fr?.name || f.franchise, clear: { franchise: '' } });
   if (f.category) chips.push({ id: 'cat', label: cat?.name || f.category, clear: { category: '' } });
   if (f.q) chips.push({ id: 'q', label: `„${f.q}“`, icon: <Search size={13} />, clear: { q: '' } });
   if (f.available) chips.push({ id: 'av', label: 'Sofort lieferbar', clear: { available: false } });
@@ -491,7 +492,7 @@ export default function Shop() {
                 aria-pressed={f.franchise === x.slug}
                 onClick={() => update({ franchise: f.franchise === x.slug ? '' : x.slug })}
               >
-                <span className="fdot sm" style={{ background: grad(x) }} />{x.short || x.name}
+                {x.short || x.name}
               </button>
             ))}
           </div>
@@ -505,7 +506,6 @@ export default function Shop() {
                 <div className="shop-active" role="group" aria-label="Aktive Filter">
                   {chips.map((c) => (
                     <button key={c.id} type="button" className="shop-achip" onClick={() => update(c.clear)} aria-label={`Filter entfernen: ${c.label}`}>
-                      {c.dot && <span className="fdot sm" style={{ background: c.dot }} />}
                       {c.icon}
                       <span>{c.label}</span>
                       <X size={14} className="shop-achip-x" />
@@ -560,7 +560,7 @@ export default function Shop() {
                   <div className="shop-state-sugg">
                     <span className="muted">Beliebte Franchises:</span>
                     {franchises.slice(0, 4).map((x) => (
-                      <Link key={x.slug} className="chip" to={shopPath({ franchise: x.slug })}><span className="fdot sm" style={{ background: grad(x) }} />{x.short || x.name}</Link>
+                      <Link key={x.slug} className="chip" to={shopPath({ franchise: x.slug })}>{x.short || x.name}</Link>
                     ))}
                   </div>
                 )}

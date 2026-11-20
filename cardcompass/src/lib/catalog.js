@@ -12,6 +12,7 @@
 import { LIVE, SHOP, SUPABASE_URL } from './config.js';
 import { getSupabase } from './supabase.js';
 import * as demo from './demoCatalog.js';
+import { logoUrl } from './logos.js';
 
 const PRODUCT_SELECT = `id, slug, name, short_description, description, is_featured, published_at,
   franchise:cc_franchises(slug, name),
@@ -39,7 +40,7 @@ function visualFor(p, cats) {
       : has('figuren-und-sammlerartikel') ? 'figure' : has('digivice-und-virtual-pets') ? 'digivice'
         : has('gunpla-und-modellbausaetze') ? 'gunpla' : 'box';
   const fc = p.franchise ? franchiseColors(p.franchise.slug) : franchiseColors('');
-  return { kind, c1: fc.c1, c2: fc.c2, label: p.franchise?.name || 'CardCompass', sub: p.product_type?.name || '' };
+  return { kind, c1: fc.c1, c2: fc.c2, label: p.franchise?.name || 'CardCompass', sub: p.product_type?.name || '', logo: logoUrl(p.franchise) };
 }
 
 const publicImage = (path) => `${SUPABASE_URL}/storage/v1/object/public/product-images/${String(path).replace(/^\/+/, '')}`;
