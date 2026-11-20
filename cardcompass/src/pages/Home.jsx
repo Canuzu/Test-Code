@@ -4,7 +4,7 @@
 // (2) the "Franchise-Kompass": a dial whose needle swings to whichever game you
 // point at, (3) a booster you can tear open to fan out holo cards.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowRight, Truck, RotateCcw, MousePointerClick, PackageOpen, CreditCard, Layers } from 'lucide-react';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard.jsx';
 import ProductVisual, { ProductImage } from '../components/ProductVisual.jsx';
@@ -17,6 +17,8 @@ import { money } from '../lib/format.js';
 const euro = (c) => (c % 100 === 0 ? `${c / 100} €` : money(c));
 import { R, shopPath, productPath } from '../lib/routes.js';
 import '../styles/home.css';
+// Hero proposals for review (?hero=a|b|c) – imported after home.css so their styles win.
+import { HeroStage, HeroWheel, HeroCalm } from '../components/hero/HeroVariants.jsx';
 
 const LOGO = `${import.meta.env.BASE_URL}cardcompass-logo.png`;
 
@@ -398,13 +400,19 @@ export default function Home() {
   usePageMeta(null, 'CardCompass: Booster, Displays und Zubehör für Pokémon, One Piece, Yu-Gi-Oh!, Magic und mehr – neue Sets zum regulären Preis, schneller Versand.');
   const [franchises, setFranchises] = useState([]);
   const [rate, setRate] = useState(null);
+  const [params] = useSearchParams();
+  const variant = params.get('hero');
   useEffect(() => {
     getShippingRates().then((r) => setRate(r?.[0] || null)).catch(() => {});
     getFranchises().then((f) => setFranchises(f.map((x) => ({ ...x, ...franchiseColors(x.slug), short: x.short || franchiseColors(x.slug).short || x.name })))).catch(() => {});
   }, []);
   return (
     <div className="home">
-      <Hero franchises={franchises} freeFrom={rate?.free_from_cents ?? null} />
+      {(() => {
+        const props = { franchises, freeFrom: rate?.free_from_cents ?? null };
+        const V = { a: HeroStage, b: HeroWheel, c: HeroCalm }[variant] || Hero;
+        return <V {...props} />;
+      })()}
       <Featured />
       <Categories />
       <PackOpening />
