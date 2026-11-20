@@ -219,21 +219,6 @@ function Hero({ franchises, freeFrom }) {
   );
 }
 
-/* ------------------------------------------------------------ marquee ---- */
-function Marquee({ franchises }) {
-  if (!franchises.length) return null;
-  const row = (dup) => franchises.map((f) => (
-    <Link key={`${dup}-${f.slug}`} to={shopPath({ franchise: f.slug })} className="mq-item" tabIndex={dup ? -1 : 0} aria-hidden={dup ? 'true' : undefined}>
-      <FranchiseLogo franchise={f} size="sm" />{f.name}
-    </Link>
-  ));
-  return (
-    <div className="mq" aria-label="Franchises">
-      <div className="mq-track">{row(0)}{row(1)}</div>
-    </div>
-  );
-}
-
 /* ------------------------------------------------ featured products ---- */
 const TABS = [
   { id: 'featured', label: 'Highlights', opts: { featured: true, limit: 8 } },
@@ -420,7 +405,6 @@ export default function Home() {
   return (
     <div className="home">
       <Hero franchises={franchises} freeFrom={rate?.free_from_cents ?? null} />
-      <Marquee franchises={franchises} />
       <Featured />
       <Categories />
       <PackOpening />
