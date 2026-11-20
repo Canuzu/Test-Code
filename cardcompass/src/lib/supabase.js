@@ -1,14 +1,17 @@
-// Lazily created Supabase client (only when live credentials are configured).
-import { createClient } from '@supabase/supabase-js';
+// Supabase client, loaded on demand: the SDK is only downloaded when live
+// credentials are configured and data is actually requested, so the design
+// preview (and the first paint of the live shop) stay light.
 import { SUPABASE_URL, SUPABASE_KEY, LIVE } from './config.js';
 
-let client = null;
+let pending = null;
 export function getSupabase() {
-  if (!LIVE) return null;
-  if (!client) {
-    client = createClient(SUPABASE_URL, SUPABASE_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'cc_auth' },
-    });
+  if (!LIVE) return Promise.resolve(null);
+  if (!pending) {
+    pending = import('@supabase/supabase-js')
+      .then(({ createClient }) => createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'cc_auth' },
+      }))
+      .catch((e) => { pending = null; throw e; });
   }
-  return client;
+  return pending;
 }

@@ -74,7 +74,7 @@ const cached = (key, fn) => {
 async function allProducts() {
   if (!LIVE) return demo.PRODUCTS;
   return cached('products', async () => {
-    const { data, error } = await getSupabase()
+    const { data, error } = await (await getSupabase())
       .from('cc_products').select(PRODUCT_SELECT)
       .not('published_at', 'is', null)
       .order('is_featured', { ascending: false })
@@ -87,7 +87,7 @@ async function allProducts() {
 export async function getFranchises() {
   if (!LIVE) return demo.FRANCHISES;
   return cached('franchises', async () => {
-    const { data, error } = await getSupabase().from('cc_franchises').select('id, slug, name').order('sort_order');
+    const { data, error } = await (await getSupabase()).from('cc_franchises').select('id, slug, name').order('sort_order');
     if (error) throw error;
     return (data || []).map((f) => ({ ...f, ...franchiseColors(f.slug), short: franchiseColors(f.slug).short || f.name }));
   });
@@ -96,7 +96,7 @@ export async function getFranchises() {
 export async function getCategories() {
   if (!LIVE) return demo.CATEGORIES;
   return cached('categories', async () => {
-    const { data, error } = await getSupabase().from('cc_categories').select('id, slug, name, parent_id').order('sort_order');
+    const { data, error } = await (await getSupabase()).from('cc_categories').select('id, slug, name, parent_id').order('sort_order');
     if (error) throw error;
     return data || [];
   });
@@ -162,7 +162,7 @@ export async function suggest(q, limit = 6) {
 export async function getShippingRates() {
   if (!LIVE) return demo.SHIPPING;
   return cached('shipping', async () => {
-    const { data, error } = await getSupabase().from('cc_shipping_rates')
+    const { data, error } = await (await getSupabase()).from('cc_shipping_rates')
       .select('price_cents, free_from_cents, method:cc_shipping_methods(name, sort_order)').eq('country_code', 'DE');
     if (error) throw error;
     const rates = (data || []).map((r) => ({ name: r.method?.name || 'Versand', price_cents: r.price_cents, free_from_cents: r.free_from_cents, sort: r.method?.sort_order ?? 0 }))
@@ -174,7 +174,7 @@ export async function getShippingRates() {
 export async function getSettings() {
   if (!LIVE) return { smallBusiness: SHOP.smallBusiness };
   return cached('settings', async () => {
-    const { data } = await getSupabase().from('cc_settings').select('value').eq('key', 'tax_small_business').maybeSingle();
+    const { data } = await (await getSupabase()).from('cc_settings').select('value').eq('key', 'tax_small_business').maybeSingle();
     const v = data?.value;
     return { smallBusiness: v == null ? SHOP.smallBusiness : (v === true || v === 'true' || v?.enabled === true) };
   });

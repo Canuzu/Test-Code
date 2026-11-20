@@ -13,8 +13,8 @@ export class PreviewAuthError extends Error {
   constructor() { super(PREVIEW_MESSAGE); this.name = 'PreviewAuthError'; this.code = 'preview_disabled'; }
 }
 
-function client() {
-  const sb = getSupabase();
+async function client() {
+  const sb = await getSupabase();
   if (!sb) throw new PreviewAuthError();
   return sb;
 }
@@ -39,7 +39,7 @@ export function safeNext(value, fallback = R.account) {
 /* ------------------------------------------------------------------ auth */
 
 export async function signIn(email, password) {
-  const { data, error } = await client().auth.signInWithPassword({ email: normEmail(email), password });
+  const { data, error } = await (await client()).auth.signInWithPassword({ email: normEmail(email), password });
   if (error) throw error;
   return data.session;
 }
@@ -48,7 +48,7 @@ export async function signIn(email, password) {
 // (Ist die Adresse schon registriert, antwortet Supabase bewusst genauso –
 // so lässt sich nicht herausfinden, wer ein Konto hat.)
 export async function signUp(email, password, { first_name = '', last_name = '' } = {}) {
-  const { data, error } = await client().auth.signUp({
+  const { data, error } = await (await client()).auth.signUp({
     email: normEmail(email),
     password,
     options: {
@@ -61,17 +61,17 @@ export async function signUp(email, password, { first_name = '', last_name = '' 
 }
 
 export async function sendReset(email) {
-  const { error } = await client().auth.resetPasswordForEmail(normEmail(email), { redirectTo: appUrl(R.resetPassword) });
+  const { error } = await (await client()).auth.resetPasswordForEmail(normEmail(email), { redirectTo: appUrl(R.resetPassword) });
   if (error) throw error;
 }
 
 export async function updatePassword(pw) {
-  const { error } = await client().auth.updateUser({ password: pw });
+  const { error } = await (await client()).auth.updateUser({ password: pw });
   if (error) throw error;
 }
 
 export async function signOut() {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return;
   const { error } = await sb.auth.signOut();
   // Server nicht erreichbar → wenigstens lokal abmelden.
@@ -79,7 +79,7 @@ export async function signOut() {
 }
 
 export async function getSession() {
-  const sb = getSupabase();
+  const sb = await getSupabase();
   if (!sb) return null;
   const { data, error } = await sb.auth.getSession();
   if (error) throw error;
@@ -88,10 +88,14 @@ export async function getSession() {
 
 // cb(event, session) – gibt eine Abmelde-Funktion zurück.
 export function onAuthChange(cb) {
-  const sb = getSupabase();
-  if (!sb) return () => {};
-  const { data } = sb.auth.onAuthStateChange((event, session) => cb(event, session));
-  return () => data.subscription.unsubscribe();
+  let unsub = () => {};
+  let dead = false;
+  getSupabase().then((sb) => {
+    if (!sb || dead) return;
+    const { data } = sb.auth.onAuthStateChange((event, session) => cb(event, session));
+    unsub = () => data.subscription.unsubscribe();
+  }).catch(() => {});
+  return () => { dead = true; unsub(); };
 }
 
 async function requireUser() {
@@ -109,7 +113,7 @@ async function requireUser() {
 
 export async function getProfile() {
   const user = await requireUser();
-  const { data, error } = await client()
+  const { data, error } = await (await client())
     .from('cc_customer_profiles')
     .select('id, email, first_name, last_name, phone')
     .eq('id', user.id)
@@ -123,7 +127,7 @@ export async function getProfile() {
 
 export async function updateProfile({ first_name = '', last_name = '', phone = '' }) {
   const user = await requireUser();
-  const { error } = await client()
+  const { error } = await (await client())
     .from('cc_customer_profiles')
     .update({ first_name: clean(first_name), last_name: clean(last_name), phone: clean(phone) })
     .eq('id', user.id);
@@ -140,7 +144,7 @@ export const EMPTY_ADDRESS = {
 
 export async function listAddresses(customerId) {
   const id = customerId || (await requireUser()).id;
-  const { data, error } = await client()
+  const { data, error } = await (await client())
     .from('cc_customer_addresses')
     .select(ADDRESS_FIELDS)
     .eq('customer_id', id)
@@ -165,7 +169,7 @@ const addressRow = (a) => ({
 // Mit a.id → aktualisieren, sonst neu anlegen. Die erste Adresse wird
 // automatisch Standard-Liefer- und -Rechnungsadresse.
 export async function saveAddress(a) {
-  const sb = client();
+  const sb = await client();
   if (a.id) {
     const { error } = await sb.from('cc_customer_addresses').update(addressRow(a)).eq('id', a.id);
     if (error) throw error;
@@ -180,7 +184,7 @@ export async function saveAddress(a) {
 }
 
 export async function setDefaultAddress(id) {
-  const sb = client();
+  const sb = await client();
   const user = await requireUser();
   const reset = await sb.from('cc_customer_addresses').update({ is_default_billing: false, is_default_shipping: false }).eq('customer_id', user.id).neq('id', id);
   if (reset.error) throw reset.error;
@@ -189,7 +193,7 @@ export async function setDefaultAddress(id) {
 }
 
 export async function deleteAddress(id) {
-  const { error } = await client().from('cc_customer_addresses').delete().eq('id', id);
+  const { error } = await (await client()).from('cc_customer_addresses').delete().eq('id', id);
   if (error) throw error;
 }
 
@@ -197,7 +201,7 @@ export async function deleteAddress(id) {
 
 export async function listOrders(customerId) {
   const id = customerId || (await requireUser()).id;
-  const { data, error } = await client()
+  const { data, error } = await (await client())
     .from('cc_orders')
     .select('id, order_number, status, total_cents, placed_at, items:cc_order_items(product_name, variant_title, quantity)')
     .eq('customer_id', id)

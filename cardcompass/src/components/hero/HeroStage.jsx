@@ -12,7 +12,7 @@ import { prefersReducedMotion } from '../../lib/hooks.js';
 import { money } from '../../lib/format.js';
 import { R, shopPath, productPath } from '../../lib/routes.js';
 
-const LOGO = `${import.meta.env.BASE_URL}cardcompass-logo.png`;
+const LOGO = `${import.meta.env.BASE_URL}cardcompass-logo.webp`;
 const ACCESSORIES = { slug: '', name: 'Zubehör', short: 'Zubehör', c1: '#c084fc', c2: '#5b00c9', category: 'tcg-zubehoer', Icon: Layers };
 const keyOf = (it) => it.category || it.slug;
 const dest = (it) => (it.category ? shopPath({ category: it.category }) : shopPath({ franchise: it.slug }));

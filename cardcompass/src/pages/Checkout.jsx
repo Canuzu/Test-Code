@@ -167,7 +167,7 @@ export default function Checkout() {
     let alive = true;
     (async () => {
       try {
-        const sb = getSupabase();
+        const sb = await getSupabase();
         const { data: { session } = {} } = await sb.auth.getSession();
         const user = session?.user;
         if (!user || !alive) return;

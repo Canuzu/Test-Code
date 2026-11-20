@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-const LOGO = `${import.meta.env.BASE_URL}cardcompass-logo.png`;
+const LOGO = `${import.meta.env.BASE_URL}cardcompass-logo.webp`;
 
 // Original CardCompass mark + wordmark ("Card" ink, "Compass" purple).
 export default function Logo({ size = 38, to = '/', onClick, light = false }) {

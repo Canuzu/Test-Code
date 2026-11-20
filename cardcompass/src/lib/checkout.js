@@ -141,7 +141,7 @@ export async function startCheckout({ lines, customer, shippingAddress, billingA
 
   let res;
   try {
-    res = await getSupabase().functions.invoke('create-checkout', { body, timeout: 30000 });
+    res = await (await getSupabase()).functions.invoke('create-checkout', { body, timeout: 30000 });
   } catch {
     throw new CheckoutError('network', GENERIC);
   }

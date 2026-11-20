@@ -31,7 +31,7 @@ async function submitWithdrawal(f) {
     return { received_at: new Date().toISOString(), reference: null, confirmation_sent: false, preview: true };
   }
   const scope = f.scope.trim();
-  const { data, error } = await getSupabase().functions.invoke('submit-withdrawal', {
+  const { data, error } = await (await getSupabase()).functions.invoke('submit-withdrawal', {
     body: {
       name: f.name.trim(),
       email: f.email.trim(),
