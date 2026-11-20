@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Search, ShoppingBag, User, Moon, Sun, Menu, X, ChevronDown, ArrowRight } from 'lucide-react';
 import Logo from './Logo.jsx';
 import { ProductImage } from './ProductVisual.jsx';
+import FranchiseLogo from './FranchiseLogo.jsx';
 import { useCart } from '../lib/cart.jsx';
 import { useTheme } from '../lib/hooks.js';
 import { getFranchises, getCategories, suggest, minPrice } from '../lib/catalog.js';
@@ -84,6 +86,14 @@ export default function Header() {
     return () => window.removeEventListener('scroll', on);
   }, []);
   useEffect(() => { setMenu(false); setMega(false); }, [loc.pathname, loc.search]);
+  useEffect(() => {
+    if (!menu) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setMenu(false); };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = prev; };
+  }, [menu]);
   useEffect(() => { document.body.style.overflow = menu ? 'hidden' : ''; }, [menu]);
   useEffect(() => {
     if (!lastAdded) return undefined;
@@ -107,7 +117,7 @@ export default function Header() {
                 <div className="mega-col">
                   <div className="mega-h">Franchises</div>
                   {franchises.map((f) => (
-                    <Link key={f.slug} to={shopPath({ franchise: f.slug })} className="mega-link"><span className="mega-dot" style={{ background: `linear-gradient(135deg, ${f.c1}, ${f.c2})` }} />{f.name}</Link>
+                    <Link key={f.slug} to={shopPath({ franchise: f.slug })} className="mega-link"><FranchiseLogo franchise={f} size="sm" />{f.name}</Link>
                   ))}
                 </div>
                 <div className="mega-col">
@@ -139,7 +149,9 @@ export default function Header() {
       </div>
       <div className="container hdr-msearch"><SearchBox /></div>
 
-      {menu && (
+      {/* Portal: the header's backdrop-filter would otherwise turn it into the
+          containing block of this fixed overlay and clip the menu to 64px. */}
+      {menu && createPortal(
         <div className="mmenu" role="dialog" aria-modal="true" aria-label="Menü">
           <div className="mmenu-back" onClick={() => setMenu(false)} />
           <div className="mmenu-panel">
@@ -149,7 +161,7 @@ export default function Header() {
               <Link to={R.shop}>Alle Produkte</Link>
               <Link to={shopPath({ available: true })}>Sofort lieferbar</Link>
               <div className="mmenu-h">Franchises</div>
-              {franchises.map((f) => <Link key={f.slug} to={shopPath({ franchise: f.slug })}><span className="mega-dot" style={{ background: `linear-gradient(135deg, ${f.c1}, ${f.c2})` }} />{f.name}</Link>)}
+              {franchises.map((f) => <Link key={f.slug} to={shopPath({ franchise: f.slug })}><FranchiseLogo franchise={f} size="sm" />{f.name}</Link>)}
               <div className="mmenu-h">Kategorien</div>
               {roots.map((c) => <Link key={c.slug} to={shopPath({ category: c.slug })}>{c.name}</Link>)}
               <div className="mmenu-h">Service</div>
@@ -158,7 +170,8 @@ export default function Header() {
               <Link to={R.widerruf}>Vertrag widerrufen</Link>
             </nav>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </header>
   );

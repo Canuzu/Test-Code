@@ -94,7 +94,7 @@
 @keyframes mq { to { transform: translateX(-50%); } }
 .mq-item { display: inline-flex; align-items: center; gap: 10px; height: 46px; padding: 0 20px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-family: var(--font-brand); font-weight: 700; font-size: 15.5px; color: var(--ink-2); white-space: nowrap; transition: border-color .2s, color .2s, transform .2s; }
 .mq-item:hover { border-color: var(--violet-300); color: var(--violet); transform: translateY(-2px); }
-.mq-dot { width: 14px; height: 14px; border-radius: 5px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45); }
+.mq-item:has(.flogo) { padding-left: 8px; gap: 12px; }
 
 /* ---- segmented tabs ---- */
 .seg { display: inline-flex; padding: 5px; gap: 4px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--line); }
@@ -109,7 +109,9 @@
 .fc-current { display: flex; align-items: center; gap: 14px; margin-top: 28px; padding: 14px 14px 14px 18px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
 .fc-current > div { flex: 1; display: grid; min-width: 0; }
 .fc-current strong { font-family: var(--font-brand); font-size: 19px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fc-current-dot { width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0; background: linear-gradient(135deg, var(--c1), var(--c2)); box-shadow: 0 10px 20px -8px var(--c2); transition: background .5s; }
+.fc-current { padding-left: 10px; }
+.fc-current-logo { animation: fcLogoIn .45s var(--ease) both; }
+@keyframes fcLogoIn { from { opacity: 0; transform: scale(.86); } }
 .fc-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
 .fc-dial-wrap { display: grid; place-items: center; }
 .fc-dial { --R: 205px; position: relative; width: min(100%, 500px); aspect-ratio: 1; border-radius: 50%; }
@@ -119,10 +121,12 @@
 .fc-face::after { content: ''; position: absolute; inset: 24%; border-radius: 50%; border: 1.5px dashed var(--violet-200); animation: spinZ 60s linear infinite; }
 .fc-point { position: absolute; left: 50%; top: 50%; width: 0; height: 0; border: 0; background: none; padding: 0; transform: rotate(var(--a)) translateY(calc(var(--R) * -1)) rotate(calc(var(--a) * -1)); z-index: 2; }
 .fc-point-inner { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 6px; }
-.fc-point-dot { width: 46px; height: 46px; border-radius: 16px; background: linear-gradient(135deg, var(--c1), var(--c2)); box-shadow: 0 8px 18px -8px var(--c2), inset 0 1px 0 rgba(255, 255, 255, .4); transition: transform .35s var(--ease), box-shadow .35s; border: 3px solid var(--surface); }
-.fc-point-label { font-size: 12.5px; font-weight: 700; color: var(--ink-2); white-space: nowrap; background: var(--surface); padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); transition: color .3s, border-color .3s; }
-.fc-point.is-active .fc-point-dot, .fc-point:hover .fc-point-dot { transform: scale(1.22); box-shadow: 0 14px 28px -8px var(--c2), 0 0 0 6px color-mix(in srgb, var(--c1) 30%, transparent); }
-.fc-point.is-active .fc-point-label { color: var(--violet); border-color: var(--violet-300); }
+.fc-point .flogo { box-shadow: 0 10px 24px -14px rgba(52, 14, 110, .45), 0 1px 2px rgba(27, 10, 56, .06); cursor: pointer; }
+.fc-point .flogo.is-text { box-shadow: inset 0 -4px 0 var(--c1), 0 10px 24px -14px rgba(52, 14, 110, .45); }
+.fc-point.is-active .flogo, .fc-point:hover .flogo { transform: scale(1.12); border-color: var(--violet-300); box-shadow: 0 16px 30px -14px rgba(76, 0, 153, .55), 0 0 0 4px color-mix(in srgb, var(--violet) 16%, transparent); }
+.fc-point.is-active .flogo.is-text, .fc-point:hover .flogo.is-text { box-shadow: inset 0 -4px 0 var(--c1), 0 16px 30px -14px rgba(76, 0, 153, .55), 0 0 0 4px color-mix(in srgb, var(--violet) 16%, transparent); }
+.fc-point:focus-visible { outline: none; }
+.fc-point:focus-visible .flogo { outline: 3px solid var(--violet); outline-offset: 3px; }
 .fc-needle { position: absolute; left: 50%; top: 50%; width: 22px; height: 64%; margin: -32% 0 0 -11px; transition: transform 1s cubic-bezier(.34, 1.56, .64, 1); z-index: 1; filter: drop-shadow(0 6px 10px rgba(60, 0, 140, .35)); }
 .fc-needle-n, .fc-needle-s { position: absolute; left: 0; width: 22px; height: 50%; }
 .fc-needle-n { top: 0; clip-path: polygon(50% 0, 100% 100%, 0 100%); background: linear-gradient(180deg, var(--c1, #b14dff), var(--violet)); transition: background .5s; }
@@ -132,8 +136,7 @@
 @media (max-width: 960px) { .fc-grid { grid-template-columns: 1fr; gap: 30px; } .fc-dial { --R: 175px; width: min(100%, 440px); } }
 @media (max-width: 480px) {
   .fc-dial { --R: 132px; }
-  .fc-point-dot { width: 36px; height: 36px; border-radius: 12px; }
-  .fc-point-label { font-size: 10.5px; padding: 2px 7px; }
+  .fc-point .flogo { --w: 74px; --h: 44px; padding: 5px 7px; border-radius: 12px; }
   .fc-hub { width: 70px; height: 70px; border-radius: 22px; }
   .fc-current { flex-wrap: wrap; }
   .fc-current .btn { width: 100%; }

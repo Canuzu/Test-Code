@@ -7,10 +7,11 @@ import {
 } from 'lucide-react';
 import ProductCard, { ProductCardSkeleton } from '../components/ProductCard.jsx';
 import { ProductImage } from '../components/ProductVisual.jsx';
+import FranchiseLogo from '../components/FranchiseLogo.jsx';
 import { TRUST } from '../components/Footer.jsx';
 import { useCart } from '../lib/cart.jsx';
 import {
-  getProduct, getRelated, getShippingRates, getSettings, getCategories, defaultVariant, isNew,
+  getProduct, getRelated, getShippingRates, getSettings, getCategories, defaultVariant, isNew, franchiseColors,
 } from '../lib/catalog.js';
 import { useAsync, usePageMeta, useTilt, useReveal, prefersReducedMotion } from '../lib/hooks.js';
 import { money, pct, clamp } from '../lib/format.js';
@@ -262,10 +263,10 @@ function ProductView({ product }) {
             <div className="pdp-head fade-up">
               {product.franchise ? (
                 <Link to={shopPath({ franchise: product.franchise.slug })} className="pdp-fr">
-                  <span className="pdp-fr-dot" />{product.franchise.name}<ArrowRight size={14} />
+                  <FranchiseLogo franchise={{ ...product.franchise, ...franchiseColors(product.franchise.slug), name: product.franchise.name }} size="sm" />{product.franchise.name}<ArrowRight size={14} />
                 </Link>
               ) : crumbMid ? (
-                <Link to={crumbMid.to} className="pdp-fr"><span className="pdp-fr-dot" />{crumbMid.label}<ArrowRight size={14} /></Link>
+                <Link to={crumbMid.to} className="pdp-fr">{crumbMid.label}<ArrowRight size={14} /></Link>
               ) : null}
               <h1 className="pdp-title">{product.name}</h1>
               {product.short_description && <p className="pdp-short">{product.short_description}</p>}

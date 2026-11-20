@@ -4,6 +4,7 @@
 // Products are clearly generic demo items – no real stock, no real orders.
 
 import { slugify } from './format.js';
+import { logoUrl } from './logos.js';
 
 export const FRANCHISES = [
   { id: 'f-pokemon', slug: 'pokemon', name: 'Pokémon TCG', short: 'Pokémon', c1: '#ffcb05', c2: '#2a75bb' },
@@ -67,7 +68,7 @@ function p(fr, cat, kind, name, price, o = {}) {
     })),
     images: [],
     attributes: o.attrs || [],
-    visual: { kind, c1: o.c1 || f?.c1 || '#a855f7', c2: o.c2 || f?.c2 || '#3b0764', label: o.label || f?.short || 'CardCompass', sub: o.sub || kindLabel(kind) },
+    visual: { kind, c1: o.c1 || f?.c1 || '#a855f7', c2: o.c2 || f?.c2 || '#3b0764', label: o.label || f?.short || 'CardCompass', sub: o.sub || kindLabel(kind), logo: o.label ? null : logoUrl(f) },
   };
 }
 
