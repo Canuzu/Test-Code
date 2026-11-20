@@ -8,12 +8,16 @@
 // their owners and are used to identify the products sold): pokemon ←
 // "International Pokémon logo.svg", magic ← "Magicthegathering-logo.svg",
 // one-piece ← "One piece logo 1.svg", yu-gi-oh ← "Yu-Gi-Oh!.png" (red kanji
-// backdrop removed). Official artwork from the distributors can replace them.
+// backdrop removed); digimon, riftbound, cyberpunk ← official logo files
+// supplied by the shop owner. Official artwork can replace any of them.
 export const LOGOS = {
   pokemon: 'logos/pokemon.webp',
   'one-piece': 'logos/one-piece.webp',
   'yu-gi-oh': 'logos/yu-gi-oh.webp',
   magic: 'logos/magic.webp',
+  digimon: 'logos/digimon.webp',
+  riftbound: 'logos/riftbound.webp',
+  cyberpunk: 'logos/cyberpunk.webp',
 };
 
 // If a franchise in the shop database uses a different slug, match it by name.
